@@ -7,7 +7,7 @@ Version 2.0. See the file "[LICENSE](LICENSE)" for more information.
 
 ## Introduction
 
-Core infrastructure of the DataImport modules.
+Core infrastructure for event handling for the DataImport.
 
 ## Additional information
 
