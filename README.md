@@ -11,7 +11,7 @@ Core infrastructure for event processing for the DataImport.
 
 ## Additional information
 
-* See project [MODDATAIMP](https://issues.folio.org/browse/MODDATAIMP)
+* See project [MODDICORE](https://issues.folio.org/browse/MODDICORE)
 at the [FOLIO issue tracker](https://dev.folio.org/guidelines/issue-tracker).
 
 * Other FOLIO Developer documentation is at [dev.folio.org](https://dev.folio.org/)
