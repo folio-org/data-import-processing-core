@@ -1,13 +1,18 @@
 package org.folio.processing.core.services;
 
 import io.vertx.core.Future;
-import org.folio.processing.core.model.Context;
+import org.folio.processing.core.model.EventContext;
 
+/**
+ * Service to manager events.
+ */
 public interface EventManager {
 
   /**
-   * @param event
-   * @return
+   * Handles event
+   *
+   * @param context event context
+   * @return future with event context
    */
-  Future<Context> handleEvent(Context event);
+  Future<EventContext> handleEvent(EventContext context);
 }

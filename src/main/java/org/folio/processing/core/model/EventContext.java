@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
+ * The event context holds an information about event
  */
-public class Context {
+public class EventContext {
   private boolean handled;
   private String eventType;
   private Object profileSnapshot;
@@ -17,7 +17,7 @@ public class Context {
   private List<String> eventChain = new LinkedList<>();
   private Map<String, String> objects;
 
-  public Context() {
+  public EventContext() {
   }
 
   public boolean isHandled() {
@@ -70,7 +70,7 @@ public class Context {
 
   @Override
   public String toString() {
-    return "Context{" +
+    return "EventContext{" +
       "eventType='" + eventType + '\'' +
       ", profileSnapshot=" + profileSnapshot +
       ", currentNode=" + currentNode +

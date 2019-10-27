@@ -1,7 +1,7 @@
 package org.folio.processing.core.services;
 
 import io.vertx.core.Future;
-import org.folio.processing.core.model.Context;
+import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.processor.EventProcessor;
 
 public class EventManagerImpl implements EventManager {
@@ -12,8 +12,8 @@ public class EventManagerImpl implements EventManager {
   }
 
   @Override
-  public Future<Context> handleEvent(Context context) {
-    Future<Context> future = Future.future();
+  public Future<EventContext> handleEvent(EventContext context) {
+    Future<EventContext> future = Future.future();
     eventProcessor.process(context).setHandler(firstAr -> {
       if (firstAr.failed()) {
         future.fail(firstAr.cause());
@@ -28,7 +28,7 @@ public class EventManagerImpl implements EventManager {
     return future;
   }
 
-  private Context prepareContext(Context context) {
+  private EventContext prepareContext(EventContext context) {
     return context;
   }
 }

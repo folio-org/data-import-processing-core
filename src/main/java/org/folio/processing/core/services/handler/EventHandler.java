@@ -1,23 +1,33 @@
 package org.folio.processing.core.services.handler;
 
 import io.vertx.core.Future;
-import org.folio.processing.core.model.Context;
+import org.folio.processing.core.model.EventContext;
 
+/**
+ * The core interface for event handlers
+ */
 public interface EventHandler {
 
   /**
-   * @param context
-   * @return
+   * Handles context
+   *
+   * @param context event context
+   * @return future with context
    */
-  Future<Context> handle(Context context);
+  Future<EventContext> handle(EventContext context);
 
   /**
-   * @return
+   * Returns event type that handler can handle.
+   * <code>handle</code> methods runs if type of event from context is the same as type of handler.
+   *
+   * @return handler event type
    */
-  String getEventType();
+  String getHandlerEventType();
 
   /**
-   * @return
+   * Returns event type that handler defines in EventContext after handling.
+   *
+   * @return target event type
    */
-  String getNextEventType();
+  String getTargetEventType();
 }

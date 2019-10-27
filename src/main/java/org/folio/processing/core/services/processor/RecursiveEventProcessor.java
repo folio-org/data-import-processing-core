@@ -1,8 +1,8 @@
 package org.folio.processing.core.services.processor;
 
 import io.vertx.core.Future;
+import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.handler.EventHandler;
-import org.folio.processing.core.model.Context;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +15,11 @@ public class RecursiveEventProcessor implements EventProcessor {
   }
 
   @Override
-  public Future<Context> process(Context context) {
-    Future<Context> future = Future.future();
+  public Future<EventContext> process(EventContext context) {
+    Future<EventContext> future = Future.future();
     String eventType = context.getEventType();
     Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
-      .filter(eventHandler -> eventHandler.getEventType().equals(eventType))
+      .filter(eventHandler -> eventHandler.getHandlerEventType().equals(eventType))
       .findFirst();
     if (optionalEventHandler.isPresent()) {
       context.setHandled(true);
@@ -32,15 +32,15 @@ public class RecursiveEventProcessor implements EventProcessor {
     return future;
   }
 
-  private Future<Context> processEventRecursively(Context context, EventHandler eventHandler) {
-    Future<Context> future = Future.future();
+  private Future<EventContext> processEventRecursively(EventContext context, EventHandler eventHandler) {
+    Future<EventContext> future = Future.future();
     eventHandler.handle(context).setHandler(ar -> {
       if (ar.failed()) {
         future.fail(ar.cause());
       } else {
         String eventType = context.getEventType();
         Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
-          .filter(nextEventHandler -> nextEventHandler.getEventType().equals(eventType))
+          .filter(nextEventHandler -> nextEventHandler.getHandlerEventType().equals(eventType))
           .findFirst();
         if (optionalEventHandler.isPresent()) {
           EventHandler nextEventHandler = optionalEventHandler.get();
