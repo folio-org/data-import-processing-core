@@ -4,15 +4,12 @@ import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.handler.EventHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class RecursiveEventProcessor implements EventProcessor {
-  private List<EventHandler> eventHandlers;
-
-  public RecursiveEventProcessor(List<EventHandler> eventHandlers) {
-    this.eventHandlers = eventHandlers;
-  }
+  private List<EventHandler> eventHandlers = new ArrayList<>();
 
   @Override
   public Future<EventContext> process(EventContext context) {
@@ -51,5 +48,10 @@ public class RecursiveEventProcessor implements EventProcessor {
       }
     });
     return future;
+  }
+
+  @Override
+  public boolean addHandler(EventHandler eventHandler) {
+    return eventHandlers.add(eventHandler);
   }
 }
