@@ -15,10 +15,10 @@ import java.util.Map;
 public abstract class AbstractRestTest {
   private final String TENANT_ID = "diku";
   private final String TOKEN = "token";
-  private final String PUBLISH_SERVICE_URL = HOST + "/pubsub/publish/";
-  public OkapiConnectionParams okapiConnectionParams;
   private int PORT = NetworkUtils.nextFreePort();
   private final String HOST = "http://localhost:" + PORT;
+  private final String PUBLISH_SERVICE_URL = HOST + "/pubsub/publish/";
+  public OkapiConnectionParams okapiConnectionParams;
   @Rule
   public WireMockRule mockServer = new WireMockRule(
     WireMockConfiguration.wireMockConfig()
