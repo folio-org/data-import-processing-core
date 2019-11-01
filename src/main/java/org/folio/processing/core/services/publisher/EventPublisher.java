@@ -8,7 +8,7 @@ import org.folio.processing.core.model.EventContext;
  */
 public interface EventPublisher {
   /**
-   * Send an event to consumer service, that is mod-pubsub or other ones.
+   * Send event to consumer service, which may be mod-pubsub or other ones.
    *
    * @param context even context
    * @return future
