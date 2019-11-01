@@ -2,28 +2,41 @@ package org.folio.processing.core;
 
 import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
-import org.folio.processing.core.services.handler.EventHandler;
+import org.folio.processing.core.services.handler.AbstractEventHandler;
 import org.folio.processing.core.services.processor.EventProcessor;
 import org.folio.processing.core.services.processor.RecursiveEventProcessor;
+import org.folio.processing.core.services.publisher.EventPublisher;
+import org.folio.processing.core.services.publisher.RestEventPublisher;
+import org.folio.processing.core.util.EventContextUtil;
 
-public class EventManager {
+/**
+ * The central class to use for handlers registration and event handling.
+ */
+public final class EventManager {
+  private static final EventProcessor eventProcessor = new RecursiveEventProcessor();
+  private static final EventPublisher eventPublisher = new RestEventPublisher();
 
-  private EventProcessor eventProcessor = new RecursiveEventProcessor();
+  private EventManager() {
+  }
 
   /**
-   * Handles event
+   * Handles the given payload of event.
+   * If there are handlers found to handle event then the EventManager calls EventProcessor passing event context.
+   * After processing the EventManager calls EventPublisher to send next event up to the queue.
    *
-   * @param context event context
+   * @param eventPayload event payload as a string
    * @return future with event context
    */
-  public Future<EventContext> handleEvent(EventContext context) {
-    Future<EventContext> future = Future.future();
-    eventProcessor.process(context).setHandler(firstAr -> {
+  public static Future<Void> handleEvent(String eventPayload) {
+    Future<Void> future = Future.future();
+    EventContext eventContext = EventContextUtil.fromEventPayload(eventPayload);
+    eventProcessor.process(eventContext).setHandler(firstAr -> {
       if (firstAr.failed()) {
         future.fail(firstAr.cause());
       } else {
-        if (context.isHandled()) {
-          future.complete(prepareContext(context));
+        if (eventContext.isHandled()) {
+          prepareContext(eventContext);
+          eventPublisher.publish(eventContext).setHandler(future);
         } else {
           future.complete();
         }
@@ -32,10 +45,14 @@ public class EventManager {
     return future;
   }
 
-  private EventContext prepareContext(EventContext context) {
+  /**
+   * Prepares given event context for publishing.
+   *
+   * @param context event context
+   */
+  private static void prepareContext(EventContext context) {
     // update currentNode
     // update currentNodePath
-    return context;
   }
 
   /**
@@ -44,7 +61,14 @@ public class EventManager {
    * @param eventHandler event handler
    * @return true handlers is registered
    */
-  public boolean registerHandler(EventHandler eventHandler) {
-    return eventProcessor.addHandler(eventHandler);
+  public static <T extends AbstractEventHandler> boolean registerEventHandler(T eventHandler) {
+    return eventProcessor.getEventHandlers().add(eventHandler);
+  }
+
+  /**
+   * Flushes a registry of event handlers.
+   */
+  public static void clearEventHandlers() {
+    eventProcessor.getEventHandlers().clear();
   }
 }

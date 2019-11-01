@@ -4,37 +4,35 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.processing.core.EventManager;
 import org.folio.processing.core.model.EventContext;
-import org.folio.processing.core.services.handler.EventHandler;
+import org.folio.processing.core.util.EventContextUtil;
 import org.folio.processing.services.handlers.CreateHoldingsRecordEventHandler;
 import org.folio.processing.services.handlers.CreateInstanceEventHandler;
 import org.folio.processing.services.handlers.CreateItemRecordEventHandler;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
 @RunWith(VertxUnitRunner.class)
-public class EventManagerUnitTest {
+public class EventManagerUnitTest extends AbstractRestTest {
 
-  private EventHandler createInstanceEventHandler = new CreateInstanceEventHandler();
-  private EventHandler createHoldingsRecordEventHandler = new CreateHoldingsRecordEventHandler();
-  private EventHandler createItemRecordEventHandler = new CreateItemRecordEventHandler();
+  @Before
+  public void beforeTest() {
+    EventManager.clearEventHandlers();
+  }
 
   @Test
   public void shouldHandleEvent(TestContext testContext) {
     // given
-    EventManager eventManager = new EventManager();
-    eventManager.registerHandler(createInstanceEventHandler);
-    eventManager.registerHandler(createHoldingsRecordEventHandler);
-    eventManager.registerHandler(createItemRecordEventHandler);
-
     int expectedEventChainSize = 3;
-
-    EventContext eventContext = new EventContext();
-    eventContext.setEventType("CREATED_SRS_MARC_BIB_RECORD");
-
+    EventManager.registerEventHandler(new CreateInstanceEventHandler());
+    EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
+    EventManager.registerEventHandler(new CreateItemRecordEventHandler());
+    EventContext eventContext = new EventContext("CREATED_SRS_MARC_BIB_RECORD", okapiConnectionParams);
+    String eventPayload = EventContextUtil.toEventPayload(eventContext);
     // when
-    eventManager.handleEvent(eventContext).setHandler(ar -> {
+    EventManager.handleEvent(eventPayload).setHandler(ar -> {
       // then
       testContext.assertTrue(ar.succeeded());
       testContext.assertTrue(eventContext.isHandled());
@@ -50,14 +48,11 @@ public class EventManagerUnitTest {
   @Test
   public void shouldNotHandleEventIfNoHandlersDefined(TestContext testContext) {
     // given
-    EventManager eventManager = new EventManager();
     int expectedEventChainSize = 0;
-
-    EventContext eventContext = new EventContext();
-    eventContext.setEventType("CREATED_SRS_MARC_BIB_RECORD");
-
+    EventContext eventContext = new EventContext("CREATED_SRS_MARC_BIB_RECORD", okapiConnectionParams);
+    String eventPayload = EventContextUtil.toEventPayload(eventContext);
     // when
-    eventManager.handleEvent(eventContext).setHandler(ar -> {
+    EventManager.handleEvent(eventPayload).setHandler(ar -> {
       // then
       testContext.assertTrue(ar.succeeded());
       testContext.assertFalse(eventContext.isHandled());
@@ -68,18 +63,14 @@ public class EventManagerUnitTest {
 
   @Test
   public void shouldNotHandleEventIfNoHandlersFound(TestContext testContext) {
-    EventManager eventManager = new EventManager();
-    eventManager.registerHandler(createInstanceEventHandler);
-    eventManager.registerHandler(createHoldingsRecordEventHandler);
-    eventManager.registerHandler(createItemRecordEventHandler);
-
     int expectedEventChainSize = 0;
-
-    EventContext eventContext = new EventContext();
-    eventContext.setEventType("UNDEFINED_EVENT");
-
+    EventManager.registerEventHandler(new CreateInstanceEventHandler());
+    EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
+    EventManager.registerEventHandler(new CreateItemRecordEventHandler());
+    EventContext eventContext = new EventContext("UNDEFINED_EVENT", okapiConnectionParams);
+    String eventPayload = EventContextUtil.toEventPayload(eventContext);
     // when
-    eventManager.handleEvent(eventContext).setHandler(ar -> {
+    EventManager.handleEvent(eventPayload).setHandler(ar -> {
       // then
       testContext.assertTrue(ar.succeeded());
       testContext.assertFalse(eventContext.isHandled());

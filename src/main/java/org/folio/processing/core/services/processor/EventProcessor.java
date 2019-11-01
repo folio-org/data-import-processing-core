@@ -4,6 +4,8 @@ import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.handler.EventHandler;
 
+import java.util.List;
+
 /**
  * The central interface for event processors.
  */
@@ -18,10 +20,7 @@ public interface EventProcessor {
   Future<EventContext> process(EventContext context);
 
   /**
-   * Adds handler
-   *
-   * @param eventHandler event handler
-   * @return true if handler is registered
+   * @return list of handlers
    */
-  boolean addHandler(EventHandler eventHandler);
+  List<EventHandler> getEventHandlers();
 }

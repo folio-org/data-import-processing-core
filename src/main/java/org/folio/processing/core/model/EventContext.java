@@ -1,5 +1,7 @@
 package org.folio.processing.core.model;
 
+import org.folio.ProfileSnapshotWrapper;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,13 +13,19 @@ import java.util.Map;
 public class EventContext {
   private boolean handled;
   private String eventType;
-  private Object profileSnapshot;
-  private Object currentNode;
+  private ProfileSnapshotWrapper profileSnapshot;
+  private ProfileSnapshotWrapper currentNode;
   private List<String> currentNodePath = new ArrayList<>();
   private List<String> eventChain = new LinkedList<>();
+  private OkapiConnectionParams okapiConnectionParams;
   private Map<String, String> objects;
 
   public EventContext() {
+  }
+
+  public EventContext(String eventType, OkapiConnectionParams okapiConnectionParams) {
+    this.eventType = eventType;
+    this.okapiConnectionParams = okapiConnectionParams;
   }
 
   public boolean isHandled() {
@@ -36,19 +44,19 @@ public class EventContext {
     this.eventType = eventType;
   }
 
-  public Object getProfileSnapshot() {
+  public ProfileSnapshotWrapper getProfileSnapshot() {
     return profileSnapshot;
   }
 
-  public void setProfileSnapshot(Object profileSnapshot) {
+  public void setProfileSnapshot(ProfileSnapshotWrapper profileSnapshot) {
     this.profileSnapshot = profileSnapshot;
   }
 
-  public Object getCurrentNode() {
+  public ProfileSnapshotWrapper getCurrentNode() {
     return currentNode;
   }
 
-  public void setCurrentNode(Object currentNode) {
+  public void setCurrentNode(ProfileSnapshotWrapper currentNode) {
     this.currentNode = currentNode;
   }
 
@@ -68,15 +76,7 @@ public class EventContext {
     this.eventChain = eventChain;
   }
 
-  @Override
-  public String toString() {
-    return "EventContext{" +
-      "eventType='" + eventType + '\'' +
-      ", profileSnapshot=" + profileSnapshot +
-      ", currentNode=" + currentNode +
-      ", currentNodePath=" + currentNodePath +
-      ", eventChain=" + eventChain +
-      ", objects=" + objects +
-      '}';
+  public OkapiConnectionParams getOkapiConnectionParams() {
+    return okapiConnectionParams;
   }
 }
