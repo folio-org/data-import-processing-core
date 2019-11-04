@@ -39,7 +39,7 @@ public class RestEventPublisher implements EventPublisher {
     PubsubClient client = new PubsubClient(params.getOkapiUrl(), params.getTenantId(), params.getToken());
     try {
       client.postPubsubPublish(event, response -> {
-        if (response.statusCode() != HttpStatus.HTTP_OK.toInt()) {
+        if (response.statusCode() != HttpStatus.HTTP_NO_CONTENT.toInt()) {
           LOGGER.error("Error publishing event", response.statusCode(), response.statusMessage());
           future.fail(new HttpStatusException(response.statusCode(), "Error publishing event"));
         } else {

@@ -32,6 +32,6 @@ public abstract class AbstractRestTest {
     okapiHeaders.put("x-okapi-tenant", TENANT_ID);
     okapiHeaders.put("x-okapi-token", TOKEN);
     this.okapiConnectionParams = new OkapiConnectionParams(okapiHeaders);
-    WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.ok()));
+    WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.noContent()));
   }
 }
