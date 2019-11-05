@@ -51,7 +51,7 @@ public class RecursiveEventProcessor implements EventProcessor {
   }
 
   @Override
-  public boolean addHandler(EventHandler eventHandler) {
-    return eventHandlers.add(eventHandler);
+  public List<EventHandler> getEventHandlers() {
+    return eventHandlers;
   }
 }

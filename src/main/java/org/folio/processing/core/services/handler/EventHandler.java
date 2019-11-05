@@ -25,7 +25,7 @@ public interface EventHandler {
   String getHandlerEventType();
 
   /**
-   * Returns event type that handler defines in EventContext after handling.
+   * Returns event type that handler sets to EventContext as a result of handling.
    *
    * @return target event type
    */
