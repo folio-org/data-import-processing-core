@@ -28,6 +28,6 @@ public class FailExceptionallyHandler extends AbstractEventHandler {
 
   @Override
   public String getTargetEventType() {
-    return "EMPTY";
+    return "UNDEFINED";
   }
 }

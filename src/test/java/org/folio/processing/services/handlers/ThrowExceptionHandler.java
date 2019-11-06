@@ -26,6 +26,6 @@ public class ThrowExceptionHandler extends AbstractEventHandler {
 
   @Override
   public String getTargetEventType() {
-    return "EMPTY";
+    return "UNDEFINED";
   }
 }
