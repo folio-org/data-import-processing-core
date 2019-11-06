@@ -1,18 +1,22 @@
 package org.folio.processing.services.handlers;
 
-import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.handler.AbstractEventHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
+
+/**
+ * Test event handler. Handles event context with event CREATED_INVENTORY_INSTANCE
+ */
 public class CreateHoldingsRecordEventHandler extends AbstractEventHandler {
   private final Logger LOGGER = LoggerFactory.getLogger(CreateHoldingsRecordEventHandler.class);
 
   @Override
-  public Future<EventContext> handleContext(EventContext context) {
+  public CompletableFuture<EventContext> handleContext(EventContext context) {
     LOGGER.info("Handling event " + getHandlerEventType());
-    return Future.succeededFuture(context);
+    return CompletableFuture.completedFuture(context);
   }
 
   @Override

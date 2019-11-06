@@ -1,7 +1,9 @@
 package org.folio.processing.core.services.publisher;
 
-import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
+import org.folio.rest.jaxrs.model.Event;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Event publisher
@@ -10,8 +12,8 @@ public interface EventPublisher {
   /**
    * Sends event to consumer service, which may be mod-pubsub or other ones.
    *
-   * @param context even context
-   * @return future
+   * @param context event context
+   * @return future with event context
    */
-  Future<Void> publish(EventContext context);
+  CompletableFuture<Event> publish(EventContext context);
 }

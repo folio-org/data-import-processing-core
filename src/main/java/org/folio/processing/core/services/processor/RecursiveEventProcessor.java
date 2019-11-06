@@ -1,49 +1,61 @@
 package org.folio.processing.core.services.processor;
 
-import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.handler.EventHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public class RecursiveEventProcessor implements EventProcessor {
   private List<EventHandler> eventHandlers = new ArrayList<>();
 
   @Override
-  public Future<EventContext> process(EventContext context) {
-    Future<EventContext> future = Future.future();
-    String eventType = context.getEventType();
+  public CompletableFuture<EventContext> process(EventContext eventContext) {
+    CompletableFuture<EventContext> future = new CompletableFuture<>();
+    String eventType = eventContext.getEventType();
     Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
       .filter(eventHandler -> eventHandler.getHandlerEventType().equals(eventType))
       .findFirst();
     if (optionalEventHandler.isPresent()) {
-      context.setHandled(true);
       EventHandler nextEventHandler = optionalEventHandler.get();
-      processEventRecursively(context, nextEventHandler).setHandler(future);
+      processEventRecursively(eventContext, nextEventHandler).whenComplete((processContext, throwable) -> {
+        eventContext.setHandled(true);
+        if (throwable != null) {
+          future.completeExceptionally(throwable);
+        } else {
+          future.complete(eventContext);
+        }
+      });
     } else {
-      context.setHandled(false);
-      future.complete(context);
+      eventContext.setHandled(false);
+      future.complete(eventContext);
     }
     return future;
   }
 
-  private Future<EventContext> processEventRecursively(EventContext context, EventHandler eventHandler) {
-    Future<EventContext> future = Future.future();
-    eventHandler.handle(context).setHandler(ar -> {
-      if (ar.failed()) {
-        future.fail(ar.cause());
+  private CompletableFuture<EventContext> processEventRecursively(EventContext eventContext, EventHandler eventHandler) {
+    CompletableFuture<EventContext> future = new CompletableFuture<>();
+    eventHandler.handle(eventContext).whenComplete((handlerEventContext, handlerThrowable) -> {
+      if (handlerThrowable != null) {
+        future.completeExceptionally(handlerThrowable);
       } else {
-        String eventType = context.getEventType();
+        String eventType = eventContext.getEventType();
         Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
           .filter(nextEventHandler -> nextEventHandler.getHandlerEventType().equals(eventType))
           .findFirst();
         if (optionalEventHandler.isPresent()) {
           EventHandler nextEventHandler = optionalEventHandler.get();
-          processEventRecursively(context, nextEventHandler).setHandler(future);
+          processEventRecursively(eventContext, nextEventHandler).whenComplete((nextEventContext, nextThrowable) -> {
+            if (nextThrowable != null) {
+              future.completeExceptionally(handlerThrowable);
+            } else {
+              future.complete(eventContext);
+            }
+          });
         } else {
-          future.complete(context);
+          future.complete(eventContext);
         }
       }
     });

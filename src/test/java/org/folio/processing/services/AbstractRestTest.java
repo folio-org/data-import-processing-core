@@ -4,6 +4,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.matching.RegexPattern;
+import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
 import org.folio.processing.core.model.OkapiConnectionParams;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.Before;
@@ -17,7 +19,7 @@ public abstract class AbstractRestTest {
   private final String TOKEN = "token";
   private int PORT = NetworkUtils.nextFreePort();
   private final String HOST = "http://localhost:" + PORT;
-  private final String PUBLISH_SERVICE_URL = HOST + "/pubsub/publish/";
+  private final String PUBLISH_SERVICE_URL = "/pubsub/publish";
   public OkapiConnectionParams okapiConnectionParams;
   @Rule
   public WireMockRule mockServer = new WireMockRule(
