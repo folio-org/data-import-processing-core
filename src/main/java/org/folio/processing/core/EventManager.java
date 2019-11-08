@@ -1,6 +1,5 @@
 package org.folio.processing.core;
 
-import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
 import org.folio.processing.core.services.handler.AbstractEventHandler;
 import org.folio.processing.core.services.processor.EventProcessor;
@@ -8,6 +7,8 @@ import org.folio.processing.core.services.processor.RecursiveEventProcessor;
 import org.folio.processing.core.services.publisher.EventPublisher;
 import org.folio.processing.core.services.publisher.RestEventPublisher;
 import org.folio.processing.core.util.EventContextUtil;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The central class to use for handlers registration and event handling.
@@ -27,18 +28,24 @@ public final class EventManager {
    * @param eventPayload event payload as a string
    * @return future with event context
    */
-  public static Future<Void> handleEvent(String eventPayload) {
-    Future<Void> future = Future.future();
+  public static CompletableFuture<EventContext> handleEvent(String eventPayload) {
     EventContext eventContext = EventContextUtil.fromEventPayload(eventPayload);
-    eventProcessor.process(eventContext).setHandler(firstAr -> {
-      if (firstAr.failed()) {
-        future.fail(firstAr.cause());
+    CompletableFuture<EventContext> future = new CompletableFuture<>();
+    eventProcessor.process(eventContext).whenComplete((processContext, processThrowable) -> {
+      if (processThrowable != null) {
+        future.completeExceptionally(processThrowable);
       } else {
         if (eventContext.isHandled()) {
           prepareContext(eventContext);
-          eventPublisher.publish(eventContext).setHandler(future);
+          eventPublisher.publish(eventContext).whenComplete((publishContext, publishThrowable) -> {
+            if (publishThrowable != null) {
+              future.completeExceptionally(publishThrowable);
+            } else {
+              future.complete(eventContext);
+            }
+          });
         } else {
-          future.complete();
+          future.complete(eventContext);
         }
       }
     });

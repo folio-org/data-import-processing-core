@@ -1,7 +1,8 @@
 package org.folio.processing.core.services.handler;
 
-import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * The core interface for event handlers
@@ -14,7 +15,7 @@ public interface EventHandler {
    * @param context event context
    * @return future with context
    */
-  Future<EventContext> handle(EventContext context);
+  CompletableFuture<EventContext> handle(EventContext context);
 
   /**
    * Returns event type that handler can handle.

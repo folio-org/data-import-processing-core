@@ -1,7 +1,8 @@
 package org.folio.processing.core.services.handler;
 
-import io.vertx.core.Future;
 import org.folio.processing.core.model.EventContext;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Abstract class to handle events for profiles
@@ -9,15 +10,12 @@ import org.folio.processing.core.model.EventContext;
 public abstract class AbstractEventHandler implements EventHandler {
 
   @Override
-  public Future<EventContext> handle(EventContext context) {
-    Future<EventContext> future = Future.future();
-    handleContext(context)
-      .compose(nextContext -> Future.succeededFuture(prepareForNextHandler(nextContext)))
-      .setHandler(future);
-    return future;
+  public CompletableFuture<EventContext> handle(EventContext context) {
+    return handleContext(context)
+      .thenCompose(nextContext -> CompletableFuture.completedFuture(prepareForNextHandler(nextContext)));
   }
 
-  protected abstract Future<EventContext> handleContext(EventContext context);
+  protected abstract CompletableFuture<EventContext> handleContext(EventContext context);
 
   protected EventContext prepareForNextHandler(EventContext context) {
     context.setEventType(getTargetEventType());

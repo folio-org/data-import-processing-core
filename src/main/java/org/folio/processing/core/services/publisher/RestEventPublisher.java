@@ -1,8 +1,5 @@
 package org.folio.processing.core.services.publisher;
 
-import io.vertx.core.Future;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.impl.HttpStatusException;
 import org.folio.HttpStatus;
 import org.folio.processing.core.model.EventContext;
@@ -10,19 +7,22 @@ import org.folio.processing.core.model.OkapiConnectionParams;
 import org.folio.processing.core.util.EventContextUtil;
 import org.folio.rest.client.PubsubClient;
 import org.folio.rest.jaxrs.model.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public class RestEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestEventPublisher.class);
 
   @Override
-  public Future<Void> publish(EventContext context) {
-    OkapiConnectionParams params = context.getOkapiConnectionParams();
-    String eventPayload = EventContextUtil.toEventPayload(context);
+  public CompletableFuture<Event> publish(EventContext eventContext) {
+    OkapiConnectionParams params = eventContext.getOkapiConnectionParams();
+    String eventPayload = EventContextUtil.toEventPayload(eventContext);
     Event event = new Event()
       .withId(UUID.randomUUID().toString())
-      .withEventType(context.getEventType())
+      .withEventType(eventContext.getEventType())
       .withEventPayload(eventPayload);
     return postPubsubPublish(event, params);
   }
@@ -34,22 +34,22 @@ public class RestEventPublisher implements EventPublisher {
    * @param params connection parameters
    * @return future
    */
-  private Future<Void> postPubsubPublish(Event event, OkapiConnectionParams params) {
-    Future<Void> future = Future.future();
+  private CompletableFuture<Event> postPubsubPublish(Event event, OkapiConnectionParams params) {
+    CompletableFuture<Event> future = new CompletableFuture<>();
     PubsubClient client = new PubsubClient(params.getOkapiUrl(), params.getTenantId(), params.getToken());
     try {
       client.postPubsubPublish(event, response -> {
         if (response.statusCode() != HttpStatus.HTTP_NO_CONTENT.toInt()) {
           LOGGER.error("Error publishing event", response.statusCode(), response.statusMessage());
-          future.fail(new HttpStatusException(response.statusCode(), "Error publishing event"));
+          future.completeExceptionally(new HttpStatusException(response.statusCode(), "Error publishing event"));
         } else {
           LOGGER.info("Event has been published");
-          future.complete();
+          future.complete(event);
         }
       });
     } catch (Exception e) {
       LOGGER.error("Can not publish event", e);
-      future.fail(e);
+      future.completeExceptionally(e);
     }
     return future;
   }

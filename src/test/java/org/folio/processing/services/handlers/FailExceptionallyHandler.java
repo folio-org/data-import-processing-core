@@ -8,15 +8,17 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Test event handler. Handles event context with event CREATED_SRS_MARC_BIB_RECORD
+ * Test event handler. Returns future that is exceptionally completed (failed).
  */
-public class CreateInstanceEventHandler extends AbstractEventHandler {
-  private final Logger LOGGER = LoggerFactory.getLogger(CreateInstanceEventHandler.class);
+public class FailExceptionallyHandler extends AbstractEventHandler {
+  private final Logger LOGGER = LoggerFactory.getLogger(FailExceptionallyHandler.class);
 
   @Override
   public CompletableFuture<EventContext> handleContext(EventContext context) {
     LOGGER.info("Handling event " + getHandlerEventType());
-    return CompletableFuture.completedFuture(context);
+    CompletableFuture future = new CompletableFuture();
+    future.completeExceptionally(new IllegalArgumentException("Can not handle event context"));
+    return future;
   }
 
   @Override
@@ -26,6 +28,6 @@ public class CreateInstanceEventHandler extends AbstractEventHandler {
 
   @Override
   public String getTargetEventType() {
-    return "CREATED_INVENTORY_INSTANCE";
+    return "UNDEFINED";
   }
 }

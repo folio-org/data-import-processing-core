@@ -23,8 +23,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <junit.version>4.12</junit.version>
     <vertx.version>3.5.4</vertx.version>
+    <commons.lang.version>2.2</commons.lang.version>
     <jackson.version>2.9.10</jackson.version>
     <wiremock.version>2.19.0</wiremock.version>
+    <pubsub.client.version>0.0.1-SNAPSHOT</pubsub.client.version>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
   </properties>
 
@@ -39,36 +41,31 @@
   <dependencies>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <version>${vertx.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
       <version>${vertx.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.2</version>
+      <version>${commons.lang.version}</version>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>mod-pubsub-client</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>${pubsub.client.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
