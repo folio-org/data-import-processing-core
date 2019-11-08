@@ -90,7 +90,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldReturnExceptionallyCompletedFutureOnHandlerThrowException(TestContext testContext) {
+  public void shouldThrowExceptionOnHandlerThrowException(TestContext testContext) {
     Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new ThrowExceptionHandler());
