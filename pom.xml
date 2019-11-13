@@ -24,7 +24,7 @@
     <junit.version>4.12</junit.version>
     <vertx.version>3.5.4</vertx.version>
     <commons.lang.version>2.2</commons.lang.version>
-    <jackson.version>2.9.10</jackson.version>
+    <jackson.version>2.9.10.1</jackson.version>
     <wiremock.version>2.19.0</wiremock.version>
     <pubsub.client.version>0.0.1-SNAPSHOT</pubsub.client.version>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
