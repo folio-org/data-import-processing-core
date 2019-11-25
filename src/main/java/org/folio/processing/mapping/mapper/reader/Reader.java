@@ -5,7 +5,7 @@ import org.folio.processing.mapping.mapper.value.Value;
 import org.folio.processing.mapping.model.Rule;
 
 /**
- * The root interface for readers.
+ * The root interface for Readers.
  * The purpose of Reader is to read Value by rule from underlying entity.
  * Reader has to be initialized before read.
  *
