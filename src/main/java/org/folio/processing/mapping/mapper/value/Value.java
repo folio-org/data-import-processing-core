@@ -5,7 +5,7 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 
 /**
  * Generic wrapper for various values.
- * Represents value that reader reads and passes to writer.
+ * Represents value operated by Reader and Writer.
  *
  * @param <T> type of value
  * @see ValueType
