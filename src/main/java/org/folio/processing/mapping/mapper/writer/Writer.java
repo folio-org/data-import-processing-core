@@ -7,7 +7,7 @@ import org.folio.processing.mapping.mapper.value.Value;
 import java.io.IOException;
 
 /**
- * The root interface for writers.
+ * The root interface for Writers.
  * The purpose of Writer is to write a given Value to underlying entity by the given fieldPath.
  * Writer has to be initialized before write.
  *
@@ -33,10 +33,11 @@ public interface Writer {
     void write(String fieldPath, Value value);
 
   /**
-   * TODO javadoc
-   * @param eventContext
-   * @return
-   * @throws JsonProcessingException
+   * Puts result of writing into event context and returns event context
+   *
+   * @param eventContext event context
+   * @return event context
+   * @throws JsonProcessingException if json serialization problem occurred
    */
     EventContext getResult(EventContext eventContext) throws JsonProcessingException;
 }
