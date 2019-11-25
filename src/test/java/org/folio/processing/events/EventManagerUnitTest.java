@@ -1,16 +1,15 @@
-package org.folio.processing.services;
+package org.folio.processing.events;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.folio.processing.core.EventManager;
-import org.folio.processing.core.model.EventContext;
-import org.folio.processing.core.util.EventContextUtil;
-import org.folio.processing.services.handlers.CreateHoldingsRecordEventHandler;
-import org.folio.processing.services.handlers.CreateInstanceEventHandler;
-import org.folio.processing.services.handlers.CreateItemRecordEventHandler;
-import org.folio.processing.services.handlers.FailExceptionallyHandler;
-import org.folio.processing.services.handlers.ThrowExceptionHandler;
+import org.folio.processing.events.model.EventContext;
+import org.folio.processing.events.util.EventContextUtil;
+import org.folio.processing.events.handlers.CreateHoldingsRecordEventHandler;
+import org.folio.processing.events.handlers.CreateInstanceEventHandler;
+import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
+import org.folio.processing.events.handlers.FailExceptionallyHandler;
+import org.folio.processing.events.handlers.ThrowExceptionHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

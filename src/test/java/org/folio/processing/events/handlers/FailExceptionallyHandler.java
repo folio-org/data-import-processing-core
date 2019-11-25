@@ -1,7 +1,7 @@
-package org.folio.processing.services.handlers;
+package org.folio.processing.events.handlers;
 
-import org.folio.processing.core.model.EventContext;
-import org.folio.processing.core.services.handler.AbstractEventHandler;
+import org.folio.processing.events.model.EventContext;
+import org.folio.processing.events.services.handler.AbstractEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

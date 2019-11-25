@@ -1,12 +1,10 @@
-package org.folio.processing.services;
+package org.folio.processing.events;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import com.github.tomakehurst.wiremock.matching.RegexPattern;
-import com.github.tomakehurst.wiremock.matching.UrlPathPattern;
-import org.folio.processing.core.model.OkapiConnectionParams;
+import org.folio.processing.events.model.OkapiConnectionParams;
 import org.folio.rest.tools.utils.NetworkUtils;
 import org.junit.Before;
 import org.junit.Rule;

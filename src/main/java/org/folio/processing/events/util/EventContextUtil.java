@@ -1,7 +1,7 @@
-package org.folio.processing.core.util;
+package org.folio.processing.events.util;
 
 import io.vertx.core.json.JsonObject;
-import org.folio.processing.core.model.EventContext;
+import org.folio.processing.events.model.EventContext;
 
 public final class EventContextUtil {
   private static final String PAYLOAD_CONTEXT_KEY = "context";

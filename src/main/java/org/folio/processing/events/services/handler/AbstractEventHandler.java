@@ -1,6 +1,6 @@
-package org.folio.processing.core.services.handler;
+package org.folio.processing.events.services.handler;
 
-import org.folio.processing.core.model.EventContext;
+import org.folio.processing.events.model.EventContext;
 
 import java.util.concurrent.CompletableFuture;
 

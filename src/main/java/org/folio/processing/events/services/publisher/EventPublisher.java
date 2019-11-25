@@ -1,6 +1,6 @@
-package org.folio.processing.core.services.publisher;
+package org.folio.processing.events.services.publisher;
 
-import org.folio.processing.core.model.EventContext;
+import org.folio.processing.events.model.EventContext;
 import org.folio.rest.jaxrs.model.Event;
 
 import java.util.concurrent.CompletableFuture;

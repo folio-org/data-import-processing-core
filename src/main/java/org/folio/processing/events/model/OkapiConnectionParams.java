@@ -1,4 +1,4 @@
-package org.folio.processing.core.model;
+package org.folio.processing.events.model;
 
 
 import java.util.Map;

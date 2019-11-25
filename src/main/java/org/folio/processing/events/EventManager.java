@@ -1,12 +1,12 @@
-package org.folio.processing.core;
+package org.folio.processing.events;
 
-import org.folio.processing.core.model.EventContext;
-import org.folio.processing.core.services.handler.AbstractEventHandler;
-import org.folio.processing.core.services.processor.EventProcessor;
-import org.folio.processing.core.services.processor.RecursiveEventProcessor;
-import org.folio.processing.core.services.publisher.EventPublisher;
-import org.folio.processing.core.services.publisher.RestEventPublisher;
-import org.folio.processing.core.util.EventContextUtil;
+import org.folio.processing.events.model.EventContext;
+import org.folio.processing.events.services.handler.AbstractEventHandler;
+import org.folio.processing.events.services.processor.EventProcessor;
+import org.folio.processing.events.services.processor.RecursiveEventProcessor;
+import org.folio.processing.events.services.publisher.EventPublisher;
+import org.folio.processing.events.services.publisher.RestEventPublisher;
+import org.folio.processing.events.util.EventContextUtil;
 
 import java.util.concurrent.CompletableFuture;
 

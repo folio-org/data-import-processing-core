@@ -1,10 +1,10 @@
-package org.folio.processing.core.services.publisher;
+package org.folio.processing.events.services.publisher;
 
 import io.vertx.ext.web.handler.impl.HttpStatusException;
 import org.folio.HttpStatus;
-import org.folio.processing.core.model.EventContext;
-import org.folio.processing.core.model.OkapiConnectionParams;
-import org.folio.processing.core.util.EventContextUtil;
+import org.folio.processing.events.model.EventContext;
+import org.folio.processing.events.model.OkapiConnectionParams;
+import org.folio.processing.events.util.EventContextUtil;
 import org.folio.rest.client.PubsubClient;
 import org.folio.rest.jaxrs.model.Event;
 import org.slf4j.Logger;
