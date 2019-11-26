@@ -12,12 +12,12 @@ import java.io.IOException;
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.INSTANCE;
 
 public class TestInstanceWriter extends AbstractWriter {
-  private Instance instance;
+  private TestInstance instance;
 
   @Override
   public void initialize(EventContext eventContext) throws IOException {
     if (eventContext.getObjects().containsKey(INSTANCE.value())) {
-      this.instance = new ObjectMapper().readValue(eventContext.getObjects().get(INSTANCE.value()), Instance.class);
+      this.instance = new ObjectMapper().readValue(eventContext.getObjects().get(INSTANCE.value()), TestInstance.class);
     } else {
       throw new IllegalArgumentException("Can not initialize InstanceWriter, no instance found in context");
     }

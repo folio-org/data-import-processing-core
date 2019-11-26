@@ -73,7 +73,7 @@ public final class EventManager {
   }
 
   /**
-   * Flushes a registry of event handlers.
+   * Clears the registry of event handlers.
    */
   public static void clearEventHandlers() {
     eventProcessor.getEventHandlers().clear();

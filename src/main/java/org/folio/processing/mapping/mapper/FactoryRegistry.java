@@ -33,7 +33,7 @@ public class FactoryRegistry {
             ReaderFactory readerFactory = optionalReaderFactory.get();
             return readerFactory.createReader();
         } else {
-            throw new IllegalArgumentException(format("Can not find ReaderFactory by entity type [%s]", entityType));
+            throw new IllegalArgumentException(format("Can not find ReaderFactory for entity type %s", entityType));
         }
     }
 
@@ -51,27 +51,25 @@ public class FactoryRegistry {
             WriterFactory writerFactory = optionalWriterFactory.get();
             return writerFactory.createWriter();
         } else {
-            throw new IllegalArgumentException(format("Can not find WriterFactory by entity type [%s]", entityType));
+            throw new IllegalArgumentException(format("Can not find WriterFactory for entity type %s", entityType));
         }
     }
 
     /**
-     * Registers reader factory
+     * Returns list of registered reader factories
      *
-     * @param factory reader factory
-     * @return true if registry changed as a result of the call
+     * @return list of reader factories
      */
-    public boolean registerReaderFactory(ReaderFactory factory) {
-        return READER_FACTORIES.add(factory);
+    public List<ReaderFactory> getReaderFactories() {
+        return READER_FACTORIES;
     }
 
     /**
-     * Registers writer factory
+     * Returns list of registered writer factories
      *
-     * @param factory writer factory
-     * @return true if registry changed as a result of the call
+     * @return list of writer factories
      */
-    public boolean registerWriterFactory(WriterFactory factory) {
-        return WRITER_FACTORIES.add(factory);
+    public List<WriterFactory> getWriterFactories() {
+        return WRITER_FACTORIES;
     }
 }

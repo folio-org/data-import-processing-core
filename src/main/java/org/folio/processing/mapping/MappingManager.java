@@ -1,5 +1,6 @@
 package org.folio.processing.mapping;
 
+
 import org.folio.ProfileSnapshotWrapper;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
@@ -10,7 +11,8 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.processing.mapping.model.MappingProfile;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MappingManager is the entry point to work with mapping.
@@ -22,7 +24,7 @@ import java.util.logging.Logger;
  * @see Writer
  */
 public final class MappingManager {
-  private final static Logger LOGGER = Logger.getLogger(MappingManager.class.getName());
+  private final static Logger LOGGER = LoggerFactory.getLogger(MappingManager.class);
   private static final FactoryRegistry FACTORY_REGISTRY = new FactoryRegistry();
 
   private MappingManager() {
@@ -44,7 +46,7 @@ public final class MappingManager {
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
       return new Mapper() {}.map(reader, writer, eventContext);
     } catch (Exception e) {
-      LOGGER.warning(String.format("Exception occurred in Mapper [%s]", e));
+      LOGGER.error("Exception occurred in Mapper", e);
       throw new RuntimeException(e);
     }
   }
@@ -56,7 +58,7 @@ public final class MappingManager {
    * @return true if registry changed as a result of the call
    */
   public static boolean registerReaderFactory(ReaderFactory factory) {
-    return FACTORY_REGISTRY.registerReaderFactory(factory);
+    return FACTORY_REGISTRY.getReaderFactories().add(factory);
   }
 
   /**
@@ -66,6 +68,20 @@ public final class MappingManager {
    * @return true if registry changed as a result of the call
    */
   public static boolean registerWriterFactory(WriterFactory factory) {
-    return FACTORY_REGISTRY.registerWriterFactory(factory);
+    return FACTORY_REGISTRY.getWriterFactories().add(factory);
+  }
+
+  /**
+   * Clears the registry of reader factories
+   */
+  public static void clearReaderFactories() {
+    FACTORY_REGISTRY.getReaderFactories().clear();
+  }
+
+  /**
+   * Clears the registry of writer factories
+   */
+  public static void clearWriterFactories() {
+    FACTORY_REGISTRY.getWriterFactories().clear();
   }
 }

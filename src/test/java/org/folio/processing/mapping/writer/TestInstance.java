@@ -1,14 +1,14 @@
 package org.folio.processing.mapping.writer;
 
-public class Instance {
+public class TestInstance {
 
   private String id;
   private String indexTitle;
 
-  public Instance() {
+  public TestInstance() {
   }
 
-  public Instance(String id) {
+  public TestInstance(String id) {
     this.id = id;
   }
 
