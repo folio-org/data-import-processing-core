@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.ProfileSnapshotWrapper;
 import org.folio.processing.events.model.EventContext;
+import org.folio.processing.mapping.mapper.reader.record.MarcBibReaderFactory;
 import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.mapping.model.Rule;
 import org.folio.processing.mapping.reader.TestMarcBibliographicReaderFactory;
@@ -38,14 +39,14 @@ public class MappingManagerUnitTest {
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
 
-    String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
+    String givenMarcRecord = "{ \"leader\":\"leadervalue\", \"fields\":[ { \"001\":\"001value\" }, { \"002\":\"002value\" } ] }";
     String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
     eventContext.putObject(INSTANCE.value(), givenInstance);
     eventContext.setCurrentNode(mappingProfileWrapper);
     // when
-    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+    MappingManager.registerReaderFactory(new MarcBibReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
     MappingManager.map(eventContext);
     // then

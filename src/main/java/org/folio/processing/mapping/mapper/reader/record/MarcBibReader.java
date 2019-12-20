@@ -14,13 +14,13 @@ import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_
 
 public class MarcBibReader implements Reader {
 
-  private JsonNode jsonRecord = null;
+  private JsonNode fields = null;
 
   @Override
   public void initialize(EventContext eventContext) throws IOException {
-    if (eventContext.getObjects().containsKey(MARC_BIBLIOGRAPHIC)) {
-      String stringRecord = eventContext.getObjects().get(MARC_BIBLIOGRAPHIC);
-      this.jsonRecord = new ObjectMapper().readTree(stringRecord);
+    if (eventContext.getObjects().containsKey(MARC_BIBLIOGRAPHIC.value())) {
+      String stringRecord = eventContext.getObjects().get(MARC_BIBLIOGRAPHIC.value());
+      this.fields = new ObjectMapper().readTree(stringRecord).at("/fields");
     } else {
       throw new IllegalArgumentException("Can not initialize MarcBibliographicReader, no record found in context");
     }
@@ -28,8 +28,7 @@ public class MarcBibReader implements Reader {
 
   @Override
   public Value read(Rule rule) {
-    JsonNode recordField = this.jsonRecord.get(rule.getFieldPath());
-    recordField.getNodeType().
+    this.fields.findValue("002");
     return new StringValue("");
   }
 }
