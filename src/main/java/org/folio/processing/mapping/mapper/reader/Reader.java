@@ -25,10 +25,10 @@ public interface Reader {
   /**
    * Reads value from the underlying entity using mapping rule.
    *
-   * @param rule mapping rule
+   * @param ruleExpression rule expression defines an address of source to read value from
    * @return Value value
    * @see Value
    * @see Rule
    */
-  Value read(Rule rule);
+  Value read(String ruleExpression);
 }

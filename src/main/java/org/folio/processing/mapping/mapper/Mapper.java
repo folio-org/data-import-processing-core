@@ -36,7 +36,7 @@ public interface Mapper {
     writer.initialize(eventContext);
     List<Rule> mappingRules = mappingProfile.getMappingRules();
     for (Rule rule : mappingRules) {
-      Value value = reader.read(rule);
+      Value value = reader.read(rule.getRuleExpression());
       writer.write(rule.getFieldPath(), value);
     }
     return writer.getResult(eventContext);

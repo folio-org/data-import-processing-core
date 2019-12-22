@@ -39,7 +39,7 @@ public class MappingManagerUnitTest {
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
 
-    String givenMarcRecord = "{ \"leader\":\"leadervalue\", \"fields\":[ { \"001\":\"001value\" }, { \"002\":\"002value\" } ] }";
+    String givenMarcRecord = "{ \"leader\":\"leadervalue\", \"fields\":[ { \"001\":\"001value\" }, { \"002\":\"002value\" }, {} ] }";
     String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);

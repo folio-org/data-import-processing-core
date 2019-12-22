@@ -4,16 +4,16 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 
 import static org.folio.processing.mapping.model.MappingProfile.EntityType;
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_HOLDINGS;
 
-public class MarcBibReaderFactory implements ReaderFactory {
+public class MarcHoldingsReaderFactory implements ReaderFactory {
   @Override
   public Reader createReader() {
-    return new JsonBasedRecordReader(MARC_BIBLIOGRAPHIC);
+    return new JsonBasedRecordReader(MARC_HOLDINGS);
   }
 
   @Override
   public boolean isEligibleForEntityType(EntityType entityType) {
-    return MARC_BIBLIOGRAPHIC.equals(entityType);
+    return MARC_HOLDINGS.equals(entityType);
   }
 }

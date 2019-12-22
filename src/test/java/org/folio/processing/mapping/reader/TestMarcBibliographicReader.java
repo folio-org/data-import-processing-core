@@ -22,7 +22,7 @@ public class TestMarcBibliographicReader implements Reader {
   }
 
   @Override
-  public Value read(Rule rule) {
-    return new StringValue("test index title");
+  public Value read(String ruleExpression) {
+    return StringValue.of("test index title");
   }
 }
