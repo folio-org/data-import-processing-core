@@ -9,7 +9,7 @@ import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_
 public class MarcHoldingsReaderFactory implements ReaderFactory {
   @Override
   public Reader createReader() {
-    return new JsonBasedRecordReader(MARC_HOLDINGS);
+    return new MarcRecordReader(MARC_HOLDINGS);
   }
 
   @Override

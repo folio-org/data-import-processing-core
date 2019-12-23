@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.writer;
+package org.folio.processing.mapping.manager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +13,9 @@ import static org.folio.processing.mapping.model.MappingProfile.EntityType.INSTA
 
 public class TestInstanceWriter extends AbstractWriter {
   private TestInstance instance;
+
+  TestInstanceWriter() {
+  }
 
   @Override
   public void initialize(EventContext eventContext) throws IOException {

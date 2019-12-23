@@ -20,12 +20,12 @@ import java.io.IOException;
 
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
 
-public class JsonBasedRecordReader implements Reader {
-  private static final String MARC_FIELDS_POINTER = "fields";
+public class MarcRecordReader implements Reader {
+  private static final String MARC_FIELDS_POINTER = "/fields";
   private EntityType entityType;
   private JsonNode fieldsNode = null;
 
-  JsonBasedRecordReader(EntityType entityType) {
+  MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
   }
 
@@ -33,9 +33,9 @@ public class JsonBasedRecordReader implements Reader {
   public void initialize(EventContext eventContext) throws IOException {
     if (eventContext.getObjects().containsKey(entityType.value())) {
       String stringRecord = eventContext.getObjects().get(entityType.value());
-      this.fieldsNode = new ObjectMapper().readTree(stringRecord).findValue(MARC_FIELDS_POINTER);
+      this.fieldsNode = new ObjectMapper().readTree(stringRecord).at(MARC_FIELDS_POINTER);
     } else {
-      throw new IllegalArgumentException("Can not initialize JsonBasedRecordReader, no record found in context");
+      throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in context");
     }
   }
 
