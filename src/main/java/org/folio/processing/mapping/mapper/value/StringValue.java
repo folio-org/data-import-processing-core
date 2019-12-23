@@ -1,7 +1,7 @@
 package org.folio.processing.mapping.mapper.value;
 
 public final class StringValue implements Value<String> {
-    private String value;
+    private final String value;
 
     protected StringValue(String value) {
       this.value = value;

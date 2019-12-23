@@ -6,6 +6,9 @@ import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import static org.folio.processing.mapping.model.MappingProfile.EntityType;
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_AUTHORITY;
 
+/**
+ * Factory to create reader of marc authority records
+ */
 public class MarcAuthorityReaderFactory implements ReaderFactory {
   @Override
   public Reader createReader() {
