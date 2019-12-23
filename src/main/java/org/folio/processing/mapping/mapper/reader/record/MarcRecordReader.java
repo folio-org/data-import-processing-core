@@ -2,23 +2,15 @@ package org.folio.processing.mapping.mapper.reader.record;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.google.gson.internal.$Gson$Preconditions;
-import com.sun.org.apache.xml.internal.utils.StringVector;
 import org.apache.commons.lang.StringUtils;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.value.MissingValue;
 import org.folio.processing.mapping.mapper.value.StringValue;
 import org.folio.processing.mapping.mapper.value.Value;
-import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.mapping.model.MappingProfile.EntityType;
-import org.folio.processing.mapping.model.Rule;
-import org.folio.util.StringUtil;
 
 import java.io.IOException;
-
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class MarcRecordReader implements Reader {
   private static final String MARC_FIELDS_POINTER = "/fields";

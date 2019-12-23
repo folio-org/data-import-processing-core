@@ -2,18 +2,15 @@ package org.folio.processing.mapping.reader;
 
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.reader.record.MarcAuthorityReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.MarcBibReaderFactory;
 import org.folio.processing.mapping.mapper.value.Value;
 import org.folio.processing.mapping.mapper.value.Value.ValueType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import scala.Predef;
 
 import java.io.IOException;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_AUTHORITY;
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
