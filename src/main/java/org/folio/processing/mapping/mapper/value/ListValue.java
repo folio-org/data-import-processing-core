@@ -5,8 +5,12 @@ import java.util.List;
 public class ListValue implements Value<List<String>> {
     private final List<String> list;
 
-    public ListValue(List<String> list) {
+    protected ListValue(List<String> list) {
         this.list = list;
+    }
+
+    public ListValue of(List<String> list) {
+      return new ListValue(list);
     }
 
     @Override

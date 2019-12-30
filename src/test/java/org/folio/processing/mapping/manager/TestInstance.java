@@ -1,11 +1,11 @@
-package org.folio.processing.mapping.writer;
+package org.folio.processing.mapping.manager;
 
 public class TestInstance {
 
   private String id;
   private String indexTitle;
 
-  public TestInstance() {
+  TestInstance() {
   }
 
   public TestInstance(String id) {

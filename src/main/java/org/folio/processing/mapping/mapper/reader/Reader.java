@@ -4,6 +4,8 @@ import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.value.Value;
 import org.folio.processing.mapping.model.Rule;
 
+import java.io.IOException;
+
 /**
  * The root interface for Readers.
  * The purpose of Reader is to read Value by rule from underlying entity.
@@ -18,15 +20,15 @@ public interface Reader {
    *
    * @param eventContext event context
    */
-  void initialize(EventContext eventContext);
+  void initialize(EventContext eventContext) throws IOException;
 
   /**
    * Reads value from the underlying entity using mapping rule.
    *
-   * @param rule mapping rule
+   * @param ruleExpression rule expression defines an address of source to read value from
    * @return Value value
    * @see Value
    * @see Rule
    */
-  Value read(Rule rule);
+  Value read(String ruleExpression);
 }

@@ -19,6 +19,7 @@ public abstract class AbstractWriter implements Writer {
             case LIST:
                 writeListValue(fieldPath, (ListValue) value);
                 break;
+          case MISSING: break;
             default:
                 throw new IllegalArgumentException("Can not define value type");
         }

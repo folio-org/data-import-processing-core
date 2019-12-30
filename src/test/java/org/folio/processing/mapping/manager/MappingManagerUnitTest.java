@@ -1,14 +1,12 @@
-package org.folio.processing.mapping;
+package org.folio.processing.mapping.manager;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.ProfileSnapshotWrapper;
 import org.folio.processing.events.model.EventContext;
+import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.mapping.model.Rule;
-import org.folio.processing.mapping.reader.TestMarcBibliographicReaderFactory;
-import org.folio.processing.mapping.writer.TestInstance;
-import org.folio.processing.mapping.writer.TestInstanceWriterFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

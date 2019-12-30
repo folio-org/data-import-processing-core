@@ -1,16 +1,18 @@
-package org.folio.processing.mapping.reader;
+package org.folio.processing.mapping.manager;
 
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.value.StringValue;
 import org.folio.processing.mapping.mapper.value.Value;
-import org.folio.processing.mapping.model.Rule;
 
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class TestMarcBibliographicReader implements Reader {
 
   private String marcBibliographicRecord;
+
+  TestMarcBibliographicReader() {
+  }
 
   @Override
   public void initialize(EventContext eventContext) {
@@ -22,7 +24,7 @@ public class TestMarcBibliographicReader implements Reader {
   }
 
   @Override
-  public Value read(Rule rule) {
-    return new StringValue("test index title");
+  public Value read(String ruleExpression) {
+    return StringValue.of("test index title");
   }
 }
