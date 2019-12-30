@@ -12,6 +12,7 @@ import org.folio.processing.mapping.model.MappingProfile.EntityType;
 
 import java.io.IOException;
 
+@SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
   private static final String MARC_FIELDS_POINTER = "/fields";
   private EntityType entityType;
