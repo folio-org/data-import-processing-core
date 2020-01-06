@@ -2,7 +2,7 @@ package org.folio.processing.mapping.mapper.writer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.folio.processing.events.model.EventContext;
-import org.folio.processing.mapping.mapper.value.Value;
+import org.folio.processing.value.Value;
 
 import java.io.IOException;
 

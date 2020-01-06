@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.value;
+package org.folio.processing.value;
 
 public final class MissingValue implements Value<Object> {
   private static final MissingValue INSTANCE = new MissingValue();

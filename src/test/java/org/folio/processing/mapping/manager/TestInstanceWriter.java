@@ -3,8 +3,8 @@ package org.folio.processing.mapping.manager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.processing.events.model.EventContext;
-import org.folio.processing.mapping.mapper.value.ListValue;
-import org.folio.processing.mapping.mapper.value.StringValue;
+import org.folio.processing.value.ListValue;
+import org.folio.processing.value.StringValue;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 
 import java.io.IOException;

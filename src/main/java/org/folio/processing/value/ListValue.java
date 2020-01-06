@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.value;
+package org.folio.processing.value;
 
 import java.util.List;
 

@@ -51,7 +51,7 @@ public class MappingProfile {
     MARC_AUTHORITY("MARC_AUTHORITY"),
     EDIFACT_INVOICE("EDIFACT_INVOICE"),
     DELIMITED("DELIMITED");
-    private final static Map<String, EntityType> CONSTANTS = new HashMap<String, EntityType>();
+    private static final Map<String, EntityType> CONSTANTS = new HashMap<>();
 
     static {
       for (EntityType c : values()) {

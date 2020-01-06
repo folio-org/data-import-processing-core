@@ -1,6 +1,5 @@
 package org.folio.processing.mapping;
 
-
 import org.folio.ProfileSnapshotWrapper;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
@@ -14,6 +13,8 @@ import org.folio.processing.mapping.model.MappingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.folio.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
+
 /**
  * MappingManager is the entry point to work with mapping.
  * Provides methods to register factories and start mapping.
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @see Writer
  */
 public final class MappingManager {
-  private final static Logger LOGGER = LoggerFactory.getLogger(MappingManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MappingManager.class);
   private static final FactoryRegistry FACTORY_REGISTRY = new FactoryRegistry();
 
   private MappingManager() {
@@ -40,6 +41,10 @@ public final class MappingManager {
    */
   public static EventContext map(EventContext eventContext) {
     try {
+      if (eventContext.getCurrentNode().getContentType() != MAPPING_PROFILE) {
+        LOGGER.info("Current node is not of {} content type", MAPPING_PROFILE);
+        return eventContext;
+      }
       ProfileSnapshotWrapper mappingProfileWrapper = eventContext.getCurrentNode();
       MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());

@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.value;
+package org.folio.processing.value;
 
 public final class StringValue implements Value<String> {
     private final String value;

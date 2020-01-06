@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.value;
+package org.folio.processing.value;
 
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.writer.Writer;

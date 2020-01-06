@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.value.MissingValue;
-import org.folio.processing.mapping.mapper.value.StringValue;
-import org.folio.processing.mapping.mapper.value.Value;
+import org.folio.processing.value.MissingValue;
+import org.folio.processing.value.StringValue;
+import org.folio.processing.value.Value;
 import org.folio.processing.mapping.model.MappingProfile.EntityType;
 
 import java.io.IOException;

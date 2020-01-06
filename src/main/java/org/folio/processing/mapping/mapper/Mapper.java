@@ -3,7 +3,7 @@ package org.folio.processing.mapping.mapper;
 import org.folio.ProfileSnapshotWrapper;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.value.Value;
+import org.folio.processing.value.Value;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.mapping.model.Rule;
