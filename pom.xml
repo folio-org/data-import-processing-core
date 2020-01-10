@@ -29,7 +29,7 @@
     <vertx-unit.version>3.5.4</vertx-unit.version>
     <wiremock.version>2.19.0</wiremock.version>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
-    <sonar.exclusions>org/folio/processing/matching/model/schemas/*</sonar.exclusions>
+    <sonar.exclusions>**/schemas/*</sonar.exclusions>
   </properties>
 
   <repositories>

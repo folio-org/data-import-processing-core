@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import static org.folio.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
+/**
+ * Matching Manager implementation, provides ability to perform matching
+ */
 public final class MatchingManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(MatchingManager.class);
 
