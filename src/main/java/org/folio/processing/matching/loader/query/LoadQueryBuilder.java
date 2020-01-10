@@ -5,6 +5,8 @@ import org.folio.processing.value.Value;
 
 public class LoadQueryBuilder {
 
+  private LoadQueryBuilder() {}
+
   public static LoadQuery build(Value value, MatchDetail matchDetail) {
     return new DefaultLoadQuery();
   }

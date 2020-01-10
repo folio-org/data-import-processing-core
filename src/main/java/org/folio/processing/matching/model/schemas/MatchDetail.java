@@ -217,7 +217,7 @@ public class MatchDetail {
     AND_NOT("AND NOT"),
     OR("OR");
     private final String value;
-    private final static Map<String, BooleanOperation> CONSTANTS = new HashMap<String, BooleanOperation>();
+    private static final Map<String, BooleanOperation> CONSTANTS = new HashMap<>();
 
     static {
       for (MatchDetail.BooleanOperation c : values()) {
@@ -225,7 +225,7 @@ public class MatchDetail {
       }
     }
 
-    private BooleanOperation(String value) {
+    BooleanOperation(String value) {
       this.value = value;
     }
 
@@ -261,7 +261,7 @@ public class MatchDetail {
     EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE("EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE"),
     INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE("INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE");
     private final String value;
-    private final static Map<String, MatchCriterion> CONSTANTS = new HashMap<String, MatchCriterion>();
+    private static final Map<String, MatchCriterion> CONSTANTS = new HashMap<>();
 
     static {
       for (MatchDetail.MatchCriterion c : values()) {
@@ -269,7 +269,7 @@ public class MatchDetail {
       }
     }
 
-    private MatchCriterion(String value) {
+    MatchCriterion(String value) {
       this.value = value;
     }
 

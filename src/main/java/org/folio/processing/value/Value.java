@@ -14,26 +14,26 @@ import org.folio.processing.mapping.mapper.writer.Writer;
  */
 public interface Value<T> {
 
-    /**
-     * Returns value
-     *
-     * @return value
-     */
-    T getValue();
+  /**
+   * Returns value
+   *
+   * @return value
+   */
+  T getValue();
 
-    /**
-     * Returns type of the underlying value
-     *
-     * @return type of value
-     */
-    ValueType getType();
+  /**
+   * Returns type of the underlying value
+   *
+   * @return type of value
+   */
+  ValueType getType();
 
-    /**
-     * Enumeration to describe type of generic value
-     */
-    enum ValueType {
-        STRING,
-        LIST,
-        MISSING
-    }
+  /**
+   * Enumeration to describe type of generic value
+   */
+  enum ValueType {
+    STRING,
+    LIST,
+    MISSING
+  }
 }

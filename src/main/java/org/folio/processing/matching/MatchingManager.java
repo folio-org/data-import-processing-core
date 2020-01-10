@@ -32,7 +32,6 @@ public final class MatchingManager {
       MatchValueLoader loader = MatchValueLoaderFactory.build(matchProfile.getExistingRecordType());
       return new Matcher() {}.match(reader, loader, eventContext);
     } catch (Exception e) {
-      LOGGER.warn("Exception occurred in Matcher", e);
       throw new RuntimeException(e);
     }
   }

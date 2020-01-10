@@ -9,6 +9,8 @@ import static java.lang.String.format;
 
 public class MatchValueLoaderFactory {
 
+  private MatchValueLoaderFactory() {}
+
   private static final List<MatchValueLoader> matchValueLoaderList = new ArrayList<>();
 
   public static MatchValueLoader build(MatchProfile.ExistingRecordType existingRecordType) {
