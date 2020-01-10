@@ -40,7 +40,7 @@ public class RestEventPublisher implements EventPublisher {
     try {
       client.postPubsubPublish(event, response -> {
         if (response.statusCode() != HttpStatus.HTTP_NO_CONTENT.toInt()) {
-          LOGGER.error("Error publishing event", response.statusCode(), response.statusMessage());
+          LOGGER.error("Error publishing event: received status code {}, {}", response.statusCode(), response.statusMessage());
           future.completeExceptionally(new HttpStatusException(response.statusCode(), "Error publishing event"));
         } else {
           LOGGER.info("Event has been published");

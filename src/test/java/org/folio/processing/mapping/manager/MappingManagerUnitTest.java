@@ -15,6 +15,7 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.util.UUID;
 
+import static org.folio.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.INSTANCE;
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.junit.Assert.assertNotNull;
@@ -35,6 +36,7 @@ public class MappingManagerUnitTest {
     mappingProfile.getMappingRules().add(new Rule("indexTitle", "RULE_EXPRESSION"));
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
+    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
     String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
     String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
@@ -42,6 +44,7 @@ public class MappingManagerUnitTest {
     eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
     eventContext.putObject(INSTANCE.value(), givenInstance);
     eventContext.setCurrentNode(mappingProfileWrapper);
+
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
@@ -60,6 +63,7 @@ public class MappingManagerUnitTest {
     MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
+    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
     EventContext eventContext = new EventContext();
     eventContext.setCurrentNode(mappingProfileWrapper);
@@ -75,6 +79,7 @@ public class MappingManagerUnitTest {
     MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
+    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
     EventContext eventContext = new EventContext();
     eventContext.setCurrentNode(mappingProfileWrapper);
@@ -82,5 +87,29 @@ public class MappingManagerUnitTest {
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.map(eventContext);
     // then expect runtime exception
+  }
+
+  @Test
+  public void shouldNotMap_IfNoContentType() throws IOException {
+    // given
+    MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
+    mappingProfile.getMappingRules().add(new Rule("indexTitle", "RULE_EXPRESSION"));
+    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
+    mappingProfileWrapper.setContent(mappingProfile);
+
+    String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
+    String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
+    eventContext.putObject(INSTANCE.value(), givenInstance);
+    eventContext.setCurrentNode(mappingProfileWrapper);
+
+    // when
+    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+    MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
+    MappingManager.map(eventContext);
+    // then
+    assertNotNull(eventContext.getObjects().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(eventContext.getObjects().get(INSTANCE.value()));
   }
 }

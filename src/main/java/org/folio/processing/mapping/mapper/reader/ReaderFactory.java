@@ -10,18 +10,18 @@ import static org.folio.processing.mapping.model.MappingProfile.EntityType;
  */
 public interface ReaderFactory {
 
-    /**
-     * Creates a reader
-     *
-     * @return reader
-     */
-    Reader createReader();
+  /**
+   * Creates a reader
+   *
+   * @return reader
+   */
+  Reader createReader();
 
-    /**
-     * Checks if factory can produce entity of given type
-     *
-     * @param entityType type of entity
-     * @return true if given type of entity is eligible
-     */
-    boolean isEligibleForEntityType(EntityType entityType);
+  /**
+   * Checks if factory can produce entity of given type
+   *
+   * @param entityType type of entity
+   * @return true if given type of entity is eligible
+   */
+  boolean isEligibleForEntityType(EntityType entityType);
 }

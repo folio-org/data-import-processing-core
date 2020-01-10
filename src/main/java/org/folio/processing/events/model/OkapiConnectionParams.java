@@ -1,6 +1,5 @@
 package org.folio.processing.events.model;
 
-
 import java.util.Map;
 
 public final class OkapiConnectionParams {

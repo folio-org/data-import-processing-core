@@ -1,7 +1,7 @@
 package org.folio.processing.mapping.mapper.reader;
 
 import org.folio.processing.events.model.EventContext;
-import org.folio.processing.mapping.mapper.value.Value;
+import org.folio.processing.value.Value;
 import org.folio.processing.mapping.model.Rule;
 
 import java.io.IOException;

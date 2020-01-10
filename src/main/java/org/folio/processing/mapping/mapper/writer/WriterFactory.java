@@ -10,18 +10,18 @@ import org.folio.processing.mapping.model.MappingProfile.EntityType;
  */
 public interface WriterFactory {
 
-    /**
-     * Creates a writer
-     *
-     * @return writer
-     */
-    Writer createWriter();
+  /**
+   * Creates a writer
+   *
+   * @return writer
+   */
+  Writer createWriter();
 
-    /**
-     * Checks if factory can produce entity of given type
-     *
-     * @param entityType type of entity
-     * @return true if given type of entity is eligible
-     */
-    boolean isEligibleForEntityType(EntityType entityType);
+  /**
+   * Checks if factory can produce entity of given type
+   *
+   * @param entityType type of entity
+   * @return true if given type of entity is eligible
+   */
+  boolean isEligibleForEntityType(EntityType entityType);
 }
