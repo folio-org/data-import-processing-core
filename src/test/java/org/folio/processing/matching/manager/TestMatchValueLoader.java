@@ -13,6 +13,7 @@ public class TestMatchValueLoader implements MatchValueLoader {
   public LoadResult loadEntity(LoadQuery loadQuery, EventContext eventContext) {
     LoadResult result = new LoadResult();
     result.setValue("Some value");
+    result.setEntityType("MARC");
     return result;
   }
 

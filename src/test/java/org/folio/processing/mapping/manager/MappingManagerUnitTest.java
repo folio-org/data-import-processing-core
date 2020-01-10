@@ -88,4 +88,28 @@ public class MappingManagerUnitTest {
     MappingManager.map(eventContext);
     // then expect runtime exception
   }
+
+  @Test
+  public void shouldNotMap_IfNoContentType() throws IOException {
+    // given
+    MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
+    mappingProfile.getMappingRules().add(new Rule("indexTitle", "RULE_EXPRESSION"));
+    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
+    mappingProfileWrapper.setContent(mappingProfile);
+
+    String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
+    String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
+    eventContext.putObject(INSTANCE.value(), givenInstance);
+    eventContext.setCurrentNode(mappingProfileWrapper);
+
+    // when
+    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+    MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
+    MappingManager.map(eventContext);
+    // then
+    assertNotNull(eventContext.getObjects().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(eventContext.getObjects().get(INSTANCE.value()));
+  }
 }
