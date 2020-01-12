@@ -12,7 +12,7 @@ import java.util.NoSuchElementException;
  */
 class FieldPathIterator {
   private static final String DELIMITER_REGEX = "\\.";
-  private Iterator<PathItem> DELEGATE;
+  private Iterator<PathItem> delegate;
 
   FieldPathIterator(String path) {
     if (StringUtils.isEmpty(path)) {
@@ -20,7 +20,7 @@ class FieldPathIterator {
     } else {
       String[] stringItems = path.split(DELIMITER_REGEX);
       PathItem[] pathItems = Arrays.stream(stringItems).map(PathItem::new).toArray(PathItem[]::new);
-      this.DELEGATE = new ObjectArrayIterator<>(pathItems);
+      this.delegate = new ObjectArrayIterator<>(pathItems);
     }
   }
 
@@ -32,7 +32,7 @@ class FieldPathIterator {
    * @return {@code true} if the iteration has more elements
    */
   boolean hasNext() {
-    return this.DELEGATE.hasNext();
+    return this.delegate.hasNext();
   }
 
   /**
@@ -42,7 +42,7 @@ class FieldPathIterator {
    * @throws NoSuchElementException if the iteration has no more elements
    */
   PathItem next() {
-    return this.DELEGATE.next();
+    return this.delegate.next();
   }
 
   /**

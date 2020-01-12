@@ -24,7 +24,7 @@ import static java.lang.String.format;
  */
 public class JsonBasedWriter extends AbstractWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
-  private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private ObjectMapper objectMapper = new ObjectMapper();
   private String entityType;
   private JsonNode entityNode;
 
@@ -49,7 +49,7 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeListValue(String fieldPath, ListValue listValue) {
-    ArrayNode arrayNode = OBJECT_MAPPER.valueToTree(listValue.getValue());
+    ArrayNode arrayNode = objectMapper.valueToTree(listValue.getValue());
     setValueByFieldPath(fieldPath, arrayNode);
   }
 
@@ -118,11 +118,11 @@ public class JsonBasedWriter extends AbstractWriter {
   @Override
   public EventContext getResult(EventContext eventContext) {
     try {
-      String jsonEntity = OBJECT_MAPPER.writeValueAsString(this.entityNode);
+      String jsonEntity = objectMapper.writeValueAsString(this.entityNode);
       eventContext.getObjects().put(entityType, jsonEntity);
     } catch (JsonProcessingException e) {
-      LOGGER.error(format("Can not write entity node to json string. Cause:  %s", e.getCause()));
-      throw new RuntimeException(e);
+      LOGGER.error(format("Can not write entity node to json string. Cause:  %s", e));
+      throw new IllegalStateException(e);
     }
     return eventContext;
   }
