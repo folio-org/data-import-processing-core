@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.util.RawValue;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.mapping.model.MappingProfile;
@@ -18,13 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 import static java.lang.String.format;
 
 public class JsonBasedWriter extends AbstractWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
-  private final JsonNodeFactory NODE_FACTORY = JsonNodeFactory.instance;
   private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private String entityType;
   private JsonNode entityNode;
@@ -79,12 +76,14 @@ public class JsonBasedWriter extends AbstractWriter {
               arrayNode.add(iterator.next());
             }
           } else {
-            ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
-            arrayNode.add(fieldValue);
-            // throw new IllegalArgumentException(format("It's forbidden to write %s to array field", fieldValue.getNodeType()));
+            throw new IllegalStateException("Only array can be written to array field");
           }
         } else if (pathItem.isObject()) {
-          ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
+            if (fieldValue.isTextual()) {
+              ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
+            } else {
+              throw new IllegalStateException("Only text can be written to object field");
+            }
         }
       } else {
         if (pathItem.isArray()) {
@@ -95,30 +94,25 @@ public class JsonBasedWriter extends AbstractWriter {
               arrayNode.add(iterator.next());
             }
           } else {
-            ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
-            arrayNode.add(fieldValue);
-            // throw new IllegalArgumentException(format("It's forbidden to write %s to array field", fieldValue.getNodeType()));
+             throw new IllegalStateException("Only array can be written to array field");
           }
         } else if (pathItem.isObject()) {
           throw new IllegalStateException(format("Wrong field path: [%s]. Cause: Override is forbidden", pathItem.getName()));
         }
       }
     } else if (parentNode.isArray()) {
-      throw new IllegalArgumentException(format("Wrong field path: [%s]. Cause: Array can not be a parent node", pathItem.getName()));
+      throw new IllegalStateException(format("Wrong field path: [%s]. Cause: Array can not be a parent node", pathItem.getName()));
     }
   }
 
   private JsonNode addContainerNode(JsonNode parentNode, FieldPathIterator.PathItem pathItem) {
     JsonNode childNode = parentNode.findPath(pathItem.getName());
-    if (childNode.isMissingNode()) {
+    if (childNode.isMissingNode() || childNode.isNull()) {
       if (pathItem.isArray()) {
         return parentNode.withArray(pathItem.getName());
       } else if (pathItem.isObject()) {
         return parentNode.with(pathItem.getName());
       }
-    } else if (childNode.isNull()) {
-      // child can be replaced
-      return parentNode;
     }
     return childNode;
   }
