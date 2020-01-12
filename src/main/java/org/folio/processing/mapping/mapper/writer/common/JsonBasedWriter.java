@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.folio.processing.events.model.EventContext;
@@ -20,6 +19,9 @@ import java.util.Iterator;
 
 import static java.lang.String.format;
 
+/**
+ * A common Writer based on json. The idea is to hold Jackson's JsonNode and fill up it by incoming values in runtime.
+ */
 public class JsonBasedWriter extends AbstractWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
   private final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -51,70 +53,66 @@ public class JsonBasedWriter extends AbstractWriter {
     setValueByFieldPath(fieldPath, arrayNode);
   }
 
+  /**
+   * The method does traversing by field path from top to bottom.
+   * Each iteration the method creates a ContainerNode for the next path if it does not exist in parent node (see #addContainerNode)
+   * If a path item is the last, then method sets value to the parent node (see #setValue)
+   *
+   * @param fieldPath  field path
+   * @param fieldValue value of the field, JsonNode is the parent node of ValueNode and ContainerNode
+   */
   private void setValueByFieldPath(String fieldPath, JsonNode fieldValue) {
     FieldPathIterator fieldPathIterator = new FieldPathIterator(fieldPath);
     JsonNode parentNode = entityNode;
     while (fieldPathIterator.hasNext()) {
       FieldPathIterator.PathItem pathItem = fieldPathIterator.next();
       if (fieldPathIterator.hasNext()) {
-        parentNode = addContainerNode(parentNode, pathItem);
+        parentNode = addContainerNode(pathItem, parentNode);
       } else {
-        addValueNode(fieldValue, parentNode, pathItem);
+        setValue(pathItem, fieldValue, parentNode);
       }
     }
   }
 
-  private void addValueNode(JsonNode fieldValue, JsonNode parentNode, FieldPathIterator.PathItem pathItem) {
-    if (parentNode.isObject()) {
-      JsonNode childNode = parentNode.findPath(pathItem.getName());
-      if (childNode.isMissingNode() || childNode.isNull()) {
-        if (pathItem.isArray()) {
-          if (fieldValue.isArray()) {
-            ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
-            Iterator<JsonNode> iterator = fieldValue.iterator();
-            while (iterator.hasNext()) {
-              arrayNode.add(iterator.next());
-            }
-          } else {
-            throw new IllegalStateException("Only array can be written to array field");
-          }
-        } else if (pathItem.isObject()) {
-            if (fieldValue.isTextual()) {
-              ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
-            } else {
-              throw new IllegalStateException("Only text can be written to object field");
-            }
-        }
-      } else {
-        if (pathItem.isArray()) {
-          if (fieldValue.isArray()) {
-            ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
-            Iterator<JsonNode> iterator = fieldValue.iterator();
-            while (iterator.hasNext()) {
-              arrayNode.add(iterator.next());
-            }
-          } else {
-             throw new IllegalStateException("Only array can be written to array field");
-          }
-        } else if (pathItem.isObject()) {
-          throw new IllegalStateException(format("Wrong field path: [%s]. Cause: Override is forbidden", pathItem.getName()));
-        }
-      }
-    } else if (parentNode.isArray()) {
-      throw new IllegalStateException(format("Wrong field path: [%s]. Cause: Array can not be a parent node", pathItem.getName()));
-    }
-  }
-
-  private JsonNode addContainerNode(JsonNode parentNode, FieldPathIterator.PathItem pathItem) {
+  /**
+   * The idea of this method is to check existence of ContainerNode for the given path item.
+   * If ContainerNode does not exist, then this method adds it for the given path item.
+   *
+   * @param pathItem   path item
+   * @param parentNode parent node where to check existence of ContainerNode for path item
+   * @return JsonNode with ContainerNode in
+   */
+  private JsonNode addContainerNode(FieldPathIterator.PathItem pathItem, JsonNode parentNode) {
     JsonNode childNode = parentNode.findPath(pathItem.getName());
     if (childNode.isMissingNode() || childNode.isNull()) {
-      if (pathItem.isArray()) {
-        return parentNode.withArray(pathItem.getName());
-      } else if (pathItem.isObject()) {
-        return parentNode.with(pathItem.getName());
-      }
+      childNode = pathItem.isObject() ? parentNode.with(pathItem.getName()) : parentNode.withArray(pathItem.getName());
     }
     return childNode;
+  }
+
+  /**
+   * The method sets a given fieldValue into parentNode based on type of pathItem.
+   *
+   * @param pathItem    item of the fieldPath
+   * @param fieldValue  value of the field to set
+   * @param parentNode  node where to set a fieldValue
+   */
+  private void setValue(FieldPathIterator.PathItem pathItem, JsonNode fieldValue, JsonNode parentNode) {
+    if (parentNode.isArray()) {
+      throw new IllegalStateException("Wrong field path: Array can not be a parent node");
+    } else {
+      if (pathItem.isArray() && fieldValue.isArray()) {
+        ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+        Iterator<JsonNode> iterator = fieldValue.iterator();
+        while (iterator.hasNext()) {
+          arrayNode.add(iterator.next());
+        }
+      } else if (pathItem.isObject() && fieldValue.isValueNode()) {
+        ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
+      } else {
+        throw new IllegalStateException("Types mismatch: Type of path item and type field value are incompatible");
+      }
+    }
   }
 
   @Override

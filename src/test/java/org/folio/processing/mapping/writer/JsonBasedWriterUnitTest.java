@@ -21,7 +21,7 @@ public class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(MappingProfile.EntityType.INSTANCE);
 
   @Test
-  public void shouldWriteValues() throws IOException {
+  public void shouldWrite_Values() throws IOException {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
@@ -45,8 +45,8 @@ public class JsonBasedWriterUnitTest {
     assertEquals(expectedInstance, resultInstance);
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void shouldFailOnObjectOverride() throws IOException {
+  @Test
+  public void shouldOverride_StringValue() throws IOException {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
@@ -55,11 +55,14 @@ public class JsonBasedWriterUnitTest {
     WRITER.write("indexTitle", StringValue.of("The Journal of ecclesiastical history."));
     WRITER.write("indexTitle", StringValue.of("Folk music West"));
     WRITER.getResult(eventContext);
-    // then expect IllegalStateException
+    // then
+    String expectedInstance = "{\"indexTitle\":\"Folk music West\"}";
+    String resultInstance = eventContext.getObjects().get(MappingProfile.EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
   }
 
   @Test
-  public void shouldWriteValueOnArrayOverride() throws IOException {
+  public void shouldAddValues_OnArrayOverride() throws IOException {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
@@ -99,13 +102,25 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void shouldFailOnWriteListValueToTextField() throws IOException {
+  public void shouldFailOnWrite_ListValue_To_ObjectField() throws IOException {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
     // when
     WRITER.initialize(eventContext);
     WRITER.write("indexTitle", ListValue.of(Arrays.asList("The Journal of ecclesiastical history.")));
+    WRITER.getResult(eventContext);
+    // then expect IllegalStateException
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void shouldFailOnWrite_StringValue_To_ArrayField() throws IOException {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("languages[]", StringValue.of("eng"));
     WRITER.getResult(eventContext);
     // then expect IllegalStateException
   }
