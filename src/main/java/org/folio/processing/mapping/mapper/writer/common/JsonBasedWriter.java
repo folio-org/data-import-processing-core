@@ -69,7 +69,7 @@ public class JsonBasedWriter extends AbstractWriter {
       if (fieldPathIterator.hasNext()) {
         parentNode = addContainerNode(pathItem, parentNode);
       } else {
-        setValue(pathItem, fieldValue, parentNode);
+        setValueNode(pathItem, fieldValue, parentNode);
       }
     }
   }
@@ -97,7 +97,7 @@ public class JsonBasedWriter extends AbstractWriter {
    * @param fieldValue  value of the field to set
    * @param parentNode  node where to set a fieldValue
    */
-  private void setValue(FieldPathIterator.PathItem pathItem, JsonNode fieldValue, JsonNode parentNode) {
+  private void setValueNode(FieldPathIterator.PathItem pathItem, JsonNode fieldValue, JsonNode parentNode) {
     if (parentNode.isArray()) {
       throw new IllegalStateException("Wrong field path: Array can not be a parent node");
     } else {
