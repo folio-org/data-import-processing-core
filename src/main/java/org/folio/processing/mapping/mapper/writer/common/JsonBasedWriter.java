@@ -75,8 +75,8 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   /**
-   * The idea of this method is to check existence of ContainerNode for the given path item.
-   * If ContainerNode does not exist, then this method adds it for the given path item.
+   * The idea of method is to check existence of ContainerNode for the given path item.
+   * If ContainerNode does not exist, then method adds it for the given path item.
    *
    * @param pathItem   path item
    * @param parentNode parent node where to check existence of ContainerNode for path item
@@ -110,7 +110,7 @@ public class JsonBasedWriter extends AbstractWriter {
       } else if (pathItem.isObject() && fieldValue.isValueNode()) {
         ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
       } else {
-        throw new IllegalStateException("Types mismatch: Type of path item and type field value are incompatible");
+        throw new IllegalStateException("Types mismatch: Type of path item and type of the value are incompatible");
       }
     }
   }
