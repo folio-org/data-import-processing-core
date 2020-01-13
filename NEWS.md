@@ -4,3 +4,4 @@
 * Added transport layer to publish event to consumer services
 * Added mapping manager
 * Added MARC readers
+* Added common json writer

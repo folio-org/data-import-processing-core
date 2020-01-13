@@ -9,7 +9,7 @@ public class ListValue implements Value<List<String>> {
     this.list = list;
   }
 
-  public ListValue of(List<String> list) {
+  public static ListValue of(List<String> list) {
     return new ListValue(list);
   }
 
