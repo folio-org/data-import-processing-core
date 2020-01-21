@@ -517,7 +517,7 @@ public class MarcValueReaderTest {
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
-    assertEquals("nl78netнэтъюююйцукbролл1234", result.getValue());
+    assertEquals("nl78netнэтъюююйцукbролл1234汉字éÓ", result.getValue());
   }
 
 }
