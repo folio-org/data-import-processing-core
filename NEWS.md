@@ -5,3 +5,5 @@
 * Added mapping manager
 * Added MARC readers
 * Added common json writer
+* Implemented MarcValueReader
+* Added match expression processor

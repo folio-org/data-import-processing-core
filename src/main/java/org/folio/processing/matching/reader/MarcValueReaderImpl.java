@@ -15,14 +15,16 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingRecordType.MARC;
+import static org.folio.processing.matching.reader.util.MatchExpressionProcessor.extractComparisonPart;
+import static org.folio.processing.matching.reader.util.MatchExpressionProcessor.isQualified;
 
 /**
  * Implementation of MatchValueReader for MARC records
@@ -61,9 +63,10 @@ public class MarcValueReaderImpl implements MatchValueReader {
     Map<String, String> matchExpressionFields = getMatchExpressionFields(matchExpression.getFields());
     List<String> marcFieldValues = readMarcFieldValues(marcRecord, matchExpressionFields)
       .stream()
-      .map(marcField -> readValue(marcField, matchExpressionFields))
-      .filter(Optional::isPresent)
-      .map(Optional::get)
+      .map(marcField -> readValues(marcField, matchExpressionFields))
+      .flatMap(List::stream)
+      .filter(value -> isQualified(value, matchExpression.getQualifier()))
+      .map(value -> extractComparisonPart(value, matchExpression.getQualifier()))
       .collect(Collectors.toList());
 
     if (marcFieldValues.isEmpty()) {
@@ -93,16 +96,15 @@ public class MarcValueReaderImpl implements MatchValueReader {
     }
   }
 
-  private Optional<String> readValue(JsonNode fieldValue, Map<String, String> matchExpressionFields) {
+  private List<String> readValues(JsonNode fieldValue, Map<String, String> matchExpressionFields) {
     if (fieldValue.isTextual()) {
-      return Optional.of(fieldValue.textValue());
+      return Collections.singletonList(fieldValue.textValue());
     }
     JsonNode subfields = fieldValue.at(MARC_SUBFIELDS_POINTER);
-    JsonNode subfield = subfields.findValue(matchExpressionFields.get(SUBFIELD_PROFILE_LABEL));
-    if (subfield != null && subfield.isTextual()) {
-      return Optional.of(subfield.textValue());
-    }
-    return Optional.empty();
+    return subfields.findValues(matchExpressionFields.get(SUBFIELD_PROFILE_LABEL)).stream()
+      .filter(JsonNode::isTextual)
+      .map(JsonNode::textValue)
+      .collect(Collectors.toList());
   }
 
   private boolean isMatchingIdentifiers(JsonNode field, Map<String, String> matchExpressionFields) {
