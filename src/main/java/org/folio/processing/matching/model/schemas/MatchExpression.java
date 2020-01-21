@@ -40,7 +40,7 @@ public class MatchExpression {
   @JsonProperty("fields")
   @JsonPropertyDescription("Only if dataValueType = VALUE_FROM_RECORD")
   @Valid
-  private List<Field> fields = new ArrayList<Field>();
+  private List<Field> fields = new ArrayList<>();
   /**
    * Match Profile static value details
    */
@@ -147,7 +147,7 @@ public class MatchExpression {
     VALUE_FROM_RECORD("VALUE_FROM_RECORD"),
     STATIC_VALUE("STATIC_VALUE");
     private final String value;
-    private final static Map<String, DataValueType> CONSTANTS = new HashMap<String, DataValueType>();
+    private static final Map<String, DataValueType> CONSTANTS = new HashMap<>();
 
     static {
       for (MatchExpression.DataValueType c : values()) {
