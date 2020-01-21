@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingRecordType.MARC;
-import static org.folio.processing.matching.reader.util.MatchExpressionProcessor.extractComparisonPart;
-import static org.folio.processing.matching.reader.util.MatchExpressionProcessor.isQualified;
+import static org.folio.processing.matching.reader.util.MatchExpressionUtil.extractComparisonPart;
+import static org.folio.processing.matching.reader.util.MatchExpressionUtil.isQualified;
 
 /**
  * Implementation of MatchValueReader for MARC records

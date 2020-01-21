@@ -12,12 +12,12 @@ import static org.folio.processing.matching.model.schemas.Qualifier.QualifierTyp
 /**
  * Util class to process value according to MatchExpression
  */
-public final class MatchExpressionProcessor {
+public final class MatchExpressionUtil {
 
   private static final String NON_DIGIT = "\\D+";
-  private static final String NON_DIGIT_AND_NON_ALPHA = "[^a-zA-Z0-9]";
+  private static final String NON_DIGIT_AND_NON_ALPHA = "[^\\p{L}\\p{N}]";
 
-  private MatchExpressionProcessor() {}
+  private MatchExpressionUtil() {}
 
   /**
    * Extracts specified comparison part of the value

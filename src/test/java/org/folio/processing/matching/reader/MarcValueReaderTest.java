@@ -495,6 +495,29 @@ public class MarcValueReaderTest {
     assertEquals("md", result.getValue());
   }
 
-
+  @Test
+  public void shouldReturn_StringValue_ExtractAlphaNumericsOnly() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("999"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("c")
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(ALPHANUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("nl78netнэтъюююйцукbролл1234", result.getValue());
+  }
 
 }
