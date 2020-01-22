@@ -6,6 +6,7 @@ import org.folio.processing.events.model.EventContext;
 import org.folio.processing.matching.model.schemas.Field;
 import org.folio.processing.matching.model.schemas.MatchDetail;
 import org.folio.processing.matching.model.schemas.MatchExpression;
+import org.folio.processing.matching.model.schemas.Qualifier;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.Value;
 import org.junit.BeforeClass;
@@ -19,6 +20,11 @@ import java.util.Arrays;
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.STATIC_VALUE;
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingRecordType.MARC;
+import static org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
+import static org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart.NUMERICS_ONLY;
+import static org.folio.processing.matching.model.schemas.Qualifier.QualifierType.BEGINS_WITH;
+import static org.folio.processing.matching.model.schemas.Qualifier.QualifierType.CONTAINS;
+import static org.folio.processing.matching.model.schemas.Qualifier.QualifierType.ENDS_WITH;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 import static org.folio.processing.value.Value.ValueType.STRING;
@@ -38,7 +44,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_StringFieldValue_FromRecord() {
+  public void shouldRead_StringValue() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -194,8 +200,8 @@ public class MarcValueReaderTest {
     assertEquals(LIST, result.getType());
     ListValue listValue = (ListValue) result;
     assertEquals(2, listValue.getValue().size());
-    assertTrue( listValue.getValue().contains("2940447241 (electronic bk.)"));
-    assertTrue( listValue.getValue().contains("9782940447244 (electronic bk.)"));
+    assertTrue(listValue.getValue().contains("2940447241 (electronic bk.)"));
+    assertTrue(listValue.getValue().contains("9782940447244 (electronic bk.)"));
   }
 
   @Test
@@ -278,6 +284,265 @@ public class MarcValueReaderTest {
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
+  }
+
+  @Test
+  public void shouldReturn_ListValue_IfMultipleSubFields() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("776"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("z")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(LIST, result.getType());
+    ListValue listValue = (ListValue) result;
+    assertEquals(2, listValue.getValue().size());
+    assertTrue(listValue.getValue().contains("9782940411764"));
+    assertTrue(listValue.getValue().contains("294041176X"));
+  }
+
+  @Test
+  public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithBeginsWithQualifier() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("776"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("z")
+        ))
+        .withQualifier(new Qualifier()
+          .withQualifierType(BEGINS_WITH)
+          .withQualifierValue("978")));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("9782940411764", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithEndsWithQualifier() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("776"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("z")
+        ))
+        .withQualifier(new Qualifier()
+          .withQualifierType(ENDS_WITH)
+          .withQualifierValue("X")));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("294041176X", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_ListValue_IfMultipleFields_FilterWithContainsQualifier() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("020"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("a")
+        ))
+        .withQualifier(new Qualifier()
+          .withQualifierType(CONTAINS)
+          .withQualifierValue("(electronic bk.)")));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(LIST, result.getType());
+    ListValue listValue = (ListValue) result;
+    assertEquals(2, listValue.getValue().size());
+    assertTrue(listValue.getValue().contains("2940447241 (electronic bk.)"));
+    assertTrue(listValue.getValue().contains("9782940447244 (electronic bk.)"));
+  }
+
+  @Test
+  public void shouldReturn_StringValue_IfMultipleSubFields_WithComparisonPart() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("776"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("z")
+        ))
+        .withQualifier(new Qualifier()
+          .withQualifierType(ENDS_WITH)
+          .withQualifierValue("X")
+          .withComparisonPart(NUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("294041176", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_NumericOnly() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("001"),
+          new Field().withLabel("indicator1").withValue(StringUtils.EMPTY),
+          new Field().withLabel("indicator2").withValue(StringUtils.EMPTY),
+          new Field().withLabel("recordSubfield").withValue(StringUtils.EMPTY)
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(NUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("7406411", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_AlphaNumericOnly() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("008"),
+          new Field().withLabel("indicator1").withValue(StringUtils.EMPTY),
+          new Field().withLabel("indicator2").withValue(StringUtils.EMPTY),
+          new Field().withLabel("recordSubfield").withValue(StringUtils.EMPTY)
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(ALPHANUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("120329s2011szaob0010engd", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_AlphaNumericsOnly() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("006"),
+          new Field().withLabel("indicator1").withValue(StringUtils.EMPTY),
+          new Field().withLabel("indicator2").withValue(StringUtils.EMPTY),
+          new Field().withLabel("recordSubfield").withValue(StringUtils.EMPTY)
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(ALPHANUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("md", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_AlphaNumerics() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("999"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("c")
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(ALPHANUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("nl78netнэтъюююйцукbролл1234汉字éÓ", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_Numerics() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("999"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("c")
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(NUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("781234", result.getValue());
   }
 
 }
