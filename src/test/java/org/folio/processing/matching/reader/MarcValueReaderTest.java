@@ -44,7 +44,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_StringFieldValue_FromRecord() {
+  public void shouldRead_StringValue() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -394,7 +394,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_IfMultipleSubFields_ProcessWithComparisonPart() {
+  public void shouldReturn_StringValue_IfMultipleSubFields_WithComparisonPart() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -421,7 +421,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_ProcessNumericOnly() {
+  public void shouldReturn_StringValue_NumericOnly() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -446,7 +446,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_ProcessAlphaNumericOnly() {
+  public void shouldReturn_StringValue_AlphaNumericOnly() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -471,7 +471,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_ProcessAlphaNumericsOnly() {
+  public void shouldReturn_StringValue_AlphaNumericsOnly() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -496,7 +496,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_ExtractAlphaNumericsOnly() {
+  public void shouldReturn_StringValue_AlphaNumerics() {
     // given
     EventContext eventContext = new EventContext();
     eventContext.putObject(MARC.value(), MARC_RECORD);
@@ -518,6 +518,31 @@ public class MarcValueReaderTest {
     assertNotNull(result);
     assertEquals(STRING, result.getType());
     assertEquals("nl78netнэтъюююйцукbролл1234汉字éÓ", result.getValue());
+  }
+
+  @Test
+  public void shouldReturn_StringValue_Numerics() {
+    // given
+    EventContext eventContext = new EventContext();
+    eventContext.putObject(MARC.value(), MARC_RECORD);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("999"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("c")
+        ))
+        .withQualifier(new Qualifier()
+          .withComparisonPart(NUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventContext, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("781234", result.getValue());
   }
 
 }

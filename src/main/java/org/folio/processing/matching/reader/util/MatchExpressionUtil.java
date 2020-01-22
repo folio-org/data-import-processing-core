@@ -14,7 +14,7 @@ import static org.folio.processing.matching.model.schemas.Qualifier.QualifierTyp
  */
 public final class MatchExpressionUtil {
 
-  private static final String NON_DIGIT = "\\D+";
+  private static final String NON_DIGIT = "[^\\p{N}]";
   private static final String NON_DIGIT_AND_NON_ALPHA = "[^\\p{L}\\p{N}]";
 
   private MatchExpressionUtil() {}
