@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.writer;
 
 import org.folio.processing.value.ListValue;
+import org.folio.processing.value.MapValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 
@@ -18,6 +19,9 @@ public abstract class AbstractWriter implements Writer {
       case LIST:
         writeListValue(fieldPath, (ListValue) value);
         break;
+      case MAP:
+        writeObjectValue(fieldPath, (MapValue) value);
+        break;
       case MISSING:
         break;
       default:
@@ -28,4 +32,6 @@ public abstract class AbstractWriter implements Writer {
   protected abstract void writeStringValue(String fieldPath, StringValue value);
 
   protected abstract void writeListValue(String fieldPath, ListValue value);
+
+  protected abstract void writeObjectValue(String fieldPath, MapValue value);
 }

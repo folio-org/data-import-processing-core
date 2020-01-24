@@ -34,6 +34,7 @@ public interface Value<T> {
   enum ValueType {
     STRING,
     LIST,
+    MAP,
     MISSING
   }
 }

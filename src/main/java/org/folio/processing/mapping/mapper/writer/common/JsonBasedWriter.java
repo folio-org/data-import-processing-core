@@ -10,12 +10,12 @@ import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.value.ListValue;
+import org.folio.processing.value.MapValue;
 import org.folio.processing.value.StringValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import static java.lang.String.format;
 
@@ -51,6 +51,12 @@ public class JsonBasedWriter extends AbstractWriter {
   protected void writeListValue(String fieldPath, ListValue listValue) {
     ArrayNode arrayNode = objectMapper.valueToTree(listValue.getValue());
     setValueByFieldPath(fieldPath, arrayNode);
+  }
+
+  @Override
+  protected void writeObjectValue(String fieldPath, MapValue mapValue) {
+    JsonNode objectNode = objectMapper. valueToTree(mapValue.getValue());
+    setValueByFieldPath(fieldPath, objectNode);
   }
 
   /**
@@ -100,18 +106,20 @@ public class JsonBasedWriter extends AbstractWriter {
   private void setValueNode(FieldPathIterator.PathItem pathItem, JsonNode fieldValue, JsonNode parentNode) {
     if (parentNode.isArray()) {
       throw new IllegalStateException("Wrong field path: Array can not be a parent node");
-    } else {
-      if (pathItem.isArray() && fieldValue.isArray()) {
-        ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
-        Iterator<JsonNode> iterator = fieldValue.iterator();
-        while (iterator.hasNext()) {
-          arrayNode.add(iterator.next());
-        }
-      } else if (pathItem.isObject() && fieldValue.isValueNode()) {
-        ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
-      } else {
-        throw new IllegalStateException("Types mismatch: Type of path item and type of the value are incompatible");
+    }
+
+    if (pathItem.isArray() && fieldValue.isArray()) {
+      ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+      for (JsonNode jsonNode : fieldValue) {
+        arrayNode.add(jsonNode);
       }
+    } else if (pathItem.isArray() && fieldValue.isObject()) {
+      ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+      arrayNode.add(fieldValue);
+    } else if (pathItem.isObject() && !fieldValue.isArray()) {
+      ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
+    } else {
+      throw new IllegalStateException("Types mismatch: Type of path item and type of the value are incompatible");
     }
   }
 
