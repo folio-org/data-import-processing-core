@@ -55,7 +55,7 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeObjectValue(String fieldPath, MapValue mapValue) {
-    JsonNode objectNode = objectMapper. valueToTree(mapValue.getValue());
+    JsonNode objectNode = objectMapper.valueToTree(mapValue.getValue());
     setValueByFieldPath(fieldPath, objectNode);
   }
 
