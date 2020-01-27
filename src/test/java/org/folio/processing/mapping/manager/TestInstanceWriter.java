@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.value.ListValue;
+import org.folio.processing.value.MapValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 
@@ -41,6 +42,11 @@ public class TestInstanceWriter extends AbstractWriter {
 
   @Override
   protected void writeListValue(String fieldPath, ListValue value) {
+
+  }
+
+  @Override
+  protected void writeObjectValue(String fieldPath, MapValue value) {
 
   }
 }

@@ -7,3 +7,4 @@
 * Added common json writer
 * Implemented MarcValueReader
 * Added match expression processor
+* Added HoldingsWriterFactory

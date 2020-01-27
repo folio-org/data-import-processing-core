@@ -152,9 +152,6 @@
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
         <version>0.4.37</version>
         <configuration>
-          <includes>
-            <include>profileSnapshotWrapper.json</include>
-          </includes>
           <outputDirectory>${jsonschema2pojo_output_dir}</outputDirectory>
         </configuration>
         <executions>
@@ -164,8 +161,12 @@
               <goal>generate</goal>
             </goals>
             <configuration>
-              <sourceDirectory>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage</sourceDirectory>
+              <sourcePaths>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/profileSnapshotWrapper.json</path>
+                <path>${basedir}/ramls/holdingsrecord.json</path>
+              </sourcePaths>
               <targetPackage>org.folio</targetPackage>
+              <generateBuilders>true</generateBuilders>
             </configuration>
           </execution>
         </executions>
