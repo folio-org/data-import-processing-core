@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.writer.holdings;
+package org.folio.processing.mapping.mapper.writer.holding;
 
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;

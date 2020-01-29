@@ -163,7 +163,8 @@
             <configuration>
               <sourcePaths>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/profileSnapshotWrapper.json</path>
-                <path>${basedir}/ramls/holdingsrecord.json</path>
+                <path>${basedir}/ramls/holdings/holdingsrecord.json</path>
+                <path>${basedir}/ramls/item/item.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>
