@@ -162,6 +162,7 @@
             </goals>
             <configuration>
               <sourcePaths>
+                <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventPayload.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/profileSnapshotWrapper.json</path>
                 <path>${basedir}/ramls/holdings/holdingsrecord.json</path>
                 <path>${basedir}/ramls/item/item.json</path>
