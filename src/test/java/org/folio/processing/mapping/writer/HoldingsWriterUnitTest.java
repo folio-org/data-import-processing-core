@@ -8,7 +8,7 @@ import org.folio.ReceivingHistory;
 import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.writer.Writer;
-import org.folio.processing.mapping.mapper.writer.holdings.HoldingsWriterFactory;
+import org.folio.processing.mapping.mapper.writer.holding.HoldingsWriterFactory;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MapValue;
 import org.folio.processing.value.StringValue;
