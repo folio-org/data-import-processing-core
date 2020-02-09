@@ -1,13 +1,17 @@
 package org.folio.processing.matching.loader;
 
+import org.folio.processing.matching.loader.query.DefaultLoadQuery;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
 import org.folio.processing.matching.model.schemas.Field;
 import org.folio.processing.matching.model.schemas.MatchDetail;
 import org.folio.processing.matching.model.schemas.MatchExpression;
 import org.folio.processing.matching.model.schemas.Qualifier;
+import org.folio.processing.matching.model.schemas.StaticValueDetails;
 import org.folio.processing.value.ListValue;
+import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
+import org.folio.processing.value.Value;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -22,9 +26,11 @@ import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCrite
 import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE;
 import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXISTING_VALUE;
 import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
+import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.STATIC_VALUE;
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @RunWith(JUnit4.class)
 public class LoadQueryBuilderTest {
@@ -374,6 +380,70 @@ public class LoadQueryBuilderTest {
         + "OR REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:alnum:]]','','g') LIKE '%s%%')",
       value.getValue().get(0), value.getValue().get(1));
     assertEquals(expectedSQLQuery, result.getSql());
+  }
+
+  @Test
+  public void shouldReturnNullIfPassedNullValue() {
+    // given
+    Value value = null;
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("purchase_order.poNumber"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNull(result);
+  }
+
+  @Test
+  public void shouldReturnNullIfPassedMissingValue() {
+    // given
+    Value value = MissingValue.getInstance();
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("purchase_order.poNumber"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNull(result);
+  }
+
+  @Test
+  public void shouldReturnNullIfMatchingByStaticValue() {
+    // given
+    Value value = MissingValue.getInstance();
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(STATIC_VALUE)
+        .withStaticValueDetails(
+          new StaticValueDetails()));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNull(result);
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void dummyTestForDefaultLoadQuery() {
+    // given
+    String tableName = "instance";
+    String fieldName = "hrid";
+    String whereClause = "WHERE FIELD_NAME = 'ybp7406411'";
+    //when
+    LoadQuery result = new DefaultLoadQuery(tableName, fieldName, whereClause);
+    //then
+    assertNotNull(result.getSql());
+    assertEquals(whereClause.replace("FIELD_NAME", "instance.hrid"), result.getSql());
+    result.getCql();
   }
 
 }
