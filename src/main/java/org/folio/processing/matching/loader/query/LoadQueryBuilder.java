@@ -21,6 +21,16 @@ public class LoadQueryBuilder {
 
   private static final String JSON_PATH_SEPARATOR = ".";
 
+  /**
+   * Builds LoadQuery,
+   * applicable only for STRING and LIST value types,
+   * applicable only for VALUE_FROM_RECORD data type,
+   * currently supports building query only by single field (support for loading MARC records will be added later)
+   *
+   * @param value value to match against
+   * @param matchDetail match detail
+   * @return LoadQuery or null if query cannot be built
+   */
   public static LoadQuery build(Value value, MatchDetail matchDetail) {
     if (value != null && (value.getType() == STRING || value.getType() == LIST)) {
       MatchExpression matchExpression = matchDetail.getExistingMatchExpression();
@@ -35,11 +45,8 @@ public class LoadQueryBuilder {
           return new DefaultJsonLoadQuery(tableName, fieldName, queryHolder.getSqlQuery(), queryHolder.getCqlQuery());
         }
         // TODO Support loading of MARC records
-        // Building query by multiple fields is not supported
       }
-      // Load query is not applicable for STATIC_VALUE data type
     }
-    // Load query can be built only for STRING or LIST value types
     return null;
   }
 

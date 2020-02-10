@@ -31,6 +31,7 @@ import static org.folio.processing.matching.model.schemas.MatchExpression.DataVa
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 @RunWith(JUnit4.class)
 public class LoadQueryBuilderTest {
@@ -432,7 +433,7 @@ public class LoadQueryBuilderTest {
     assertNull(result);
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void dummyTestForDefaultLoadQuery() {
     // given
     String tableName = "instance";
@@ -443,7 +444,12 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result.getSql());
     assertEquals(whereClause.replace("FIELD_NAME", "instance.hrid"), result.getSql());
-    result.getCql();
+    try {
+      result.getCql();
+      fail();
+    } catch (Exception e) {
+      assertEquals(UnsupportedOperationException.class, e.getClass());
+    }
   }
 
 }

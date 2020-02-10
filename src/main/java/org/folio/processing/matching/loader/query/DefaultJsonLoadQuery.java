@@ -59,10 +59,9 @@ public class DefaultJsonLoadQuery implements LoadQuery {
     int count = countMatches(jsonPath, ARRAY_SIGN);
     if (count > 1) {
       throw new UnsupportedOperationException("Searching in nested arrays is not supported");
-    } else if (count == 1) {
-      return true;
+    } else {
+      return count == 1;
     }
-    return false;
   }
 
   private String prependArrayJoin(String tableName, String jsonbFieldPath) {
