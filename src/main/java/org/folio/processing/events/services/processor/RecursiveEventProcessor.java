@@ -20,7 +20,7 @@ public class RecursiveEventProcessor implements EventProcessor {
       .findFirst();
     if (optionalEventHandler.isPresent()) {
       EventHandler nextEventHandler = optionalEventHandler.get();
-      processEventRecursively(eventPayload, nextEventHandler).whenComplete((processContext, throwable) -> {
+      processEventRecursively(eventPayload, nextEventHandler).whenComplete((processPayload, throwable) -> {
         if (throwable != null) {
           future.completeExceptionally(throwable);
         } else {
@@ -35,7 +35,7 @@ public class RecursiveEventProcessor implements EventProcessor {
 
   private CompletableFuture<DataImportEventPayload> processEventRecursively(DataImportEventPayload eventPayload, EventHandler eventHandler) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    eventHandler.handle(eventPayload).whenComplete((handlerEventContext, handlerThrowable) -> {
+    eventHandler.handle(eventPayload).whenComplete((handlerEventPayload, handlerThrowable) -> {
       if (handlerThrowable != null) {
         future.completeExceptionally(handlerThrowable);
       } else {

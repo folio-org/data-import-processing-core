@@ -21,20 +21,20 @@ public final class EventManager {
 
   /**
    * Handles the given payload of event.
-   * If there are handlers found to handle event then the EventManager calls EventProcessor passing event context.
+   * If there are handlers found to handle event then the EventManager calls EventProcessor passing event payload.
    * After processing the EventManager calls EventPublisher to send next event up to the queue.
    *
    * @param eventPayload event payload as a string
-   * @return future with event context
+   * @return future with event payload
    */
   public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    eventProcessor.process(eventPayload).whenComplete((processContext, processThrowable) -> {
+    eventProcessor.process(eventPayload).whenComplete((processPayload, processThrowable) -> {
       if (processThrowable != null) {
         future.completeExceptionally(processThrowable);
       } else {
-          prepareContext(eventPayload);
-          eventPublisher.publish(eventPayload).whenComplete((publishContext, publishThrowable) -> {
+          prepareEventPayload(eventPayload);
+          eventPublisher.publish(eventPayload).whenComplete((publishPayload, publishThrowable) -> {
             if (publishThrowable != null) {
               future.completeExceptionally(publishThrowable);
             } else {
@@ -51,7 +51,7 @@ public final class EventManager {
    *
    * @param eventPayload eventPayload
    */
-  private static void prepareContext(DataImportEventPayload eventPayload) {
+  private static void prepareEventPayload(DataImportEventPayload eventPayload) {
     // update currentNode
     // update currentNodePath
   }

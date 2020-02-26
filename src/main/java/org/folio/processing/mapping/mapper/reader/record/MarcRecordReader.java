@@ -28,7 +28,7 @@ public class MarcRecordReader implements Reader {
       String stringRecord = eventPayload.getContext().get(entityType.value());
       this.fieldsNode = new ObjectMapper().readTree(stringRecord).at(MARC_FIELDS_POINTER);
     } else {
-      throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in context");
+      throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in event payload");
     }
   }
 

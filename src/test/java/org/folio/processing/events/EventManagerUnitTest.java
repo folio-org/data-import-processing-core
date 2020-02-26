@@ -119,7 +119,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.handleEvent(eventPayload).whenComplete((nextEventContext, throwable) -> {
       // then
       testContext.assertNotNull(throwable);
-      testContext.assertEquals("java.lang.IllegalArgumentException: Can not handle event context", throwable.getMessage());
+      testContext.assertEquals("java.lang.IllegalArgumentException: Can not handle event payload", throwable.getMessage());
       testContext.assertEquals(expectedEventChainSize, eventPayload.getEventsChain().size());
       testContext.assertEquals("DI_SRS_MARC_BIB_RECORD_CREATED", eventPayload.getEventType());
       async.complete();

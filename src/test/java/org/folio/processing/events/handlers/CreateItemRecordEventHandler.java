@@ -14,7 +14,7 @@ public class CreateItemRecordEventHandler extends AbstractEventHandler {
   private final Logger LOGGER = LoggerFactory.getLogger(CreateItemRecordEventHandler.class);
 
   @Override
-  public CompletableFuture<DataImportEventPayload> handleContext(DataImportEventPayload eventPayload) {
+  public CompletableFuture<DataImportEventPayload> handleEventPayload(DataImportEventPayload eventPayload) {
     LOGGER.info("Handling event " + getHandlerEventType());
     return CompletableFuture.completedFuture(eventPayload);
   }

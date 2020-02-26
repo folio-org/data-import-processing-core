@@ -19,7 +19,7 @@ public interface EventHandler {
 
   /**
    * Returns event type that handler can handle.
-   * <code>handle</code> methods runs if type of event from context is the same as type of handler.
+   * <code>handle</code> methods runs if type of event from payload is the same as type of handler.
    *
    * @return handler event type
    */

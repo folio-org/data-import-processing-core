@@ -11,11 +11,11 @@ public abstract class AbstractEventHandler implements EventHandler {
 
   @Override
   public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload) {
-    return handleContext(eventPayload)
+    return handleEventPayload(eventPayload)
       .thenCompose(nextContext -> CompletableFuture.completedFuture(prepareForNextHandler(nextContext)));
   }
 
-  protected abstract CompletableFuture<DataImportEventPayload> handleContext(DataImportEventPayload eventPayload);
+  protected abstract CompletableFuture<DataImportEventPayload> handleEventPayload(DataImportEventPayload eventPayload);
 
   protected DataImportEventPayload prepareForNextHandler(DataImportEventPayload eventPayload) {
     eventPayload.setEventType(getTargetEventType());

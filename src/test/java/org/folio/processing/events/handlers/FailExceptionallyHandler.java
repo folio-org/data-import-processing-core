@@ -14,7 +14,7 @@ public class FailExceptionallyHandler extends AbstractEventHandler {
   private final Logger LOGGER = LoggerFactory.getLogger(FailExceptionallyHandler.class);
 
   @Override
-  public CompletableFuture<DataImportEventPayload> handleContext(DataImportEventPayload eventPayload) {
+  public CompletableFuture<DataImportEventPayload> handleEventPayload(DataImportEventPayload eventPayload) {
     LOGGER.info("Handling event " + getHandlerEventType());
     CompletableFuture future = new CompletableFuture();
     future.completeExceptionally(new IllegalArgumentException("Can not handle event payload"));
