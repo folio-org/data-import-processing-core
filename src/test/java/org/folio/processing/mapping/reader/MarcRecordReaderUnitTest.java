@@ -1,6 +1,6 @@
 package org.folio.processing.mapping.reader;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.record.MarcAuthorityReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.MarcBibReaderFactory;
@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import static org.folio.processing.mapping.model.MappingProfile.EntityType.*;
 import static org.junit.Assert.assertEquals;
@@ -25,10 +26,12 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_IndexTitle_FromBibliographic() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     Value indexTitle = reader.read("245");
     // then
@@ -40,10 +43,12 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_IndexTitle_FromHoldings() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_HOLDINGS.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_HOLDINGS.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcHoldingsReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     Value indexTitle = reader.read("245");
     // then
@@ -55,10 +60,12 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_IndexTitle_FromAuthority() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_AUTHORITY.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_AUTHORITY.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcAuthorityReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     Value indexTitle = reader.read("245");
     // then
@@ -71,10 +78,12 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_MissingField_FromBibliographic() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     Value missingField = reader.read("999");
     // then
@@ -85,10 +94,12 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_MissingField_FromHoldings() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_HOLDINGS.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_HOLDINGS.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcHoldingsReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     Value missingField = reader.read("999");
     // then
@@ -99,10 +110,12 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_MissingField_FromAuthority() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_AUTHORITY.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_AUTHORITY.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcAuthorityReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     Value missingField = reader.read("999");
     // then
@@ -114,10 +127,12 @@ public class MarcRecordReaderUnitTest {
   @Test(expected = NullPointerException.class)
   public void shouldThrowException_OnRead_NullField_FromBibliographic() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     reader.read(null);
     // then expect NullPointerException
@@ -126,10 +141,12 @@ public class MarcRecordReaderUnitTest {
   @Test(expected = NullPointerException.class)
   public void shouldThrowException_OnRead_NullField_FromHoldings() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_HOLDINGS.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_HOLDINGS.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcHoldingsReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     reader.read(null);
     // then expect NullPointerException
@@ -138,10 +155,12 @@ public class MarcRecordReaderUnitTest {
   @Test(expected = NullPointerException.class)
   public void shouldThrowException_OnRead_NullField_FromAuthority() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC_AUTHORITY.value(), RECORD);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_AUTHORITY.value(), RECORD);
+    eventPayload.setContext(context);
     Reader reader = new MarcAuthorityReaderFactory().createReader();
-    reader.initialize(eventContext);
+    reader.initialize(eventPayload);
     // when
     reader.read(null);
     // then expect NullPointerException

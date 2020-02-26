@@ -1,6 +1,6 @@
 package org.folio.processing.matching.manager;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.matching.model.schemas.MatchDetail;
 import org.folio.processing.matching.model.schemas.MatchProfile;
 import org.folio.processing.matching.reader.MatchValueReader;
@@ -10,7 +10,7 @@ import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingR
 
 public class TestMatchValueReader implements MatchValueReader {
     @Override
-    public Value read(EventContext context, MatchDetail matchDetail) {
+    public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
       return null;
     }
 

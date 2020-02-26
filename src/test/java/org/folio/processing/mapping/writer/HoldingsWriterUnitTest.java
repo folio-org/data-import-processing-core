@@ -1,11 +1,11 @@
 package org.folio.processing.mapping.writer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.folio.DataImportEventPayload;
 import org.folio.ElectronicAccess;
 import org.folio.Entry;
 import org.folio.Holdingsrecord;
 import org.folio.ReceivingHistory;
-import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.holding.HoldingsWriterFactory;
@@ -21,6 +21,7 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -68,8 +69,10 @@ public class HoldingsWriterUnitTest {
   @Test
   public void shouldWriteHrid() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(HOLDINGS.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), "{}");
+    eventContext.setContext(context);
     Writer holdingsWriter = factoryRegistry.createWriter(HOLDINGS);
 
     // when
@@ -78,7 +81,7 @@ public class HoldingsWriterUnitTest {
     holdingsWriter.getResult(eventContext);
 
     // then
-    String holdingsRecordJson = eventContext.getObjects().get(HOLDINGS.value());
+    String holdingsRecordJson = eventContext.getContext().get(HOLDINGS.value());
     Holdingsrecord actualHoldingsRecord = new ObjectMapper().readValue(holdingsRecordJson, Holdingsrecord.class);
     Assert.assertThat(actualHoldingsRecord.getHrid(), is(holdingsRecord.getHrid()));
   }
@@ -86,8 +89,10 @@ public class HoldingsWriterUnitTest {
   @Test
   public void shouldWriteFormerIds() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(HOLDINGS.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), "{}");
+    eventContext.setContext(context);
     Writer holdingsWriter = factoryRegistry.createWriter(HOLDINGS);
 
     // when
@@ -96,7 +101,7 @@ public class HoldingsWriterUnitTest {
     holdingsWriter.getResult(eventContext);
 
     // then
-    String holdingsRecordJson = eventContext.getObjects().get(HOLDINGS.value());
+    String holdingsRecordJson = eventContext.getContext().get(HOLDINGS.value());
     Holdingsrecord actualHoldingsRecord = new ObjectMapper().readValue(holdingsRecordJson, Holdingsrecord.class);
     Assert.assertTrue(actualHoldingsRecord.getFormerIds().containsAll(actualHoldingsRecord.getFormerIds()));
   }
@@ -104,8 +109,10 @@ public class HoldingsWriterUnitTest {
   @Test
   public void shouldWriteElectronicAccess() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(HOLDINGS.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), "{}");
+    eventContext.setContext(context);
     Writer holdingsWriter = factoryRegistry.createWriter(HOLDINGS);
 
     // when
@@ -121,7 +128,7 @@ public class HoldingsWriterUnitTest {
     holdingsWriter.getResult(eventContext);
 
     // then
-    String holdingsRecordJson = eventContext.getObjects().get(HOLDINGS.value());
+    String holdingsRecordJson = eventContext.getContext().get(HOLDINGS.value());
     Holdingsrecord actualHoldingsRecord = new ObjectMapper().readValue(holdingsRecordJson, Holdingsrecord.class);
     Assert.assertTrue(actualHoldingsRecord.getElectronicAccess().containsAll(holdingsRecord.getElectronicAccess()));
   }
@@ -131,8 +138,10 @@ public class HoldingsWriterUnitTest {
     // given
     FactoryRegistry factoryRegistry = new FactoryRegistry();
     factoryRegistry.getWriterFactories().add(new HoldingsWriterFactory());
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(HOLDINGS.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), "{}");
+    eventContext.setContext(context);
     Writer holdingsWriter = factoryRegistry.createWriter(HOLDINGS);
 
     // when
@@ -149,7 +158,7 @@ public class HoldingsWriterUnitTest {
     holdingsWriter.getResult(eventContext);
 
     // then
-    String holdingsRecordJson = eventContext.getObjects().get(HOLDINGS.value());
+    String holdingsRecordJson = eventContext.getContext().get(HOLDINGS.value());
     Holdingsrecord actualHoldingsRecord = new ObjectMapper().readValue(holdingsRecordJson, Holdingsrecord.class);
     Assert.assertThat(actualHoldingsRecord.getReceivingHistory().getDisplayType(), is(expectedReceivingHistory.getDisplayType()));
     Assert.assertTrue(actualHoldingsRecord.getReceivingHistory().getEntries().containsAll(expectedReceivingHistory.getEntries()));

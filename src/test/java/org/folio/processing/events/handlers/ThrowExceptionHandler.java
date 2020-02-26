@@ -1,6 +1,6 @@
 package org.folio.processing.events.handlers;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.AbstractEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,20 +8,20 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Test event handler. Throws exception while handling event context.
+ * Test event handler. Throws exception while handling event payload.
  */
 public class ThrowExceptionHandler extends AbstractEventHandler {
   private final Logger LOGGER = LoggerFactory.getLogger(ThrowExceptionHandler.class);
 
   @Override
-  public CompletableFuture<EventContext> handleContext(EventContext context) {
+  public CompletableFuture<DataImportEventPayload> handleEventPayload(DataImportEventPayload eventPayload) {
     LOGGER.info("Handling event " + getHandlerEventType());
-    throw new IllegalArgumentException("Can not handle event context");
+    throw new IllegalArgumentException("Can not handle event payload");
   }
 
   @Override
   public String getHandlerEventType() {
-    return "CREATED_SRS_MARC_BIB_RECORD";
+    return "DI_SRS_MARC_BIB_RECORD_CREATED";
   }
 
   @Override

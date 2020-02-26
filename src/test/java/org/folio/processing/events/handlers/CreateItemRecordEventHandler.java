@@ -1,6 +1,6 @@
 package org.folio.processing.events.handlers;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.AbstractEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,18 +14,18 @@ public class CreateItemRecordEventHandler extends AbstractEventHandler {
   private final Logger LOGGER = LoggerFactory.getLogger(CreateItemRecordEventHandler.class);
 
   @Override
-  public CompletableFuture<EventContext> handleContext(EventContext context) {
+  public CompletableFuture<DataImportEventPayload> handleEventPayload(DataImportEventPayload eventPayload) {
     LOGGER.info("Handling event " + getHandlerEventType());
-    return CompletableFuture.completedFuture(context);
+    return CompletableFuture.completedFuture(eventPayload);
   }
 
   @Override
   public String getHandlerEventType() {
-    return "CREATED_HOLDINGS_RECORD";
+    return "DI_HOLDINGS_RECORD_CREATED";
   }
 
   @Override
   public String getTargetEventType() {
-    return "CREATED_ITEM_RECORD";
+    return "DI_ITEM_RECORD_CREATED";
   }
 }

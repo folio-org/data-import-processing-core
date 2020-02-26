@@ -3,8 +3,7 @@ package org.folio.processing.events;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.folio.processing.events.model.EventContext;
-import org.folio.processing.events.util.EventContextUtil;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.events.handlers.CreateHoldingsRecordEventHandler;
 import org.folio.processing.events.handlers.CreateInstanceEventHandler;
 import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
@@ -32,19 +31,21 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
     EventManager.registerEventHandler(new CreateItemRecordEventHandler());
-    EventContext eventContext = new EventContext("CREATED_SRS_MARC_BIB_RECORD", okapiConnectionParams);
-    String eventPayload = EventContextUtil.toEventPayload(eventContext);
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
+      .withTenant(okapiConnectionParams.getTenantId())
+      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
+      .withToken(okapiConnectionParams.getToken());
     // when
     EventManager.handleEvent(eventPayload).whenComplete((nextEventContext, throwable) -> {
       // then
       testContext.assertNull(throwable);
-      testContext.assertTrue(nextEventContext.isHandled());
-      testContext.assertEquals(expectedEventChainSize, nextEventContext.getEventChain().size());
+      testContext.assertEquals(expectedEventChainSize, nextEventContext.getEventsChain().size());
       testContext.assertEquals(
-        nextEventContext.getEventChain(),
-        Arrays.asList("CREATED_SRS_MARC_BIB_RECORD", "CREATED_INVENTORY_INSTANCE", "CREATED_HOLDINGS_RECORD")
+        nextEventContext.getEventsChain(),
+        Arrays.asList("DI_SRS_MARC_BIB_RECORD_CREATED", "DI_INVENTORY_INSTANCE_CREATED", "DI_HOLDINGS_RECORD_CREATED")
       );
-      testContext.assertEquals("CREATED_ITEM_RECORD", nextEventContext.getEventType());
+      testContext.assertEquals("DI_ITEM_RECORD_CREATED", nextEventContext.getEventType());
       async.complete();
     });
   }
@@ -54,15 +55,16 @@ public class EventManagerUnitTest extends AbstractRestTest {
     Async async = testContext.async();
     // given
     int expectedEventChainSize = 0;
-    EventContext eventContext = new EventContext("CREATED_SRS_MARC_BIB_RECORD", okapiConnectionParams);
-    String eventPayload = EventContextUtil.toEventPayload(eventContext);
-    // when
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
+      .withTenant(okapiConnectionParams.getTenantId())
+      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
+      .withToken(okapiConnectionParams.getToken());
     EventManager.handleEvent(eventPayload).whenComplete((p, throwable) -> {
       // then
       testContext.assertNull(throwable);
-      testContext.assertFalse(eventContext.isHandled());
-      testContext.assertEquals(expectedEventChainSize, eventContext.getEventChain().size());
-      testContext.assertEquals("CREATED_SRS_MARC_BIB_RECORD", eventContext.getEventType());
+      testContext.assertEquals(expectedEventChainSize, eventPayload.getEventsChain().size());
+      testContext.assertEquals("DI_SRS_MARC_BIB_RECORD_CREATED", eventPayload.getEventType());
       async.complete();
     });
   }
@@ -75,15 +77,17 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
     EventManager.registerEventHandler(new CreateItemRecordEventHandler());
-    EventContext eventContext = new EventContext("UNDEFINED_EVENT", okapiConnectionParams);
-    String eventPayload = EventContextUtil.toEventPayload(eventContext);
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType("UNDEFINED_EVENT")
+      .withTenant(okapiConnectionParams.getTenantId())
+      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
+      .withToken(okapiConnectionParams.getToken());
     // when
     EventManager.handleEvent(eventPayload).whenComplete((p, throwable) -> {
       // then
       testContext.assertNull(throwable);
-      testContext.assertFalse(eventContext.isHandled());
-      testContext.assertEquals(expectedEventChainSize, eventContext.getEventChain().size());
-      testContext.assertEquals("UNDEFINED_EVENT", eventContext.getEventType());
+      testContext.assertEquals(expectedEventChainSize, eventPayload.getEventsChain().size());
+      testContext.assertEquals("UNDEFINED_EVENT", eventPayload.getEventType());
       async.complete();
     });
   }
@@ -93,8 +97,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new ThrowExceptionHandler());
-    EventContext eventContext = new EventContext("CREATED_SRS_MARC_BIB_RECORD", okapiConnectionParams);
-    String eventPayload = EventContextUtil.toEventPayload(eventContext);
+    DataImportEventPayload eventPayload = new DataImportEventPayload().withEventType("DI_SRS_MARC_BIB_RECORD_CREATED");
     // when
     EventManager.handleEvent(eventPayload).whenComplete((p, throwable) -> {
       async.complete();
@@ -107,16 +110,18 @@ public class EventManagerUnitTest extends AbstractRestTest {
     // given
     int expectedEventChainSize = 0;
     EventManager.registerEventHandler(new FailExceptionallyHandler());
-    EventContext eventContext = new EventContext("CREATED_SRS_MARC_BIB_RECORD", okapiConnectionParams);
-    String eventPayload = EventContextUtil.toEventPayload(eventContext);
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
+      .withTenant(okapiConnectionParams.getTenantId())
+      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
+      .withToken(okapiConnectionParams.getToken());
     // when
     EventManager.handleEvent(eventPayload).whenComplete((nextEventContext, throwable) -> {
       // then
       testContext.assertNotNull(throwable);
-      testContext.assertEquals("java.lang.IllegalArgumentException: Can not handle event context", throwable.getMessage());
-      testContext.assertFalse(eventContext.isHandled());
-      testContext.assertEquals(expectedEventChainSize, eventContext.getEventChain().size());
-      testContext.assertEquals("CREATED_SRS_MARC_BIB_RECORD", eventContext.getEventType());
+      testContext.assertEquals("java.lang.IllegalArgumentException: Can not handle event payload", throwable.getMessage());
+      testContext.assertEquals(expectedEventChainSize, eventPayload.getEventsChain().size());
+      testContext.assertEquals("DI_SRS_MARC_BIB_RECORD_CREATED", eventPayload.getEventType());
       async.complete();
     });
   }

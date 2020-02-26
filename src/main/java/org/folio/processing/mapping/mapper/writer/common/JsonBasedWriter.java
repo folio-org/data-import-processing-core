@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.value.ListValue;
@@ -33,9 +33,9 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   @Override
-  public void initialize(EventContext eventContext) throws IOException {
-    if (eventContext.getObjects().containsKey(entityType)) {
-      this.entityNode = new ObjectMapper().readTree(eventContext.getObjects().get(entityType));
+  public void initialize(DataImportEventPayload eventPayload) throws IOException {
+    if (eventPayload.getContext().containsKey(entityType)) {
+      this.entityNode = new ObjectMapper().readTree(eventPayload.getContext().get(entityType));
     } else {
       throw new IllegalArgumentException("Can not initialize JsonBasedWriter. No suitable entity type found in context");
     }
@@ -124,14 +124,14 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   @Override
-  public EventContext getResult(EventContext eventContext) {
+  public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
     try {
       String jsonEntity = objectMapper.writeValueAsString(this.entityNode);
-      eventContext.getObjects().put(entityType, jsonEntity);
+      eventPayload.getContext().put(entityType, jsonEntity);
     } catch (JsonProcessingException e) {
       LOGGER.error(format("Can not write entity node to json string. Cause:  %s", e));
       throw new IllegalStateException(e);
     }
-    return eventContext;
+    return eventPayload;
   }
 }

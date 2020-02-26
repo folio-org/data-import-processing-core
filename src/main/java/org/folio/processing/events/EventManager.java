@@ -1,12 +1,11 @@
 package org.folio.processing.events;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.AbstractEventHandler;
 import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.RecursiveEventProcessor;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
-import org.folio.processing.events.util.EventContextUtil;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -22,42 +21,37 @@ public final class EventManager {
 
   /**
    * Handles the given payload of event.
-   * If there are handlers found to handle event then the EventManager calls EventProcessor passing event context.
+   * If there are handlers found to handle event then the EventManager calls EventProcessor passing event payload.
    * After processing the EventManager calls EventPublisher to send next event up to the queue.
    *
    * @param eventPayload event payload as a string
-   * @return future with event context
+   * @return future with event payload
    */
-  public static CompletableFuture<EventContext> handleEvent(String eventPayload) {
-    EventContext eventContext = EventContextUtil.fromEventPayload(eventPayload);
-    CompletableFuture<EventContext> future = new CompletableFuture<>();
-    eventProcessor.process(eventContext).whenComplete((processContext, processThrowable) -> {
+  public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload) {
+    CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
+    eventProcessor.process(eventPayload).whenComplete((processPayload, processThrowable) -> {
       if (processThrowable != null) {
         future.completeExceptionally(processThrowable);
       } else {
-        if (eventContext.isHandled()) {
-          prepareContext(eventContext);
-          eventPublisher.publish(eventContext).whenComplete((publishContext, publishThrowable) -> {
+          prepareEventPayload(eventPayload);
+          eventPublisher.publish(eventPayload).whenComplete((publishPayload, publishThrowable) -> {
             if (publishThrowable != null) {
               future.completeExceptionally(publishThrowable);
             } else {
-              future.complete(eventContext);
+              future.complete(eventPayload);
             }
           });
-        } else {
-          future.complete(eventContext);
-        }
       }
     });
     return future;
   }
 
   /**
-   * Prepares given event context for publishing.
+   * Prepares given eventPayload for publishing.
    *
-   * @param context event context
+   * @param eventPayload eventPayload
    */
-  private static void prepareContext(EventContext context) {
+  private static void prepareEventPayload(DataImportEventPayload eventPayload) {
     // update currentNode
     // update currentNodePath
   }

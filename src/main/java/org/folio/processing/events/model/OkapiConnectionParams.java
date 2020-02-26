@@ -18,6 +18,21 @@ public final class OkapiConnectionParams {
     this.headers = okapiHeaders;
   }
 
+  public OkapiConnectionParams withTenantId(String tenantId) {
+    this.tenantId = tenantId;
+    return this;
+  }
+
+  public OkapiConnectionParams withToken(String token) {
+    this.token = token;
+    return this;
+  }
+
+  public OkapiConnectionParams withOkapiUrl(String okapiUrl) {
+    this.okapiUrl = okapiUrl;
+    return this;
+  }
+
   public String getOkapiUrl() {
     return okapiUrl;
   }

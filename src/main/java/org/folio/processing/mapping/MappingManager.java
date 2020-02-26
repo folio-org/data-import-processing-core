@@ -1,7 +1,7 @@
 package org.folio.processing.mapping;
 
-import org.folio.ProfileSnapshotWrapper;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.reader.Reader;
@@ -13,7 +13,7 @@ import org.folio.processing.mapping.model.MappingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.folio.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 
 /**
  * MappingManager is the entry point to work with mapping.
@@ -34,22 +34,22 @@ public final class MappingManager {
   /**
    * The entry point for mapping.
    *
-   * @param eventContext event context
-   * @return event context
+   * @param eventPayload event payload
+   * @return event payload
    * @see MappingProfile
    * @see Mapper
    */
-  public static EventContext map(EventContext eventContext) {
+  public static DataImportEventPayload map(DataImportEventPayload eventPayload) {
     try {
-      if (eventContext.getCurrentNode().getContentType() != MAPPING_PROFILE) {
+      if (eventPayload.getCurrentNode().getContentType() != MAPPING_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MAPPING_PROFILE);
-        return eventContext;
+        return eventPayload;
       }
-      ProfileSnapshotWrapper mappingProfileWrapper = eventContext.getCurrentNode();
+      ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
       MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
-      return new Mapper() {}.map(reader, writer, eventContext);
+      return new Mapper() {}.map(reader, writer, eventPayload);
     } catch (Exception e) {
       LOGGER.error("Exception occurred in Mapper", e);
       throw new RuntimeException(e);
