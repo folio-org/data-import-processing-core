@@ -23,22 +23,22 @@ public interface Mapper {
   /**
    * Template method for mapping.
    *
-   * @param reader       Reader to read values from given event context
-   * @param writer       Writer to write values to given event context
-   * @param eventContext event context
-   * @return event context
+   * @param reader       Reader to read values from given event payload
+   * @param writer       Writer to write values to given event payload
+   * @param eventPayload event payload
+   * @return event payload
    * @throws IOException if a low-level I/O problem occurs (JSON serialization)
    */
-  default DataImportEventPayload map(Reader reader, Writer writer, DataImportEventPayload eventContext) throws IOException {
-    ProfileSnapshotWrapper mappingProfileWrapper = eventContext.getCurrentNode();
+  default DataImportEventPayload map(Reader reader, Writer writer, DataImportEventPayload eventPayload) throws IOException {
+    ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
     MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
-    reader.initialize(eventContext);
-    writer.initialize(eventContext);
+    reader.initialize(eventPayload);
+    writer.initialize(eventPayload);
     List<Rule> mappingRules = mappingProfile.getMappingRules();
     for (Rule rule : mappingRules) {
       Value value = reader.read(rule.getRuleExpression());
       writer.write(rule.getFieldPath(), value);
     }
-    return writer.getResult(eventContext);
+    return writer.getResult(eventPayload);
   }
 }

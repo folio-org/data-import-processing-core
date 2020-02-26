@@ -10,7 +10,7 @@ import static org.folio.processing.matching.model.schemas.MatchProfile.ExistingR
 
 public class TestMatchValueLoader implements MatchValueLoader {
   @Override
-  public LoadResult loadEntity(LoadQuery loadQuery, DataImportEventPayload eventContext) {
+  public LoadResult loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload) {
     LoadResult result = new LoadResult();
     result.setValue("Some value");
     result.setEntityType("MARC");

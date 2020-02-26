@@ -33,9 +33,9 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventContext) throws IOException {
-    if (eventContext.getContext().containsKey(entityType)) {
-      this.entityNode = new ObjectMapper().readTree(eventContext.getContext().get(entityType));
+  public void initialize(DataImportEventPayload eventPayload) throws IOException {
+    if (eventPayload.getContext().containsKey(entityType)) {
+      this.entityNode = new ObjectMapper().readTree(eventPayload.getContext().get(entityType));
     } else {
       throw new IllegalArgumentException("Can not initialize JsonBasedWriter. No suitable entity type found in context");
     }
@@ -124,14 +124,14 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   @Override
-  public DataImportEventPayload getResult(DataImportEventPayload eventContext) {
+  public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
     try {
       String jsonEntity = objectMapper.writeValueAsString(this.entityNode);
-      eventContext.getContext().put(entityType, jsonEntity);
+      eventPayload.getContext().put(entityType, jsonEntity);
     } catch (JsonProcessingException e) {
       LOGGER.error(format("Can not write entity node to json string. Cause:  %s", e));
       throw new IllegalStateException(e);
     }
-    return eventContext;
+    return eventPayload;
   }
 }

@@ -34,22 +34,22 @@ public final class MappingManager {
   /**
    * The entry point for mapping.
    *
-   * @param eventContext event context
-   * @return event context
+   * @param eventPayload event payload
+   * @return event payload
    * @see MappingProfile
    * @see Mapper
    */
-  public static DataImportEventPayload map(DataImportEventPayload eventContext) {
+  public static DataImportEventPayload map(DataImportEventPayload eventPayload) {
     try {
-      if (eventContext.getCurrentNode().getContentType() != MAPPING_PROFILE) {
+      if (eventPayload.getCurrentNode().getContentType() != MAPPING_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MAPPING_PROFILE);
-        return eventContext;
+        return eventPayload;
       }
-      ProfileSnapshotWrapper mappingProfileWrapper = eventContext.getCurrentNode();
+      ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
       MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
-      return new Mapper() {}.map(reader, writer, eventContext);
+      return new Mapper() {}.map(reader, writer, eventPayload);
     } catch (Exception e) {
       LOGGER.error("Exception occurred in Mapper", e);
       throw new RuntimeException(e);

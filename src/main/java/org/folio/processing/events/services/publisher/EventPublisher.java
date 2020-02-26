@@ -12,8 +12,8 @@ public interface EventPublisher {
   /**
    * Sends event to consumer service, which may be mod-pubsub or other ones.
    *
-   * @param context event context
-   * @return future with event context
+   * @param eventPayload event eventPayload
+   * @return future with event eventPayload
    */
-  CompletableFuture<Event> publish(DataImportEventPayload context);
+  CompletableFuture<Event> publish(DataImportEventPayload eventPayload);
 }

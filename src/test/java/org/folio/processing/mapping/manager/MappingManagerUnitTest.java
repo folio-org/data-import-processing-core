@@ -41,21 +41,21 @@ public class MappingManagerUnitTest {
 
     String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
     String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
     context.put(INSTANCE.value(), givenInstance);
-    eventContext.setContext(context);
-    eventContext.setCurrentNode(mappingProfileWrapper);
+    eventPayload.setContext(context);
+    eventPayload.setCurrentNode(mappingProfileWrapper);
 
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventContext);
+    MappingManager.map(eventPayload);
     // then
-    assertNotNull(eventContext.getContext().get(MARC_BIBLIOGRAPHIC.value()));
-    assertNotNull(eventContext.getContext().get(INSTANCE.value()));
-    TestInstance mappedInstance = new ObjectMapper().readValue(eventContext.getContext().get(INSTANCE.value()), TestInstance.class);
+    assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
+    TestInstance mappedInstance = new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
     assertNotNull(mappedInstance.getId());
     assertNotNull(mappedInstance.getIndexTitle());
   }
@@ -68,11 +68,11 @@ public class MappingManagerUnitTest {
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    eventContext.setCurrentNode(mappingProfileWrapper);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    eventPayload.setCurrentNode(mappingProfileWrapper);
     // when
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventContext);
+    MappingManager.map(eventPayload);
     // then expect runtime exception
   }
 
@@ -84,11 +84,11 @@ public class MappingManagerUnitTest {
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    eventContext.setCurrentNode(mappingProfileWrapper);
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    eventPayload.setCurrentNode(mappingProfileWrapper);
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
-    MappingManager.map(eventContext);
+    MappingManager.map(eventPayload);
     // then expect runtime exception
   }
 
@@ -102,19 +102,19 @@ public class MappingManagerUnitTest {
 
     String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
     String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
     context.put(INSTANCE.value(), givenInstance);
-    eventContext.setContext(context);
-    eventContext.setCurrentNode(mappingProfileWrapper);
+    eventPayload.setContext(context);
+    eventPayload.setCurrentNode(mappingProfileWrapper);
 
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventContext);
+    MappingManager.map(eventPayload);
     // then
-    assertNotNull(eventContext.getContext().get(MARC_BIBLIOGRAPHIC.value()));
-    assertNotNull(eventContext.getContext().get(INSTANCE.value()));
+    assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
   }
 }

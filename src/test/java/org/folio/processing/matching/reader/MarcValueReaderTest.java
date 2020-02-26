@@ -47,10 +47,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldRead_StringValue() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -62,7 +62,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -72,10 +72,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldRead_SubfieldValue_WithEmptyIndicators() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -87,7 +87,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -97,10 +97,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldRead_SubfieldValue_WithIndicators() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -112,7 +112,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -122,10 +122,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfNoSuchField() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -137,7 +137,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -146,10 +146,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfNoSuchField_WithIndicators() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -161,7 +161,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -170,10 +170,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfNoSuchSubfieldField() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -185,7 +185,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -194,10 +194,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_ListValue_IfMultipleFields() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -209,7 +209,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(LIST, result.getType());
@@ -222,16 +222,16 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfOtherDataValueType() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(STATIC_VALUE));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -240,10 +240,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfEmptyRecord() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), StringUtils.EMPTY);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -255,7 +255,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -264,10 +264,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfDoNotMatchIndicator_1() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -279,7 +279,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -288,10 +288,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfDoNotMatchIndicator_2() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -303,7 +303,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(MISSING, result.getType());
@@ -312,10 +312,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_ListValue_IfMultipleSubFields() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -327,7 +327,7 @@ public class MarcValueReaderTest {
         )));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(LIST, result.getType());
@@ -340,10 +340,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithBeginsWithQualifier() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -358,7 +358,7 @@ public class MarcValueReaderTest {
           .withQualifierValue("978")));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -368,10 +368,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithEndsWithQualifier() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -386,7 +386,7 @@ public class MarcValueReaderTest {
           .withQualifierValue("X")));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -396,10 +396,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_ListValue_IfMultipleFields_FilterWithContainsQualifier() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -414,7 +414,7 @@ public class MarcValueReaderTest {
           .withQualifierValue("(electronic bk.)")));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(LIST, result.getType());
@@ -427,10 +427,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_IfMultipleSubFields_WithComparisonPart() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -446,7 +446,7 @@ public class MarcValueReaderTest {
           .withComparisonPart(NUMERICS_ONLY)));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -456,10 +456,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_NumericOnly() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -473,7 +473,7 @@ public class MarcValueReaderTest {
           .withComparisonPart(NUMERICS_ONLY)));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -483,10 +483,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_AlphaNumericOnly() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -500,7 +500,7 @@ public class MarcValueReaderTest {
           .withComparisonPart(ALPHANUMERICS_ONLY)));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -510,10 +510,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_AlphaNumericsOnly() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -527,7 +527,7 @@ public class MarcValueReaderTest {
           .withComparisonPart(ALPHANUMERICS_ONLY)));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -537,10 +537,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_AlphaNumerics() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -554,7 +554,7 @@ public class MarcValueReaderTest {
           .withComparisonPart(ALPHANUMERICS_ONLY)));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());
@@ -564,10 +564,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_Numerics() {
     // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC.value(), MARC_RECORD);
-    eventContext.setContext(context);
+    eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -581,7 +581,7 @@ public class MarcValueReaderTest {
           .withComparisonPart(NUMERICS_ONLY)));
     MatchValueReader reader = new MarcValueReaderImpl();
     //when
-    Value result = reader.read(eventContext, matchDetail);
+    Value result = reader.read(eventPayload, matchDetail);
     //then
     assertNotNull(result);
     assertEquals(STRING, result.getType());

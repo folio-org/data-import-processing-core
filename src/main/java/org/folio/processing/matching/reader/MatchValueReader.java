@@ -13,11 +13,11 @@ public interface MatchValueReader {
   /**
    * Extracts value from the Record that matches specified MatchDetails
    *
-   * @param context EventContext containing the Record in its objects field
+   * @param eventPayload event payload containing the Record in its objects field
    * @param matchDetail MatchDetail containing details, by which value should be extracted from the Record
    * @return Value from the Record that matches specified conditions
    */
-  Value read(DataImportEventPayload context, MatchDetail matchDetail);
+  Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail);
 
   /**
    * Defines whether specific implementation of the MatchValueReader is suited for the specified IncomingRecordType

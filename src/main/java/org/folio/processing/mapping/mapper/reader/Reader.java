@@ -16,11 +16,11 @@ import java.io.IOException;
 public interface Reader {
 
   /**
-   * Performs initialization of the reader using event context.
+   * Performs initialization of the reader using event payload.
    *
-   * @param eventContext event context
+   * @param eventPayload event payload
    */
-  void initialize(DataImportEventPayload eventContext) throws IOException;
+  void initialize(DataImportEventPayload eventPayload) throws IOException;
 
   /**
    * Reads value from the underlying entity using mapping rule.

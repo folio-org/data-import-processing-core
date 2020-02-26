@@ -23,17 +23,17 @@ public final class MatchingManager {
   private MatchingManager() {
   }
 
-  public static boolean match(DataImportEventPayload eventContext) {
+  public static boolean match(DataImportEventPayload eventPayload) {
     try {
-      if (eventContext.getCurrentNode().getContentType() != MATCH_PROFILE) {
+      if (eventPayload.getCurrentNode().getContentType() != MATCH_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MATCH_PROFILE);
         return false;
       }
-      ProfileSnapshotWrapper matchingProfileWrapper = eventContext.getCurrentNode();
+      ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
       MatchProfile matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
       MatchValueReader reader = MatchValueReaderFactory.build(matchProfile.getIncomingRecordType());
       MatchValueLoader loader = MatchValueLoaderFactory.build(matchProfile.getExistingRecordType());
-      return new Matcher() {}.match(reader, loader, eventContext);
+      return new Matcher() {}.match(reader, loader, eventPayload);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

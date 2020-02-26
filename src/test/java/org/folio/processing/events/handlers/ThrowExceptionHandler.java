@@ -14,9 +14,9 @@ public class ThrowExceptionHandler extends AbstractEventHandler {
   private final Logger LOGGER = LoggerFactory.getLogger(ThrowExceptionHandler.class);
 
   @Override
-  public CompletableFuture<DataImportEventPayload> handleContext(DataImportEventPayload context) {
+  public CompletableFuture<DataImportEventPayload> handleContext(DataImportEventPayload eventPayload) {
     LOGGER.info("Handling event " + getHandlerEventType());
-    throw new IllegalArgumentException("Can not handle event context");
+    throw new IllegalArgumentException("Can not handle event payload");
   }
 
   @Override

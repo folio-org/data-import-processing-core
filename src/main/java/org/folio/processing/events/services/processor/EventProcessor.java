@@ -14,10 +14,10 @@ public interface EventProcessor {
   /**
    * Performs event processing
    *
-   * @param context event context
-   * @return future with event context
+   * @param eventPayload event payload
+   * @return future with event payload
    */
-  CompletableFuture<DataImportEventPayload> process(DataImportEventPayload context);
+  CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload);
 
   /**
    * @return list of handlers

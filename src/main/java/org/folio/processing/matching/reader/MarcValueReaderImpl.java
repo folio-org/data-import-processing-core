@@ -41,10 +41,10 @@ public class MarcValueReaderImpl implements MatchValueReader {
   private static final String SUBFIELD_PROFILE_LABEL = "recordSubfield";
 
   @Override
-  public Value read(DataImportEventPayload context, MatchDetail matchDetail) {
+  public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
     MatchExpression matchExpression = matchDetail.getIncomingMatchExpression();
     if (matchExpression.getDataValueType() == VALUE_FROM_RECORD) {
-      String marcRecord = context.getContext().get(MARC.value());
+      String marcRecord = eventPayload.getContext().get(MARC.value());
       return readValueFromRecord(marcRecord, matchExpression);
     }
     return MissingValue.getInstance();

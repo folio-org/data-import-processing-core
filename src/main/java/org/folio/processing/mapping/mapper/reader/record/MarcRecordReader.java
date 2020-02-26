@@ -23,9 +23,9 @@ public class MarcRecordReader implements Reader {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventContext) throws IOException {
-    if (eventContext.getContext().containsKey(entityType.value())) {
-      String stringRecord = eventContext.getContext().get(entityType.value());
+  public void initialize(DataImportEventPayload eventPayload) throws IOException {
+    if (eventPayload.getContext().containsKey(entityType.value())) {
+      String stringRecord = eventPayload.getContext().get(entityType.value());
       this.fieldsNode = new ObjectMapper().readTree(stringRecord).at(MARC_FIELDS_POINTER);
     } else {
       throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in context");

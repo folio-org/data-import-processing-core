@@ -47,11 +47,11 @@ public final class EventManager {
   }
 
   /**
-   * Prepares given event context for publishing.
+   * Prepares given eventPayload for publishing.
    *
-   * @param context event context
+   * @param eventPayload eventPayload
    */
-  private static void prepareContext(DataImportEventPayload context) {
+  private static void prepareContext(DataImportEventPayload eventPayload) {
     // update currentNode
     // update currentNodePath
   }

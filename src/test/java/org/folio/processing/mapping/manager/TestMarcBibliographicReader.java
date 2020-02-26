@@ -15,9 +15,9 @@ public class TestMarcBibliographicReader implements Reader {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventContext) {
-    if (eventContext.getContext().containsKey(MARC_BIBLIOGRAPHIC.value())) {
-      this.marcBibliographicRecord = eventContext.getContext().get(MARC_BIBLIOGRAPHIC.value());
+  public void initialize(DataImportEventPayload eventPayload) {
+    if (eventPayload.getContext().containsKey(MARC_BIBLIOGRAPHIC.value())) {
+      this.marcBibliographicRecord = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     } else {
       throw new IllegalArgumentException("Can not initialize MarcBibliographicReader, no record found in context");
     }

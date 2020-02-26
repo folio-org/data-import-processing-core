@@ -20,20 +20,20 @@ public class TestInstanceWriter extends AbstractWriter {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventContext) throws IOException {
-    if (eventContext.getContext().containsKey(INSTANCE.value())) {
-      this.instance = new ObjectMapper().readValue(eventContext.getContext().get(INSTANCE.value()), TestInstance.class);
+  public void initialize(DataImportEventPayload eventPayload) throws IOException {
+    if (eventPayload.getContext().containsKey(INSTANCE.value())) {
+      this.instance = new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
     } else {
       throw new IllegalArgumentException("Can not initialize InstanceWriter, no instance found in context");
     }
   }
 
   @Override
-  public DataImportEventPayload getResult(DataImportEventPayload eventContext) throws JsonProcessingException {
-    HashMap<String, String> context = eventContext.getContext();
+  public DataImportEventPayload getResult(DataImportEventPayload eventPayload) throws JsonProcessingException {
+    HashMap<String, String> context = eventPayload.getContext();
     context.put(INSTANCE.value(), new ObjectMapper().writeValueAsString(this.instance));
-    eventContext.setContext(context);
-    return eventContext;
+    eventPayload.setContext(context);
+    return eventPayload;
   }
 
   @Override

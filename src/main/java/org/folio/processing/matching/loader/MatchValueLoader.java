@@ -6,7 +6,7 @@ import org.folio.processing.matching.model.schemas.MatchProfile;
 
 public interface MatchValueLoader {
 
-  LoadResult loadEntity(LoadQuery loadQuery, DataImportEventPayload eventContext);
+  LoadResult loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload);
 
   boolean isEligibleForEntityType(MatchProfile.ExistingRecordType existingRecordType);
 }

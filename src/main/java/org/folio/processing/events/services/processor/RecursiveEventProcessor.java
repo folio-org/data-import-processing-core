@@ -12,48 +12,48 @@ public class RecursiveEventProcessor implements EventProcessor {
   private List<EventHandler> eventHandlers = new ArrayList<>();
 
   @Override
-  public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventContext) {
+  public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    String eventType = eventContext.getEventType();
+    String eventType = eventPayload.getEventType();
     Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
       .filter(eventHandler -> eventHandler.getHandlerEventType().equals(eventType))
       .findFirst();
     if (optionalEventHandler.isPresent()) {
       EventHandler nextEventHandler = optionalEventHandler.get();
-      processEventRecursively(eventContext, nextEventHandler).whenComplete((processContext, throwable) -> {
+      processEventRecursively(eventPayload, nextEventHandler).whenComplete((processContext, throwable) -> {
         if (throwable != null) {
           future.completeExceptionally(throwable);
         } else {
-          future.complete(eventContext);
+          future.complete(eventPayload);
         }
       });
     } else {
-      future.complete(eventContext);
+      future.complete(eventPayload);
     }
     return future;
   }
 
-  private CompletableFuture<DataImportEventPayload> processEventRecursively(DataImportEventPayload eventContext, EventHandler eventHandler) {
+  private CompletableFuture<DataImportEventPayload> processEventRecursively(DataImportEventPayload eventPayload, EventHandler eventHandler) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    eventHandler.handle(eventContext).whenComplete((handlerEventContext, handlerThrowable) -> {
+    eventHandler.handle(eventPayload).whenComplete((handlerEventContext, handlerThrowable) -> {
       if (handlerThrowable != null) {
         future.completeExceptionally(handlerThrowable);
       } else {
-        String eventType = eventContext.getEventType();
+        String eventType = eventPayload.getEventType();
         Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
           .filter(nextEventHandler -> nextEventHandler.getHandlerEventType().equals(eventType))
           .findFirst();
         if (optionalEventHandler.isPresent()) {
           EventHandler nextEventHandler = optionalEventHandler.get();
-          processEventRecursively(eventContext, nextEventHandler).whenComplete((nextEventContext, nextThrowable) -> {
+          processEventRecursively(eventPayload, nextEventHandler).whenComplete((nextEventContext, nextThrowable) -> {
             if (nextThrowable != null) {
               future.completeExceptionally(handlerThrowable);
             } else {
-              future.complete(eventContext);
+              future.complete(eventPayload);
             }
           });
         } else {
-          future.complete(eventContext);
+          future.complete(eventPayload);
         }
       }
     });

@@ -17,15 +17,15 @@ public class RestEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestEventPublisher.class);
 
   @Override
-  public CompletableFuture<Event> publish(DataImportEventPayload eventContext) {
+  public CompletableFuture<Event> publish(DataImportEventPayload eventPayload) {
     OkapiConnectionParams params = new OkapiConnectionParams()
-      .withOkapiUrl(eventContext.getOkapiUrl())
-      .withTenantId(eventContext.getTenant())
-      .withToken(eventContext.getToken());
+      .withOkapiUrl(eventPayload.getOkapiUrl())
+      .withTenantId(eventPayload.getTenant())
+      .withToken(eventPayload.getToken());
     Event event = new Event()
       .withId(UUID.randomUUID().toString())
-      .withEventType(eventContext.getEventType())
-      .withEventPayload(JsonObject.mapFrom(eventContext).encode());
+      .withEventType(eventPayload.getEventType())
+      .withEventPayload(JsonObject.mapFrom(eventPayload).encode());
     return postPubsubPublish(event, params);
   }
 

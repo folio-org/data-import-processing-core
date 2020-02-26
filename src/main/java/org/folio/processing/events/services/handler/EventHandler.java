@@ -10,12 +10,12 @@ import java.util.concurrent.CompletableFuture;
 public interface EventHandler {
 
   /**
-   * Handles context
+   * Handles event
    *
-   * @param context event context
-   * @return future with context
+   * @param eventPayload event payload
+   * @return future with event payload
    */
-  CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload context);
+  CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload);
 
   /**
    * Returns event type that handler can handle.
@@ -26,7 +26,7 @@ public interface EventHandler {
   String getHandlerEventType();
 
   /**
-   * Returns event type that handler sets to EventContext as a result of handling.
+   * Returns event type that handler sets to DataImportEventPayload as a result of handling.
    *
    * @return target event type
    */

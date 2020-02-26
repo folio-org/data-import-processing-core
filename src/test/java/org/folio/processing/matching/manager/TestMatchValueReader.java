@@ -10,7 +10,7 @@ import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingR
 
 public class TestMatchValueReader implements MatchValueReader {
     @Override
-    public Value read(DataImportEventPayload context, MatchDetail matchDetail) {
+    public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
       return null;
     }
 
