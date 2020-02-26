@@ -1,7 +1,7 @@
 package org.folio.processing.mapping.mapper;
 
-import org.folio.ProfileSnapshotWrapper;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.Value;
 import org.folio.processing.mapping.mapper.writer.Writer;
@@ -29,7 +29,7 @@ public interface Mapper {
    * @return event context
    * @throws IOException if a low-level I/O problem occurs (JSON serialization)
    */
-  default EventContext map(Reader reader, Writer writer, EventContext eventContext) throws IOException {
+  default DataImportEventPayload map(Reader reader, Writer writer, DataImportEventPayload eventContext) throws IOException {
     ProfileSnapshotWrapper mappingProfileWrapper = eventContext.getCurrentNode();
     MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
     reader.initialize(eventContext);

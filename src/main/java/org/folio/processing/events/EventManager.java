@@ -1,12 +1,11 @@
 package org.folio.processing.events;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.AbstractEventHandler;
 import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.RecursiveEventProcessor;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
-import org.folio.processing.events.util.EventContextUtil;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -28,25 +27,20 @@ public final class EventManager {
    * @param eventPayload event payload as a string
    * @return future with event context
    */
-  public static CompletableFuture<EventContext> handleEvent(String eventPayload) {
-    EventContext eventContext = EventContextUtil.fromEventPayload(eventPayload);
-    CompletableFuture<EventContext> future = new CompletableFuture<>();
-    eventProcessor.process(eventContext).whenComplete((processContext, processThrowable) -> {
+  public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload) {
+    CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
+    eventProcessor.process(eventPayload).whenComplete((processContext, processThrowable) -> {
       if (processThrowable != null) {
         future.completeExceptionally(processThrowable);
       } else {
-        if (eventContext.isHandled()) {
-          prepareContext(eventContext);
-          eventPublisher.publish(eventContext).whenComplete((publishContext, publishThrowable) -> {
+          prepareContext(eventPayload);
+          eventPublisher.publish(eventPayload).whenComplete((publishContext, publishThrowable) -> {
             if (publishThrowable != null) {
               future.completeExceptionally(publishThrowable);
             } else {
-              future.complete(eventContext);
+              future.complete(eventPayload);
             }
           });
-        } else {
-          future.complete(eventContext);
-        }
       }
     });
     return future;
@@ -57,7 +51,7 @@ public final class EventManager {
    *
    * @param context event context
    */
-  private static void prepareContext(EventContext context) {
+  private static void prepareContext(DataImportEventPayload context) {
     // update currentNode
     // update currentNodePath
   }

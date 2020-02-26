@@ -2,10 +2,10 @@ package org.folio.processing.mapping.writer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.CirculationNote_;
+import org.folio.DataImportEventPayload;
 import org.folio.Item;
 import org.folio.MaterialType;
 import org.folio.PermanentLoanType;
-import org.folio.processing.events.model.EventContext;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.item.ItemWriterFactory;
@@ -21,6 +21,7 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -62,8 +63,10 @@ public class ItemWriterUnitTest {
   @Test
   public void shouldWriteHrid() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(ITEM.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(ITEM.value(), "{}");
+    eventContext.setContext(context);
     Writer itemWriter = factoryRegistry.createWriter(ITEM);
 
     // when
@@ -72,7 +75,7 @@ public class ItemWriterUnitTest {
     itemWriter.getResult(eventContext);
 
     // then
-    String itemJson = eventContext.getObjects().get(ITEM.value());
+    String itemJson = eventContext.getContext().get(ITEM.value());
     Item actualItem = new ObjectMapper().readValue(itemJson, Item.class);
     Assert.assertThat(actualItem.getHrid(), is(item.getHrid()));
   }
@@ -80,8 +83,10 @@ public class ItemWriterUnitTest {
   @Test
   public void shouldWriteStatisticalCodeIds() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(ITEM.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(ITEM.value(), "{}");
+    eventContext.setContext(context);
     Writer itemWriter = factoryRegistry.createWriter(ITEM);
 
     // when
@@ -90,7 +95,7 @@ public class ItemWriterUnitTest {
     itemWriter.getResult(eventContext);
 
     // then
-    String itemJson = eventContext.getObjects().get(ITEM.value());
+    String itemJson = eventContext.getContext().get(ITEM.value());
     Item actualItem = new ObjectMapper().readValue(itemJson, Item.class);
     Assert.assertTrue(actualItem.getStatisticalCodeIds().containsAll(item.getStatisticalCodeIds()));
   }
@@ -98,8 +103,10 @@ public class ItemWriterUnitTest {
   @Test
   public void shouldWriteCirculationNotes() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(ITEM.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(ITEM.value(), "{}");
+    eventContext.setContext(context);
     Writer itemWriter = factoryRegistry.createWriter(ITEM);
 
     // when
@@ -114,7 +121,7 @@ public class ItemWriterUnitTest {
     itemWriter.getResult(eventContext);
 
     // then
-    String itemJson = eventContext.getObjects().get(ITEM.value());
+    String itemJson = eventContext.getContext().get(ITEM.value());
     Item actualItem = new ObjectMapper().readValue(itemJson, Item.class);
     Assert.assertTrue(actualItem.getCirculationNotes().containsAll(item.getCirculationNotes()));
   }
@@ -122,8 +129,10 @@ public class ItemWriterUnitTest {
   @Test
   public void shouldWritePermanentLoanType() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(ITEM.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(ITEM.value(), "{}");
+    eventContext.setContext(context);
     Writer itemWriter = factoryRegistry.createWriter(ITEM);
 
     // when
@@ -135,7 +144,7 @@ public class ItemWriterUnitTest {
     itemWriter.getResult(eventContext);
 
     // then
-    String itemJson = eventContext.getObjects().get(ITEM.value());
+    String itemJson = eventContext.getContext().get(ITEM.value());
     Item actualItem = new ObjectMapper().readValue(itemJson, Item.class);
     Assert.assertThat(actualItem.getPermanentLoanType(), is(item.getPermanentLoanType()));
   }

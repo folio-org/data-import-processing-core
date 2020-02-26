@@ -1,7 +1,7 @@
 package org.folio.processing.mapping;
 
-import org.folio.ProfileSnapshotWrapper;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.reader.Reader;
@@ -13,7 +13,7 @@ import org.folio.processing.mapping.model.MappingProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.folio.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 
 /**
  * MappingManager is the entry point to work with mapping.
@@ -39,7 +39,7 @@ public final class MappingManager {
    * @see MappingProfile
    * @see Mapper
    */
-  public static EventContext map(EventContext eventContext) {
+  public static DataImportEventPayload map(DataImportEventPayload eventContext) {
     try {
       if (eventContext.getCurrentNode().getContentType() != MAPPING_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MAPPING_PROFILE);

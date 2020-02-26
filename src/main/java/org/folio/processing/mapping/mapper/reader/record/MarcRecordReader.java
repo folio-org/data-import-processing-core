@@ -3,7 +3,7 @@ package org.folio.processing.mapping.mapper.reader.record;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
@@ -23,9 +23,9 @@ public class MarcRecordReader implements Reader {
   }
 
   @Override
-  public void initialize(EventContext eventContext) throws IOException {
-    if (eventContext.getObjects().containsKey(entityType.value())) {
-      String stringRecord = eventContext.getObjects().get(entityType.value());
+  public void initialize(DataImportEventPayload eventContext) throws IOException {
+    if (eventContext.getContext().containsKey(entityType.value())) {
+      String stringRecord = eventContext.getContext().get(entityType.value());
       this.fieldsNode = new ObjectMapper().readTree(stringRecord).at(MARC_FIELDS_POINTER);
     } else {
       throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in context");

@@ -1,10 +1,10 @@
 package org.folio.processing.events.services.publisher;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.impl.HttpStatusException;
+import org.folio.DataImportEventPayload;
 import org.folio.HttpStatus;
-import org.folio.processing.events.model.EventContext;
 import org.folio.processing.events.model.OkapiConnectionParams;
-import org.folio.processing.events.util.EventContextUtil;
 import org.folio.rest.client.PubsubClient;
 import org.folio.rest.jaxrs.model.Event;
 import org.slf4j.Logger;
@@ -17,13 +17,15 @@ public class RestEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LoggerFactory.getLogger(RestEventPublisher.class);
 
   @Override
-  public CompletableFuture<Event> publish(EventContext eventContext) {
-    OkapiConnectionParams params = eventContext.getOkapiConnectionParams();
-    String eventPayload = EventContextUtil.toEventPayload(eventContext);
+  public CompletableFuture<Event> publish(DataImportEventPayload eventContext) {
+    OkapiConnectionParams params = new OkapiConnectionParams()
+      .withOkapiUrl(eventContext.getOkapiUrl())
+      .withTenantId(eventContext.getTenant())
+      .withToken(eventContext.getToken());
     Event event = new Event()
       .withId(UUID.randomUUID().toString())
       .withEventType(eventContext.getEventType())
-      .withEventPayload(eventPayload);
+      .withEventPayload(JsonObject.mapFrom(eventContext).encode());
     return postPubsubPublish(event, params);
   }
 

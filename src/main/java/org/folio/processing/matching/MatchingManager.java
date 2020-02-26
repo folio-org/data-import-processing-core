@@ -1,7 +1,7 @@
 package org.folio.processing.matching;
 
-import org.folio.ProfileSnapshotWrapper;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
 import org.folio.processing.matching.matcher.Matcher;
@@ -12,7 +12,7 @@ import org.folio.processing.matching.reader.MatchValueReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.folio.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
 /**
  * Matching Manager implementation, provides ability to perform matching
@@ -23,7 +23,7 @@ public final class MatchingManager {
   private MatchingManager() {
   }
 
-  public static boolean match(EventContext eventContext) {
+  public static boolean match(DataImportEventPayload eventContext) {
     try {
       if (eventContext.getCurrentNode().getContentType() != MATCH_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MATCH_PROFILE);

@@ -1,7 +1,7 @@
 package org.folio.processing.mapping.mapper.writer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.value.Value;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public interface Writer {
    * @param eventContext event context
    * @throws IOException if a low-level I/O problem occurs (JSON serialization)
    */
-  void initialize(EventContext eventContext) throws IOException;
+  void initialize(DataImportEventPayload eventContext) throws IOException;
 
   /**
    * Writes value to the underlying entity by the fieldPath
@@ -39,5 +39,5 @@ public interface Writer {
    * @return event context
    * @throws JsonProcessingException if json serialization problem occurred
    */
-  EventContext getResult(EventContext eventContext) throws JsonProcessingException;
+  DataImportEventPayload getResult(DataImportEventPayload eventContext) throws JsonProcessingException;
 }

@@ -1,6 +1,6 @@
 package org.folio.processing.matching.manager;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.matching.loader.LoadResult;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
@@ -10,7 +10,7 @@ import static org.folio.processing.matching.model.schemas.MatchProfile.ExistingR
 
 public class TestMatchValueLoader implements MatchValueLoader {
   @Override
-  public LoadResult loadEntity(LoadQuery loadQuery, EventContext eventContext) {
+  public LoadResult loadEntity(LoadQuery loadQuery, DataImportEventPayload eventContext) {
     LoadResult result = new LoadResult();
     result.setValue("Some value");
     result.setEntityType("MARC");

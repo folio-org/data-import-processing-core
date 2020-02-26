@@ -1,6 +1,6 @@
 package org.folio.processing.mapping.writer;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
 import org.folio.processing.mapping.model.MappingProfile;
 
@@ -12,6 +12,7 @@ import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static java.util.Arrays.*;
 import static org.junit.Assert.assertEquals;
@@ -23,8 +24,10 @@ public class JsonBasedWriterUnitTest {
   @Test
   public void shouldWrite_Values() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("indexTitle", StringValue.of("The Journal of ecclesiastical history."));
@@ -41,15 +44,17 @@ public class JsonBasedWriterUnitTest {
           "names\":[\"Heins\",\"Rattu\",\"Tabrani\"]" +
         "}" +
       "}";
-    String resultInstance = eventContext.getObjects().get(MappingProfile.EntityType.INSTANCE.value());
+    String resultInstance = eventContext.getContext().get(MappingProfile.EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
 
   @Test
   public void shouldOverride_StringValue() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("indexTitle", StringValue.of("The Journal of ecclesiastical history."));
@@ -57,15 +62,17 @@ public class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{\"indexTitle\":\"Folk music West\"}";
-    String resultInstance = eventContext.getObjects().get(MappingProfile.EntityType.INSTANCE.value());
+    String resultInstance = eventContext.getContext().get(MappingProfile.EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
 
   @Test
   public void shouldAddValues_OnArrayOverride() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("languages[]", ListValue.of(asList("eng", "lat")));
@@ -73,15 +80,17 @@ public class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{\"languages\":[\"eng\",\"lat\",\"ger\",\"ita\"]}";
-    String resultInstance = eventContext.getObjects().get(MappingProfile.EntityType.INSTANCE.value());
+    String resultInstance = eventContext.getContext().get(MappingProfile.EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldFailOnEmptyFieldPath() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("", StringValue.of("The Journal of ecclesiastical history."));
@@ -92,8 +101,10 @@ public class JsonBasedWriterUnitTest {
   @Test(expected = IllegalStateException.class)
   public void shouldFailIfArrayIsNotLast() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("contributors[].name", StringValue.of("Ernst"));
@@ -104,8 +115,10 @@ public class JsonBasedWriterUnitTest {
   @Test(expected = IllegalStateException.class)
   public void shouldFailOnWrite_ListValue_To_ObjectField() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("indexTitle", ListValue.of(Arrays.asList("The Journal of ecclesiastical history.")));
@@ -116,8 +129,10 @@ public class JsonBasedWriterUnitTest {
   @Test(expected = IllegalStateException.class)
   public void shouldFailOnWrite_StringValue_To_ArrayField() throws IOException {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("languages[]", StringValue.of("eng"));

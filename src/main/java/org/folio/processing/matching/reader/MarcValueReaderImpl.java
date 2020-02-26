@@ -3,7 +3,7 @@ package org.folio.processing.matching.reader;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.exceptions.ReaderException;
 import org.folio.processing.matching.model.schemas.Field;
 import org.folio.processing.matching.model.schemas.MatchDetail;
@@ -41,10 +41,10 @@ public class MarcValueReaderImpl implements MatchValueReader {
   private static final String SUBFIELD_PROFILE_LABEL = "recordSubfield";
 
   @Override
-  public Value read(EventContext context, MatchDetail matchDetail) {
+  public Value read(DataImportEventPayload context, MatchDetail matchDetail) {
     MatchExpression matchExpression = matchDetail.getIncomingMatchExpression();
     if (matchExpression.getDataValueType() == VALUE_FROM_RECORD) {
-      String marcRecord = context.getObjects().get(MARC.value());
+      String marcRecord = context.getContext().get(MARC.value());
       return readValueFromRecord(marcRecord, matchExpression);
     }
     return MissingValue.getInstance();

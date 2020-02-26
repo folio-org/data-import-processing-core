@@ -1,6 +1,6 @@
 package org.folio.processing.events.services.handler;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -15,7 +15,7 @@ public interface EventHandler {
    * @param context event context
    * @return future with context
    */
-  CompletableFuture<EventContext> handle(EventContext context);
+  CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload context);
 
   /**
    * Returns event type that handler can handle.

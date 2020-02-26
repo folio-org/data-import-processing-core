@@ -1,8 +1,8 @@
 package org.folio.processing.matching.reader;
 
 import org.apache.commons.lang.StringUtils;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.TestUtil;
-import org.folio.processing.events.model.EventContext;
 import org.folio.processing.matching.model.schemas.Field;
 import org.folio.processing.matching.model.schemas.MatchDetail;
 import org.folio.processing.matching.model.schemas.MatchExpression;
@@ -16,6 +16,7 @@ import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.STATIC_VALUE;
 import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
@@ -46,8 +47,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldRead_StringValue() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -69,8 +72,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldRead_SubfieldValue_WithEmptyIndicators() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -92,8 +97,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldRead_SubfieldValue_WithIndicators() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -115,8 +122,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfNoSuchField() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -137,8 +146,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfNoSuchField_WithIndicators() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -159,8 +170,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfNoSuchSubfieldField() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -181,8 +194,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_ListValue_IfMultipleFields() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -207,8 +222,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfOtherDataValueType() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(STATIC_VALUE));
@@ -223,8 +240,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfEmptyRecord() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), StringUtils.EMPTY);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), StringUtils.EMPTY);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -245,8 +264,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfDoNotMatchIndicator_1() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -267,8 +288,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_MissingValue_IfDoNotMatchIndicator_2() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -289,8 +312,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_ListValue_IfMultipleSubFields() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -315,8 +340,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithBeginsWithQualifier() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -341,8 +368,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithEndsWithQualifier() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -367,8 +396,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_ListValue_IfMultipleFields_FilterWithContainsQualifier() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -396,8 +427,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_IfMultipleSubFields_WithComparisonPart() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -423,8 +456,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_NumericOnly() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -448,8 +483,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_AlphaNumericOnly() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -473,8 +510,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_AlphaNumericsOnly() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -498,8 +537,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_AlphaNumerics() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
@@ -523,8 +564,10 @@ public class MarcValueReaderTest {
   @Test
   public void shouldReturn_StringValue_Numerics() {
     // given
-    EventContext eventContext = new EventContext();
-    eventContext.putObject(MARC.value(), MARC_RECORD);
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC.value(), MARC_RECORD);
+    eventContext.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)

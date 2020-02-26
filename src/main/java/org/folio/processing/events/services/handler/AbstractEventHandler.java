@@ -1,6 +1,6 @@
 package org.folio.processing.events.services.handler;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -10,16 +10,16 @@ import java.util.concurrent.CompletableFuture;
 public abstract class AbstractEventHandler implements EventHandler {
 
   @Override
-  public CompletableFuture<EventContext> handle(EventContext context) {
+  public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload context) {
     return handleContext(context)
       .thenCompose(nextContext -> CompletableFuture.completedFuture(prepareForNextHandler(nextContext)));
   }
 
-  protected abstract CompletableFuture<EventContext> handleContext(EventContext context);
+  protected abstract CompletableFuture<DataImportEventPayload> handleContext(DataImportEventPayload context);
 
-  protected EventContext prepareForNextHandler(EventContext context) {
+  protected DataImportEventPayload prepareForNextHandler(DataImportEventPayload context) {
     context.setEventType(getTargetEventType());
-    context.getEventChain().add(getHandlerEventType());
+    context.getEventsChain().add(getHandlerEventType());
     return context;
   }
 }

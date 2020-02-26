@@ -1,6 +1,6 @@
 package org.folio.processing.events.services.publisher;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.rest.jaxrs.model.Event;
 
 import java.util.concurrent.CompletableFuture;
@@ -15,5 +15,5 @@ public interface EventPublisher {
    * @param context event context
    * @return future with event context
    */
-  CompletableFuture<Event> publish(EventContext context);
+  CompletableFuture<Event> publish(DataImportEventPayload context);
 }

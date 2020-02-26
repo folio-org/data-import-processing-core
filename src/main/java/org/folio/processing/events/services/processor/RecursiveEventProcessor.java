@@ -1,6 +1,6 @@
 package org.folio.processing.events.services.processor;
 
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
 
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ public class RecursiveEventProcessor implements EventProcessor {
   private List<EventHandler> eventHandlers = new ArrayList<>();
 
   @Override
-  public CompletableFuture<EventContext> process(EventContext eventContext) {
-    CompletableFuture<EventContext> future = new CompletableFuture<>();
+  public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventContext) {
+    CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     String eventType = eventContext.getEventType();
     Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
       .filter(eventHandler -> eventHandler.getHandlerEventType().equals(eventType))
@@ -21,7 +21,6 @@ public class RecursiveEventProcessor implements EventProcessor {
     if (optionalEventHandler.isPresent()) {
       EventHandler nextEventHandler = optionalEventHandler.get();
       processEventRecursively(eventContext, nextEventHandler).whenComplete((processContext, throwable) -> {
-        eventContext.setHandled(true);
         if (throwable != null) {
           future.completeExceptionally(throwable);
         } else {
@@ -29,14 +28,13 @@ public class RecursiveEventProcessor implements EventProcessor {
         }
       });
     } else {
-      eventContext.setHandled(false);
       future.complete(eventContext);
     }
     return future;
   }
 
-  private CompletableFuture<EventContext> processEventRecursively(EventContext eventContext, EventHandler eventHandler) {
-    CompletableFuture<EventContext> future = new CompletableFuture<>();
+  private CompletableFuture<DataImportEventPayload> processEventRecursively(DataImportEventPayload eventContext, EventHandler eventHandler) {
+    CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     eventHandler.handle(eventContext).whenComplete((handlerEventContext, handlerThrowable) -> {
       if (handlerThrowable != null) {
         future.completeExceptionally(handlerThrowable);

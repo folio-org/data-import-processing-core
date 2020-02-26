@@ -1,7 +1,7 @@
 package org.folio.processing.matching.matcher;
 
-import org.folio.ProfileSnapshotWrapper;
-import org.folio.processing.events.model.EventContext;
+import org.folio.DataImportEventPayload;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.matching.loader.LoadResult;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
@@ -13,7 +13,7 @@ import org.folio.processing.value.Value;
 
 public interface Matcher {
 
-  default boolean match(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader, EventContext context) {
+  default boolean match(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader, DataImportEventPayload context) {
     ProfileSnapshotWrapper matchingProfileWrapper = context.getCurrentNode();
     MatchProfile matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
     // Only one matching detail is expected in first implementation,
@@ -24,7 +24,7 @@ public interface Matcher {
     LoadQuery query = LoadQueryBuilder.build(value, matchDetail);
     LoadResult result = matchValueLoader.loadEntity(query, context);
     if (result.getValue() != null) {
-      context.getObjects().put(result.getEntityType(), result.getValue());
+      context.getContext().put(result.getEntityType(), result.getValue());
       return true;
     }
     return false;
