@@ -1,10 +1,10 @@
 package org.folio.processing.matching.reader.util;
 
 import org.apache.commons.lang.StringUtils;
-import org.folio.processing.matching.model.schemas.Qualifier;
+import org.folio.rest.jaxrs.model.Qualifier;
 
-import static org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
-import static org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart.NUMERICS_ONLY;
+import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
+import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.NUMERICS_ONLY;
 
 /**
  * Util class to process value according to MatchExpression

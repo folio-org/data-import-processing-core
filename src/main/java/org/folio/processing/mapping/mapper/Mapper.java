@@ -1,12 +1,12 @@
 package org.folio.processing.mapping.mapper;
 
 import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
+import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.Value;
 import org.folio.processing.mapping.mapper.writer.Writer;
-import org.folio.processing.mapping.model.MappingProfile;
-import org.folio.processing.mapping.model.Rule;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,10 +34,10 @@ public interface Mapper {
     MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
     reader.initialize(eventPayload);
     writer.initialize(eventPayload);
-    List<Rule> mappingRules = mappingProfile.getMappingRules();
-    for (Rule rule : mappingRules) {
-      Value value = reader.read(rule.getRuleExpression());
-      writer.write(rule.getFieldPath(), value);
+    List<MappingRule> mappingRules = mappingProfile.getMappingDetails().getMappingFields();
+    for (MappingRule rule : mappingRules) {
+      Value value = reader.read(rule.getValue());
+      writer.write(rule.getPath(), value);
     }
     return writer.getResult(eventPayload);
   }

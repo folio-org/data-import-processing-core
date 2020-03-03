@@ -1,15 +1,16 @@
 package org.folio.processing.matching.loader.query;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.processing.matching.model.schemas.Field;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchExpression;
+import org.folio.MatchDetail;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Field;
+import org.folio.rest.jaxrs.model.MatchExpression;
+
 import java.util.List;
 
-import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 
 /**
  * Provides functionality to build LoadQuery based on match details and matching value

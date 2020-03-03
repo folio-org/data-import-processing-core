@@ -4,7 +4,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.handler.impl.HttpStatusException;
 import org.folio.DataImportEventPayload;
 import org.folio.HttpStatus;
-import org.folio.processing.events.model.OkapiConnectionParams;
 import org.folio.rest.client.PubsubClient;
 import org.folio.rest.jaxrs.model.Event;
 import org.slf4j.Logger;
@@ -14,31 +13,18 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class RestEventPublisher implements EventPublisher {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(RestEventPublisher.class);
 
   @Override
   public CompletableFuture<Event> publish(DataImportEventPayload eventPayload) {
-    OkapiConnectionParams params = new OkapiConnectionParams()
-      .withOkapiUrl(eventPayload.getOkapiUrl())
-      .withTenantId(eventPayload.getTenant())
-      .withToken(eventPayload.getToken());
+    CompletableFuture<Event> future = new CompletableFuture<>();
     Event event = new Event()
       .withId(UUID.randomUUID().toString())
       .withEventType(eventPayload.getEventType())
       .withEventPayload(JsonObject.mapFrom(eventPayload).encode());
-    return postPubsubPublish(event, params);
-  }
 
-  /**
-   * Sends event to mod-pubsub using REST client
-   *
-   * @param event  event
-   * @param params connection parameters
-   * @return future
-   */
-  private CompletableFuture<Event> postPubsubPublish(Event event, OkapiConnectionParams params) {
-    CompletableFuture<Event> future = new CompletableFuture<>();
-    PubsubClient client = new PubsubClient(params.getOkapiUrl(), params.getTenantId(), params.getToken());
+    PubsubClient client = new PubsubClient(eventPayload.getOkapiUrl(), eventPayload.getTenant(), eventPayload.getToken());
     try {
       client.postPubsubPublish(event, response -> {
         if (response.statusCode() != HttpStatus.HTTP_NO_CONTENT.toInt()) {

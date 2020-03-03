@@ -14,7 +14,9 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.util.HashMap;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.*;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_AUTHORITY;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_HOLDINGS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

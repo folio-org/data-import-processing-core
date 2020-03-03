@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
  * Event publisher
  */
 public interface EventPublisher {
+
   /**
    * Sends event to consumer service, which may be mod-pubsub or other ones.
    *

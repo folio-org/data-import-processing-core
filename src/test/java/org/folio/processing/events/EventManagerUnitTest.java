@@ -10,12 +10,14 @@ import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
 import org.folio.processing.events.handlers.FailExceptionallyHandler;
 import org.folio.processing.events.handlers.ThrowExceptionHandler;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
 @RunWith(VertxUnitRunner.class)
+@Ignore("Will be removed in next PR")
 public class EventManagerUnitTest extends AbstractRestTest {
 
   @Before
@@ -33,9 +35,9 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new CreateItemRecordEventHandler());
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
-      .withTenant(okapiConnectionParams.getTenantId())
-      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
-      .withToken(okapiConnectionParams.getToken());
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN);
     // when
     EventManager.handleEvent(eventPayload).whenComplete((nextEventContext, throwable) -> {
       // then
@@ -57,9 +59,9 @@ public class EventManagerUnitTest extends AbstractRestTest {
     int expectedEventChainSize = 0;
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
-      .withTenant(okapiConnectionParams.getTenantId())
-      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
-      .withToken(okapiConnectionParams.getToken());
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN);
     EventManager.handleEvent(eventPayload).whenComplete((p, throwable) -> {
       // then
       testContext.assertNull(throwable);
@@ -79,9 +81,9 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new CreateItemRecordEventHandler());
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("UNDEFINED_EVENT")
-      .withTenant(okapiConnectionParams.getTenantId())
-      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
-      .withToken(okapiConnectionParams.getToken());
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN);
     // when
     EventManager.handleEvent(eventPayload).whenComplete((p, throwable) -> {
       // then
@@ -112,9 +114,9 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new FailExceptionallyHandler());
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
-      .withTenant(okapiConnectionParams.getTenantId())
-      .withOkapiUrl(okapiConnectionParams.getOkapiUrl())
-      .withToken(okapiConnectionParams.getToken());
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN);
     // when
     EventManager.handleEvent(eventPayload).whenComplete((nextEventContext, throwable) -> {
       // then

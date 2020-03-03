@@ -1,6 +1,7 @@
 package org.folio.processing.mapping;
 
 import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
@@ -8,7 +9,6 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
-import org.folio.processing.mapping.model.MappingProfile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

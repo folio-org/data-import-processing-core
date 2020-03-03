@@ -1,6 +1,7 @@
 package org.folio.processing.matching.loader;
 
-import org.folio.processing.matching.model.schemas.MatchProfile;
+import org.folio.MatchProfile;
+import org.folio.rest.jaxrs.model.EntityType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,7 @@ public class MatchValueLoaderFactory {
 
   private static final List<MatchValueLoader> matchValueLoaderList = new ArrayList<>();
 
-  public static MatchValueLoader build(MatchProfile.ExistingRecordType existingRecordType) {
+  public static MatchValueLoader build(EntityType existingRecordType) {
     return matchValueLoaderList.stream()
       .filter(matchValueLoader -> matchValueLoader.isEligibleForEntityType(existingRecordType))
       .findFirst()

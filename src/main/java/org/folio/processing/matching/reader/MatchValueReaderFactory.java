@@ -1,6 +1,6 @@
 package org.folio.processing.matching.reader;
 
-import org.folio.processing.matching.model.schemas.MatchProfile;
+import org.folio.rest.jaxrs.model.EntityType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import static java.lang.String.format;
 public class MatchValueReaderFactory {
   private static final List<MatchValueReader> matchValueReaderList = new ArrayList<>();
 
-  public static MatchValueReader build(MatchProfile.IncomingRecordType incomingRecordType) {
+  public static MatchValueReader build(EntityType incomingRecordType) {
     return matchValueReaderList.stream()
       .filter(matchValueReader -> matchValueReader.isEligibleForEntityType(incomingRecordType))
       .findFirst()

@@ -1,13 +1,13 @@
 package org.folio.processing.matching.matcher;
 
 import org.folio.DataImportEventPayload;
+import org.folio.MatchDetail;
+import org.folio.MatchProfile;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.matching.loader.LoadResult;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchProfile;
 import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.processing.value.Value;
 

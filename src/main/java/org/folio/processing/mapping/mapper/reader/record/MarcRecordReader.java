@@ -8,7 +8,7 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
-import org.folio.processing.mapping.model.MappingProfile.EntityType;
+import org.folio.rest.jaxrs.model.EntityType;
 
 import java.io.IOException;
 

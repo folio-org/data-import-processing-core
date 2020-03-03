@@ -6,7 +6,7 @@ import org.folio.processing.value.Value;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion;
+import org.folio.MatchDetail.MatchCriterion;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;

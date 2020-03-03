@@ -1,9 +1,9 @@
 package org.folio.processing.matching.reader;
 
 import org.folio.DataImportEventPayload;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchProfile;
+import org.folio.MatchDetail;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.EntityType;
 
 /**
  * MatchValueReader interface
@@ -25,5 +25,5 @@ public interface MatchValueReader {
    * @param incomingRecordType incoming Record type
    * @return true if MatchValueReader is suited for reading specified Record type
    */
-  boolean isEligibleForEntityType(MatchProfile.IncomingRecordType incomingRecordType);
+  boolean isEligibleForEntityType(EntityType incomingRecordType);
 }

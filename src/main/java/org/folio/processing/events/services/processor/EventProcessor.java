@@ -15,7 +15,7 @@ public interface EventProcessor {
    * Performs event processing
    *
    * @param eventPayload event payload
-   * @return future with event payload
+   * @return future with event payload after handling
    */
   CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload);
 

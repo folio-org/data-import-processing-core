@@ -4,9 +4,9 @@ import org.folio.DataImportEventPayload;
 import org.folio.processing.matching.loader.LoadResult;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
-import org.folio.processing.matching.model.schemas.MatchProfile;
+import org.folio.rest.jaxrs.model.EntityType;
 
-import static org.folio.processing.matching.model.schemas.MatchProfile.ExistingRecordType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class TestMatchValueLoader implements MatchValueLoader {
   @Override
@@ -18,7 +18,7 @@ public class TestMatchValueLoader implements MatchValueLoader {
   }
 
   @Override
-  public boolean isEligibleForEntityType(MatchProfile.ExistingRecordType existingRecordType) {
+  public boolean isEligibleForEntityType(EntityType existingRecordType) {
     return existingRecordType == MARC_BIBLIOGRAPHIC;
   }
 }

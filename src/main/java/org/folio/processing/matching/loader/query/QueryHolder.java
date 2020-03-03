@@ -1,8 +1,8 @@
 package org.folio.processing.matching.loader.query;
 
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.Qualifier;
+import org.folio.MatchDetail;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Qualifier;
 
 /**
  * Helper class that allows to build sql and cql queries based on MatchCriterion and apply Qualifier

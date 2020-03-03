@@ -10,25 +10,19 @@ import java.util.concurrent.CompletableFuture;
 public interface EventHandler {
 
   /**
-   * Handles event
+   * Handles event, updates event type and event chain if necessary
    *
    * @param eventPayload event payload
-   * @return future with event payload
+   * @return future with event payload after handling
    */
   CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload);
 
   /**
-   * Returns event type that handler can handle.
-   * <code>handle</code> methods runs if type of event from payload is the same as type of handler.
+   * Checks whether event handler is eligible to handle specified event (based on Profile type and Entity type)
    *
-   * @return handler event type
+   * @param eventPayload event payload
+   * @return true if event handler is eligible to handle the event
    */
-  String getHandlerEventType();
+  boolean isEligible(DataImportEventPayload eventPayload);
 
-  /**
-   * Returns event type that handler sets to DataImportEventPayload as a result of handling.
-   *
-   * @return target event type
-   */
-  String getTargetEventType();
 }

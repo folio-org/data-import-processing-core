@@ -4,13 +4,13 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
+import org.folio.rest.jaxrs.model.EntityType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static java.lang.String.format;
-import static org.folio.processing.mapping.model.MappingProfile.EntityType;
 
 /**
  * Registry for reader factories and writer factories
