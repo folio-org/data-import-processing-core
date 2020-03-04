@@ -6,11 +6,13 @@ import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.EventProcessorImpl;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.DataImportEventTypes.DI_ERROR;
 
 /**
@@ -59,19 +61,19 @@ public final class EventManager {
   private static void prepareEventPayload(DataImportEventPayload eventPayload) {
     // update currentNode
     // update currentNodePath
+    List<ProfileSnapshotWrapper> children = eventPayload.getCurrentNode().getChildSnapshotWrappers();
+    if (isNotEmpty(children)) {
+      eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
+      eventPayload.setCurrentNode(children.get(0));
+    }
+    // search in jobProfile tree, if finished - fire DI_COMPLETED event
   }
 
   private static void prepareErrorEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
     eventPayload.setEventType(DI_ERROR.value());
-
-    List<String> eventsChain = eventPayload.getEventsChain();
     // an error occurred during handling of current event type, so it is pushed to the events chain
-    eventsChain.add(eventPayload.getEventType());
-    eventPayload.setEventsChain(eventsChain);
-
-    HashMap<String, String> context = eventPayload.getContext();
-    context.put("ERROR", throwable.getMessage());
-    eventPayload.setContext(context);
+    eventPayload.getEventsChain().add(eventPayload.getEventType());
+    eventPayload.getContext().put("ERROR", throwable.getMessage());
   }
 
   /**

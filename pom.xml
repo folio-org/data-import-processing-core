@@ -165,8 +165,10 @@
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventPayload.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventTypes.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/profileSnapshotWrapper.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/jobProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/mappingProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/matchProfile.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/actionProfile.json</path>
                 <path>${basedir}/ramls/holdings/holdingsrecord.json</path>
                 <path>${basedir}/ramls/item/item.json</path>
               </sourcePaths>

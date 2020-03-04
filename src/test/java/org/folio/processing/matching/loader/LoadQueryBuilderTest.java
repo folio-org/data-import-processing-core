@@ -437,13 +437,12 @@ public class LoadQueryBuilderTest {
   public void dummyTestForDefaultLoadQuery() {
     // given
     String tableName = "instance";
-    String fieldName = "hrid";
-    String whereClause = "WHERE FIELD_NAME = 'ybp7406411'";
+    String whereClause = "WHERE TABLE_NAME.hrid = 'ybp7406411'";
     //when
-    LoadQuery result = new DefaultLoadQuery(tableName, fieldName, whereClause);
+    LoadQuery result = new DefaultLoadQuery(tableName, whereClause);
     //then
     assertNotNull(result.getSql());
-    assertEquals(whereClause.replace("FIELD_NAME", "instance.hrid"), result.getSql());
+    assertEquals(whereClause.replace("TABLE_NAME", "instance"), result.getSql());
     try {
       result.getCql();
       fail();
