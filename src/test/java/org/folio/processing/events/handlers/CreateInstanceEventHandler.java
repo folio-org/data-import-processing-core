@@ -16,6 +16,8 @@ public class CreateInstanceEventHandler implements EventHandler {
 
   @Override
   public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload) {
+    eventPayload.getEventsChain().add(eventPayload.getEventType());
+    eventPayload.setEventType("DI_INVENTORY_INSTANCE_CREATED");
     return CompletableFuture.completedFuture(eventPayload);
   }
 

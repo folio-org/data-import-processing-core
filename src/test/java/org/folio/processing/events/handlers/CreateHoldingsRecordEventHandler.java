@@ -3,6 +3,7 @@ package org.folio.processing.events.handlers;
 import io.vertx.core.json.JsonObject;
 import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
+import org.folio.DataImportEventTypes;
 import org.folio.processing.events.services.handler.EventHandler;
 
 import java.util.concurrent.CompletableFuture;
@@ -16,6 +17,8 @@ public class CreateHoldingsRecordEventHandler implements EventHandler {
 
   @Override
   public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload) {
+    eventPayload.getEventsChain().add(eventPayload.getEventType());
+    eventPayload.setEventType("DI_HOLDINGS_RECORD_CREATED");
     return CompletableFuture.completedFuture(eventPayload);  }
 
   @Override

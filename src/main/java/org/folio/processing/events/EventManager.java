@@ -8,11 +8,11 @@ import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
 
 /**
@@ -36,20 +36,16 @@ public final class EventManager {
    */
   public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    eventProcessor.process(eventPayload).whenComplete((processPayload, processThrowable) -> {
-      if (processThrowable == null) {
-        prepareEventPayload(processPayload);
-      } else {
-        prepareErrorEventPayload(processPayload, processThrowable);
-      }
-      eventPublisher.publish(processPayload).whenComplete((publishPayload, publishThrowable) -> {
+    eventProcessor.process(eventPayload)
+      .whenComplete((processPayload, processThrowable) ->
+        eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+        .whenComplete((publishPayload, publishThrowable) -> {
         if (publishThrowable == null) {
           future.complete(eventPayload);
         } else {
           future.completeExceptionally(publishThrowable);
         }
-      });
-    });
+      }));
     return future;
   }
 
@@ -58,22 +54,30 @@ public final class EventManager {
    *
    * @param eventPayload eventPayload
    */
-  private static void prepareEventPayload(DataImportEventPayload eventPayload) {
+  private static DataImportEventPayload prepareEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
     // update currentNode
     // update currentNodePath
+    if (throwable != null) {
+      return prepareErrorEventPayload(eventPayload, throwable);
+    }
     List<ProfileSnapshotWrapper> children = eventPayload.getCurrentNode().getChildSnapshotWrappers();
     if (isNotEmpty(children)) {
       eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
       eventPayload.setCurrentNode(children.get(0));
+    } else {
+      // TODO search in jobProfile tree, if finished - fire DI_COMPLETED event
+      eventPayload.getEventsChain().add(eventPayload.getEventType());
+      eventPayload.setEventType(DI_COMPLETED.value());
     }
-    // search in jobProfile tree, if finished - fire DI_COMPLETED event
+    return eventPayload;
   }
 
-  private static void prepareErrorEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
+  private static DataImportEventPayload prepareErrorEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
     eventPayload.setEventType(DI_ERROR.value());
     // an error occurred during handling of current event type, so it is pushed to the events chain
     eventPayload.getEventsChain().add(eventPayload.getEventType());
     eventPayload.getContext().put("ERROR", throwable.getMessage());
+    return eventPayload;
   }
 
   /**

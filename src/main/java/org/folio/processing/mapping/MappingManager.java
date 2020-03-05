@@ -2,6 +2,7 @@ package org.folio.processing.mapping;
 
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
+import org.folio.processing.exceptions.MappingException;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
@@ -51,8 +52,7 @@ public final class MappingManager {
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
       return new Mapper() {}.map(reader, writer, eventPayload);
     } catch (Exception e) {
-      LOGGER.error("Exception occurred in Mapper", e);
-      throw new RuntimeException(e);
+      throw new MappingException(e);
     }
   }
 

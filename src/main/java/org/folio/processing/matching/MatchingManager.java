@@ -2,6 +2,7 @@ package org.folio.processing.matching;
 
 import org.folio.DataImportEventPayload;
 import org.folio.MatchProfile;
+import org.folio.processing.exceptions.MatchingException;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
@@ -35,7 +36,7 @@ public final class MatchingManager {
       MatchValueLoader loader = MatchValueLoaderFactory.build(matchProfile.getExistingRecordType());
       return new Matcher() {}.match(reader, loader, eventPayload);
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new MatchingException(e);
     }
   }
 }
