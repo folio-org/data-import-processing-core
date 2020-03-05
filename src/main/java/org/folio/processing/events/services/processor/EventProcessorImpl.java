@@ -18,20 +18,24 @@ public class EventProcessorImpl implements EventProcessor {
   @Override
   public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
-      .filter(eventHandler -> eventHandler.isEligible(eventPayload))
-      .findFirst();
-    if (optionalEventHandler.isPresent()) {
-      EventHandler eventHandler = optionalEventHandler.get();
-      eventHandler.handle(eventPayload).whenComplete((payload, throwable) -> {
-        if (throwable != null) {
-          future.completeExceptionally(throwable);
-        } else {
-          future.complete(payload);
-        }
-      });
-    } else {
-      future.completeExceptionally(new EventProcessingException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
+    try {
+      Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
+        .filter(eventHandler -> eventHandler.isEligible(eventPayload))
+        .findFirst();
+      if (optionalEventHandler.isPresent()) {
+        EventHandler eventHandler = optionalEventHandler.get();
+        eventHandler.handle(eventPayload).whenComplete((payload, throwable) -> {
+          if (throwable != null) {
+            future.completeExceptionally(throwable);
+          } else {
+            future.complete(payload);
+          }
+        });
+      } else {
+        future.completeExceptionally(new EventProcessingException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
+      }
+    } catch (Exception e) {
+      future.completeExceptionally(e);
     }
     return future;
   }

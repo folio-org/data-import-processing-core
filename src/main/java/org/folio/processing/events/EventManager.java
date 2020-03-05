@@ -8,8 +8,13 @@ import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
@@ -36,17 +41,32 @@ public final class EventManager {
    */
   public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
-    eventProcessor.process(eventPayload)
-      .whenComplete((processPayload, processThrowable) ->
-        eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
-        .whenComplete((publishPayload, publishThrowable) -> {
-        if (publishThrowable == null) {
-          future.complete(eventPayload);
-        } else {
-          future.completeExceptionally(publishThrowable);
-        }
-      }));
+    try {
+      setCurrentNodeIfRoot(eventPayload);
+      eventProcessor.process(eventPayload)
+        .whenComplete((processPayload, processThrowable) ->
+          eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+            .whenComplete((publishPayload, publishThrowable) -> {
+              if (publishThrowable == null) {
+                future.complete(eventPayload);
+              } else {
+                future.completeExceptionally(publishThrowable);
+              }
+            }));
+    } catch (Exception e) {
+      future.completeExceptionally(e);
+    }
     return future;
+  }
+
+  private static void setCurrentNodeIfRoot(DataImportEventPayload eventPayload) {
+    if (eventPayload.getCurrentNode() == null) {
+      List<ProfileSnapshotWrapper> jobProfileChildren = eventPayload.getProfileSnapshot().getChildSnapshotWrappers();
+      if (isNotEmpty(jobProfileChildren)) {
+        eventPayload.setCurrentNode(jobProfileChildren.get(0));
+      }
+      eventPayload.setCurrentNodePath(new ArrayList<>(Collections.singletonList(eventPayload.getProfileSnapshot().getId())));
+    }
   }
 
   /**
@@ -55,21 +75,53 @@ public final class EventManager {
    * @param eventPayload eventPayload
    */
   private static DataImportEventPayload prepareEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
-    // update currentNode
-    // update currentNodePath
     if (throwable != null) {
       return prepareErrorEventPayload(eventPayload, throwable);
     }
+    eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
     List<ProfileSnapshotWrapper> children = eventPayload.getCurrentNode().getChildSnapshotWrappers();
     if (isNotEmpty(children)) {
-      eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
       eventPayload.setCurrentNode(children.get(0));
     } else {
-      // TODO search in jobProfile tree, if finished - fire DI_COMPLETED event
-      eventPayload.getEventsChain().add(eventPayload.getEventType());
-      eventPayload.setEventType(DI_COMPLETED.value());
+      ProfileSnapshotWrapper next = findNext(eventPayload.getProfileSnapshot(), eventPayload.getCurrentNode().getId());
+      if (next != null) {
+        eventPayload.setCurrentNode(next);
+      } else {
+        eventPayload.getEventsChain().add(eventPayload.getEventType());
+        eventPayload.setEventType(DI_COMPLETED.value());
+      }
     }
     return eventPayload;
+  }
+
+  // TODO current implementation is excessive and does not cover skipping of profiles based on match/non-match criterion
+  // will be changed in scope of {@link https://issues.folio.org/browse/MODDICORE-33}
+  private static ProfileSnapshotWrapper findNext(ProfileSnapshotWrapper root, String lastProcessedProfileId) {
+    List<ProfileSnapshotWrapper> sequenceOfProfiles = buildSequenceOfProfiles(root);
+    OptionalInt indexOfLastProcessed = IntStream.range(0, sequenceOfProfiles.size())
+      .filter(i -> sequenceOfProfiles.get(i).getId().equals(lastProcessedProfileId))
+      .findFirst();
+
+    if (indexOfLastProcessed.isPresent() && indexOfLastProcessed.getAsInt() < sequenceOfProfiles.size() - 1) {
+      return sequenceOfProfiles.get(indexOfLastProcessed.getAsInt());
+    }
+    return null;
+  }
+
+  private static List<ProfileSnapshotWrapper> buildSequenceOfProfiles(ProfileSnapshotWrapper root) {
+    List<ProfileSnapshotWrapper> visitedNodes = new ArrayList<>();
+    List<ProfileSnapshotWrapper> unvisitedNodes = new ArrayList<>();
+    unvisitedNodes.add(root);
+    while (!unvisitedNodes.isEmpty()) {
+      ProfileSnapshotWrapper currentNode = unvisitedNodes.remove(0);
+      List<ProfileSnapshotWrapper> newNodes = currentNode.getChildSnapshotWrappers()
+        .stream()
+        .filter(node -> !visitedNodes.contains(node))
+        .collect(Collectors.toList());
+      unvisitedNodes.addAll(0, newNodes);
+      visitedNodes.add(currentNode);
+    }
+    return visitedNodes;
   }
 
   private static DataImportEventPayload prepareErrorEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {

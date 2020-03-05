@@ -6,6 +6,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
+import org.folio.JobProfile;
 import org.folio.processing.events.handlers.CreateHoldingsRecordEventHandler;
 import org.folio.processing.events.handlers.CreateInstanceEventHandler;
 import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_PROFILE;
 
 @RunWith(VertxUnitRunner.class)
 public class EventManagerUnitTest extends AbstractRestTest {
@@ -43,6 +45,20 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(UUID.randomUUID().toString())
+        .withContentType(ACTION_PROFILE)
+        .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))
+        .withChildSnapshotWrappers(Collections.singletonList(
+          new ProfileSnapshotWrapper()
+            .withId(UUID.randomUUID().toString())
+            .withContentType(ACTION_PROFILE)
+            .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.HOLDINGS)))
+            .withChildSnapshotWrappers(Collections.singletonList(
+              new ProfileSnapshotWrapper()
+                .withId(UUID.randomUUID().toString())
+                .withContentType(ACTION_PROFILE)
+                .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM))))))))
       .withCurrentNode(new ProfileSnapshotWrapper()
         .withId(UUID.randomUUID().toString())
         .withContentType(ACTION_PROFILE)
@@ -84,6 +100,10 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(UUID.randomUUID().toString())
+        .withContentType(ACTION_PROFILE)
+        .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM))))
       .withCurrentNode(new ProfileSnapshotWrapper()
         .withId(UUID.randomUUID().toString())
         .withContentType(ACTION_PROFILE)
@@ -112,6 +132,10 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(UUID.randomUUID().toString())
+        .withContentType(ACTION_PROFILE)
+        .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM))))
       .withCurrentNode(new ProfileSnapshotWrapper()
         .withId(UUID.randomUUID().toString())
         .withContentType(ACTION_PROFILE)
@@ -137,6 +161,10 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(UUID.randomUUID().toString())
+        .withContentType(ACTION_PROFILE)
+        .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM))))
       .withCurrentNode(new ProfileSnapshotWrapper()
         .withId(UUID.randomUUID().toString())
         .withContentType(ACTION_PROFILE)
@@ -147,6 +175,47 @@ public class EventManagerUnitTest extends AbstractRestTest {
       testContext.assertNull(throwable);
       testContext.assertEquals(1, eventPayload.getEventsChain().size());
       testContext.assertEquals("DI_ERROR", eventPayload.getEventType());
+      async.complete();
+    });
+  }
+
+  @Test
+  public void shouldHandleFirstEventInJobProfile(TestContext testContext) {
+    Async async = testContext.async();
+    // given
+    String jobProfileId = UUID.randomUUID().toString();
+    String actionProfileId = UUID.randomUUID().toString();
+    EventManager.registerEventHandler(new CreateInstanceEventHandler());
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>())
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(jobProfileId)
+        .withContentType(JOB_PROFILE)
+        .withContent(JsonObject.mapFrom(new JobProfile()))
+        .withChildSnapshotWrappers(Collections.singletonList(
+          new ProfileSnapshotWrapper()
+            .withId(actionProfileId)
+            .withContentType(ACTION_PROFILE)
+            .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.INSTANCE))))));
+    // when
+    EventManager.handleEvent(eventPayload).whenComplete((eventContext, throwable) -> {
+      // then
+      testContext.assertNull(throwable);
+      testContext.assertEquals(2, eventContext.getEventsChain().size());
+      testContext.assertEquals(2, eventContext.getCurrentNodePath().size());
+      testContext.assertEquals(
+        eventContext.getCurrentNodePath(),
+        Arrays.asList(jobProfileId, actionProfileId)
+      );
+      testContext.assertEquals(
+        eventContext.getEventsChain(),
+        Arrays.asList("DI_SRS_MARC_BIB_RECORD_CREATED", "DI_INVENTORY_INSTANCE_CREATED")
+      );
+      testContext.assertEquals("DI_COMPLETED", eventContext.getEventType());
       async.complete();
     });
   }

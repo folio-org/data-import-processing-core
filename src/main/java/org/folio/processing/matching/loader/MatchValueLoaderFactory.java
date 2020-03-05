@@ -1,6 +1,5 @@
 package org.folio.processing.matching.loader;
 
-import org.folio.MatchProfile;
 import org.folio.rest.jaxrs.model.EntityType;
 
 import java.util.ArrayList;

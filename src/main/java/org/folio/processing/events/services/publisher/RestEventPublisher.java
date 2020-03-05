@@ -19,13 +19,13 @@ public class RestEventPublisher implements EventPublisher {
   @Override
   public CompletableFuture<Event> publish(DataImportEventPayload eventPayload) {
     CompletableFuture<Event> future = new CompletableFuture<>();
-    Event event = new Event()
-      .withId(UUID.randomUUID().toString())
-      .withEventType(eventPayload.getEventType())
-      .withEventPayload(JsonObject.mapFrom(eventPayload).encode());
-
-    PubsubClient client = new PubsubClient(eventPayload.getOkapiUrl(), eventPayload.getTenant(), eventPayload.getToken());
     try {
+      Event event = new Event()
+        .withId(UUID.randomUUID().toString())
+        .withEventType(eventPayload.getEventType())
+        .withEventPayload(JsonObject.mapFrom(eventPayload).encode());
+
+      PubsubClient client = new PubsubClient(eventPayload.getOkapiUrl(), eventPayload.getTenant(), eventPayload.getToken());
       client.postPubsubPublish(event, response -> {
         if (response.statusCode() != HttpStatus.HTTP_NO_CONTENT.toInt()) {
           LOGGER.error("Error publishing event: received status code {}, {}", response.statusCode(), response.statusMessage());
