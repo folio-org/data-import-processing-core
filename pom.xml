@@ -21,7 +21,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <pubsub.client.version>0.0.1-SNAPSHOT</pubsub.client.version>
+    <pubsub.client.version>1.1.0-SNAPSHOT</pubsub.client.version>
     <commons.lang.version>2.2</commons.lang.version>
     <logger.version>1.7.25</logger.version>
     <jackson.version>2.9.10.3</jackson.version>
@@ -163,7 +163,12 @@
             <configuration>
               <sourcePaths>
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventPayload.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventTypes.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/profileSnapshotWrapper.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/jobProfile.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/mappingProfile.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/matchProfile.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/actionProfile.json</path>
                 <path>${basedir}/ramls/holdings/holdingsrecord.json</path>
                 <path>${basedir}/ramls/item/item.json</path>
               </sourcePaths>

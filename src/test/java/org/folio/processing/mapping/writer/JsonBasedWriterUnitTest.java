@@ -1,11 +1,12 @@
 package org.folio.processing.mapping.writer;
 
 import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
-import org.folio.processing.mapping.model.MappingProfile;
 
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.StringValue;
+import org.folio.rest.jaxrs.model.EntityType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -19,14 +20,14 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class JsonBasedWriterUnitTest {
-  private static final JsonBasedWriter WRITER = new JsonBasedWriter(MappingProfile.EntityType.INSTANCE);
+  private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
 
   @Test
   public void shouldWrite_Values() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -44,7 +45,7 @@ public class JsonBasedWriterUnitTest {
           "names\":[\"Heins\",\"Rattu\",\"Tabrani\"]" +
         "}" +
       "}";
-    String resultInstance = eventContext.getContext().get(MappingProfile.EntityType.INSTANCE.value());
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
 
@@ -53,7 +54,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -62,7 +63,7 @@ public class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{\"indexTitle\":\"Folk music West\"}";
-    String resultInstance = eventContext.getContext().get(MappingProfile.EntityType.INSTANCE.value());
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
 
@@ -71,7 +72,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -80,7 +81,7 @@ public class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{\"languages\":[\"eng\",\"lat\",\"ger\",\"ita\"]}";
-    String resultInstance = eventContext.getContext().get(MappingProfile.EntityType.INSTANCE.value());
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
 
@@ -89,7 +90,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -103,7 +104,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -117,7 +118,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -131,7 +132,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MappingProfile.EntityType.INSTANCE.value(), "{}");
+    context.put(EntityType.INSTANCE.value(), "{}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);

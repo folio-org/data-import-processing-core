@@ -1,11 +1,11 @@
 package org.folio.processing.matching.manager;
 
 import org.folio.DataImportEventPayload;
+import org.folio.MatchDetail;
+import org.folio.MatchProfile;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.matching.MatchingManager;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchProfile;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,9 +16,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
 
+import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
-import static org.folio.processing.matching.model.schemas.MatchProfile.ExistingRecordType.MARC_BIBLIOGRAPHIC;
-import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingRecordType.EDIFACT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -39,7 +39,7 @@ public class MatchingManagerTest {
 
     MatchProfile matchProfile = new MatchProfile()
       .withExistingRecordType(MARC_BIBLIOGRAPHIC)
-      .withIncomingRecordType(EDIFACT)
+      .withIncomingRecordType(EDIFACT_INVOICE)
       .withMatchDetails(Collections.singletonList(new MatchDetail()));
 
     ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
@@ -51,7 +51,7 @@ public class MatchingManagerTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
-    context.put(EDIFACT.value(), givenEdifact);
+    context.put(EDIFACT_INVOICE.value(), givenEdifact);
     eventContext.setContext(context);
     eventContext.setCurrentNode(matchProfileWrapper);
     // when
@@ -67,7 +67,7 @@ public class MatchingManagerTest {
 
     MatchProfile matchProfile = new MatchProfile()
       .withExistingRecordType(MARC_BIBLIOGRAPHIC)
-      .withIncomingRecordType(EDIFACT)
+      .withIncomingRecordType(EDIFACT_INVOICE)
       .withMatchDetails(Collections.singletonList(new MatchDetail()));
 
     ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
@@ -88,7 +88,7 @@ public class MatchingManagerTest {
 
     MatchProfile matchProfile = new MatchProfile()
       .withExistingRecordType(MARC_BIBLIOGRAPHIC)
-      .withIncomingRecordType(EDIFACT)
+      .withIncomingRecordType(EDIFACT_INVOICE)
       .withMatchDetails(Collections.singletonList(new MatchDetail()));
 
     ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
@@ -111,7 +111,7 @@ public class MatchingManagerTest {
 
     MatchProfile matchProfile = new MatchProfile()
       .withExistingRecordType(MARC_BIBLIOGRAPHIC)
-      .withIncomingRecordType(EDIFACT)
+      .withIncomingRecordType(EDIFACT_INVOICE)
       .withMatchDetails(Collections.singletonList(new MatchDetail()));
 
     ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
@@ -122,7 +122,7 @@ public class MatchingManagerTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
-    context.put(EDIFACT.value(), givenEdifact);
+    context.put(EDIFACT_INVOICE.value(), givenEdifact);
     eventContext.setContext(context);
     eventContext.setCurrentNode(matchProfileWrapper);
     // when

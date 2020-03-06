@@ -3,9 +3,9 @@ package org.folio.processing.mapping.mapper.writer.holding;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
-import org.folio.processing.mapping.model.MappingProfile.EntityType;
+import org.folio.rest.jaxrs.model.EntityType;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.HOLDINGS;
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 
 public class HoldingsWriterFactory implements WriterFactory {
 

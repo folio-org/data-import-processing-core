@@ -8,10 +8,11 @@ import org.folio.processing.value.MapValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
+
+
 import java.io.IOException;
 import java.util.HashMap;
-
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.INSTANCE;
 
 public class TestInstanceWriter extends AbstractWriter {
   private TestInstance instance;

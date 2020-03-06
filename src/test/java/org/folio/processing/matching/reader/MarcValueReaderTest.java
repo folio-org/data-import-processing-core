@@ -2,13 +2,13 @@ package org.folio.processing.matching.reader;
 
 import org.apache.commons.lang.StringUtils;
 import org.folio.DataImportEventPayload;
+import org.folio.MatchDetail;
 import org.folio.processing.TestUtil;
-import org.folio.processing.matching.model.schemas.Field;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchExpression;
-import org.folio.processing.matching.model.schemas.Qualifier;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Field;
+import org.folio.rest.jaxrs.model.MatchExpression;
+import org.folio.rest.jaxrs.model.Qualifier;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,17 +18,16 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.STATIC_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
-import static org.folio.processing.matching.model.schemas.MatchProfile.IncomingRecordType.MARC;
-import static org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
-import static org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart.NUMERICS_ONLY;
-import static org.folio.processing.matching.model.schemas.Qualifier.QualifierType.BEGINS_WITH;
-import static org.folio.processing.matching.model.schemas.Qualifier.QualifierType.CONTAINS;
-import static org.folio.processing.matching.model.schemas.Qualifier.QualifierType.ENDS_WITH;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
+import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
+import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.NUMERICS_ONLY;
+import static org.folio.rest.jaxrs.model.Qualifier.QualifierType.BEGINS_WITH;
+import static org.folio.rest.jaxrs.model.Qualifier.QualifierType.CONTAINS;
+import static org.folio.rest.jaxrs.model.Qualifier.QualifierType.ENDS_WITH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 public class MarcValueReaderTest {
 
   private final static String MARC_RECORD_PATH = "src/test/resources/org.folio.processing/marcRecord.json";
+  private final static String MARC = "MARC";
   private static String MARC_RECORD;
 
   @BeforeClass
@@ -49,7 +49,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -74,7 +74,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -99,7 +99,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -124,7 +124,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -148,7 +148,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -172,7 +172,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -196,7 +196,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -224,7 +224,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -242,7 +242,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), StringUtils.EMPTY);
+    context.put(MARC, StringUtils.EMPTY);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -266,7 +266,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -290,7 +290,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -314,7 +314,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -342,7 +342,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -370,7 +370,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -398,7 +398,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -429,7 +429,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -458,7 +458,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -485,7 +485,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -512,7 +512,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -539,7 +539,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -566,7 +566,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC.value(), MARC_RECORD);
+    context.put(MARC, MARC_RECORD);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()

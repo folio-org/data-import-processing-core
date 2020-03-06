@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.HOLDINGS;
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.hamcrest.Matchers.is;
 
 @RunWith(JUnit4.class)

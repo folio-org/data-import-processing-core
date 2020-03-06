@@ -2,9 +2,9 @@ package org.folio.processing.mapping.manager;
 
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
-import org.folio.processing.mapping.model.MappingProfile;
+import org.folio.rest.jaxrs.model.EntityType;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.INSTANCE;
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 
 public class TestInstanceWriterFactory implements WriterFactory {
 
@@ -17,7 +17,7 @@ public class TestInstanceWriterFactory implements WriterFactory {
   }
 
   @Override
-  public boolean isEligibleForEntityType(MappingProfile.EntityType entityType) {
+  public boolean isEligibleForEntityType(EntityType entityType) {
     return INSTANCE == entityType;
   }
 }

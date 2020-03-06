@@ -2,7 +2,6 @@ package org.folio.processing.mapping.mapper.reader;
 
 import org.folio.DataImportEventPayload;
 import org.folio.processing.value.Value;
-import org.folio.processing.mapping.model.Rule;
 
 import java.io.IOException;
 

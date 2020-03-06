@@ -1,6 +1,6 @@
 package org.folio.processing.matching.loader.query;
 
-import org.folio.processing.matching.model.schemas.Qualifier.ComparisonPart;
+import org.folio.rest.jaxrs.model.Qualifier.ComparisonPart;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.EMPTY;

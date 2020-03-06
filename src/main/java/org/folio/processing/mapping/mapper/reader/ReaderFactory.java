@@ -1,6 +1,6 @@
 package org.folio.processing.mapping.mapper.reader;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType;
+import org.folio.rest.jaxrs.model.EntityType;
 
 /**
  * Factory to produce readers

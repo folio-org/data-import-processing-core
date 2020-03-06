@@ -1,15 +1,16 @@
 package org.folio.processing.matching.loader.query;
 
 import org.apache.commons.lang3.StringUtils;
-import org.folio.processing.matching.model.schemas.Field;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchExpression;
+import org.folio.MatchDetail;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Field;
+import org.folio.rest.jaxrs.model.MatchExpression;
+
 import java.util.List;
 
-import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 
 /**
  * Provides functionality to build LoadQuery based on match details and matching value
@@ -37,12 +38,13 @@ public class LoadQueryBuilder {
       if (matchExpression != null && matchExpression.getDataValueType() == VALUE_FROM_RECORD) {
         List<Field> fields = matchExpression.getFields();
         if (fields != null && fields.size() == 1) {
-          QueryHolder queryHolder = new QueryHolder(value, matchDetail.getMatchCriterion())
-            .applyQualifier(matchExpression.getQualifier());
           String fieldPath = fields.get(0).getValue();
           String tableName = StringUtils.substringBefore(fieldPath, JSON_PATH_SEPARATOR);
           String fieldName = StringUtils.substringAfter(fieldPath, JSON_PATH_SEPARATOR);
-          return new DefaultJsonLoadQuery(tableName, fieldName, queryHolder.getSqlQuery(), queryHolder.getCqlQuery());
+          QueryHolder queryHolder = new QueryHolder(value, matchDetail.getMatchCriterion())
+            .applyQualifier(matchExpression.getQualifier())
+            .replaceFieldReference(fieldName, true);
+          return new DefaultJsonLoadQuery(tableName, queryHolder.getSqlQuery(), queryHolder.getCqlQuery());
         }
         // TODO Support loading of MARC records
       }

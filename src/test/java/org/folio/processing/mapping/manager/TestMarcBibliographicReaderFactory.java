@@ -2,9 +2,9 @@ package org.folio.processing.mapping.manager;
 
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
-import org.folio.processing.mapping.model.MappingProfile;
+import org.folio.rest.jaxrs.model.EntityType;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class TestMarcBibliographicReaderFactory implements ReaderFactory {
 
@@ -17,7 +17,7 @@ public class TestMarcBibliographicReaderFactory implements ReaderFactory {
   }
 
   @Override
-  public boolean isEligibleForEntityType(MappingProfile.EntityType entityType) {
+  public boolean isEligibleForEntityType(EntityType entityType) {
     return MARC_BIBLIOGRAPHIC == entityType;
   }
 }

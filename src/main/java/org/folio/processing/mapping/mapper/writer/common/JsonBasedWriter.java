@@ -8,10 +8,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
-import org.folio.processing.mapping.model.MappingProfile;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MapValue;
 import org.folio.processing.value.StringValue;
+import org.folio.rest.jaxrs.model.EntityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ public class JsonBasedWriter extends AbstractWriter {
   private String entityType;
   private JsonNode entityNode;
 
-  public JsonBasedWriter(MappingProfile.EntityType entityType) {
+  public JsonBasedWriter(EntityType entityType) {
     this.entityType = entityType.value();
   }
 

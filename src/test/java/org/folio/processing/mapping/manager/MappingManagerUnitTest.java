@@ -3,9 +3,10 @@ package org.folio.processing.mapping.manager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
 import org.folio.processing.mapping.MappingManager;
-import org.folio.processing.mapping.model.MappingProfile;
-import org.folio.processing.mapping.model.Rule;
+import org.folio.rest.jaxrs.model.MappingDetail;
+import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,11 +14,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
 
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.INSTANCE;
-import static org.folio.processing.mapping.model.MappingProfile.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 import static org.junit.Assert.assertNotNull;
 
@@ -33,8 +35,11 @@ public class MappingManagerUnitTest {
   @Test
   public void shouldMap_MarcBibliographicToInstance() throws IOException {
     // given
-    MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
-    mappingProfile.getMappingRules().add(new Rule("indexTitle", "RULE_EXPRESSION"));
+    MappingProfile mappingProfile = new MappingProfile()
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(INSTANCE)
+      .withMappingDetails(new MappingDetail()
+        .withMappingFields(Collections.singletonList(new MappingRule().withPath("indexTitle").withValue("RULE_EXPRESSION"))));
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
@@ -63,7 +68,7 @@ public class MappingManagerUnitTest {
   @Test(expected = RuntimeException.class)
   public void shouldThrowException_ifNoReaderEligible() throws JsonProcessingException {
     // given
-    MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
+    MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
@@ -79,7 +84,7 @@ public class MappingManagerUnitTest {
   @Test(expected = RuntimeException.class)
   public void shouldThrowException_ifNoWriterEligible() throws JsonProcessingException {
     // given
-    MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
+    MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
@@ -95,8 +100,11 @@ public class MappingManagerUnitTest {
   @Test
   public void shouldNotMap_IfNoContentType() throws IOException {
     // given
-    MappingProfile mappingProfile = new MappingProfile(MARC_BIBLIOGRAPHIC, INSTANCE);
-    mappingProfile.getMappingRules().add(new Rule("indexTitle", "RULE_EXPRESSION"));
+    MappingProfile mappingProfile = new MappingProfile()
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(INSTANCE)
+      .withMappingDetails(new MappingDetail()
+        .withMappingFields(Collections.singletonList(new MappingRule().withPath("indexTitle").withValue("RULE_EXPRESSION"))));
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
 

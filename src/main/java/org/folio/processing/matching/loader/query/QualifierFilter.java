@@ -1,7 +1,7 @@
 package org.folio.processing.matching.loader.query;
 
-import org.folio.processing.matching.model.schemas.Qualifier;
-import org.folio.processing.matching.model.schemas.Qualifier.QualifierType;
+import org.folio.rest.jaxrs.model.Qualifier;
+import org.folio.rest.jaxrs.model.Qualifier.QualifierType;
 
 import static java.lang.String.format;
 

@@ -1,31 +1,32 @@
 package org.folio.processing.events.handlers;
 
+import io.vertx.core.json.JsonObject;
+import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
-import org.folio.processing.events.services.handler.AbstractEventHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.folio.processing.events.services.handler.EventHandler;
 
 import java.util.concurrent.CompletableFuture;
+
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
 
 /**
  * Test event handler. Handles event context with event DI_SRS_MARC_BIB_RECORD_CREATED
  */
-public class CreateInstanceEventHandler extends AbstractEventHandler {
-  private final Logger LOGGER = LoggerFactory.getLogger(CreateInstanceEventHandler.class);
+public class CreateInstanceEventHandler implements EventHandler {
 
   @Override
-  public CompletableFuture<DataImportEventPayload> handleEventPayload(DataImportEventPayload eventPayload) {
-    LOGGER.info("Handling event " + getHandlerEventType());
+  public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload) {
+    eventPayload.getEventsChain().add(eventPayload.getEventType());
+    eventPayload.setEventType("DI_INVENTORY_INSTANCE_CREATED");
     return CompletableFuture.completedFuture(eventPayload);
   }
 
   @Override
-  public String getHandlerEventType() {
-    return "DI_SRS_MARC_BIB_RECORD_CREATED";
-  }
-
-  @Override
-  public String getTargetEventType() {
-    return "DI_INVENTORY_INSTANCE_CREATED";
+  public boolean isEligible(DataImportEventPayload eventPayload) {
+    if (ACTION_PROFILE == eventPayload.getCurrentNode().getContentType()) {
+      ActionProfile actionProfile = JsonObject.mapFrom(eventPayload.getCurrentNode().getContent()).mapTo(ActionProfile.class);
+      return actionProfile.getFolioRecord() == ActionProfile.FolioRecord.INSTANCE;
+    }
+    return false;
   }
 }

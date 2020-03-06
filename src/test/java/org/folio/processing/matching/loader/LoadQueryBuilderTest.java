@@ -1,17 +1,17 @@
 package org.folio.processing.matching.loader;
 
+import org.folio.MatchDetail;
 import org.folio.processing.matching.loader.query.DefaultLoadQuery;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
-import org.folio.processing.matching.model.schemas.Field;
-import org.folio.processing.matching.model.schemas.MatchDetail;
-import org.folio.processing.matching.model.schemas.MatchExpression;
-import org.folio.processing.matching.model.schemas.Qualifier;
-import org.folio.processing.matching.model.schemas.StaticValueDetails;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Field;
+import org.folio.rest.jaxrs.model.MatchExpression;
+import org.folio.rest.jaxrs.model.Qualifier;
+import org.folio.rest.jaxrs.model.StaticValueDetails;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -20,14 +20,14 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static java.lang.String.format;
-import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.EXACTLY_MATCHES;
-import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.EXISTING_VALUE_BEGINS_WITH_INCOMING_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXISTING_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.STATIC_VALUE;
-import static org.folio.processing.matching.model.schemas.MatchExpression.DataValueType.VALUE_FROM_RECORD;
+import static org.folio.MatchDetail.MatchCriterion.EXACTLY_MATCHES;
+import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_BEGINS_WITH_INCOMING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXISTING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -437,13 +437,12 @@ public class LoadQueryBuilderTest {
   public void dummyTestForDefaultLoadQuery() {
     // given
     String tableName = "instance";
-    String fieldName = "hrid";
-    String whereClause = "WHERE FIELD_NAME = 'ybp7406411'";
+    String whereClause = "WHERE TABLE_NAME.hrid = 'ybp7406411'";
     //when
-    LoadQuery result = new DefaultLoadQuery(tableName, fieldName, whereClause);
+    LoadQuery result = new DefaultLoadQuery(tableName, whereClause);
     //then
     assertNotNull(result.getSql());
-    assertEquals(whereClause.replace("FIELD_NAME", "instance.hrid"), result.getSql());
+    assertEquals(whereClause.replace("TABLE_NAME", "instance"), result.getSql());
     try {
       result.getCql();
       fail();
