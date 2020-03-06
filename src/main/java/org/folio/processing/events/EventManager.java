@@ -19,6 +19,7 @@ import java.util.stream.IntStream;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_PROFILE;
 
 /**
  * The central class to use for handlers registration and event handling.
@@ -60,7 +61,7 @@ public final class EventManager {
   }
 
   private static void setCurrentNodeIfRoot(DataImportEventPayload eventPayload) {
-    if (eventPayload.getCurrentNode() == null) {
+    if (eventPayload.getCurrentNode() == null || eventPayload.getCurrentNode().getContentType() == JOB_PROFILE) {
       List<ProfileSnapshotWrapper> jobProfileChildren = eventPayload.getProfileSnapshot().getChildSnapshotWrappers();
       if (isNotEmpty(jobProfileChildren)) {
         eventPayload.setCurrentNode(jobProfileChildren.get(0));
