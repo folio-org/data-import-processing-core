@@ -63,7 +63,7 @@ public class QueryHolder {
   }
 
   public QueryHolder replaceSqlFieldReference(String fieldPath, boolean isJson) {
-    sqlQuery = isJson ? updateSqlJson(fieldPath) : updateSqlNonJson(fieldPath);
+    sqlQuery = isJson ? replaceJsonFieldNameForSQLQuery(fieldPath) : replaceNonJsonFieldNameForSqlQuery(fieldPath);
     return this;
   }
 
@@ -80,7 +80,7 @@ public class QueryHolder {
     return cqlQuery;
   }
 
-  private String updateSqlJson(String fieldPath) {
+  private String replaceJsonFieldNameForSQLQuery(String fieldPath) {
     String fieldReference;
     String arrayJoin = EMPTY;
     // TODO provide support for searching in nested arrays
@@ -93,7 +93,7 @@ public class QueryHolder {
     return arrayJoin + sqlQuery.replace(FIELD_NAME, fieldReference);
   }
 
-  private String updateSqlNonJson(String fieldName) {
+  private String replaceNonJsonFieldNameForSqlQuery(String fieldName) {
     return sqlQuery.replace(FIELD_NAME, join(TABLE_NAME, ".", fieldName));
   }
 
