@@ -10,7 +10,6 @@ import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.Qualifier;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -536,7 +535,6 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  @Ignore
   public void shouldReturn_StringValue_AlphaNumerics() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -564,7 +562,6 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  @Ignore
   public void shouldReturn_StringValue_Numerics() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
