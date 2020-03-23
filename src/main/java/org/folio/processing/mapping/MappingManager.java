@@ -1,18 +1,20 @@
 package org.folio.processing.mapping;
 
+import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.processing.exceptions.MappingException;
-import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
-
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedHashMap;
 
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 
@@ -47,10 +49,16 @@ public final class MappingManager {
         return eventPayload;
       }
       ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
-      MappingProfile mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
+      MappingProfile mappingProfile;
+      if (mappingProfileWrapper.getContent() instanceof LinkedHashMap) {
+        mappingProfile = new JsonObject((LinkedHashMap) mappingProfileWrapper.getContent()).mapTo(MappingProfile.class);
+      } else {
+        mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
+      }
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
-      return new Mapper() {}.map(reader, writer, eventPayload);
+      return new Mapper() {
+      }.map(reader, writer, eventPayload);
     } catch (Exception e) {
       throw new MappingException(e);
     }
