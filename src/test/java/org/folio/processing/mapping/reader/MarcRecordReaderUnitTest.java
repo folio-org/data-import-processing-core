@@ -1,170 +1,285 @@
 package org.folio.processing.mapping.reader;
 
+import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
+import org.folio.ParsedRecord;
+import org.folio.SourceRecord;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.reader.record.MarcAuthorityReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.MarcBibReaderFactory;
-import org.folio.processing.mapping.mapper.reader.record.MarcHoldingsReaderFactory;
+import org.folio.processing.value.BooleanValue;
+import org.folio.processing.value.RepeatableFieldValue;
+import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.processing.value.Value.ValueType;
+import org.folio.rest.jaxrs.model.MappingRule;
+import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.folio.rest.jaxrs.model.EntityType.MARC_AUTHORITY;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_HOLDINGS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(JUnit4.class)
 public class MarcRecordReaderUnitTest {
-  private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, { \"245\":\"American Bar Association journal\" } ] }";
+  private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
 
-  /*  Reading existing field from MARC record  */
   @Test
-  public void shouldRead_IndexTitle_FromBibliographic() throws IOException {
+  public void shouldRead_Strings_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload);
     // when
-    Value indexTitle = reader.read("245");
+    Value value = reader.read(new MappingRule().withPath("").withValue("\"test\" \" \" \"value\""));
     // then
-    assertNotNull(indexTitle);
-    assertEquals(ValueType.STRING, indexTitle.getType());
-    assertEquals("American Bar Association journal", indexTitle.getValue());
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("test value", value.getValue());
   }
 
   @Test
-  public void shouldRead_IndexTitle_FromHoldings() throws IOException {
+  public void shouldRead_ArraysStrings_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_HOLDINGS.value(), RECORD);
-    eventPayload.setContext(context);
-    Reader reader = new MarcHoldingsReaderFactory().createReader();
-    reader.initialize(eventPayload);
-    // when
-    Value indexTitle = reader.read("245");
-    // then
-    assertNotNull(indexTitle);
-    assertEquals(ValueType.STRING, indexTitle.getType());
-    assertEquals("American Bar Association journal", indexTitle.getValue());
-  }
-
-  @Test
-  public void shouldRead_IndexTitle_FromAuthority() throws IOException {
-    // given
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_AUTHORITY.value(), RECORD);
-    eventPayload.setContext(context);
-    Reader reader = new MarcAuthorityReaderFactory().createReader();
-    reader.initialize(eventPayload);
-    // when
-    Value indexTitle = reader.read("245");
-    // then
-    assertNotNull(indexTitle);
-    assertEquals(ValueType.STRING, indexTitle.getType());
-    assertEquals("American Bar Association journal", indexTitle.getValue());
-  }
-
-  /*  Reading missing field from MARC record  */
-  @Test
-  public void shouldRead_MissingField_FromBibliographic() throws IOException {
-    // given
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload);
     // when
-    Value missingField = reader.read("999");
+    Value value = reader.read(new MappingRule().withPath("[]").withValue("\"test\" \" \" \"value\""));
     // then
-    assertNotNull(missingField);
-    assertEquals(ValueType.MISSING, missingField.getType());
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals(Arrays.asList("test", "value"), value.getValue());
   }
 
   @Test
-  public void shouldRead_MissingField_FromHoldings() throws IOException {
+  public void shouldRead_ArraysStrings_FromRulesConditions() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_HOLDINGS.value(), RECORD);
-    eventPayload.setContext(context);
-    Reader reader = new MarcHoldingsReaderFactory().createReader();
-    reader.initialize(eventPayload);
-    // when
-    Value missingField = reader.read("999");
-    // then
-    assertNotNull(missingField);
-    assertEquals(ValueType.MISSING, missingField.getType());
-  }
-
-  @Test
-  public void shouldRead_MissingField_FromAuthority() throws IOException {
-    // given
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_AUTHORITY.value(), RECORD);
-    eventPayload.setContext(context);
-    Reader reader = new MarcAuthorityReaderFactory().createReader();
-    reader.initialize(eventPayload);
-    // when
-    Value missingField = reader.read("999");
-    // then
-    assertNotNull(missingField);
-    assertEquals(ValueType.MISSING, missingField.getType());
-  }
-
-  /* Reading null field from MARC record */
-  @Test(expected = NullPointerException.class)
-  public void shouldThrowException_OnRead_NullField_FromBibliographic() throws IOException {
-    // given
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload);
     // when
-    reader.read(null);
-    // then expect NullPointerException
+    Value value = reader.read(new MappingRule().withPath("[]").withValue("\" \";else \"value\""));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals(Collections.singletonList("value"), value.getValue());
   }
 
-  @Test(expected = NullPointerException.class)
-  public void shouldThrowException_OnRead_NullField_FromHoldings() throws IOException {
+  @Test
+  public void shouldRead_ArraysStrings_asMissing_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_HOLDINGS.value(), RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcHoldingsReaderFactory().createReader();
+    Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload);
     // when
-    reader.read(null);
-    // then expect NullPointerException
+    Value value = reader.read(new MappingRule().withPath("[]").withValue("\" \""));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.MISSING, value.getType());
   }
 
-  @Test(expected = NullPointerException.class)
-  public void shouldThrowException_OnRead_NullField_FromAuthority() throws IOException {
+  @Test
+  public void shouldRead_AcceptedStrings_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_AUTHORITY.value(), RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcAuthorityReaderFactory().createReader();
+    Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("randomUUID", "value");
+    acceptedValues.put("randomUUID2", "noValue");
     // when
-    reader.read(null);
-    // then expect NullPointerException
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("\"test\" \" \" \"value\" \" \"")
+      .withAcceptedValues(acceptedValues));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("test randomUUID ", value.getValue());
   }
+
+  @Test
+  public void shouldRead_BooleanFields_FromRules() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withBooleanFieldAction(MappingRule.BooleanFieldAction.ALL_FALSE));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.BOOLEAN, value.getType());
+    assertEquals(MappingRule.BooleanFieldAction.ALL_FALSE, value.getValue());
+  }
+
+  @Test
+  public void shouldRead_MARCFields_FromRules() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("042$a \" \" 042$a"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("pcc pcc", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_MARCFieldsArray_FromRules() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("[]")
+      .withValue("042$a \" \" 042$a"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    List<String> result = new ArrayList<>();
+    result.add("pcc");
+    result.add("pcc");
+    assertEquals(result, value.getValue());
+  }
+
+  @Test
+  public void shouldRead_MARCFields_FromRulesWithConditions() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("043$a \" \"; else 010; else 042$a \" \" \"data\" \" \" 001; else 042$a"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("pcc data 009221", value.getValue());
+  }
+
+  @Test
+  public void shouldReadRulesWithWrongSyntax() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("asd w3"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.MISSING, value.getType());
+  }
+
+  @Test
+  public void shouldReadRepeatableFields() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new SourceRecord()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    List<MappingRule> listRules = new ArrayList<>();
+    List<MappingRule> listRules2 = new ArrayList<>();
+    listRules.add(new MappingRule()
+      .withName("name")
+      .withPath("instance.name")
+      .withEnabled("true")
+      .withValue("043$a \" \"; else 010; else 042$a \" \" \"data\" \" \" 001; else 042$a")
+    );
+    listRules.add(new MappingRule()
+      .withName("name")
+      .withPath("instance.value")
+      .withEnabled("true")
+      .withValue("\"test\" \" \" \"value\""));
+    listRules.add(new MappingRule()
+      .withName("name")
+      .withPath("instance.active")
+      .withEnabled("true")
+      .withBooleanFieldAction(MappingRule.BooleanFieldAction.ALL_FALSE));
+    listRules2.add(new MappingRule()
+      .withName("name")
+      .withPath("instance.value")
+      .withEnabled("true")
+      .withValue("\"test\" \" \" \"value\""));
+
+    Value value = reader.read(new MappingRule()
+      .withPath("instance")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(Arrays.asList(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath("instance")
+        .withFields(listRules), new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath("instance")
+        .withFields(listRules2)
+      )));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("instance", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(MappingRule.RepeatableFieldAction.EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("instance.name", StringValue.of("pcc data 009221"));
+    object1.put("instance.value", StringValue.of("test value"));
+    object1.put("instance.active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("instance.value", StringValue.of("test value"));
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), MappingRule.RepeatableFieldAction.EXTEND_EXISTING, "instance")), JsonObject.mapFrom(value));
+  }
+
 }

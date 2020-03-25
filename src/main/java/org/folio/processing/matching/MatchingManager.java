@@ -13,7 +13,7 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
@@ -34,8 +34,8 @@ public final class MatchingManager {
       }
       ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
       MatchProfile matchProfile;
-      if (matchingProfileWrapper.getContent() instanceof LinkedHashMap) {
-        matchProfile = new JsonObject((LinkedHashMap) matchingProfileWrapper.getContent()).mapTo(MatchProfile.class);
+      if (matchingProfileWrapper.getContent() instanceof Map) {
+        matchProfile = new JsonObject((Map) matchingProfileWrapper.getContent()).mapTo(MatchProfile.class);
       } else {
         matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
       }

@@ -4,18 +4,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
+import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MapValue;
+import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
+import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.MappingRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 
@@ -59,6 +67,91 @@ public class JsonBasedWriter extends AbstractWriter {
     setValueByFieldPath(fieldPath, objectNode);
   }
 
+  @Override
+  protected void writeRepeatableValue(String fieldPath, RepeatableFieldValue value) {
+    List<Map<String, Value>> repeatableFields = value.getValue();
+    MappingRule.RepeatableFieldAction action = value.getRepeatableFieldAction();
+    for (Map<String, Value> subfield : repeatableFields) {
+      JsonNode currentObject = objectMapper.createObjectNode();
+      for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
+        JsonNode field = MissingNode.getInstance();
+        switch (objectFields.getValue().getType()) {
+          case LIST:
+          case MAP:
+            field = objectMapper.valueToTree(objectFields.getValue().getValue());
+            break;
+          case STRING:
+            field = new TextNode((String) objectFields.getValue().getValue());
+            break;
+          case BOOLEAN:
+            BooleanValue bool = (BooleanValue) objectFields.getValue();
+            MappingRule.BooleanFieldAction booleanFieldAction = bool.getValue();
+            if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_TRUE)) {
+              field = BooleanNode.TRUE;
+            } else if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_FALSE)) {
+              field = BooleanNode.FALSE;
+            }
+            break;
+          case MISSING:
+          case REPEATABLE:
+          default:
+            break;
+        }
+        if (!field.isMissingNode()) {
+          setValueByFieldPath(objectFields.getKey().substring(objectFields.getKey().indexOf(".") + 1), field, currentObject);
+        }
+      }
+      String currentPath = fieldPath.replace("[]", "");
+      JsonNode path = entityNode.findPath(currentPath);
+      switch (action) {
+        case EXTEND_EXISTING:
+          setValueByFieldPath(fieldPath, currentObject);
+          break;
+        case EXCHANGE_EXISTING:
+          if (!path.isMissingNode()) {
+            ((ObjectNode) entityNode).remove(fieldPath);
+          }
+          setValueByFieldPath(fieldPath, currentObject);
+          break;
+        case DELETE_INCOMING:
+          if (path.isArray()) {
+            ArrayNode arrayNode = (ArrayNode) path;
+            for (int i = 0; i < arrayNode.size(); i++) {
+              if (arrayNode.get(i).equals(currentObject)) {
+                arrayNode.remove(i);
+              }
+            }
+          } else if (path.equals(currentObject)) {
+            if (!path.isMissingNode()) {
+              ((ObjectNode) entityNode).remove(currentPath);
+            }
+          }
+          break;
+        case DELETE_EXISTING:
+          if (!path.isMissingNode()) {
+            ((ObjectNode) entityNode).remove(currentPath);
+          }
+          break;
+        default:
+          throw new IllegalArgumentException("Can not define action type");
+      }
+    }
+  }
+
+  @Override
+  protected void writeBooleanValue(String fieldPath, BooleanValue value) {
+    BooleanNode booleanNode;
+    MappingRule.BooleanFieldAction action = value.getValue();
+    if (action.equals(MappingRule.BooleanFieldAction.ALL_TRUE)) {
+      booleanNode = BooleanNode.TRUE;
+    } else if (action.equals(MappingRule.BooleanFieldAction.ALL_FALSE)) {
+      booleanNode = BooleanNode.FALSE;
+    } else {
+      return;
+    }
+    setValueByFieldPath(fieldPath, booleanNode);
+  }
+
   /**
    * The method does traversing by field path from top to bottom.
    * Each iteration the method creates a ContainerNode for the next path if it does not exist in parent node (see #addContainerNode)
@@ -68,8 +161,12 @@ public class JsonBasedWriter extends AbstractWriter {
    * @param fieldValue value of the field, JsonNode is the parent node of ValueNode and ContainerNode
    */
   private void setValueByFieldPath(String fieldPath, JsonNode fieldValue) {
+    setValueByFieldPath(fieldPath, fieldValue, entityNode);
+  }
+
+  private void setValueByFieldPath(String fieldPath, JsonNode fieldValue, JsonNode node) {
     FieldPathIterator fieldPathIterator = new FieldPathIterator(fieldPath);
-    JsonNode parentNode = entityNode;
+    JsonNode parentNode = node;
     while (fieldPathIterator.hasNext()) {
       FieldPathIterator.PathItem pathItem = fieldPathIterator.next();
       if (fieldPathIterator.hasNext()) {
@@ -99,9 +196,9 @@ public class JsonBasedWriter extends AbstractWriter {
   /**
    * The method sets a given fieldValue into parentNode based on type of pathItem.
    *
-   * @param pathItem    item of the fieldPath
-   * @param fieldValue  value of the field to set
-   * @param parentNode  node where to set a fieldValue
+   * @param pathItem   item of the fieldPath
+   * @param fieldValue value of the field to set
+   * @param parentNode node where to set a fieldValue
    */
   private void setValueNode(FieldPathIterator.PathItem pathItem, JsonNode fieldValue, JsonNode parentNode) {
     if (parentNode.isArray()) {

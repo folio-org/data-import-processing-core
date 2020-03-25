@@ -1,7 +1,9 @@
 package org.folio.processing.mapping.mapper.writer;
 
+import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MapValue;
+import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 
@@ -21,6 +23,11 @@ public abstract class AbstractWriter implements Writer {
         break;
       case MAP:
         writeObjectValue(fieldPath, (MapValue) value);
+      case REPEATABLE:
+        writeRepeatableValue(fieldPath, (RepeatableFieldValue) value);
+        break;
+      case BOOLEAN:
+        writeBooleanValue(fieldPath, (BooleanValue) value);
         break;
       case MISSING:
         break;
@@ -34,4 +41,8 @@ public abstract class AbstractWriter implements Writer {
   protected abstract void writeListValue(String fieldPath, ListValue value);
 
   protected abstract void writeObjectValue(String fieldPath, MapValue value);
+
+  protected abstract void writeRepeatableValue(String fieldPath, RepeatableFieldValue value);
+
+  protected abstract void writeBooleanValue(String fieldPath, BooleanValue value);
 }

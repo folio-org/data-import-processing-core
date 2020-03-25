@@ -39,7 +39,7 @@ public class MappingManagerUnitTest {
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
       .withExistingRecordType(INSTANCE)
       .withMappingDetails(new MappingDetail()
-        .withMappingFields(Collections.singletonList(new MappingRule().withPath("indexTitle").withValue("RULE_EXPRESSION"))));
+        .withMappingFields(Collections.singletonList(new MappingRule().withPath("indexTitle").withValue("RULE_EXPRESSION").withEnabled("true"))));
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
