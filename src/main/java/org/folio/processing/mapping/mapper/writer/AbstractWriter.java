@@ -23,6 +23,7 @@ public abstract class AbstractWriter implements Writer {
         break;
       case MAP:
         writeObjectValue(fieldPath, (MapValue) value);
+        break;
       case REPEATABLE:
         writeRepeatableValue(fieldPath, (RepeatableFieldValue) value);
         break;

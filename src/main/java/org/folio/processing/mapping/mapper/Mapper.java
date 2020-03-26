@@ -33,7 +33,7 @@ public interface Mapper {
     writer.initialize(eventPayload);
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
     for (MappingRule rule : mappingRules) {
-      if (Boolean.valueOf(rule.getEnabled())){
+      if (Boolean.parseBoolean(rule.getEnabled())) {
         Value value = reader.read(rule);
         writer.write(rule.getPath(), value);
       }

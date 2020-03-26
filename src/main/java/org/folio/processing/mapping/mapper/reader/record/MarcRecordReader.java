@@ -54,9 +54,9 @@ public class MarcRecordReader implements Reader {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventPayload) throws RuntimeException {
+  public void initialize(DataImportEventPayload eventPayload) {
     try {
-      if (eventPayload.getContext().containsKey(entityType.value())) {
+      if (eventPayload.getContext() != null && eventPayload.getContext().containsKey(entityType.value())) {
         String stringRecord = eventPayload.getContext().get(entityType.value());
         org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
         if (sourceRecord != null
