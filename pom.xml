@@ -27,6 +27,7 @@
     <junit.version>4.12</junit.version>
     <vertx-unit.version>3.5.4</vertx-unit.version>
     <wiremock.version>2.19.0</wiremock.version>
+    <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
     <sonar.exclusions>**/schemas/*</sonar.exclusions>
   </properties>
@@ -174,6 +175,17 @@
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/matchProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/actionProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/dto/record.json</path>
+                <path>${basedir}/ramls/instance.json</path>
+                <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
+                <path>${basedir}/ramls/settings/classificationtypes.json</path>
+                <path>${basedir}/ramls/settings/contributornametypes.json</path>
+                <path>${basedir}/ramls/settings/contributortypes.json</path>
+                <path>${basedir}/ramls/settings/electronicaccessrelationships.json</path>
+                <path>${basedir}/ramls/settings/identifiertypes.json</path>
+                <path>${basedir}/ramls/settings/instanceformats.json</path>
+                <path>${basedir}/ramls/settings/instancenotetypes.json</path>
+                <path>${basedir}/ramls/settings/instancetypes.json</path>
+                <path>${basedir}/ramls/settings/issuancemodes.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>
@@ -238,6 +250,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.1</version>
+        <configuration>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
       </plugin>
 
       <plugin>
