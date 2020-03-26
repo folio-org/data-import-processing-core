@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JUnit4.class)
 public class MarcValueReaderTest {
 
-  private final static String MARC_RECORD_PATH = "src/test/resources/org.folio.processing/marcRecord.json";
+  private final static String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
   private final static String MARC = "MARC";
   private static String MARC_RECORD;
 
