@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MarcToInstanceMapper implements RecordToInstanceMapper {
 
@@ -23,6 +24,7 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
     Instance instance = new Processor().process(parsedRecord, mappingParameters, mappingRules);
     if (instance != null) {
       instance = fixDuplicatedUUIDs(instance.withSource(getMapperFormat()));
+      instance = fixDuplicatedLanguages(instance);
     }
     return instance;
   }
@@ -86,5 +88,12 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
       }
     });
     instance.getClassifications().addAll(splitClassification);
+  }
+
+  private Instance fixDuplicatedLanguages(Instance instance) {
+    List<String> uniqueLanguages = instance.getLanguages().stream()
+      .distinct()
+      .collect(Collectors.toList());
+    return instance.withLanguages(uniqueLanguages);
   }
 }
