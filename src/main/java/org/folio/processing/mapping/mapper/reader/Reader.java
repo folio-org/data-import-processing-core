@@ -2,6 +2,7 @@ package org.folio.processing.mapping.mapper.reader;
 
 import org.folio.DataImportEventPayload;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
 
@@ -27,7 +28,7 @@ public interface Reader {
    * @param ruleExpression rule expression defines an address of source to read value from
    * @return Value value
    * @see Value
-   * @see Rule
+   * @see MappingRule
    */
-  Value read(String ruleExpression);
+  Value read(MappingRule ruleExpression);
 }

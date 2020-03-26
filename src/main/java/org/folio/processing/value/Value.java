@@ -33,8 +33,10 @@ public interface Value<T> {
    */
   enum ValueType {
     STRING,
+    BOOLEAN,
     LIST,
     MAP,
-    MISSING
+    MISSING,
+    REPEATABLE
   }
 }
