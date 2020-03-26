@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
+import static org.drools.core.util.StringUtils.EMPTY;
 
 /**
  * A common Writer based on json. The idea is to hold Jackson's JsonNode and fill up it by incoming values in runtime.
@@ -67,73 +68,79 @@ public class JsonBasedWriter extends AbstractWriter {
     setValueByFieldPath(fieldPath, objectNode);
   }
 
+  private void writeValuesForRepeatableObject(JsonNode object, Map.Entry<String, Value> objectFields) {
+    JsonNode field = MissingNode.getInstance();
+    switch (objectFields.getValue().getType()) {
+      case LIST:
+      case MAP:
+        field = objectMapper.valueToTree(objectFields.getValue().getValue());
+        break;
+      case STRING:
+        field = new TextNode((String) objectFields.getValue().getValue());
+        break;
+      case BOOLEAN:
+        BooleanValue bool = (BooleanValue) objectFields.getValue();
+        MappingRule.BooleanFieldAction booleanFieldAction = bool.getValue();
+        if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_TRUE)) {
+          field = BooleanNode.TRUE;
+        } else if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_FALSE)) {
+          field = BooleanNode.FALSE;
+        }
+        break;
+      case MISSING:
+      case REPEATABLE:
+      default:
+        break;
+    }
+    if (!field.isMissingNode()) {
+      setValueByFieldPath(objectFields.getKey().substring(objectFields.getKey().indexOf(".") + 1), field, object);
+    }
+  }
+
+  private void setRepeatableValueByAction(MappingRule.RepeatableFieldAction action, JsonNode pathObject, String currentObjectPath, String repeatableFieldPath, JsonNode currentObject) {
+    switch (action) {
+      case EXTEND_EXISTING:
+        setValueByFieldPath(repeatableFieldPath, currentObject);
+        break;
+      case EXCHANGE_EXISTING:
+        if (!pathObject.isMissingNode()) {
+          ((ObjectNode) entityNode).remove(repeatableFieldPath);
+        }
+        setValueByFieldPath(repeatableFieldPath, currentObject);
+        break;
+      case DELETE_INCOMING:
+        if (pathObject.isArray()) {
+          ArrayNode arrayNode = (ArrayNode) pathObject;
+          for (int i = 0; i < arrayNode.size(); i++) {
+            if (arrayNode.get(i).equals(currentObject)) {
+              arrayNode.remove(i);
+            }
+          }
+        } else if (pathObject.equals(currentObject) && !pathObject.isMissingNode()) {
+          ((ObjectNode) entityNode).remove(currentObjectPath);
+        }
+        break;
+      case DELETE_EXISTING:
+        if (!pathObject.isMissingNode()) {
+          ((ObjectNode) entityNode).remove(currentObjectPath);
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Can not define action type");
+    }
+  }
+
   @Override
-  protected void writeRepeatableValue(String fieldPath, RepeatableFieldValue value) {
+  protected void writeRepeatableValue(String repeatableFieldPath, RepeatableFieldValue value) {
     List<Map<String, Value>> repeatableFields = value.getValue();
     MappingRule.RepeatableFieldAction action = value.getRepeatableFieldAction();
     for (Map<String, Value> subfield : repeatableFields) {
       JsonNode currentObject = objectMapper.createObjectNode();
       for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
-        JsonNode field = MissingNode.getInstance();
-        switch (objectFields.getValue().getType()) {
-          case LIST:
-          case MAP:
-            field = objectMapper.valueToTree(objectFields.getValue().getValue());
-            break;
-          case STRING:
-            field = new TextNode((String) objectFields.getValue().getValue());
-            break;
-          case BOOLEAN:
-            BooleanValue bool = (BooleanValue) objectFields.getValue();
-            MappingRule.BooleanFieldAction booleanFieldAction = bool.getValue();
-            if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_TRUE)) {
-              field = BooleanNode.TRUE;
-            } else if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_FALSE)) {
-              field = BooleanNode.FALSE;
-            }
-            break;
-          case MISSING:
-          case REPEATABLE:
-          default:
-            break;
-        }
-        if (!field.isMissingNode()) {
-          setValueByFieldPath(objectFields.getKey().substring(objectFields.getKey().indexOf(".") + 1), field, currentObject);
-        }
-      }
-      String currentPath = fieldPath.replace("[]", "");
-      JsonNode path = entityNode.findPath(currentPath);
-      switch (action) {
-        case EXTEND_EXISTING:
-          setValueByFieldPath(fieldPath, currentObject);
-          break;
-        case EXCHANGE_EXISTING:
-          if (!path.isMissingNode()) {
-            ((ObjectNode) entityNode).remove(fieldPath);
-          }
-          setValueByFieldPath(fieldPath, currentObject);
-          break;
-        case DELETE_INCOMING:
-          if (path.isArray()) {
-            ArrayNode arrayNode = (ArrayNode) path;
-            for (int i = 0; i < arrayNode.size(); i++) {
-              if (arrayNode.get(i).equals(currentObject)) {
-                arrayNode.remove(i);
-              }
-            }
-          } else if (path.equals(currentObject)) {
-            if (!path.isMissingNode()) {
-              ((ObjectNode) entityNode).remove(currentPath);
-            }
-          }
-          break;
-        case DELETE_EXISTING:
-          if (!path.isMissingNode()) {
-            ((ObjectNode) entityNode).remove(currentPath);
-          }
-          break;
-        default:
-          throw new IllegalArgumentException("Can not define action type");
+        writeValuesForRepeatableObject(currentObject, objectFields);
+        String currentPath = repeatableFieldPath.replace("[]", EMPTY);
+        JsonNode pathObject = entityNode.findPath(currentPath);
+        setRepeatableValueByAction(action, pathObject, currentPath, repeatableFieldPath, currentObject);
       }
     }
   }

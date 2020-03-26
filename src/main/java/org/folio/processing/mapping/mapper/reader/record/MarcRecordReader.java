@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.folio.DataImportEventPayload;
@@ -43,6 +44,8 @@ public class MarcRecordReader implements Reader {
   private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
   private final static String EXPRESSIONS_DIVIDER = "; else ";
+  private final static String EXPRESSIONS_ARRAY = "[]";
+  private final static String EXPRESSIONS_QUOTE = "\"";
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
   private EntityType entityType;
   private Record marcRecord;
@@ -94,7 +97,7 @@ public class MarcRecordReader implements Reader {
 
   private Value readSingleField(MappingRule ruleExpression) {
     String[] expressions = ruleExpression.getValue().split(EXPRESSIONS_DIVIDER);
-    boolean arrayValue = ruleExpression.getPath().endsWith("[]");
+    boolean arrayValue = ruleExpression.getPath().endsWith(EXPRESSIONS_ARRAY);
     List<String> resultList = new ArrayList<>();
     for (String expression : expressions) {
       StringBuilder sb = new StringBuilder();
@@ -108,7 +111,7 @@ public class MarcRecordReader implements Reader {
             marcValues.forEach(v -> sb.append(v));
           }
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
-          String value = expressionPart.replace("\"", "");
+          String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
           if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
             for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
               if (entry.getValue().equals(value)) {
@@ -123,7 +126,7 @@ public class MarcRecordReader implements Reader {
           }
         }
       }
-      resultList.remove(" ");
+      resultList.remove(StringUtils.SPACE);
       if (arrayValue && !resultList.isEmpty()) {
         return ListValue.of(resultList);
       }
