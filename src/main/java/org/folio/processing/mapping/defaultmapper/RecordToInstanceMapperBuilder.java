@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper;
+package org.folio.processing.mapping.defaultmapper;
 
 import java.util.Collections;
 import java.util.List;

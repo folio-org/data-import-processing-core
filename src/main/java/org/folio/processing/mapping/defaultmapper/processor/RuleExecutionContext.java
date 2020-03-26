@@ -1,7 +1,7 @@
-package org.folio.processing.mapping.defaultMapper.processor;
+package org.folio.processing.mapping.defaultmapper.processor;
 
 import io.vertx.core.json.JsonObject;
-import org.folio.processing.mapping.defaultMapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.marc4j.marc.DataField;
 
 /**

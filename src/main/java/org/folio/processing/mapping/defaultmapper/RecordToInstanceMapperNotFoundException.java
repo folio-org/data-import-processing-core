@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper;
+package org.folio.processing.mapping.defaultmapper;
 
 public class RecordToInstanceMapperNotFoundException extends RuntimeException {
   public RecordToInstanceMapperNotFoundException(String message) {

@@ -1,8 +1,8 @@
-package org.folio.processing.mapping.defaultMapper;
+package org.folio.processing.mapping.defaultmapper;
 
 import io.vertx.core.json.JsonObject;
 import org.folio.Instance;
-import org.folio.processing.mapping.defaultMapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
 /**
  * Common interface for Record to Instance mapper. Mappers for each format of Parsed Record should implement it

@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor.functions.enums;
+package org.folio.processing.mapping.defaultmapper.processor.functions.enums;
 
 /**
  * Enum for "Mode of issuance" with values

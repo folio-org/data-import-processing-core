@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor.parameters;
+package org.folio.processing.mapping.defaultmapper.processor.parameters;
 
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.folio.AlternativeTitleType;

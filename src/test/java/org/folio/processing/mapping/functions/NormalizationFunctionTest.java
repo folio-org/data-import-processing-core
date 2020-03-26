@@ -13,8 +13,8 @@ import org.folio.InstanceFormat;
 import org.folio.InstanceNoteType;
 import org.folio.InstanceType;
 import org.folio.IssuanceMode;
-import org.folio.processing.mapping.defaultMapper.processor.RuleExecutionContext;
-import org.folio.processing.mapping.defaultMapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
-import static org.folio.processing.mapping.defaultMapper.processor.functions.NormalizationFunctionRunner.runFunction;
+import static org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner.runFunction;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)

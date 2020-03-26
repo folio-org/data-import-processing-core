@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor.functions.enums;
+package org.folio.processing.mapping.defaultmapper.processor.functions.enums;
 
 public enum ElectronicAccessRelationshipEnum {
   RESOURCE('0', "resource"),

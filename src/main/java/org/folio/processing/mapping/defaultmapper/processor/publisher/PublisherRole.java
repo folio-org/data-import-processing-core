@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor.publisher;
+package org.folio.processing.mapping.defaultmapper.processor.publisher;
 
 import java.util.Arrays;
 

@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor;
+package org.folio.processing.mapping.defaultmapper.processor;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -7,8 +7,8 @@ import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Instance;
-import org.folio.processing.mapping.defaultMapper.processor.functions.NormalizationFunctionRunner;
-import org.folio.processing.mapping.defaultMapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.folio.processing.mapping.defaultMapper.processor.LoaderHelper.isMappingValid;
-import static org.folio.processing.mapping.defaultMapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
 
 public class Processor {
 

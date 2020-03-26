@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor;
+package org.folio.processing.mapping.defaultmapper.processor;
 
 
 import io.vertx.core.logging.Logger;

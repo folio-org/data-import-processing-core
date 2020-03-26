@@ -2,15 +2,15 @@ package org.folio.processing.mapping;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.Instance;
 import org.folio.processing.TestUtil;
-import org.folio.processing.mapping.defaultMapper.RecordToInstanceMapper;
-import org.folio.processing.mapping.defaultMapper.RecordToInstanceMapperBuilder;
-import org.folio.processing.mapping.defaultMapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.RecordToInstanceMapper;
+import org.folio.processing.mapping.defaultmapper.RecordToInstanceMapperBuilder;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcStreamReader;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-@RunWith(VertxUnitRunner.class)
+@RunWith(JUnit4.class)
 public class MappingTest {
 
   private RecordToInstanceMapper mapper = RecordToInstanceMapperBuilder.buildMapper("MARC");

@@ -1,12 +1,12 @@
-package org.folio.processing.mapping.defaultMapper;
+package org.folio.processing.mapping.defaultmapper;
 
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Classification;
 import org.folio.Identifier;
 import org.folio.Instance;
-import org.folio.processing.mapping.defaultMapper.processor.Processor;
-import org.folio.processing.mapping.defaultMapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.Processor;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
 import java.util.ArrayList;
 import java.util.Arrays;

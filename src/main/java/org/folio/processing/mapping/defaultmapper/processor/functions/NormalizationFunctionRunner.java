@@ -1,8 +1,8 @@
-package org.folio.processing.mapping.defaultMapper.processor.functions;
+package org.folio.processing.mapping.defaultmapper.processor.functions;
 
 import com.google.common.base.Splitter;
 import org.apache.commons.lang.StringUtils;
-import org.folio.processing.mapping.defaultMapper.processor.RuleExecutionContext;
+import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

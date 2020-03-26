@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.defaultMapper.processor.functions;
+package org.folio.processing.mapping.defaultmapper.processor.functions;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -13,10 +13,10 @@ import org.folio.InstanceFormat;
 import org.folio.InstanceNoteType;
 import org.folio.InstanceType;
 import org.folio.IssuanceMode;
-import org.folio.processing.mapping.defaultMapper.processor.RuleExecutionContext;
-import org.folio.processing.mapping.defaultMapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
-import org.folio.processing.mapping.defaultMapper.processor.functions.enums.IssuanceModeEnum;
-import org.folio.processing.mapping.defaultMapper.processor.publisher.PublisherRole;
+import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
+import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
 import org.marc4j.marc.DataField;
 
 import java.util.List;
