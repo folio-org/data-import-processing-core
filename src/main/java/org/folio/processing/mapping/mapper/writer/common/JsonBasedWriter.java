@@ -97,7 +97,9 @@ public class JsonBasedWriter extends AbstractWriter {
     }
   }
 
-  private void setRepeatableValueByAction(MappingRule.RepeatableFieldAction action, JsonNode pathObject, String currentObjectPath, String repeatableFieldPath, JsonNode currentObject) {
+  private void setRepeatableValueByAction(MappingRule.RepeatableFieldAction action, String repeatableFieldPath, JsonNode currentObject) {
+    String currentPath = repeatableFieldPath.replace("[]", EMPTY);
+    JsonNode pathObject = entityNode.findPath(currentPath);
     switch (action) {
       case EXTEND_EXISTING:
         setValueByFieldPath(repeatableFieldPath, currentObject);
@@ -117,12 +119,12 @@ public class JsonBasedWriter extends AbstractWriter {
             }
           }
         } else if (pathObject.equals(currentObject) && !pathObject.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(currentObjectPath);
+          ((ObjectNode) entityNode).remove(currentPath);
         }
         break;
       case DELETE_EXISTING:
         if (!pathObject.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(currentObjectPath);
+          ((ObjectNode) entityNode).remove(currentPath);
         }
         break;
       default:
@@ -138,10 +140,8 @@ public class JsonBasedWriter extends AbstractWriter {
       JsonNode currentObject = objectMapper.createObjectNode();
       for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
         writeValuesForRepeatableObject(currentObject, objectFields);
-        String currentPath = repeatableFieldPath.replace("[]", EMPTY);
-        JsonNode pathObject = entityNode.findPath(currentPath);
-        setRepeatableValueByAction(action, pathObject, currentPath, repeatableFieldPath, currentObject);
       }
+      setRepeatableValueByAction(action, repeatableFieldPath, currentObject);
     }
   }
 
