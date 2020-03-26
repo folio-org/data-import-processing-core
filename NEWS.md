@@ -1,3 +1,7 @@
+## 2020-03-26 v1.0.1
+* Implemented rule processor to work with mapping syntax
+* Updated schemas reference
+
 ## 2020-03-06 v1.0.0
 * Initial module setup
 * Added event manager
