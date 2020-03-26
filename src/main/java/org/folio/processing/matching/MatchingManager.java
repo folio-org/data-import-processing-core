@@ -1,17 +1,19 @@
 package org.folio.processing.matching;
 
+import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchProfile;
 import org.folio.processing.exceptions.MatchingException;
-import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
 import org.folio.processing.matching.matcher.Matcher;
 import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
-
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
@@ -31,10 +33,16 @@ public final class MatchingManager {
         return false;
       }
       ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
-      MatchProfile matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
+      MatchProfile matchProfile;
+      if (matchingProfileWrapper.getContent() instanceof Map) {
+        matchProfile = new JsonObject((Map) matchingProfileWrapper.getContent()).mapTo(MatchProfile.class);
+      } else {
+        matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
+      }
       MatchValueReader reader = MatchValueReaderFactory.build(matchProfile.getIncomingRecordType());
       MatchValueLoader loader = MatchValueLoaderFactory.build(matchProfile.getExistingRecordType());
-      return new Matcher() {}.match(reader, loader, eventPayload);
+      return new Matcher() {
+      }.match(reader, loader, eventPayload);
     } catch (Exception e) {
       throw new MatchingException(e);
     }

@@ -3,8 +3,10 @@ package org.folio.processing.mapping.manager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.DataImportEventPayload;
+import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MapValue;
+import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 
@@ -51,6 +53,16 @@ public class TestInstanceWriter extends AbstractWriter {
 
   @Override
   protected void writeObjectValue(String fieldPath, MapValue value) {
+
+  }
+
+  @Override
+  protected void writeRepeatableValue(String fieldPath, RepeatableFieldValue value) {
+
+  }
+
+  @Override
+  protected void writeBooleanValue(String fieldPath, BooleanValue value) {
 
   }
 }
