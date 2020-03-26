@@ -173,9 +173,7 @@
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/mappingProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/matchProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/actionProfile.json</path>
-                <path>${basedir}/ramls/raml-storage/schemas/dto/sourceRecord.json</path>
-                <path>${basedir}/ramls/holdings/holdingsrecord.json</path>
-                <path>${basedir}/ramls/item/item.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/dto/record.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>

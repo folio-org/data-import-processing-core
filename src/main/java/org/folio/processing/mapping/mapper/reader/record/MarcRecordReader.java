@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.folio.DataImportEventPayload;
-import org.folio.SourceRecord;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
@@ -59,7 +58,7 @@ public class MarcRecordReader implements Reader {
     try {
       if (eventPayload.getContext().containsKey(entityType.value())) {
         String stringRecord = eventPayload.getContext().get(entityType.value());
-        SourceRecord sourceRecord = new JsonObject(stringRecord).mapTo(SourceRecord.class);
+        org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
         if (sourceRecord != null
           && sourceRecord.getParsedRecord() != null
           && sourceRecord.getParsedRecord().getContent() != null) {
@@ -171,7 +170,7 @@ public class MarcRecordReader implements Reader {
     return EMPTY;
   }
 
-  private MarcReader buildMarcReader(SourceRecord record) {
+  private MarcReader buildMarcReader(org.folio.Record record) {
     return new MarcJsonReader(new ByteArrayInputStream(
       record.getParsedRecord()
         .getContent()
