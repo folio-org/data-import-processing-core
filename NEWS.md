@@ -1,3 +1,6 @@
+## 2020-03-29 v1.0.2
+* Fixed class cast in Matcher
+
 ## 2020-03-26 v1.0.1
 * Implemented rule processor to work with mapping syntax
 * Updated schemas reference
