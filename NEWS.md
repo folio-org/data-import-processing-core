@@ -16,3 +16,4 @@
 * Implemented Holdings, Instance, Item writers
 * Implemented LoadQueryBuilder
 * Implemented Rules processor
+* Mechanism for zipping/unzipping added as util
