@@ -72,10 +72,6 @@ public class MappingParameters {
     return this;
   }
 
-  public List<ElectronicAccessRelationship> getElectronicAccessRelationships() {
-    return electronicAccessRelationship;
-  }
-
   public MappingParameters withElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationship) {
     this.electronicAccessRelationship = new UnmodifiableList<>(electronicAccessRelationship);
     return this;
