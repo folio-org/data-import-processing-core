@@ -12,6 +12,7 @@ import org.folio.InstanceNoteType;
 import org.folio.InstanceType;
 import org.folio.IssuanceMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,25 +20,29 @@ import java.util.List;
  */
 public class MappingParameters {
 
-  private boolean initializedState = false;
-  private UnmodifiableList<IdentifierType> identifierTypes;
-  private UnmodifiableList<ClassificationType> classificationTypes;
-  private UnmodifiableList<InstanceType> instanceTypes;
-  private UnmodifiableList<ElectronicAccessRelationship> electronicAccessRelationship;
-  private UnmodifiableList<InstanceFormat> instanceFormats;
-  private UnmodifiableList<ContributorType> contributorTypes;
-  private UnmodifiableList<ContributorNameType> contributorNameTypes;
-  private UnmodifiableList<InstanceNoteType> instanceNoteTypes;
-  private UnmodifiableList<AlternativeTitleType> alternativeTitleTypes;
-  private UnmodifiableList<IssuanceMode> issuanceModes;
+  private boolean initialized = false;
+  private List<IdentifierType> identifierTypes = new ArrayList<>();
+  private List<ClassificationType> classificationTypes = new ArrayList<>();
+  private List<InstanceType> instanceTypes = new ArrayList<>();
+  private List<ElectronicAccessRelationship> electronicAccessRelationship = new ArrayList<>();
+  private List<InstanceFormat> instanceFormats = new ArrayList<>();
+  private List<ContributorType> contributorTypes = new ArrayList<>();
+  private List<ContributorNameType> contributorNameTypes = new ArrayList<>();
+  private List<InstanceNoteType> instanceNoteTypes = new ArrayList<>();
+  private List<AlternativeTitleType> alternativeTitleTypes = new ArrayList<>();
+  private List<IssuanceMode> issuanceModes = new ArrayList<>();
 
   public boolean isInitialized() {
-    return initializedState;
+    return initialized;
   }
 
-  public MappingParameters withInitializedState(boolean initializedState) {
-    this.initializedState = initializedState;
+  public MappingParameters withInitializedState(boolean initialized) {
+    this.initialized = initialized;
     return this;
+  }
+
+  public List<ElectronicAccessRelationship> getElectronicAccessRelationship() {
+    return electronicAccessRelationship;
   }
 
   public List<IdentifierType> getIdentifierTypes() {
@@ -65,10 +70,6 @@ public class MappingParameters {
   public MappingParameters withInstanceTypes(List<InstanceType> instanceTypes) {
     this.instanceTypes = new UnmodifiableList<>(instanceTypes);
     return this;
-  }
-
-  public List<ElectronicAccessRelationship> getElectronicAccessRelationships() {
-    return electronicAccessRelationship;
   }
 
   public MappingParameters withElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationship) {
@@ -121,7 +122,7 @@ public class MappingParameters {
     return this;
   }
 
-  public UnmodifiableList<IssuanceMode> getIssuanceModes() {
+  public List<IssuanceMode> getIssuanceModes() {
     return issuanceModes;
   }
 
