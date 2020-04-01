@@ -23,17 +23,17 @@ public enum MatchingCondition {
 
   // TODO provide expressions for missing cql queries
   EXACTLY_MATCHES("FIELD_NAME = '%s'",
-    "FIELD_NAME = '%s'"),
+    "FIELD_NAME == \"%s\""),
   EXISTING_VALUE_CONTAINS_INCOMING_VALUE("FIELD_NAME LIKE '%%%s%%'",
-    "FIELD_NAME = '*%s*'"),
+    "FIELD_NAME == \"*%s*\""),
   INCOMING_VALUE_CONTAINS_EXISTING_VALUE("'%s' LIKE CONCAT('%%', FIELD_NAME, '%%')",
-    "FIELD_NAME any '%s'"),
+    "FIELD_NAME any \"%s\""),
   EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE("FIELD_NAME LIKE '%%%s'",
-    "FIELD_NAME = '*%s'"),
+    "FIELD_NAME == \"*%s\""),
   INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE("'%s' LIKE CONCAT('%%', FIELD_NAME)",
     EMPTY),
   EXISTING_VALUE_BEGINS_WITH_INCOMING_VALUE("FIELD_NAME LIKE '%s%%'",
-    "FIELD_NAME = '%s*'"),
+    "FIELD_NAME == \"%s*\""),
   INCOMING_VALUE_BEGINS_WITH_EXISTING_VALUE("'%s' LIKE CONCAT(FIELD_NAME, '%%')",
     EMPTY);
 

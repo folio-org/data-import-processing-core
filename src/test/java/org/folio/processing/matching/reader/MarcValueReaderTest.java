@@ -1,8 +1,11 @@
 package org.folio.processing.matching.reader;
 
+import io.vertx.core.json.Json;
 import org.apache.commons.lang.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
+import org.folio.ParsedRecord;
+import org.folio.Record;
 import org.folio.processing.TestUtil;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.Value;
@@ -21,6 +24,7 @@ import java.util.HashMap;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
 import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
@@ -36,12 +40,14 @@ import static org.junit.Assert.assertTrue;
 public class MarcValueReaderTest {
 
   private final static String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
-  private final static String MARC = "MARC";
-  private static String MARC_RECORD;
+  private static String PARSED_CONTENT;
+  private static Record MARC_RECORD;
 
   @BeforeClass
   public static void setUp() throws IOException {
-    MARC_RECORD = TestUtil.readFileFromPath(MARC_RECORD_PATH);
+    PARSED_CONTENT = TestUtil.readFileFromPath(MARC_RECORD_PATH);
+    MARC_RECORD = new Record().withParsedRecord(new ParsedRecord()
+        .withContent(PARSED_CONTENT));
   }
 
   @Test
@@ -49,7 +55,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -74,7 +80,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -99,7 +105,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -124,7 +130,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -148,7 +154,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -172,7 +178,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -196,7 +202,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -224,7 +230,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -242,7 +248,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, StringUtils.EMPTY);
+    context.put(MARC_BIBLIOGRAPHIC.value(), StringUtils.EMPTY);
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -266,7 +272,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -290,7 +296,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -314,7 +320,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -342,7 +348,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -370,7 +376,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -398,7 +404,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -429,7 +435,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -458,7 +464,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -485,7 +491,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -512,7 +518,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -539,7 +545,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -566,7 +572,7 @@ public class MarcValueReaderTest {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC, MARC_RECORD);
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
