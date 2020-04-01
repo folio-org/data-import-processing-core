@@ -249,7 +249,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
   SET_ELECTRONIC_ACCESS_RELATIONS_ID() {
     @Override
     public String apply(RuleExecutionContext context) {
-      List<ElectronicAccessRelationship> electronicAccessRelationships = context.getMappingParameters().getElectronicAccessRelationship();
+      List<ElectronicAccessRelationship> electronicAccessRelationships = context.getMappingParameters().getElectronicAccessRelationships();
       if (electronicAccessRelationships == null || context.getDataField() == null) {
         return STUB_FIELD_TYPE_ID;
       }
