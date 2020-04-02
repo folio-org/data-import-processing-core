@@ -2,6 +2,7 @@ package org.folio.processing.events.services.publisher;
 
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
+import org.folio.processing.events.utils.ZIPArchiver;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
 import org.folio.rest.util.OkapiConnectionParams;
@@ -28,7 +29,7 @@ public class RestEventPublisher implements EventPublisher {
       Event event = new Event()
         .withId(UUID.randomUUID().toString())
         .withEventType(eventPayload.getEventType())
-        .withEventPayload(JsonObject.mapFrom(eventPayload).encode())
+        .withEventPayload(ZIPArchiver.zip(JsonObject.mapFrom(eventPayload).encode()))
         .withEventMetadata(new EventMetadata()
           .withTenantId(params.getTenantId())
           .withEventTTL(1)
