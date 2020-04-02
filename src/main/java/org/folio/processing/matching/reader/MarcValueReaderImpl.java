@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
+import org.folio.Record;
 import org.folio.processing.exceptions.ReaderException;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
@@ -41,13 +42,12 @@ public class MarcValueReaderImpl implements MatchValueReader {
   private static final String IND_1_PROFILE_LABEL = "indicator1";
   private static final String IND_2_PROFILE_LABEL = "indicator2";
   private static final String SUBFIELD_PROFILE_LABEL = "recordSubfield";
-  private static final String MARC_KEY_WORD = "MARC";
 
   @Override
   public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
     MatchExpression matchExpression = matchDetail.getIncomingMatchExpression();
     if (matchExpression.getDataValueType() == VALUE_FROM_RECORD) {
-      String marcRecord = eventPayload.getContext().get(MARC_KEY_WORD);
+      String marcRecord = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
       return readValueFromRecord(marcRecord, matchExpression);
     }
     return MissingValue.getInstance();
@@ -89,7 +89,9 @@ public class MarcValueReaderImpl implements MatchValueReader {
 
   private List<JsonNode> readMarcFieldValues(String marcRecord, Map<String, String> matchExpressionFields) {
     try {
-      JsonNode fieldsNode = new ObjectMapper().readTree(marcRecord).at(MARC_FIELDS_POINTER);
+      Record record = new ObjectMapper().readValue(marcRecord, Record.class);
+      String parsedContent = record.getParsedRecord().getContent().toString();
+      JsonNode fieldsNode = new ObjectMapper().readTree(parsedContent).at(MARC_FIELDS_POINTER);
       List<JsonNode> fields = fieldsNode.findValues(matchExpressionFields.get(FIELD_PROFILE_LABEL));
       return fields.stream()
         .filter(field -> field.isTextual() || isMatchingIdentifiers(field, matchExpressionFields))
