@@ -12,6 +12,7 @@ import org.folio.InstanceNoteType;
 import org.folio.InstanceType;
 import org.folio.IssuanceMode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,25 +20,25 @@ import java.util.List;
  */
 public class MappingParameters {
 
-  private boolean initializedState = false;
-  private UnmodifiableList<IdentifierType> identifierTypes;
-  private UnmodifiableList<ClassificationType> classificationTypes;
-  private UnmodifiableList<InstanceType> instanceTypes;
-  private UnmodifiableList<ElectronicAccessRelationship> electronicAccessRelationship;
-  private UnmodifiableList<InstanceFormat> instanceFormats;
-  private UnmodifiableList<ContributorType> contributorTypes;
-  private UnmodifiableList<ContributorNameType> contributorNameTypes;
-  private UnmodifiableList<InstanceNoteType> instanceNoteTypes;
-  private UnmodifiableList<AlternativeTitleType> alternativeTitleTypes;
-  private UnmodifiableList<IssuanceMode> issuanceModes;
+  private boolean initialized = false;
+  private List<IdentifierType> identifierTypes = new ArrayList<>();
+  private List<ClassificationType> classificationTypes = new ArrayList<>();
+  private List<InstanceType> instanceTypes = new ArrayList<>();
+  private List<ElectronicAccessRelationship> electronicAccessRelationships = new ArrayList<>();
+  private List<InstanceFormat> instanceFormats = new ArrayList<>();
+  private List<ContributorType> contributorTypes = new ArrayList<>();
+  private List<ContributorNameType> contributorNameTypes = new ArrayList<>();
+  private List<InstanceNoteType> instanceNoteTypes = new ArrayList<>();
+  private List<AlternativeTitleType> alternativeTitleTypes = new ArrayList<>();
+  private List<IssuanceMode> issuanceModes = new ArrayList<>();
 
-  public boolean isInitialized() {
-    return initializedState;
+  public MappingParameters withInitializedState(boolean initialized) {
+    this.initialized = initialized;
+    return this;
   }
 
-  public MappingParameters withInitializedState(boolean initializedState) {
-    this.initializedState = initializedState;
-    return this;
+  public boolean isInitialized() {
+    return initialized;
   }
 
   public List<IdentifierType> getIdentifierTypes() {
@@ -67,12 +68,8 @@ public class MappingParameters {
     return this;
   }
 
-  public List<ElectronicAccessRelationship> getElectronicAccessRelationships() {
-    return electronicAccessRelationship;
-  }
-
-  public MappingParameters withElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationship) {
-    this.electronicAccessRelationship = new UnmodifiableList<>(electronicAccessRelationship);
+  public MappingParameters withElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationships) {
+    this.electronicAccessRelationships = new UnmodifiableList<>(electronicAccessRelationships);
     return this;
   }
 
@@ -121,12 +118,60 @@ public class MappingParameters {
     return this;
   }
 
-  public UnmodifiableList<IssuanceMode> getIssuanceModes() {
+  public List<IssuanceMode> getIssuanceModes() {
     return issuanceModes;
   }
 
   public MappingParameters withIssuanceModes(List<IssuanceMode> issuanceModes) {
     this.issuanceModes = new UnmodifiableList<>(issuanceModes);
     return this;
+  }
+
+  public void setInitialized(boolean initialized) {
+    this.initialized = initialized;
+  }
+
+  public void setIdentifierTypes(List<IdentifierType> identifierTypes) {
+    this.identifierTypes = identifierTypes;
+  }
+
+  public void setClassificationTypes(List<ClassificationType> classificationTypes) {
+    this.classificationTypes = classificationTypes;
+  }
+
+  public void setInstanceTypes(List<InstanceType> instanceTypes) {
+    this.instanceTypes = instanceTypes;
+  }
+
+  public List<ElectronicAccessRelationship> getElectronicAccessRelationships() {
+    return electronicAccessRelationships;
+  }
+
+  public void setElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationships) {
+    this.electronicAccessRelationships = electronicAccessRelationships;
+  }
+
+  public void setInstanceFormats(List<InstanceFormat> instanceFormats) {
+    this.instanceFormats = instanceFormats;
+  }
+
+  public void setContributorTypes(List<ContributorType> contributorTypes) {
+    this.contributorTypes = contributorTypes;
+  }
+
+  public void setContributorNameTypes(List<ContributorNameType> contributorNameTypes) {
+    this.contributorNameTypes = contributorNameTypes;
+  }
+
+  public void setInstanceNoteTypes(List<InstanceNoteType> instanceNoteTypes) {
+    this.instanceNoteTypes = instanceNoteTypes;
+  }
+
+  public void setAlternativeTitleTypes(List<AlternativeTitleType> alternativeTitleTypes) {
+    this.alternativeTitleTypes = alternativeTitleTypes;
+  }
+
+  public void setIssuanceModes(List<IssuanceMode> issuanceModes) {
+    this.issuanceModes = issuanceModes;
   }
 }

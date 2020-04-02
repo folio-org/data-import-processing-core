@@ -55,7 +55,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' = '%s'", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber = '%s'", value.getValue());
+    String expectedCQLQuery = format("poNumber == \"%s\"", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -78,7 +78,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%%%s%%'", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber = '*%s*'", value.getValue());
+    String expectedCQLQuery = format("poNumber == \"*%s*\"", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -101,7 +101,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber', '%%')", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber any '%s'", value.getValue());
+    String expectedCQLQuery = format("poNumber any \"%s\"", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -124,7 +124,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%%%s'", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber = '*%s'", value.getValue());
+    String expectedCQLQuery = format("poNumber == \"*%s\"", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -170,7 +170,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%s%%'", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber = '%s*'", value.getValue());
+    String expectedCQLQuery = format("poNumber == \"%s*\"", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -308,7 +308,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%s%%' AND LIKE '%%978'", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber = '%s*' AND poNumber = '*978'", value.getValue());
+    String expectedCQLQuery = format("poNumber == \"%s*\" AND poNumber = '*978'", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 

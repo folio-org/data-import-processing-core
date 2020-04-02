@@ -31,6 +31,11 @@ public interface Mapper {
   default DataImportEventPayload map(Reader reader, Writer writer, MappingProfile profile, DataImportEventPayload eventPayload) throws IOException {
     reader.initialize(eventPayload);
     writer.initialize(eventPayload);
+    if (profile.getMappingDetails() == null
+      || profile.getMappingDetails().getMappingFields() == null
+      || profile.getMappingDetails().getMappingFields().isEmpty()) {
+      return eventPayload;
+    }
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
     for (MappingRule rule : mappingRules) {
       if (Boolean.parseBoolean(rule.getEnabled())) {
