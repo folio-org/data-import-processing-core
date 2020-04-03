@@ -45,7 +45,7 @@ public final class ZIPArchiver {
     String result;
     byte[] decoded = Base64.decodeBase64(zippedString);
     try (GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(decoded))) {
-      result = IOUtils.toString(gzip, StandardCharsets.UTF_8);
+      result = IOUtils.toString(gzip, "UTF-8");
     }
     return result;
   }
