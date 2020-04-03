@@ -1,6 +1,7 @@
 ## 2020-04-03 v2.0.0
 * [MODDICORE-37](https://issues.folio.org/browse/MODDICORE-37) Added mechanism for archive/unarchive eventPayload
 * [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
+* [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
 
 ## 2020-03-29 v1.0.2
 * Fixed class cast in Matcher
