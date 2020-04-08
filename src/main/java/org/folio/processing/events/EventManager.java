@@ -10,16 +10,18 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
 /**
  * The central class to use for handlers registration and event handling.
@@ -80,49 +82,71 @@ public final class EventManager {
       return prepareErrorEventPayload(eventPayload, throwable);
     }
     eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
-    List<ProfileSnapshotWrapper> children = eventPayload.getCurrentNode().getChildSnapshotWrappers();
-    if (isNotEmpty(children)) {
-      eventPayload.setCurrentNode(children.get(0));
+    Optional<ProfileSnapshotWrapper> next = findNext(eventPayload);
+    if (next.isPresent()) {
+      eventPayload.setCurrentNode(next.get());
     } else {
-      ProfileSnapshotWrapper next = findNext(eventPayload.getProfileSnapshot(), eventPayload.getCurrentNode().getId());
-      if (next != null) {
-        eventPayload.setCurrentNode(next);
-      } else {
-        eventPayload.getEventsChain().add(eventPayload.getEventType());
-        eventPayload.setEventType(DI_COMPLETED.value());
-      }
+      eventPayload.getEventsChain().add(eventPayload.getEventType());
+      eventPayload.setEventType(DI_COMPLETED.value());
     }
     return eventPayload;
   }
 
-  // TODO current implementation is excessive and does not cover skipping of profiles based on match/non-match criterion
-  // will be changed in scope of {@link https://issues.folio.org/browse/MODDICORE-33}
-  private static ProfileSnapshotWrapper findNext(ProfileSnapshotWrapper root, String lastProcessedProfileId) {
-    List<ProfileSnapshotWrapper> sequenceOfProfiles = buildSequenceOfProfiles(root);
-    OptionalInt indexOfLastProcessed = IntStream.range(0, sequenceOfProfiles.size())
-      .filter(i -> sequenceOfProfiles.get(i).getId().equals(lastProcessedProfileId))
-      .findFirst();
+  // probably can be improved in scope of {@link https://issues.folio.org/browse/MODDICORE-33}
+  private static Optional<ProfileSnapshotWrapper> findNext(DataImportEventPayload eventPayload) {
+    String eventType = eventPayload.getEventType();
+    ProfileSnapshotWrapper currentNode = eventPayload.getCurrentNode();
+    if (currentNode.getContentType() == MATCH_PROFILE) {
+      ProfileSnapshotWrapper.ReactTo targetReactTo = eventType.endsWith("NOT_MATCHED")
+        ? ProfileSnapshotWrapper.ReactTo.NON_MATCH
+        : ProfileSnapshotWrapper.ReactTo.MATCH;
 
-    if (indexOfLastProcessed.isPresent() && indexOfLastProcessed.getAsInt() < sequenceOfProfiles.size() - 1) {
-      return sequenceOfProfiles.get(indexOfLastProcessed.getAsInt());
+      Optional<ProfileSnapshotWrapper> optionalNext = currentNode.getChildSnapshotWrappers()
+        .stream()
+        .filter(child -> targetReactTo == child.getReactTo())
+        .findFirst();
+      if (optionalNext.isPresent()) {
+        return optionalNext;
+      } else {
+        return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
+          .flatMap(matchParent -> getNextChildProfile(currentNode, matchParent));
+      }
     }
-    return null;
+    if (currentNode.getContentType() == MAPPING_PROFILE) {
+      return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
+        .flatMap(mappingParent -> findParent(mappingParent.getId(), eventPayload.getProfileSnapshot())
+          .flatMap(actionParent -> getNextChildProfile(mappingParent, actionParent)));
+    }
+    if (currentNode.getContentType() == ACTION_PROFILE) {
+      if (isNotEmpty(currentNode.getChildSnapshotWrappers())) {
+        return Optional.of(currentNode.getChildSnapshotWrappers().get(0));
+      } else {
+        return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
+          .flatMap(actionParent -> getNextChildProfile(currentNode, actionParent));
+      }
+    }
+    return Optional.empty();
   }
 
-  private static List<ProfileSnapshotWrapper> buildSequenceOfProfiles(ProfileSnapshotWrapper root) {
-    List<ProfileSnapshotWrapper> visitedNodes = new ArrayList<>();
-    List<ProfileSnapshotWrapper> unvisitedNodes = new ArrayList<>();
-    unvisitedNodes.add(root);
-    while (!unvisitedNodes.isEmpty()) {
-      ProfileSnapshotWrapper currentNode = unvisitedNodes.remove(0);
-      List<ProfileSnapshotWrapper> newNodes = currentNode.getChildSnapshotWrappers()
-        .stream()
-        .filter(node -> !visitedNodes.contains(node))
-        .collect(Collectors.toList());
-      unvisitedNodes.addAll(0, newNodes);
-      visitedNodes.add(currentNode);
+  private static Optional<ProfileSnapshotWrapper> findParent(String currentWrapperId, ProfileSnapshotWrapper root) {
+    for (ProfileSnapshotWrapper childWrapper : root.getChildSnapshotWrappers()) {
+      if (childWrapper.getId().equals(currentWrapperId)) {
+        return Optional.of(root);
+      }
+      Optional<ProfileSnapshotWrapper> parent = findParent(currentWrapperId, childWrapper);
+      if (parent.isPresent()) {
+        return parent;
+      }
     }
-    return visitedNodes;
+    return Optional.empty();
+  }
+
+  private static Optional<ProfileSnapshotWrapper> getNextChildProfile(ProfileSnapshotWrapper currentChild, ProfileSnapshotWrapper parent) {
+    return parent.getChildSnapshotWrappers()
+      .stream()
+      .sorted(Comparator.comparing(ProfileSnapshotWrapper::getOrder))
+      .filter(child -> child.getReactTo() == currentChild.getReactTo() && child.getOrder() > currentChild.getOrder())
+      .findFirst();
   }
 
   private static DataImportEventPayload prepareErrorEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
