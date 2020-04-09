@@ -1,3 +1,6 @@
+## 2020-04-09 v1.1.1
+* Changed algorithm for switching profiles
+
 ## 2020-04-06 v1.1.0
 * [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
 * [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
