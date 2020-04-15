@@ -377,18 +377,18 @@
       "readonly": true
     },
     "links": {
-      "description": "Links",
-      "type": "object",
-      "properties": {
-        "self": {
-          "description": "self",
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "self"
-      ]
+        "description": "Links",
+        "type": "object",
+        "properties": {
+          "self": {
+            "description": "self",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "self"
+        ]
     },
     "natureOfContentTermIds": {
       "type": "array",
