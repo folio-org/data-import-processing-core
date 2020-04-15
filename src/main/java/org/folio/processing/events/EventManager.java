@@ -8,7 +8,6 @@ import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
-import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,7 +31,7 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public final class EventManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
   private static final EventPublisher eventPublisher = new RestEventPublisher();
@@ -59,7 +58,7 @@ public final class EventManager {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
               } else {
-                LOGGER.error("Can`t publish event");
+                LOGGER.error("Can`t publish event", publishThrowable);
                 future.completeExceptionally(publishThrowable);
               }
             }));
