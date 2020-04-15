@@ -23,10 +23,15 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * The central class to use for handlers registration and event handling.
  */
 public final class EventManager {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
   private static final EventPublisher eventPublisher = new RestEventPublisher();
@@ -53,10 +58,12 @@ public final class EventManager {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
               } else {
+                LOGGER.error("Can`t publish event", publishThrowable);
                 future.completeExceptionally(publishThrowable);
               }
             }));
     } catch (Exception e) {
+      LOGGER.error("Can`t handle event", e);
       future.completeExceptionally(e);
     }
     return future;
