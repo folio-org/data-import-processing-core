@@ -4,6 +4,7 @@
 ## 2020-04-06 v1.1.0
 * [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
 * [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
+* [MODDICORE-45](https://issues.folio.org/browse/MODDICORE-45) Fixed DI process finishes with ERROR status
 
 ## 2020-03-29 v1.0.2
 * Fixed class cast in Matcher
