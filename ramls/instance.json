@@ -251,7 +251,7 @@
         "properties": {
           "uri": {
             "type": "string",
-            "description": "Uniform Resource Identifier (URI) is a string of characters designed for unambiguous identification of resources"
+            "description": "Uniform Resource Identifier (URI) is a string of characters designed for unambiguous identification of resources"
           },
           "linkText": {
             "type": "string",
@@ -310,7 +310,7 @@
         "properties": {
           "instanceNoteTypeId": {
             "description": "ID of the type of note",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "uuid.json"
           },
           "note": {
             "type": "string",
@@ -369,11 +369,11 @@
       "description": "arbitrary tags associated with this instance",
       "id": "tags",
       "type": "object",
-      "$ref": "raml-storage/raml-util/schemas/tags.schema"
+      "$ref": "raml-util/schemas/tags.schema"
     },
     "metadata": {
       "type": "object",
-      "$ref": "raml-storage/raml-util/schemas/metadata.schema",
+      "$ref": "raml-util/schemas/metadata.schema",
       "readonly": true
     },
     "links": {
@@ -396,113 +396,113 @@
       "items": {
         "type": "string",
         "description": "Single UUID for the Instance nature of content",
-        "$ref": "raml-storage/schemas/common/uuid.json"
-      }
-    },
-    "precedingTitles": {
-      "description": "Array of preceding titles",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "description": "Id of the preceding title",
-            "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
-          },
-          "precedingInstanceId": {
-            "description": "Id of the preceding instance id",
-            "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
-          },
-          "title": {
-            "type": "string",
-            "description": "The primary title (or label) associated with the resource"
-          },
-          "hrid": {
-            "type": "string",
-            "description": "The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
-          },
-          "identifiers": {
-            "type": "array",
-            "description": "An extensible set of name-value pairs of identifiers associated with the resource",
-            "minItems": 0,
-            "items": {
-              "type": "object",
-              "properties": {
-                "value": {
-                  "type": "string",
-                  "description": "Resource identifier value"
-                },
-                "identifierTypeId": {
-                  "type": "string",
-                  "description": "Resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)"
-                }
-              },
-              "additionalProperties": false,
-              "required": [
-                "value",
-                "identifierTypeId"
-              ]
-            }
-          }
-        },
-        "additionalProperties": false
-      }
-    },
-    "succeedingTitles": {
-      "description": "Array of succeeding titles",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "description": "Id of the succeeding title",
-            "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
-          },
-          "succeedingInstanceId": {
-            "description": "Id of the succeeding instance id",
-            "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
-          },
-          "title": {
-            "type": "string",
-            "description": "The primary title (or label) associated with the resource"
-          },
-          "hrid": {
-            "type": "string",
-            "description": "The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
-          },
-          "identifiers": {
-            "type": "array",
-            "description": "An extensible set of name-value pairs of identifiers associated with the resource",
-            "minItems": 0,
-            "items": {
-              "type": "object",
-              "properties": {
-                "value": {
-                  "type": "string",
-                  "description": "Resource identifier value"
-                },
-                "identifierTypeId": {
-                  "type": "string",
-                  "description": "Resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)"
-                }
-              },
-              "additionalProperties": false,
-              "required": [
-                "value",
-                "identifierTypeId"
-              ]
-            }
-          }
-        },
-        "additionalProperties": false
+        "$ref": "uuid.json"
       }
     }
   },
-  "additionalProperties": true,
+  "precedingTitles": {
+    "description": "Array of preceding titles",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id of the preceding title",
+          "type": "string",
+          "$ref": "uuid.json"
+        },
+        "precedingInstanceId": {
+          "description": "Id of the preceding instance id",
+          "type": "string",
+          "$ref": "uuid.json"
+        },
+        "title": {
+          "type": "string",
+          "description": "The primary title (or label) associated with the resource"
+        },
+        "hrid": {
+          "type": "string",
+          "description": "The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
+        },
+        "identifiers": {
+          "type": "array",
+          "description": "An extensible set of name-value pairs of identifiers associated with the resource",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "description": "Resource identifier value"
+              },
+              "identifierTypeId": {
+                "type": "string",
+                "description": "Resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "identifierTypeId"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "succeedingTitles": {
+    "description": "Array of succeeding titles",
+    "type": "array",
+    "items": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Id of the succeeding title",
+          "type": "string",
+          "$ref": "uuid.json"
+        },
+        "succeedingInstanceId": {
+          "description": "Id of the succeeding instance id",
+          "type": "string",
+          "$ref": "uuid.json"
+        },
+        "title": {
+          "type": "string",
+          "description": "The primary title (or label) associated with the resource"
+        },
+        "hrid": {
+          "type": "string",
+          "description": "The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
+        },
+        "identifiers": {
+          "type": "array",
+          "description": "An extensible set of name-value pairs of identifiers associated with the resource",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "description": "Resource identifier value"
+              },
+              "identifierTypeId": {
+                "type": "string",
+                "description": "Resource identifier type (e.g. ISBN, ISSN, LCCN, CODEN, Locally defined identifiers)"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "identifierTypeId"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
   "required": [
     "source",
     "title",
