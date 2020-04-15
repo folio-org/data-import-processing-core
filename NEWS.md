@@ -26,8 +26,3 @@
 * Implemented LoadQueryBuilder
 * Implemented Rules processor
 * Mechanism for zipping/unzipping added as util
-
-
-[]: https://issues.folio.org/browse/MODDICORE-37
-
-[]: https://issues.folio.org/browse/MODDICORE-37
