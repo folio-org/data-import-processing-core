@@ -37,6 +37,7 @@ public class MappingTest {
   private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH = "src/test/resources/org/folio/processing/mapping/336_repeated_subfields.mrc";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/rules.json";
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
+  private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/856_missing_uri.mrc";
 
   @Test
   public void testMarcToInstance() throws IOException {
@@ -104,6 +105,28 @@ public class MappingTest {
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
       Assert.assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      Assert.assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstanceRemoveElectronicAccessEntriesWithNoUri() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_URI).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      instance.getElectronicAccess()
+        .forEach(electronicAccess ->
+          Assert.assertNotNull(electronicAccess.getUri()));
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());

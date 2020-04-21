@@ -1,8 +1,18 @@
-## 2020-04-21 v2.1.0
+## 2020-04-21 v2.1.0-SNAPSHOT
+* Reverted archive/unarchive eventPayload
+* [MODDICORE-42](https://issues.folio.org/browse/MODDICORE-42) Filtered out electronic access entries with missing uri values in mapped Instances
 * [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
 
 ## 2020-04-03 v2.0.0
 * [MODDICORE-37](https://issues.folio.org/browse/MODDICORE-37) Added mechanism for archive/unarchive eventPayload
+* [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
+* [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
+* [MODDICORE-45](https://issues.folio.org/browse/MODDICORE-45) Fixed DI process finishes with ERROR status
+
+## 2020-04-09 v1.1.1
+* Changed algorithm for switching profiles
+
+## 2020-04-06 v1.1.0
 * [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
 * [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
 * [MODDICORE-45](https://issues.folio.org/browse/MODDICORE-45) Fixed DI process finishes with ERROR status
