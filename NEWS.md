@@ -1,6 +1,7 @@
 ## 2020-04-21 v2.1.0-SNAPSHOT
 * Reverted archive/unarchive eventPayload
 * [MODDICORE-42](https://issues.folio.org/browse/MODDICORE-42) Filtered out electronic access entries with missing uri values in mapped Instances
+* [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
 
 ## 2020-04-03 v2.0.0
 * [MODDICORE-37](https://issues.folio.org/browse/MODDICORE-37) Added mechanism for archive/unarchive eventPayload

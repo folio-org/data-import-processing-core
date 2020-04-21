@@ -26,11 +26,13 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.drools.core.util.StringUtils.EMPTY;
 
 /**
  * A common Writer based on json. The idea is to hold Jackson's JsonNode and fill up it by incoming values in runtime.
  */
+@SuppressWarnings("rawtypes")
 public class JsonBasedWriter extends AbstractWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
   private ObjectMapper objectMapper = new ObjectMapper();
@@ -52,8 +54,10 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeStringValue(String fieldPath, StringValue stringValue) {
-    TextNode textNode = new TextNode(stringValue.getValue());
-    setValueByFieldPath(fieldPath, textNode);
+    if (isNotEmpty(stringValue.getValue())) {
+      TextNode textNode = new TextNode(stringValue.getValue());
+      setValueByFieldPath(fieldPath, textNode);
+    }
   }
 
   @Override

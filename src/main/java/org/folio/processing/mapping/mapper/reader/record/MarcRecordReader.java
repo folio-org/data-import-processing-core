@@ -107,7 +107,11 @@ public class MarcRecordReader implements Reader {
           if (arrayValue) {
             resultList.addAll(marcValues);
           } else {
-            marcValues.forEach(v -> sb.append(v));
+            marcValues.forEach(v -> {
+              if (isNotEmpty(v)) {
+                sb.append(v);
+              }
+            });
           }
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
           String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
@@ -118,10 +122,12 @@ public class MarcRecordReader implements Reader {
               }
             }
           }
-          if (arrayValue) {
-            resultList.add(value);
-          } else {
-            sb.append(value);
+          if (isNotEmpty(value)) {
+            if (arrayValue) {
+              resultList.add(value);
+            } else {
+              sb.append(value);
+            }
           }
         }
       }
@@ -149,7 +155,7 @@ public class MarcRecordReader implements Reader {
         ).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
       repeatableObject.add(object);
     }
-    return RepeatableFieldValue.of(repeatableObject, ruleExpression.getRepeatableFieldAction(), ruleExpression.getPath());
+    return RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath());
   }
 
   private List<String> readValuesFromMarcRecord(String marcPath) {
