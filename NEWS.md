@@ -1,3 +1,7 @@
+## 2020-04-21 v1.1.2
+* [MODDICORE-42](https://issues.folio.org/browse/MODDICORE-42) Filtered out electronic access entries with missing uri values in mapped Instances
+* [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
+
 ## 2020-04-09 v1.1.1
 * Changed algorithm for switching profiles
 
@@ -27,3 +31,4 @@
 * Implemented Holdings, Instance, Item writers
 * Implemented LoadQueryBuilder
 * Implemented Rules processor
+* Mechanism for zipping/unzipping added as util
