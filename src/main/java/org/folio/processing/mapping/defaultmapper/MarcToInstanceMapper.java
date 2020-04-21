@@ -3,6 +3,7 @@ package org.folio.processing.mapping.defaultmapper;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Classification;
+import org.folio.ElectronicAccess;
 import org.folio.Identifier;
 import org.folio.Instance;
 import org.folio.processing.mapping.defaultmapper.processor.Processor;
@@ -13,6 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.codehaus.plexus.util.StringUtils.isNotEmpty;
 
 public class MarcToInstanceMapper implements RecordToInstanceMapper {
 
@@ -25,6 +28,7 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
     if (instance != null) {
       instance = fixDuplicatedUUIDs(instance.withSource(getMapperFormat()));
       instance = fixDuplicatedLanguages(instance);
+      instance = removeElectronicAccessEntriesWithNoUri(instance);
     }
     return instance;
   }
@@ -95,5 +99,12 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
       .distinct()
       .collect(Collectors.toList());
     return instance.withLanguages(uniqueLanguages);
+  }
+
+  private Instance removeElectronicAccessEntriesWithNoUri(Instance instance) {
+    List<ElectronicAccess> electronicAccessList = instance.getElectronicAccess().stream()
+      .filter(electronicAccess -> isNotEmpty(electronicAccess.getUri()))
+      .collect(Collectors.toList());
+    return instance.withElectronicAccess(electronicAccessList);
   }
 }
