@@ -32,6 +32,7 @@ import static org.drools.core.util.StringUtils.EMPTY;
 /**
  * A common Writer based on json. The idea is to hold Jackson's JsonNode and fill up it by incoming values in runtime.
  */
+@SuppressWarnings("rawtypes")
 public class JsonBasedWriter extends AbstractWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
   private ObjectMapper objectMapper = new ObjectMapper();

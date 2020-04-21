@@ -37,7 +37,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-@SuppressWarnings("all")
+@SuppressWarnings("rawtypes")
 public class MarcRecordReader implements Reader {
   private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z]$){0,2})");
   private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
@@ -155,7 +155,7 @@ public class MarcRecordReader implements Reader {
         ).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
       repeatableObject.add(object);
     }
-    return RepeatableFieldValue.of(repeatableObject, ruleExpression.getRepeatableFieldAction(), ruleExpression.getPath());
+    return RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath());
   }
 
   private List<String> readValuesFromMarcRecord(String marcPath) {
