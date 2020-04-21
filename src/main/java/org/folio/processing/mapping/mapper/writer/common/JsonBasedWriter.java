@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.drools.core.util.StringUtils.EMPTY;
 
 /**
@@ -52,8 +53,10 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeStringValue(String fieldPath, StringValue stringValue) {
-    TextNode textNode = new TextNode(stringValue.getValue());
-    setValueByFieldPath(fieldPath, textNode);
+    if (isNotEmpty(stringValue.getValue())) {
+      TextNode textNode = new TextNode(stringValue.getValue());
+      setValueByFieldPath(fieldPath, textNode);
+    }
   }
 
   @Override

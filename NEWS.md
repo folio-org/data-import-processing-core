@@ -3,6 +3,7 @@
 * [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
 * [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
 * [MODDICORE-45](https://issues.folio.org/browse/MODDICORE-45) Fixed DI process finishes with ERROR status
+* [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
 
 ## 2020-03-29 v1.0.2
 * Fixed class cast in Matcher
