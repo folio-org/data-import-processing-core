@@ -1,6 +1,7 @@
 ## 2020-04-22 v1.1.2
 * [MODDICORE-42](https://issues.folio.org/browse/MODDICORE-42) Filtered out electronic access entries with missing uri values in mapped Instances
 * [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
+* [MODDICORE-51](https://issues.folio.org/browse/MODDICORE-51) "Mode of issuance" values not assigned correctly using marc-to-instance map in Fameflower
 
 ## 2020-04-09 v1.1.1
 * Changed algorithm for switching profiles

@@ -360,7 +360,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldValue = context.getSubFieldValue();
-      char seventhChar = subFieldValue.charAt(6); //Regarding "MODSOURMAN-203" is should be 7-th symbol.
+      char seventhChar = subFieldValue.charAt(7); //Regarding "MODSOURMAN-203" is should be 7-th symbol.
       List<IssuanceMode> issuanceModes = context.getMappingParameters().getIssuanceModes();
       if (issuanceModes == null || issuanceModes.isEmpty()) {
         return StringUtils.EMPTY;
