@@ -4,7 +4,6 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
-import org.folio.rest.tools.PomReader;
 import org.folio.rest.util.OkapiConnectionParams;
 import org.folio.util.pubsub.PubSubClientUtils;
 import org.slf4j.Logger;
@@ -33,14 +32,14 @@ public class RestEventPublisher implements EventPublisher {
         .withEventMetadata(new EventMetadata()
           .withTenantId(params.getTenantId())
           .withEventTTL(1)
-          .withPublishedBy(PomReader.INSTANCE.getModuleName() + "-" + PomReader.INSTANCE.getVersion()));
+          .withPublishedBy(PubSubClientUtils.constructModuleName()));
 
       PubSubClientUtils.sendEventMessage(event, params).whenComplete((published, throwable) -> {
         if (throwable != null) {
-          LOGGER.error("Error publishing event");
+          LOGGER.error("Error publishing {} event", event.getEventType());
           future.completeExceptionally(throwable);
         } else {
-          LOGGER.info("Event has been published");
+          LOGGER.info("{} event has been published", event.getEventType());
           future.complete(event);
         }
       });
