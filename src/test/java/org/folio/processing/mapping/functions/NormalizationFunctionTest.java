@@ -657,10 +657,10 @@ public class NormalizationFunctionTest {
     String expectedIssuanceModeId = UUID.randomUUID().toString();
     IssuanceMode issuanceMode = new IssuanceMode()
       .withId(expectedIssuanceModeId)
-      .withName("serial");
+      .withName("integrating resource");
 
     RuleExecutionContext context = new RuleExecutionContext();
-    context.setSubFieldValue("aa ac bcdddmmmbsi");
+    context.setSubFieldValue("01743nai a2200409 i 450000");
     context.setMappingParameters(new MappingParameters().withIssuanceModes(Collections.singletonList(issuanceMode)));
     // when
     String actualIssuanceModeId = runFunction("set_issuance_mode_id", context);
