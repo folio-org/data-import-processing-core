@@ -23,7 +23,7 @@
     <pubsub.client.version>1.1.4</pubsub.client.version>
     <commons.lang.version>2.2</commons.lang.version>
     <logger.version>1.7.25</logger.version>
-    <jackson.version>2.9.10.3</jackson.version>
+    <jackson.version>2.9.10.4</jackson.version>
     <junit.version>4.12</junit.version>
     <vertx-unit.version>3.5.4</vertx-unit.version>
     <wiremock.version>2.19.0</wiremock.version>
