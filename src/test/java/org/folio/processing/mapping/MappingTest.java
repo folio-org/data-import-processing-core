@@ -24,8 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 @RunWith(JUnit4.class)
@@ -35,7 +33,6 @@ public class MappingTest {
 
   private static final String INSTANCES_PATH = "src/test/resources/org/folio/processing/mapping/instances.json";
   private static final String BIBS_PATH = "src/test/resources/org/folio/processing/mapping/CornellFOLIOExemplars_Bibs.mrc";
-  private static final String PRECEDING_FILE_PATH = "src/test/resources/org/folio/processing/mapping/780_785_examples.mrc";
   private static final String BIBS_ERRORS_PATH = "src/test/resources/org/folio/processing/mapping/test1_err.mrc";
   private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH = "src/test/resources/org/folio/processing/mapping/336_repeated_subfields.mrc";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/rules.json";
@@ -134,35 +131,6 @@ public class MappingTest {
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
     }
+
   }
-
-  @Test
-  public void testMarcToInstancePrecidingTitles() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(PRECEDING_FILE_PATH).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<JsonObject> array = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
-      array.add(JsonObject.mapFrom(instance));
-      instance.getSucceedingTitles()
-        .forEach(succeedingTitle ->
-          Assert.assertNotNull(succeedingTitle.getTitle()));
-      instance.getPrecedingTitles()
-        .forEach(precedingTitle ->
-          Assert.assertNotNull(precedingTitle.getTitle()));
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      Assert.assertTrue(violations.isEmpty());
-    }
-    array.forEach(a->System.out.println(a.encode()));
-  }
-
 }
-
