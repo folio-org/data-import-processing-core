@@ -6,6 +6,8 @@ import org.folio.Classification;
 import org.folio.ElectronicAccess;
 import org.folio.Identifier;
 import org.folio.Instance;
+import org.folio.PrecedingTitle;
+import org.folio.SucceedingTitle;
 import org.folio.processing.mapping.defaultmapper.processor.Processor;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
@@ -29,6 +31,8 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
       instance = fixDuplicatedUUIDs(instance.withSource(getMapperFormat()));
       instance = fixDuplicatedLanguages(instance);
       instance = removeElectronicAccessEntriesWithNoUri(instance);
+      instance = removePrecedingTitlesWithoutTitles(instance);
+      instance = removeSucceedingTitlesWithoutTitles(instance);
     }
     return instance;
   }
@@ -106,5 +110,19 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
       .filter(electronicAccess -> isNotEmpty(electronicAccess.getUri()))
       .collect(Collectors.toList());
     return instance.withElectronicAccess(electronicAccessList);
+  }
+
+  private Instance removePrecedingTitlesWithoutTitles(Instance instance) {
+    List<PrecedingTitle> precedingTitles = instance.getPrecedingTitles().stream()
+      .filter(precedingTitle -> isNotEmpty(precedingTitle.getTitle()))
+      .collect(Collectors.toList());
+    return instance.withPrecedingTitles(precedingTitles);
+  }
+
+  private Instance removeSucceedingTitlesWithoutTitles(Instance instance) {
+    List<SucceedingTitle> succeedingTitles = instance.getSucceedingTitles().stream()
+      .filter(succeedingTitle -> isNotEmpty(succeedingTitle.getTitle()))
+      .collect(Collectors.toList());
+    return instance.withSucceedingTitles(succeedingTitles);
   }
 }
