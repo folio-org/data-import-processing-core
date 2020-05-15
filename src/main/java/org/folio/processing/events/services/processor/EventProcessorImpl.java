@@ -1,5 +1,7 @@
 package org.folio.processing.events.services.processor;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.exceptions.EventProcessingException;
@@ -13,6 +15,9 @@ import static java.lang.String.format;
 
 public class EventProcessorImpl implements EventProcessor {
 
+  private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
+//  private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
+
   private List<EventHandler> eventHandlers = new ArrayList<>();
 
   @Override
@@ -24,7 +29,10 @@ public class EventProcessorImpl implements EventProcessor {
         .findFirst();
       if (optionalEventHandler.isPresent()) {
         EventHandler eventHandler = optionalEventHandler.get();
+        String eventType = eventPayload.getEventType();
+        long startTime = System.nanoTime();
         eventHandler.handle(eventPayload).whenComplete((payload, throwable) -> {
+          logEventProcessingTime(eventType, startTime, eventPayload);
           if (throwable != null) {
             future.completeExceptionally(throwable);
           } else {
@@ -43,5 +51,12 @@ public class EventProcessorImpl implements EventProcessor {
   @Override
   public List<EventHandler> getEventHandlers() {
     return eventHandlers;
+  }
+
+  private void logEventProcessingTime(String eventType, long startTime, DataImportEventPayload eventPayload) {
+    long endTime = System.nanoTime();
+    String profileType = eventPayload.getCurrentNode().getContentType().toString();
+    String profileId = eventPayload.getCurrentNode().getProfileId();
+    LOG.debug("Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
   }
 }
