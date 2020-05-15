@@ -16,6 +16,7 @@ import static java.lang.String.format;
 public class EventProcessorImpl implements EventProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
+//  private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
 
   private List<EventHandler> eventHandlers = new ArrayList<>();
 
@@ -56,6 +57,6 @@ public class EventProcessorImpl implements EventProcessor {
     long endTime = System.nanoTime();
     String profileType = eventPayload.getCurrentNode().getContentType().toString();
     String profileId = eventPayload.getCurrentNode().getProfileId();
-    LOG.debug("Event '" + eventType + "' has been processed using " + profileType + " with id '" + profileId + "' for " + (endTime - startTime) / 1000000L + " ms");
+    LOG.debug("Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
   }
 }
