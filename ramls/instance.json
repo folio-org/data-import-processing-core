@@ -423,6 +423,22 @@
             "type": "string",
             "description": "The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
           },
+          "isbnId": {
+            "type": "string",
+            "description": "isbn Id"
+          },
+          "issnId": {
+            "type": "string",
+            "description": "issn Id"
+          },
+          "isbnValue": {
+            "type": "string",
+            "description": "isbn value"
+          },
+          "issnValue": {
+            "type": "string",
+            "description": "issn value"
+          },
           "identifiers": {
             "type": "array",
             "description": "An extensible set of name-value pairs of identifiers associated with the resource",
@@ -473,6 +489,22 @@
           "hrid": {
             "type": "string",
             "description": "The human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
+          },
+          "isbnId": {
+            "type": "string",
+            "description": "isbn Id"
+          },
+          "issnId": {
+            "type": "string",
+            "description": "issn Id"
+          },
+          "isbnValue": {
+            "type": "string",
+            "description": "isbn value"
+          },
+          "issnValue": {
+            "type": "string",
+            "description": "issn value"
           },
           "identifiers": {
             "type": "array",
