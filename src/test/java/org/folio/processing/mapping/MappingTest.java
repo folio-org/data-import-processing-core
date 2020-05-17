@@ -175,8 +175,6 @@ public class MappingTest {
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
     }
-    array.forEach(a -> System.out.println(a.encode()));
   }
 
 }
-
