@@ -5,6 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.Classification;
 import org.folio.ElectronicAccess;
 import org.folio.Identifier;
+import org.folio.Identifier_;
+import org.folio.Identifier__;
 import org.folio.Instance;
 import org.folio.PrecedingTitle;
 import org.folio.SucceedingTitle;
@@ -33,6 +35,8 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
       instance = removeElectronicAccessEntriesWithNoUri(instance);
       instance = removePrecedingTitlesWithoutTitles(instance);
       instance = removeSucceedingTitlesWithoutTitles(instance);
+      instance = movePrecedingIdentifiers(instance);
+      instance = moveSucceedingIdentifiers(instance);
     }
     return instance;
   }
@@ -122,6 +126,58 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
   private Instance removeSucceedingTitlesWithoutTitles(Instance instance) {
     List<SucceedingTitle> succeedingTitles = instance.getSucceedingTitles().stream()
       .filter(succeedingTitle -> isNotEmpty(succeedingTitle.getTitle()))
+      .collect(Collectors.toList());
+    return instance.withSucceedingTitles(succeedingTitles);
+  }
+
+  private Instance movePrecedingIdentifiers(Instance instance) {
+    List<PrecedingTitle> precedingTitles = instance.getPrecedingTitles().stream()
+      .peek(precedingTitle -> {
+        if (isNotEmpty(precedingTitle.getIsbnId())) {
+          Identifier_ identifier = new Identifier_().withIdentifierTypeId(precedingTitle.getIsbnId());
+          precedingTitle.setIsbnId(null);
+          if (isNotEmpty(precedingTitle.getIsbnValue())) {
+            identifier.setValue(precedingTitle.getIsbnValue());
+            precedingTitle.setIsbnValue(null);
+            precedingTitle.getIdentifiers().add(identifier);
+          }
+        }
+        if (isNotEmpty(precedingTitle.getIssnId())) {
+          Identifier_ identifier = new Identifier_().withIdentifierTypeId(precedingTitle.getIssnId());
+          precedingTitle.setIssnId(null);
+          if (isNotEmpty(precedingTitle.getIssnValue())) {
+            identifier.setValue(precedingTitle.getIssnValue());
+            precedingTitle.setIssnValue(null);
+            precedingTitle.getIdentifiers().add(identifier);
+          }
+        }
+      })
+      .collect(Collectors.toList());
+    return instance.withPrecedingTitles(precedingTitles);
+  }
+
+  private Instance moveSucceedingIdentifiers(Instance instance) {
+    List<SucceedingTitle> succeedingTitles = instance.getSucceedingTitles().stream()
+      .peek(succeedingTitle -> {
+        if (isNotEmpty(succeedingTitle.getIsbnId())) {
+          Identifier__ identifier = new Identifier__().withIdentifierTypeId(succeedingTitle.getIsbnId());
+          succeedingTitle.setIsbnId(null);
+          if (isNotEmpty(succeedingTitle.getIsbnValue())) {
+            identifier.setValue(succeedingTitle.getIsbnValue());
+            succeedingTitle.setIsbnValue(null);
+            succeedingTitle.getIdentifiers().add(identifier);
+          }
+        }
+        if (isNotEmpty(succeedingTitle.getIssnId())) {
+          Identifier__ identifier = new Identifier__().withIdentifierTypeId(succeedingTitle.getIssnId());
+          succeedingTitle.setIssnId(null);
+          if (isNotEmpty(succeedingTitle.getIssnValue())) {
+            identifier.setValue(succeedingTitle.getIssnValue());
+            succeedingTitle.setIssnValue(null);
+            succeedingTitle.getIdentifiers().add(identifier);
+          }
+        }
+      })
       .collect(Collectors.toList());
     return instance.withSucceedingTitles(succeedingTitles);
   }

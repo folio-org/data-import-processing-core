@@ -153,15 +153,29 @@ public class MappingTest {
       array.add(JsonObject.mapFrom(instance));
       instance.getSucceedingTitles()
         .forEach(succeedingTitle ->
-          Assert.assertNotNull(succeedingTitle.getTitle()));
+          {
+            Assert.assertNotNull(succeedingTitle.getTitle());
+            succeedingTitle.getIdentifiers().forEach(id -> {
+              Assert.assertNotNull(id.getIdentifierTypeId());
+              Assert.assertNotNull(id.getValue());
+            });
+          }
+        );
       instance.getPrecedingTitles()
         .forEach(precedingTitle ->
-          Assert.assertNotNull(precedingTitle.getTitle()));
+          {
+            Assert.assertNotNull(precedingTitle.getTitle());
+            precedingTitle.getIdentifiers().forEach(id -> {
+              Assert.assertNotNull(id.getIdentifierTypeId());
+              Assert.assertNotNull(id.getValue());
+            });
+          }
+        );
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
     }
-    array.forEach(a->System.out.println(a.encode()));
+    array.forEach(a -> System.out.println(a.encode()));
   }
 
 }
