@@ -1,9 +1,13 @@
 package org.folio.processing.matching.loader;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.folio.MatchDetail;
 import org.folio.processing.matching.loader.query.DefaultLoadQuery;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
+import org.folio.processing.value.DateValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
@@ -35,6 +39,8 @@ import static org.junit.Assert.fail;
 
 @RunWith(JUnit4.class)
 public class LoadQueryBuilderTest {
+
+  private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd";
 
   @Test
   public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValue() {
@@ -418,7 +424,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfMatchingByStaticValue() {
+  public void shouldReturnNullIfMatchingByExistingStaticValue() {
     // given
     Value value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
@@ -449,6 +455,33 @@ public class LoadQueryBuilderTest {
     } catch (Exception e) {
       assertEquals(UnsupportedOperationException.class, e.getClass());
     }
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingDateValue() throws ParseException {
+    // given
+    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT_PATTERN);
+    Date fromDate = df.parse("2020-04-01");
+    Date toDate = df.parse("2020-04-30");
+    DateValue value = DateValue.of(fromDate, toDate);
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("purchase_order.createdDate"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'createdDate' >= '%s' AND purchase_order.jsonb ->> 'createdDate' <= '%s'",
+      value.getFromDate(), value.getToDate());
+    assertEquals(expectedSqlQuery, result.getSql());
+    assertNotNull(result.getCql());
+    String expectedCQLQuery = format("createdDate >= \"%s\" AND createdDate <= \"%s\"", value.getFromDate(), value.getToDate());
+    assertEquals(expectedCQLQuery, result.getCql());
   }
 
 }
