@@ -476,11 +476,11 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'createdDate' >= '%s' AND purchase_order.jsonb ->> 'createdDate' <= '%s'",
+    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'createdDate' >= '%s' AND purchase_order.jsonb ->> 'createdDate' <= '%sT23:59:59.999'",
       value.getFromDate(), value.getToDate());
     assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("createdDate >= \"%s\" AND createdDate <= \"%s\"", value.getFromDate(), value.getToDate());
+    String expectedCQLQuery = format("createdDate >= \"%s\" AND createdDate <= \"%sT23:59:59.999\"", value.getFromDate(), value.getToDate());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 

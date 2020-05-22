@@ -148,10 +148,10 @@ public class QueryHolder {
   }
 
   private String constructDateRangeSQLQuery(DateValue value) {
-    return format("WHERE FIELD_NAME >= '%s' AND FIELD_NAME <= '%s'", value.getFromDate(), value.getToDate());
+    return format("WHERE FIELD_NAME >= '%s' AND FIELD_NAME <= '%sT23:59:59.999'", value.getFromDate(), value.getToDate());
   }
 
   private String constructDateRangeCQLQuery(DateValue value) {
-    return format("FIELD_NAME >= \"%s\" AND FIELD_NAME <= \"%s\"", value.getFromDate(), value.getToDate());
+    return format("FIELD_NAME >= \"%s\" AND FIELD_NAME <= \"%sT23:59:59.999\"", value.getFromDate(), value.getToDate());
   }
 }
