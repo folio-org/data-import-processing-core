@@ -1,11 +1,13 @@
 package org.folio.processing.matching.loader.query;
 
 import org.folio.MatchDetail;
+import org.folio.processing.value.DateValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.Qualifier;
 
 import java.util.List;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.countMatches;
@@ -27,9 +29,14 @@ public class QueryHolder {
   private String cqlQuery;
 
   public QueryHolder(Value value, MatchDetail.MatchCriterion matchCriterion) {
-    MatchingCondition matchingCondition = MatchingCondition.valueOf(matchCriterion.name());
-    this.sqlQuery = matchingCondition.constructSqlWhereClause(value);
-    this.cqlQuery = matchingCondition.constructCqlQuery(value);
+    if (value.getType() == Value.ValueType.DATE) {
+      this.sqlQuery = constructDateRangeSQLQuery((DateValue) value);
+      this.cqlQuery = constructDateRangeCQLQuery((DateValue) value);
+    } else {
+      MatchingCondition matchingCondition = MatchingCondition.valueOf(matchCriterion.name());
+      this.sqlQuery = matchingCondition.constructSqlWhereClause(value);
+      this.cqlQuery = matchingCondition.constructCqlQuery(value);
+    }
   }
 
   public QueryHolder applyQualifier(Qualifier qualifier) {
@@ -138,5 +145,13 @@ public class QueryHolder {
       }
     }
     return fieldReference.toString();
+  }
+
+  private String constructDateRangeSQLQuery(DateValue value) {
+    return format("WHERE FIELD_NAME >= '%s' AND FIELD_NAME <= '%sT23:59:59.999'", value.getFromDate(), value.getToDate());
+  }
+
+  private String constructDateRangeCQLQuery(DateValue value) {
+    return format("FIELD_NAME >= \"%s\" AND FIELD_NAME <= \"%sT23:59:59.999\"", value.getFromDate(), value.getToDate());
   }
 }

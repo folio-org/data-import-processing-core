@@ -8,6 +8,7 @@ import org.folio.rest.jaxrs.model.MatchExpression;
 
 import java.util.List;
 
+import static org.folio.processing.value.Value.ValueType.DATE;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.STRING;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
@@ -24,7 +25,7 @@ public class LoadQueryBuilder {
 
   /**
    * Builds LoadQuery,
-   * applicable only for STRING and LIST value types,
+   * applicable only for STRING, LIST and DATE value types,
    * applicable only for VALUE_FROM_RECORD data type,
    * currently supports building query only by single field (support for loading MARC records will be added later)
    *
@@ -33,7 +34,7 @@ public class LoadQueryBuilder {
    * @return LoadQuery or null if query cannot be built
    */
   public static LoadQuery build(Value value, MatchDetail matchDetail) {
-    if (value != null && (value.getType() == STRING || value.getType() == LIST)) {
+    if (value != null && (value.getType() == STRING || value.getType() == LIST || value.getType() == DATE)) {
       MatchExpression matchExpression = matchDetail.getExistingMatchExpression();
       if (matchExpression != null && matchExpression.getDataValueType() == VALUE_FROM_RECORD) {
         List<Field> fields = matchExpression.getFields();

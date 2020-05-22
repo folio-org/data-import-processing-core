@@ -37,6 +37,7 @@ public interface Value<T> {
     LIST,
     MAP,
     MISSING,
-    REPEATABLE
+    REPEATABLE,
+    DATE
   }
 }
