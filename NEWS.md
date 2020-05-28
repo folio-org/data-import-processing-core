@@ -7,6 +7,7 @@
 * [MODDICORE-41](https://issues.folio.org/browse/MODDICORE-41) Update mapping for Preceding/Succeeding Titles
 * [MODDICORE-29](https://issues.folio.org/browse/MODDICORE-29) Support matching by STATIC_VALUE
 * Updated reference to raml-storage
+* [MODDICORE-55](https://issues.folio.org/browse/MODDICORE-55) Added formatting of date from record to ISO format
 
 ## 2020-04-03 v2.0.0
 * [MODDICORE-37](https://issues.folio.org/browse/MODDICORE-37) Added mechanism for archive/unarchive eventPayload

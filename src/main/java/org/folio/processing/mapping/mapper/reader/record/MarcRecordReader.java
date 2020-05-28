@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,7 +27,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +52,8 @@ public class MarcRecordReader implements Reader {
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
+  public static final String[] DATE_FORMATS = new String[] {DateFormatUtils.ISO_DATE_FORMAT.getPattern(), "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
+
   private EntityType entityType;
   private Record marcRecord;
 
@@ -168,12 +176,43 @@ public class MarcRecordReader implements Reader {
   }
 
   private String extractValueFromMarcRecord(VariableField field, String marcPath) {
+    String value = EMPTY;
     if (field instanceof DataFieldImpl) {
-      return ((DataFieldImpl) field).getSubfieldsAsString(marcPath.substring(marcPath.length() - 1));
+      value = ((DataFieldImpl) field).getSubfieldsAsString(marcPath.substring(marcPath.length() - 1));
+      return tryFormattingToIsoDate(value);
     } else if (field instanceof ControlFieldImpl) {
-      return ((ControlFieldImpl) field).getData();
+      value = ((ControlFieldImpl) field).getData();
+      return tryFormattingToIsoDate(value);
     }
-    return EMPTY;
+    return value;
+  }
+
+  private String tryFormattingToIsoDate(String stringToFormat) {
+    try {
+      DateFormat df = new SimpleDateFormat(DateFormatUtils.ISO_DATE_FORMAT.getPattern());
+      return df.format(parseDate(stringToFormat));
+    } catch (ParseException e) {
+      return stringToFormat;
+    }
+  }
+
+  private Date parseDate(String stringToFormat) throws ParseException {
+      SimpleDateFormat parser = null;
+      ParsePosition pos = new ParsePosition(0);
+      for (int i = 0; i < DATE_FORMATS.length; i++) {
+        if (i == 0) {
+          parser = new SimpleDateFormat(DATE_FORMATS[0]);
+          parser.setLenient(false);
+        } else {
+          parser.applyPattern(DATE_FORMATS[i]);
+        }
+        pos.setIndex(0);
+        Date date = parser.parse(stringToFormat, pos);
+        if (date != null && pos.getIndex() == stringToFormat.length()) {
+          return date;
+        }
+      }
+      throw new ParseException("Unable to parse the date: " + stringToFormat, -1);
   }
 
   private MarcReader buildMarcReader(org.folio.Record record) {
