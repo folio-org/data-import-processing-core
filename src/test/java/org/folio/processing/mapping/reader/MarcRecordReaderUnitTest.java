@@ -18,9 +18,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -282,4 +284,23 @@ public class MarcRecordReaderUnitTest {
     assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), MappingRule.RepeatableFieldAction.EXTEND_EXISTING, "instance")), JsonObject.mapFrom(value));
   }
 
+  @Test
+  public void shouldReadMARCFieldsFromRulesWithTodayExpression() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("902$a; else ###TODAY###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals(expectedDateString, value.getValue());
+  }
 }

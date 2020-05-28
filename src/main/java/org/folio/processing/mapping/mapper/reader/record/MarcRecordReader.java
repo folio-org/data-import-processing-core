@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +48,9 @@ public class MarcRecordReader implements Reader {
   private final static String EXPRESSIONS_DIVIDER = "; else ";
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
+  private static final String TODAY_PLACEHOLDER = "###TODAY###";
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
+
   private EntityType entityType;
   private Record marcRecord;
 
@@ -103,32 +108,11 @@ public class MarcRecordReader implements Reader {
       String[] expressionParts = expression.split(WHITESPACE_DIVIDER);
       for (String expressionPart : expressionParts) {
         if (MARC_PATTERN.matcher(expressionPart).matches()) {
-          List<String> marcValues = readValuesFromMarcRecord(expressionPart);
-          if (arrayValue) {
-            resultList.addAll(marcValues);
-          } else {
-            marcValues.forEach(v -> {
-              if (isNotEmpty(v)) {
-                sb.append(v);
-              }
-            });
-          }
+          processMARCExpression(arrayValue, resultList, sb, expressionPart);
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
-          String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
-          if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
-            for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
-              if (entry.getValue().equals(value)) {
-                value = entry.getKey();
-              }
-            }
-          }
-          if (isNotEmpty(value)) {
-            if (arrayValue) {
-              resultList.add(value);
-            } else {
-              sb.append(value);
-            }
-          }
+          processStringExpression(ruleExpression, arrayValue, resultList, sb, expressionPart);
+        } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
+          processTodayExpression(sb);
         }
       }
       resultList.remove(StringUtils.SPACE);
@@ -182,5 +166,41 @@ public class MarcRecordReader implements Reader {
         .getContent()
         .toString()
         .getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private void processMARCExpression(boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
+    List<String> marcValues = readValuesFromMarcRecord(expressionPart);
+    if (arrayValue) {
+      resultList.addAll(marcValues);
+    } else {
+      marcValues.forEach(v -> {
+        if (isNotEmpty(v)) {
+          sb.append(v);
+        }
+      });
+    }
+  }
+
+  private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
+    String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
+    if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
+      for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
+        if (entry.getValue().equals(value)) {
+          value = entry.getKey();
+        }
+      }
+    }
+    if (isNotEmpty(value)) {
+      if (arrayValue) {
+        resultList.add(value);
+      } else {
+        sb.append(value);
+      }
+    }
+  }
+
+  private void processTodayExpression(StringBuilder sb) {
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    sb.append(df.format(new Date()));
   }
 }
