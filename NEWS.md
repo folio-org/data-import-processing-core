@@ -6,6 +6,7 @@
 * [MODDATAIMP-300](https://issues.folio.org/browse/MODDATAIMP-300) Updated marc4j version to 2.9.1
 * [MODDICORE-41](https://issues.folio.org/browse/MODDICORE-41) Update mapping for Preceding/Succeeding Titles
 * [MODDICORE-29](https://issues.folio.org/browse/MODDICORE-29) Support matching by STATIC_VALUE
+* [MODDICORE-54](https://issues.folio.org/browse/MODDICORE-54) Field mappings: Date picker ###TODAY### logic does not work [BUGFIX]
 * Updated reference to raml-storage
 
 ## 2020-04-03 v2.0.0

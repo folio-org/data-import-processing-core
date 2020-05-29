@@ -50,6 +50,7 @@ public class MarcRecordReader implements Reader {
   private final static String EXPRESSIONS_QUOTE = "\"";
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
+  private static final String DATE_FORMAT = "yyyy-MM-dd";
 
   private EntityType entityType;
   private Record marcRecord;
@@ -200,7 +201,7 @@ public class MarcRecordReader implements Reader {
   }
 
   private void processTodayExpression(StringBuilder sb) {
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
     sb.append(df.format(new Date()));
   }
 }
