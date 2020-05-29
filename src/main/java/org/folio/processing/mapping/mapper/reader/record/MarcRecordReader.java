@@ -1,7 +1,6 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,6 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,6 +44,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
+
   private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z]$){0,2})");
   private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
@@ -49,8 +53,8 @@ public class MarcRecordReader implements Reader {
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
-  private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
-  private static final String DATE_FORMAT = "yyyy-MM-dd";
+  private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
+  public static final String[] DATE_FORMATS = new String[] {ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
 
   private EntityType entityType;
   private Record marcRecord;
@@ -127,48 +131,6 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
-  private Value readRepeatableField(MappingRule ruleExpression) {
-    List<RepeatableSubfieldMapping> subfields = ruleExpression.getSubfields();
-    MappingRule.RepeatableFieldAction action = ruleExpression.getRepeatableFieldAction();
-    List<Map<String, Value>> repeatableObject = new ArrayList<>();
-    for (RepeatableSubfieldMapping subfieldMapping : subfields) {
-      Map<String, Value> object = subfieldMapping.getFields()
-        .stream()
-        .map(mappingRule -> new ImmutablePair<>(mappingRule.getPath(), mappingRule.getBooleanFieldAction() != null
-          ? BooleanValue.of(mappingRule.getBooleanFieldAction())
-          : readSingleField(mappingRule))
-        ).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
-      repeatableObject.add(object);
-    }
-    return RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath());
-  }
-
-  private List<String> readValuesFromMarcRecord(String marcPath) {
-    List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
-    LinkedHashSet<String> result = new LinkedHashSet<>();
-    for (VariableField variableField : fields) {
-      result.add(extractValueFromMarcRecord(variableField, marcPath));
-    }
-    return new ArrayList<>(result);
-  }
-
-  private String extractValueFromMarcRecord(VariableField field, String marcPath) {
-    if (field instanceof DataFieldImpl) {
-      return ((DataFieldImpl) field).getSubfieldsAsString(marcPath.substring(marcPath.length() - 1));
-    } else if (field instanceof ControlFieldImpl) {
-      return ((ControlFieldImpl) field).getData();
-    }
-    return EMPTY;
-  }
-
-  private MarcReader buildMarcReader(org.folio.Record record) {
-    return new MarcJsonReader(new ByteArrayInputStream(
-      record.getParsedRecord()
-        .getContent()
-        .toString()
-        .getBytes(StandardCharsets.UTF_8)));
-  }
-
   private void processMARCExpression(boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart);
     if (arrayValue) {
@@ -201,7 +163,80 @@ public class MarcRecordReader implements Reader {
   }
 
   private void processTodayExpression(StringBuilder sb) {
-    SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT);
+    SimpleDateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
     sb.append(df.format(new Date()));
+  }
+
+  private Value readRepeatableField(MappingRule ruleExpression) {
+    List<RepeatableSubfieldMapping> subfields = ruleExpression.getSubfields();
+    MappingRule.RepeatableFieldAction action = ruleExpression.getRepeatableFieldAction();
+    List<Map<String, Value>> repeatableObject = new ArrayList<>();
+    for (RepeatableSubfieldMapping subfieldMapping : subfields) {
+      Map<String, Value> object = subfieldMapping.getFields()
+        .stream()
+        .map(mappingRule -> new ImmutablePair<>(mappingRule.getPath(), mappingRule.getBooleanFieldAction() != null
+          ? BooleanValue.of(mappingRule.getBooleanFieldAction())
+          : readSingleField(mappingRule))
+        ).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+      repeatableObject.add(object);
+    }
+    return RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath());
+  }
+
+  private List<String> readValuesFromMarcRecord(String marcPath) {
+    List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
+    LinkedHashSet<String> result = new LinkedHashSet<>();
+    for (VariableField variableField : fields) {
+      result.add(extractValueFromMarcRecord(variableField, marcPath));
+    }
+    return new ArrayList<>(result);
+  }
+
+  private String extractValueFromMarcRecord(VariableField field, String marcPath) {
+    String value = EMPTY;
+    if (field instanceof DataFieldImpl) {
+      value = ((DataFieldImpl) field).getSubfieldsAsString(marcPath.substring(marcPath.length() - 1));
+      return formatToIsoDate(value);
+    } else if (field instanceof ControlFieldImpl) {
+      value = ((ControlFieldImpl) field).getData();
+      return formatToIsoDate(value);
+    }
+    return value;
+  }
+
+  private String formatToIsoDate(String stringToFormat) {
+    try {
+      DateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
+      return df.format(parseDate(stringToFormat));
+    } catch (ParseException e) {
+      return stringToFormat;
+    }
+  }
+
+  private Date parseDate(String stringToFormat) throws ParseException {
+      SimpleDateFormat parser = null;
+      ParsePosition pos = new ParsePosition(0);
+      for (int i = 0; i < DATE_FORMATS.length; i++) {
+        if (i == 0) {
+          parser = new SimpleDateFormat(DATE_FORMATS[0]);
+          parser.setLenient(false);
+        } else {
+          parser.applyPattern(DATE_FORMATS[i]);
+        }
+        pos.setIndex(0);
+        Date date = parser.parse(stringToFormat, pos);
+        if (date != null && pos.getIndex() == stringToFormat.length()) {
+          return date;
+        }
+      }
+      throw new ParseException("Unable to parse the date: " + stringToFormat, -1);
+  }
+
+  private MarcReader buildMarcReader(org.folio.Record record) {
+    return new MarcJsonReader(new ByteArrayInputStream(
+      record.getParsedRecord()
+        .getContent()
+        .toString()
+        .getBytes(StandardCharsets.UTF_8)));
   }
 }

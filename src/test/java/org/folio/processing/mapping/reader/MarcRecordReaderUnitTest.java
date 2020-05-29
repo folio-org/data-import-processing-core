@@ -7,6 +7,7 @@ import org.folio.Record;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.record.MarcBibReaderFactory;
 import org.folio.processing.value.BooleanValue;
+import org.folio.processing.value.ListValue;
 import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(JUnit4.class)
 public class MarcRecordReaderUnitTest {
   private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
+  private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
 
   @Test
   public void shouldRead_Strings_FromRules() throws IOException {
@@ -302,5 +304,27 @@ public class MarcRecordReaderUnitTest {
 
     assertEquals(ValueType.STRING, value.getType());
     assertEquals(expectedDateString, value.getValue());
+  }
+
+  @Test
+  public void shouldRead_MARCFieldsArrayAndFormatToISOFormat() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_DATE_DATA))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    // when
+    Value value = reader.read(new MappingRule()
+      .withPath("[]")
+      .withValue("902$a 902$b 902$c 902$d"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    ((ListValue)value).getValue().forEach(s -> {
+      assertEquals("2020-05-27", s);
+    });
   }
 }

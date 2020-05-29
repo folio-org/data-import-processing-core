@@ -16,7 +16,6 @@ import static java.lang.String.format;
 public class EventProcessorImpl implements EventProcessor {
 
   private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
-//  private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
 
   private List<EventHandler> eventHandlers = new ArrayList<>();
 
