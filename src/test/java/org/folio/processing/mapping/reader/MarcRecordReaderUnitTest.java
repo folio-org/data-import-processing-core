@@ -1,7 +1,6 @@
 package org.folio.processing.mapping.reader;
 
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang.time.DateFormatUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -20,11 +19,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +31,10 @@ import java.util.Map;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 @RunWith(JUnit4.class)
 public class MarcRecordReaderUnitTest {
-  private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" }, {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"5\\/27\\/2020\"}]}} ] }";
+  private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
   private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
 
   @Test
@@ -289,6 +287,26 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldReadMARCFieldsFromRulesWithTodayExpression() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("902$a; else ###TODAY###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals(expectedDateString, value.getValue());
+  }
+
+  @Test
   public void shouldRead_MARCFieldsArrayAndFormatToISOFormat() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -309,5 +327,4 @@ public class MarcRecordReaderUnitTest {
       assertEquals("2020-05-27", s);
     });
   }
-
 }
