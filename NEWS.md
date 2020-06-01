@@ -1,20 +1,22 @@
-## 2020-04-21 v2.1.0-SNAPSHOT
-* Reverted archive/unarchive eventPayload
-* [MODDICORE-42](https://issues.folio.org/browse/MODDICORE-42) Filtered out electronic access entries with missing uri values in mapped Instances
-* [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
-* [MODDICORE-51](https://issues.folio.org/browse/MODDICORE-51) "Mode of issuance" values not assigned correctly using marc-to-instance map in Fameflower
+## 2020-06-01 v2.1.0
 * [MODDATAIMP-300](https://issues.folio.org/browse/MODDATAIMP-300) Updated marc4j version to 2.9.1
 * [MODDICORE-41](https://issues.folio.org/browse/MODDICORE-41) Update mapping for Preceding/Succeeding Titles
 * [MODDICORE-29](https://issues.folio.org/browse/MODDICORE-29) Support matching by STATIC_VALUE
 * [MODDICORE-54](https://issues.folio.org/browse/MODDICORE-54) Field mappings: Date picker ###TODAY### logic does not work [BUGFIX]
-* Updated reference to raml-storage
 * [MODDICORE-55](https://issues.folio.org/browse/MODDICORE-55) Added formatting of date from record to ISO format
+* [MODDICORE-49](https://issues.folio.org/browse/MODDICORE-49) Applied archive/unarchive eventPayload mechanism
+* Updated reference to raml-storage
 
 ## 2020-04-03 v2.0.0
 * [MODDICORE-37](https://issues.folio.org/browse/MODDICORE-37) Added mechanism for archive/unarchive eventPayload
 * [MODDICORE-38](https://issues.folio.org/browse/MODDICORE-38) Fixed DataImportEventPayload processing errors
 * [MODDICORE-39](https://issues.folio.org/browse/MODDICORE-39) Fixed Matcher
 * [MODDICORE-45](https://issues.folio.org/browse/MODDICORE-45) Fixed DI process finishes with ERROR status
+
+## 2020-04-22 v1.1.2
+* [MODDICORE-42](https://issues.folio.org/browse/MODDICORE-42) Filtered out electronic access entries with missing uri values in mapped Instances
+* [MODDICORE-44](https://issues.folio.org/browse/MODDICORE-44) Null value if mapped field empty
+* [MODDICORE-51](https://issues.folio.org/browse/MODDICORE-51) "Mode of issuance" values not assigned correctly using marc-to-instance map in Fameflower
 
 ## 2020-04-09 v1.1.1
 * Changed algorithm for switching profiles
