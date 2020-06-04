@@ -16,11 +16,16 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_INCOMING;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
@@ -176,7 +181,7 @@ public class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.EXTEND_EXISTING, "contributor");
+    RepeatableFieldValue field = RepeatableFieldValue.of(objects, EXTEND_EXISTING, "contributor");
     WRITER.write("contributor[]", field);
 
     WRITER.getResult(eventContext);
@@ -277,5 +282,72 @@ public class JsonBasedWriterUnitTest {
     WRITER.write("languages[]", StringValue.of("eng"));
     WRITER.getResult(eventContext);
     // then expect IllegalStateException
+  }
+
+  @Test
+  public void shouldWrite_ListExtendValues() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\"]}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListExchangeValues() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\"]}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXCHANGE_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListDeleteIncomingValues() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\"]}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID2"), DELETE_INCOMING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"natureOfContentTermIds\":[\"UUID1\"]}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListDeleteExistingValues() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\"]}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID3"), DELETE_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{}", resultInstance);
   }
 }

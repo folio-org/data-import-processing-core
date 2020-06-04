@@ -1,9 +1,8 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.BooleanValue;
@@ -32,11 +31,11 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -171,16 +170,36 @@ public class MarcRecordReader implements Reader {
     List<RepeatableSubfieldMapping> subfields = ruleExpression.getSubfields();
     MappingRule.RepeatableFieldAction action = ruleExpression.getRepeatableFieldAction();
     List<Map<String, Value>> repeatableObject = new ArrayList<>();
+    List<String> repeatableStrings = new ArrayList<>();
+
     for (RepeatableSubfieldMapping subfieldMapping : subfields) {
-      Map<String, Value> object = subfieldMapping.getFields()
-        .stream()
-        .map(mappingRule -> new ImmutablePair<>(mappingRule.getPath(), mappingRule.getBooleanFieldAction() != null
-          ? BooleanValue.of(mappingRule.getBooleanFieldAction())
-          : readSingleField(mappingRule))
-        ).collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+      HashMap<String, Value> object = new HashMap<>();
+      for (MappingRule mappingRule : subfieldMapping.getFields()) {
+        if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
+          repeatableStrings.add(readRepeatableStringField(mappingRule));
+        } else {
+          Value value = mappingRule.getBooleanFieldAction() != null
+            ? BooleanValue.of(mappingRule.getBooleanFieldAction())
+            : readSingleField(mappingRule);
+          object.put(mappingRule.getPath(), value);
+        }
+      }
       repeatableObject.add(object);
     }
-    return RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath());
+    return repeatableStrings.isEmpty() ? RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath())
+      : ListValue.of(repeatableStrings, ruleExpression.getRepeatableFieldAction());
+  }
+
+  private String readRepeatableStringField(MappingRule mappingRule) {
+    String value = mappingRule.getValue().replace(EXPRESSIONS_QUOTE, EMPTY);
+      if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
+        for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
+          if (entry.getValue().equals(value)) {
+            value = entry.getKey();
+          }
+        }
+      }
+    return value;
   }
 
   private List<String> readValuesFromMarcRecord(String marcPath) {
