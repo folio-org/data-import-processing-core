@@ -1,3 +1,6 @@
+## 2020-06-05 v2.1.1-SNAPSHOT
+* [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
+
 ## 2020-06-01 v2.1.0
 * [MODDATAIMP-300](https://issues.folio.org/browse/MODDATAIMP-300) Updated marc4j version to 2.9.1
 * [MODDICORE-41](https://issues.folio.org/browse/MODDICORE-41) Update mapping for Preceding/Succeeding Titles
