@@ -22,13 +22,14 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -85,7 +86,7 @@ public class MarcRecordReaderUnitTest {
     // then
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
-    assertEquals(Collections.singletonList("value"), value.getValue());
+    assertEquals(singletonList("value"), value.getValue());
   }
 
   @Test
@@ -260,7 +261,7 @@ public class MarcRecordReaderUnitTest {
 
     Value value = reader.read(new MappingRule()
       .withPath("instance")
-      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withRepeatableFieldAction(EXTEND_EXISTING)
       .withSubfields(Arrays.asList(new RepeatableSubfieldMapping()
         .withOrder(0)
         .withPath("instance")
@@ -273,7 +274,7 @@ public class MarcRecordReaderUnitTest {
     assertNotNull(value);
     assertEquals(ValueType.REPEATABLE, value.getType());
     assertEquals("instance", ((RepeatableFieldValue) value).getRootPath());
-    assertEquals(MappingRule.RepeatableFieldAction.EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
 
     Map<String, Value> object1 = new HashMap<>();
     object1.put("instance.name", StringValue.of("pcc data 009221"));
@@ -283,7 +284,7 @@ public class MarcRecordReaderUnitTest {
     Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.value", StringValue.of("test value"));
 
-    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), MappingRule.RepeatableFieldAction.EXTEND_EXISTING, "instance")), JsonObject.mapFrom(value));
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "instance")), JsonObject.mapFrom(value));
   }
 
   @Test
@@ -326,5 +327,58 @@ public class MarcRecordReaderUnitTest {
     ((ListValue)value).getValue().forEach(s -> {
       assertEquals("2020-05-27", s);
     });
+  }
+
+  @Test
+  public void shouldRead_MARCFieldsArrayWithRepeatableFieldAction_FromRules() throws IOException {
+    // given
+    List<String> expectedFields = Arrays.asList("UUID2", "UUID3");
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("UUID1", "website");
+    acceptedValues.put("UUID2", "school program");
+    acceptedValues.put("UUID3", "literature report");
+
+    MappingRule fieldRule1 = new MappingRule()
+      .withName("natureOfContentTermIds")
+      .withPath("instance.natureOfContentTermIds[]")
+      .withEnabled("true")
+      .withValue("school program")
+      .withAcceptedValues(acceptedValues);
+    MappingRule fieldRule2 = new MappingRule()
+      .withName("natureOfContentTermIds")
+      .withPath("instance.natureOfContentTermIds[]")
+      .withEnabled("true")
+      .withValue("literature report")
+      .withAcceptedValues(acceptedValues);
+
+    MappingRule mappingRule = new MappingRule()
+      .withPath("instance.natureOfContentTermIds[]")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(Arrays.asList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("instance.natureOfContentTermIds[]")
+          .withFields(singletonList(fieldRule1)),
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("instance.natureOfContentTermIds[]")
+          .withFields(singletonList(fieldRule2))));
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
+    assertEquals(expectedFields, value.getValue());
   }
 }
