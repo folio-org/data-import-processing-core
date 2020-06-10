@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.drools.core.util.StringUtils.EMPTY;
+import static org.apache.logging.log4j.util.Strings.EMPTY;
 
 /**
  * A common Writer based on json. The idea is to hold Jackson's JsonNode and fill up it by incoming values in runtime.
