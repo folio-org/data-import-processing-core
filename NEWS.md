@@ -1,3 +1,6 @@
+## 2020-06-10 v2.1.1
+* Updated pubsub client dependency to v1.2.0
+
 ## 2020-06-01 v2.1.0
 * [MODDATAIMP-300](https://issues.folio.org/browse/MODDATAIMP-300) Updated marc4j version to 2.9.1
 * [MODDICORE-41](https://issues.folio.org/browse/MODDICORE-41) Update mapping for Preceding/Succeeding Titles
