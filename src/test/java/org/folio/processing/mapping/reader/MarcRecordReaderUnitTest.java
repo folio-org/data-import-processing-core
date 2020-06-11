@@ -69,7 +69,7 @@ public class MarcRecordReaderUnitTest {
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
-    assertEquals("2", value.getValue());
+    assertEquals("1", value.getValue());
   }
 
   @Test
