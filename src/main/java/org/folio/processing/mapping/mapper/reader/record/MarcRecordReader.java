@@ -16,6 +16,7 @@ import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.MarcReader;
+import org.marc4j.marc.ControlField;
 import org.marc4j.marc.Record;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.ControlFieldImpl;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -46,14 +48,18 @@ public class MarcRecordReader implements Reader {
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
 
   private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z]$){0,2})");
+  private final static Pattern MARC_LEADER = Pattern.compile("[LDR/0-9-]{5,7}");
+  private final static Pattern MARC_CONTROLLED = Pattern.compile("[/0-9-]{5,7}");
   private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
   private final static String EXPRESSIONS_DIVIDER = "; else ";
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
+  private final static String MARC_SPLITTER = "/";
+  private final static String MARC_BYTES_SPLITTER = "-";
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
-  public static final String[] DATE_FORMATS = new String[] {ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
+  public static final String[] DATE_FORMATS = new String[]{ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
 
   private EntityType entityType;
   private Record marcRecord;
@@ -111,8 +117,10 @@ public class MarcRecordReader implements Reader {
       StringBuilder sb = new StringBuilder();
       String[] expressionParts = expression.split(WHITESPACE_DIVIDER);
       for (String expressionPart : expressionParts) {
-        if (MARC_PATTERN.matcher(expressionPart).matches()) {
-          processMARCExpression(arrayValue, resultList, sb, expressionPart);
+        if (MARC_PATTERN.matcher(expressionPart).matches()
+          || (MARC_CONTROLLED.matcher(expressionPart).matches())
+          || (MARC_LEADER.matcher(expressionPart).matches())) {
+          processMARCExpression(arrayValue, resultList, sb, expressionPart, ruleExpression);
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
           processStringExpression(ruleExpression, arrayValue, resultList, sb, expressionPart);
         } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
@@ -130,28 +138,33 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
-  private void processMARCExpression(boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
+  private void processMARCExpression(boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart);
     if (arrayValue) {
       resultList.addAll(marcValues);
     } else {
       marcValues.forEach(v -> {
         if (isNotEmpty(v)) {
-          sb.append(v);
+          sb.append(getFromAcceptedValues(ruleExpression, v));
         }
       });
     }
   }
 
-  private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
-    String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
+  private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equals(value)) {
+        if (entry.getValue().equalsIgnoreCase(value) || entry.getValue().contains(value)) {
           value = entry.getKey();
         }
       }
     }
+    return value;
+  }
+
+  private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
+    String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
+    value = getFromAcceptedValues(ruleExpression, value);
     if (isNotEmpty(value)) {
       if (arrayValue) {
         resultList.add(value);
@@ -192,23 +205,41 @@ public class MarcRecordReader implements Reader {
 
   private String readRepeatableStringField(MappingRule mappingRule) {
     String value = mappingRule.getValue().replace(EXPRESSIONS_QUOTE, EMPTY);
-      if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
-        for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
-          if (entry.getValue().equals(value)) {
-            value = entry.getKey();
-          }
+    if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
+      for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
+        if (entry.getValue().equals(value)) {
+          value = entry.getKey();
         }
       }
+    }
     return value;
   }
 
   private List<String> readValuesFromMarcRecord(String marcPath) {
-    List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
-    LinkedHashSet<String> result = new LinkedHashSet<>();
-    for (VariableField variableField : fields) {
-      result.add(extractValueFromMarcRecord(variableField, marcPath));
+    List<String> results = new ArrayList<>();
+    if (MARC_PATTERN.matcher(marcPath).matches()) {
+      List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
+      LinkedHashSet<String> result = new LinkedHashSet<>();
+      for (VariableField variableField : fields) {
+        result.add(extractValueFromMarcRecord(variableField, marcPath));
+      }
+      results.addAll(result);
+    } else if ((MARC_CONTROLLED.matcher(marcPath).matches())) {
+      String[] marcPathParts = marcPath.split(MARC_SPLITTER);
+      Optional<ControlField> controlField = marcRecord.getControlFields().stream()
+        .filter(cf -> cf.getTag().equals(marcPathParts[0]))
+        .findFirst();
+      if (controlField.isPresent()) {
+        String[] fromTo = marcPathParts[1].split(MARC_BYTES_SPLITTER);
+        int from = Integer.parseInt(fromTo[0]) - 1;
+        int to = Integer.parseInt(fromTo.length > 1 ? fromTo[1] : String.valueOf(from + 1));
+        String data = controlField.get().getData();
+        results.add(data.substring(from - 1, to > data.length() - 1 ? data.length() - 1 : to - 1));
+      }
+    } else if ((MARC_LEADER.matcher(marcPath).matches())) {
+      marcRecord.getLeader().marshal();
     }
-    return new ArrayList<>(result);
+    return results;
   }
 
   private String extractValueFromMarcRecord(VariableField field, String marcPath) {
@@ -233,22 +264,22 @@ public class MarcRecordReader implements Reader {
   }
 
   private Date parseDate(String stringToFormat) throws ParseException {
-      SimpleDateFormat parser = null;
-      ParsePosition pos = new ParsePosition(0);
-      for (int i = 0; i < DATE_FORMATS.length; i++) {
-        if (i == 0) {
-          parser = new SimpleDateFormat(DATE_FORMATS[0]);
-          parser.setLenient(false);
-        } else {
-          parser.applyPattern(DATE_FORMATS[i]);
-        }
-        pos.setIndex(0);
-        Date date = parser.parse(stringToFormat, pos);
-        if (date != null && pos.getIndex() == stringToFormat.length()) {
-          return date;
-        }
+    SimpleDateFormat parser = null;
+    ParsePosition pos = new ParsePosition(0);
+    for (int i = 0; i < DATE_FORMATS.length; i++) {
+      if (i == 0) {
+        parser = new SimpleDateFormat(DATE_FORMATS[0]);
+        parser.setLenient(false);
+      } else {
+        parser.applyPattern(DATE_FORMATS[i]);
       }
-      throw new ParseException("Unable to parse the date: " + stringToFormat, -1);
+      pos.setIndex(0);
+      Date date = parser.parse(stringToFormat, pos);
+      if (date != null && pos.getIndex() == stringToFormat.length()) {
+        return date;
+      }
+    }
+    throw new ParseException("Unable to parse the date: " + stringToFormat, -1);
   }
 
   private MarcReader buildMarcReader(org.folio.Record record) {
