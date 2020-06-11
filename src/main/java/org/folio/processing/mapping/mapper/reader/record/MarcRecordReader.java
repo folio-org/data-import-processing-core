@@ -230,16 +230,21 @@ public class MarcRecordReader implements Reader {
         .filter(cf -> cf.getTag().equals(marcPathParts[0]))
         .findFirst();
       if (controlField.isPresent()) {
-        String[] fromTo = marcPathParts[1].split(MARC_BYTES_SPLITTER);
-        int from = Integer.parseInt(fromTo[0]) - 1;
-        int to = Integer.parseInt(fromTo.length > 1 ? fromTo[1] : String.valueOf(from + 1));
         String data = controlField.get().getData();
-        results.add(data.substring(from - 1, to > data.length() - 1 ? data.length() - 1 : to - 1));
+        results.add(getDataFromToExpression(data, marcPath));
       }
     } else if ((MARC_LEADER.matcher(marcPath).matches())) {
-      marcRecord.getLeader().marshal();
+      results.add(getDataFromToExpression(marcRecord.getLeader().marshal(), marcPath));
     }
     return results;
+  }
+
+  private String getDataFromToExpression(String data, String marcPath) {
+    String[] marcPathParts = marcPath.split(MARC_SPLITTER);
+    String[] fromTo = marcPathParts[1].split(MARC_BYTES_SPLITTER);
+    int from = Integer.parseInt(fromTo[0]) - 1;
+    int to = Integer.parseInt(fromTo.length > 1 ? fromTo[1] : String.valueOf(from + 1));
+    return data.substring(from - 1, to > data.length() - 1 ? data.length() - 1 : to - 1);
   }
 
   private String extractValueFromMarcRecord(VariableField field, String marcPath) {
