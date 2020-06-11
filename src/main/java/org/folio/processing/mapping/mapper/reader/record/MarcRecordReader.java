@@ -244,7 +244,7 @@ public class MarcRecordReader implements Reader {
     String[] fromTo = marcPathParts[1].split(MARC_BYTES_SPLITTER);
     int from = Integer.parseInt(fromTo[0]) - 1;
     int to = Integer.parseInt(fromTo.length > 1 ? fromTo[1] : String.valueOf(from + 1));
-    return data.substring(from - 1, to > data.length() - 1 ? data.length() - 1 : to - 1);
+    return data.substring(from, to > data.length() - 1 ? data.length() - 1 : to);
   }
 
   private String extractValueFromMarcRecord(VariableField field, String marcPath) {
