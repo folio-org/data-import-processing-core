@@ -106,7 +106,7 @@
     <url>https://github.com/folio-org/data-import-processing-core</url>
     <connection>scm:git:git@github.com:folio-org/data-import-processing-core.git</connection>
     <developerConnection>scm:git:git@github.com:folio-org/data-import-processing-core.git</developerConnection>
-    <tag>v2.1.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <build>

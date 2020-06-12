@@ -62,8 +62,45 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeListValue(String fieldPath, ListValue listValue) {
-    ArrayNode arrayNode = objectMapper.valueToTree(listValue.getValue());
-    setValueByFieldPath(fieldPath, arrayNode);
+    if (listValue.getRepeatableFieldAction() == null) {
+      ArrayNode arrayNode = objectMapper.valueToTree(listValue.getValue());
+      setValueByFieldPath(fieldPath, arrayNode);
+      return;
+    }
+    writeListValueByAction(fieldPath, listValue);
+  }
+
+  protected void writeListValueByAction(String fieldPath, ListValue listValue) {
+    ArrayNode arrayValue = objectMapper.valueToTree(listValue.getValue());
+    String pathForSearch = fieldPath.replace("[]", EMPTY);
+    JsonNode foundNode = entityNode.findPath(pathForSearch);
+
+    switch (listValue.getRepeatableFieldAction()) {
+      case EXTEND_EXISTING:
+        setValueByFieldPath(fieldPath, arrayValue);
+        break;
+      case EXCHANGE_EXISTING:
+        if (!foundNode.isMissingNode()) {
+          ((ObjectNode) entityNode).remove(pathForSearch);
+        }
+        setValueByFieldPath(fieldPath, arrayValue);
+        break;
+      case DELETE_INCOMING:
+        ArrayNode arrayNode = (ArrayNode) foundNode;
+        for (int i = 0; i < arrayNode.size(); i++) {
+          if (listValue.getValue().contains(arrayNode.get(i).textValue())) {
+            arrayNode.remove(i);
+          }
+        }
+        break;
+      case DELETE_EXISTING:
+        if (!foundNode.isMissingNode()) {
+          ((ObjectNode) entityNode).remove(pathForSearch);
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("Can not define action type");
+    }
   }
 
   @Override
