@@ -1,5 +1,8 @@
 ## 2020-06-05 v2.1.1-SNAPSHOT
 * [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
+
+## 2020-06-10 v2.1.1
+* Updated pubsub client dependency to v1.2.0
 * [MODDICORE-52](https://issues.folio.org/browse/MODDICORE-52) Add support for MappingEngine work with a leader
 
 ## 2020-06-01 v2.1.0
