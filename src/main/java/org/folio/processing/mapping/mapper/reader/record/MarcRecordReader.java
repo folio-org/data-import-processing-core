@@ -225,9 +225,9 @@ public class MarcRecordReader implements Reader {
       }
       results.addAll(result);
     } else if ((MARC_CONTROLLED.matcher(marcPath).matches())) {
-      String[] marcPathParts = marcPath.split(MARC_SPLITTER);
+      String controllFieldTag = StringUtils.substringBefore(marcPath, MARC_SPLITTER);
       Optional<ControlField> controlField = marcRecord.getControlFields().stream()
-        .filter(cf -> cf.getTag().equals(marcPathParts[0]))
+        .filter(cf -> cf.getTag().equals(controllFieldTag))
         .findFirst();
       if (controlField.isPresent()) {
         String data = controlField.get().getData();
@@ -240,8 +240,8 @@ public class MarcRecordReader implements Reader {
   }
 
   private String getDataFromToExpression(String data, String marcPath) {
-    String[] marcPathParts = marcPath.split(MARC_SPLITTER);
-    String[] fromTo = marcPathParts[1].split(MARC_BYTES_SPLITTER);
+    String marcPathParts = StringUtils.substringAfter(marcPath, MARC_SPLITTER);
+    String[] fromTo = marcPathParts.split(MARC_BYTES_SPLITTER);
     int from = Integer.parseInt(fromTo[0]) - 1;
     int to = Integer.parseInt(fromTo.length > 1 ? fromTo[1] : String.valueOf(from + 1));
     return data.substring(from, to > data.length() - 1 ? data.length() - 1 : to);
@@ -261,8 +261,11 @@ public class MarcRecordReader implements Reader {
 
   private String formatToIsoDate(String stringToFormat) {
     try {
-      DateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
-      return df.format(parseDate(stringToFormat));
+      if (isNotEmpty(stringToFormat)) {
+        DateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
+        return df.format(parseDate(stringToFormat));
+      }
+      return stringToFormat;
     } catch (ParseException e) {
       return stringToFormat;
     }
