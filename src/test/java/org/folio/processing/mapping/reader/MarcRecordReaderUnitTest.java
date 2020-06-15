@@ -73,6 +73,23 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldRead_Marc_Leader_2() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    // when
+    Value value = reader.read(new MappingRule().withPath("").withValue("LDR/04"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("1", value.getValue());
+  }
+
+  @Test
   public void shouldRead_Marc_LeaderRange() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -83,6 +100,23 @@ public class MarcRecordReaderUnitTest {
     reader.initialize(eventPayload);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("LDR/4-5"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("14", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_Marc_LeaderRange_2() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    // when
+    Value value = reader.read(new MappingRule().withPath("").withValue("LDR/04-05"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -107,6 +141,23 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldRead_Marc_Controlled_2() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    // when
+    Value value = reader.read(new MappingRule().withPath("").withValue("001/04"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("2", value.getValue());
+  }
+
+  @Test
   public void shouldRead_Marc_ControlledRange() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -117,6 +168,23 @@ public class MarcRecordReaderUnitTest {
     reader.initialize(eventPayload);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("001/4-5"));
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("22", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_Marc_ControlledRange_2() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    // when
+    Value value = reader.read(new MappingRule().withPath("").withValue("001/04-05"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());

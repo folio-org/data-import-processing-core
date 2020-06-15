@@ -48,8 +48,8 @@ public class MarcRecordReader implements Reader {
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
 
   private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z]$){0,2})");
-  private final static Pattern MARC_LEADER = Pattern.compile("[LDR/0-9-]{5,7}");
-  private final static Pattern MARC_CONTROLLED = Pattern.compile("[/0-9-]{5,7}");
+  private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
+  private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
   private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
   private final static String EXPRESSIONS_DIVIDER = "; else ";
