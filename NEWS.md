@@ -1,5 +1,5 @@
 ## 2020-06-05 v2.1.1-SNAPSHOT
-* [MODINV-319](https://issues.folio.org/browse/MODINV-319) Mapping exception in mod-inventory with rules for notes - BUGFIX.
+* [MODDICORE-66](https://issues.folio.org/browse/MODDICORE-66) Mapping exception in mod-inventory with rules for notes - BUGFIX.
 * [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
 
 ## 2020-06-10 v2.1.1
