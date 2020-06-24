@@ -143,7 +143,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.ontributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
