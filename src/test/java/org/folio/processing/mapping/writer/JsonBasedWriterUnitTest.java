@@ -137,13 +137,13 @@ public class JsonBasedWriterUnitTest {
     List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
     Map<String, Value> object2 = new HashMap<>();
-    object1.put("contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
-    object1.put("contributor[].id", StringValue.of("UUID"));
-    object1.put("contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].id", StringValue.of("UUID"));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
-    object2.put("contributor[].names[]", ListValue.of(asList("1", "2", "3")));
-    object2.put("contributor[].id", StringValue.of("UUID2"));
-    object2.put("contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
+    object2.put("instance.contributor[].id", StringValue.of("UUID2"));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -153,7 +153,7 @@ public class JsonBasedWriterUnitTest {
 
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"id\":\"UUID\",\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"]},{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]}]}";
+    String expectedInstance = "{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -170,13 +170,13 @@ public class JsonBasedWriterUnitTest {
     List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
     Map<String, Value> object2 = new HashMap<>();
-    object1.put("contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
-    object1.put("contributor[].id", StringValue.of("UUID"));
-    object1.put("contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].id", StringValue.of("UUID"));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
-    object2.put("contributor[].names[]", ListValue.of(asList("1", "2", "3")));
-    object2.put("contributor[].id", StringValue.of("UUID2"));
-    object2.put("contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
+    object2.put("instance.contributor[].id", StringValue.of("UUID2"));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -186,7 +186,7 @@ public class JsonBasedWriterUnitTest {
 
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"id\":\"UUID\",\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"]},{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]}]}";
+    String expectedInstance = "{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
