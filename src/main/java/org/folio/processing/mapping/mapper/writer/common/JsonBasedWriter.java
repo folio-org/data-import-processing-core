@@ -134,7 +134,7 @@ public class JsonBasedWriter extends AbstractWriter {
         break;
     }
     if (!field.isMissingNode()) {
-      setValueByFieldPath(objectFields.getKey().substring(objectFields.getKey().indexOf('.') + 1), field, object);
+      setValueByFieldPath(objectFields.getKey().substring(objectFields.getKey().lastIndexOf('.') + 1), field, object);
     }
   }
 
