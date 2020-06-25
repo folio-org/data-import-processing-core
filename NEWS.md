@@ -1,10 +1,10 @@
-## 2020-06-24 v2.1.2-SNAPSHOT
+## 2020-06-25 v2.1.2
+* [MODDICORE-52](https://issues.folio.org/browse/MODDICORE-52) Add support for MappingEngine work with a leader
 * [MODDICORE-66](https://issues.folio.org/browse/MODDICORE-66) Mapping exception in mod-inventory with rules for notes - BUGFIX.
 * [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
 
 ## 2020-06-10 v2.1.1
 * Updated pubsub client dependency to v1.2.0
-* [MODDICORE-52](https://issues.folio.org/browse/MODDICORE-52) Add support for MappingEngine work with a leader
 
 ## 2020-06-01 v2.1.0
 * [MODDATAIMP-300](https://issues.folio.org/browse/MODDATAIMP-300) Updated marc4j version to 2.9.1
