@@ -1,3 +1,7 @@
+## 2020-06-26
+* Fix condition in normalization function to avoid string index out of bounds
+* Add details to logs
+
 ## 2020-06-25 v2.1.2
 * [MODDICORE-52](https://issues.folio.org/browse/MODDICORE-52) Add support for MappingEngine work with a leader
 * [MODDICORE-66](https://issues.folio.org/browse/MODDICORE-66) Mapping exception in mod-inventory with rules for notes - BUGFIX.
