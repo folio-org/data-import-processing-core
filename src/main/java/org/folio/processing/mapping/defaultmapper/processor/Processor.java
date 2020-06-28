@@ -73,7 +73,7 @@ public class Processor {
         instance = processSingleEntry(marcRecord, mappingParameters);
       }
     } catch (Exception e) {
-      LOGGER.error("Error mapping Marc record {}", record.encode(), e.getCause());
+      LOGGER.error("Error mapping Marc record " + record.encode(), e.getCause());
     }
     return instance;
   }
