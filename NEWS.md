@@ -1,4 +1,7 @@
-## 2020-06-26
+## 2020-06-29 v2.1.4
+* Fix error log
+
+## 2020-06-26 v2.1.3
 * Fix condition in normalization function to avoid string index out of bounds
 * Add details to logs
 
