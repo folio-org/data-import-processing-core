@@ -1,4 +1,5 @@
 ## 2020-06-05 v2.1.1-SNAPSHOT
+* [MODDICORE-61](https://issues.folio.org/browse/MODDICORE-61) Field mappings: Repeatable fields dropdown action without subfields support.
 * [MODDICORE-66](https://issues.folio.org/browse/MODDICORE-66) Mapping exception in mod-inventory with rules for notes - BUGFIX.
 * [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
 
