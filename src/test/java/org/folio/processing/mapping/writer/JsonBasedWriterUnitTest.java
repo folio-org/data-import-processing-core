@@ -191,6 +191,25 @@ public class JsonBasedWriterUnitTest {
     assertEquals(expectedInstance, resultInstance);
   }
 
+  @Test
+  public void shouldWrite_RepeatableDeleteValuesIfSubfieldsAreEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]}]}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+
+    RepeatableFieldValue field = RepeatableFieldValue.of(Collections.emptyList(), MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
+    WRITER.write("contributor[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{}", resultInstance);
+  }
+
 
   @Test
   public void shouldOverride_StringValue() throws IOException {
