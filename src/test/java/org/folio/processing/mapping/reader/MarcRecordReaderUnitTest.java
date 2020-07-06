@@ -22,13 +22,16 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -353,6 +356,48 @@ public class MarcRecordReaderUnitTest {
     object2.put("instance.value", StringValue.of("test value"));
 
     assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "instance")), JsonObject.mapFrom(value));
+  }
+
+  @Test
+  public void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsDeleteExisting() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+
+    Value value = reader.read(new MappingRule()
+      .withPath("instance")
+      .withRepeatableFieldAction(DELETE_EXISTING)
+      .withSubfields(Collections.emptyList()));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("instance", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(DELETE_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(emptyList(), DELETE_EXISTING, "instance")), JsonObject.mapFrom(value));
+  }
+
+  @Test
+  public void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsEmpty() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+
+    Value value = reader.read(new MappingRule()
+      .withPath("instance")
+      .withRepeatableFieldAction(null)
+      .withSubfields(Collections.emptyList()));
+
+    assertNotNull(value);
+    assertEquals(ValueType.MISSING, value.getType());
   }
 
   @Test
