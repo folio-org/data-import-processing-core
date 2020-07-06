@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.value.BooleanValue;
@@ -80,9 +81,7 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case EXCHANGE_EXISTING:
-        if (!foundNode.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(pathForSearch);
-        }
+        removeByCurrentPath(pathForSearch, foundNode);
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case DELETE_INCOMING:
@@ -94,9 +93,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        if (!foundNode.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(pathForSearch);
-        }
+        removeByCurrentPath(pathForSearch, foundNode);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -146,9 +143,7 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
-        if (!pathObject.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(repeatableFieldPath);
-        }
+        removeByCurrentPath(repeatableFieldPath, pathObject);
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case DELETE_INCOMING:
@@ -164,9 +159,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        if (!pathObject.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(currentPath);
-        }
+        removeByCurrentPath(currentPath, pathObject);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -177,6 +170,7 @@ public class JsonBasedWriter extends AbstractWriter {
   protected void writeRepeatableValue(String repeatableFieldPath, RepeatableFieldValue value) {
     List<Map<String, Value>> repeatableFields = value.getValue();
     MappingRule.RepeatableFieldAction action = value.getRepeatableFieldAction();
+    processIfRepeatableFieldsAreEmpty(repeatableFieldPath, value, repeatableFields);
     for (Map<String, Value> subfield : repeatableFields) {
       JsonNode currentObject = objectMapper.createObjectNode();
       for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
@@ -278,5 +272,18 @@ public class JsonBasedWriter extends AbstractWriter {
       throw new IllegalStateException(e);
     }
     return eventPayload;
+  }
+
+  private void removeByCurrentPath(String currentPath, JsonNode pathObject) {
+    if (!pathObject.isMissingNode()) {
+      ((ObjectNode) entityNode).remove(currentPath);
+    }
+  }
+
+  private void processIfRepeatableFieldsAreEmpty(String repeatableFieldPath, RepeatableFieldValue value, List<Map<String, Value>> repeatableFields) {
+    if (repeatableFields.isEmpty() && value.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
+      String currentPath = repeatableFieldPath.replace("[]", EMPTY);
+      removeByCurrentPath(currentPath, entityNode.findPath(currentPath));
+    }
   }
 }
