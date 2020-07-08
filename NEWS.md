@@ -1,3 +1,6 @@
+## 2020-07-08 v2.1.5
+* [MODDICORE-61](https://issues.folio.org/browse/MODDICORE-61) Field mappings: Repeatable fields dropdown action without subfields support
+
 ## 2020-06-29 v2.1.4
 * Fix error log
 
