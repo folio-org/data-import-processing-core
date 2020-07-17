@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.value.BooleanValue;
@@ -36,9 +37,11 @@ import static org.apache.logging.log4j.util.Strings.EMPTY;
 @SuppressWarnings("rawtypes")
 public class JsonBasedWriter extends AbstractWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
-  private ObjectMapper objectMapper = new ObjectMapper();
-  private String entityType;
+  private static final char DOT_SYMBOL = '.';
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final String entityType;
   private JsonNode entityNode;
+  private boolean isAlreadyRemovedForExchange;
 
   public JsonBasedWriter(EntityType entityType) {
     this.entityType = entityType.value();
@@ -63,6 +66,7 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeListValue(String fieldPath, ListValue listValue) {
+    isAlreadyRemovedForExchange = false;
     if (listValue.getRepeatableFieldAction() == null) {
       ArrayNode arrayNode = objectMapper.valueToTree(listValue.getValue());
       setValueByFieldPath(fieldPath, arrayNode);
@@ -74,14 +78,17 @@ public class JsonBasedWriter extends AbstractWriter {
   protected void writeListValueByAction(String fieldPath, ListValue listValue) {
     ArrayNode arrayValue = objectMapper.valueToTree(listValue.getValue());
     String pathForSearch = fieldPath.replace("[]", EMPTY);
-    JsonNode foundNode = entityNode.findPath(pathForSearch);
+    JsonNode foundNode = findTheMostNestedField(pathForSearch);
 
     switch (listValue.getRepeatableFieldAction()) {
       case EXTEND_EXISTING:
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case EXCHANGE_EXISTING:
-        removeByCurrentPath(pathForSearch, foundNode);
+        if (!isAlreadyRemovedForExchange) {
+          findAndRemoveNestedField(pathForSearch);
+          isAlreadyRemovedForExchange = true;
+        }
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case DELETE_INCOMING:
@@ -93,7 +100,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        removeByCurrentPath(pathForSearch, foundNode);
+        findAndRemoveNestedField(pathForSearch);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -137,13 +144,16 @@ public class JsonBasedWriter extends AbstractWriter {
 
   private void setRepeatableValueByAction(MappingRule.RepeatableFieldAction action, String repeatableFieldPath, JsonNode currentObject) {
     String currentPath = repeatableFieldPath.replace("[]", EMPTY);
-    JsonNode pathObject = entityNode.findPath(currentPath);
+    JsonNode pathObject = findTheMostNestedField(currentPath);
     switch (action) {
       case EXTEND_EXISTING:
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
-        removeByCurrentPath(repeatableFieldPath, pathObject);
+        if (!isAlreadyRemovedForExchange) {
+          findAndRemoveNestedField(currentPath);
+          isAlreadyRemovedForExchange = true;
+        }
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case DELETE_INCOMING:
@@ -159,7 +169,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        removeByCurrentPath(currentPath, pathObject);
+        findAndRemoveNestedField(currentPath);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -171,6 +181,7 @@ public class JsonBasedWriter extends AbstractWriter {
     List<Map<String, Value>> repeatableFields = value.getValue();
     MappingRule.RepeatableFieldAction action = value.getRepeatableFieldAction();
     processIfRepeatableFieldsAreEmpty(repeatableFieldPath, value, repeatableFields);
+    isAlreadyRemovedForExchange = false;
     for (Map<String, Value> subfield : repeatableFields) {
       JsonNode currentObject = objectMapper.createObjectNode();
       for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
@@ -274,16 +285,54 @@ public class JsonBasedWriter extends AbstractWriter {
     return eventPayload;
   }
 
-  private void removeByCurrentPath(String currentPath, JsonNode pathObject) {
-    if (!pathObject.isMissingNode()) {
-      ((ObjectNode) entityNode).remove(currentPath);
-    }
-  }
-
   private void processIfRepeatableFieldsAreEmpty(String repeatableFieldPath, RepeatableFieldValue value, List<Map<String, Value>> repeatableFields) {
     if (repeatableFields.isEmpty() && value.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
       String currentPath = repeatableFieldPath.replace("[]", EMPTY);
-      removeByCurrentPath(currentPath, entityNode.findPath(currentPath));
+      findAndRemoveNestedField(currentPath);
     }
+  }
+
+  /**
+   * This method found the lowest level from the fields`s path and removes data from this field from entityNode.
+   * It is calculates nesting count and retrieves field from the target place in entityNode.
+   * After that, it removes data from entityNode by lowest level path of the currentPath.
+   *
+   * @param currentPath - full path for processing.
+   * (Example: currentPath = "instance.history.entries". Will be removed "entries" data from the entityNode)
+   */
+  private void findAndRemoveNestedField(String currentPath) {
+    int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
+    JsonNode result = entityNode;
+    int startPosition = 0;
+    for (int i = 0; i < nestedCount; i++) {
+      if (currentPath.indexOf('.', startPosition) != -1) {
+        result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
+        startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
+      } else {
+        ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf('.') + 1));
+      }
+    }
+  }
+
+  /**
+   * This method found the lowest level from the fields`s path and return JsonNode from the entityNode.
+   *
+   * @param currentPath - full path for processing.
+   * @return - JsonNode with the nested field for currentPath.
+   * (Example: currentPath = "instance.history.entries". Will be returned JsonNode with "entries" data)
+   */
+  private JsonNode findTheMostNestedField(String currentPath) {
+    int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
+    JsonNode result = entityNode;
+    int startPosition = 0;
+    for (int i = 0; i < nestedCount; i++) {
+      if (currentPath.indexOf('.', startPosition) != -1) {
+        result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
+        startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
+      } else {
+        result = result.get(currentPath.substring(startPosition));
+      }
+    }
+    return result;
   }
 }
