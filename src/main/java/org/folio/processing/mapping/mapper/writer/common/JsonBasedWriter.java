@@ -86,7 +86,7 @@ public class JsonBasedWriter extends AbstractWriter {
         break;
       case EXCHANGE_EXISTING:
         if (!isAlreadyRemovedForExchange) {
-          findAndRemoveNestedField(pathForSearch);
+          findAndRemoveTheMostNestedField(pathForSearch);
           isAlreadyRemovedForExchange = true;
         }
         setValueByFieldPath(fieldPath, arrayValue);
@@ -100,7 +100,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        findAndRemoveNestedField(pathForSearch);
+        findAndRemoveTheMostNestedField(pathForSearch);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -151,7 +151,7 @@ public class JsonBasedWriter extends AbstractWriter {
         break;
       case EXCHANGE_EXISTING:
         if (!isAlreadyRemovedForExchange) {
-          findAndRemoveNestedField(currentPath);
+          findAndRemoveTheMostNestedField(currentPath);
           isAlreadyRemovedForExchange = true;
         }
         setValueByFieldPath(repeatableFieldPath, currentObject);
@@ -169,7 +169,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        findAndRemoveNestedField(currentPath);
+        findAndRemoveTheMostNestedField(currentPath);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -288,7 +288,7 @@ public class JsonBasedWriter extends AbstractWriter {
   private void processIfRepeatableFieldsAreEmpty(String repeatableFieldPath, RepeatableFieldValue value, List<Map<String, Value>> repeatableFields) {
     if (repeatableFields.isEmpty() && value.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
       String currentPath = repeatableFieldPath.replace("[]", EMPTY);
-      findAndRemoveNestedField(currentPath);
+      findAndRemoveTheMostNestedField(currentPath);
     }
   }
 
@@ -300,7 +300,7 @@ public class JsonBasedWriter extends AbstractWriter {
    * @param currentPath - full path for processing.
    * (Example: currentPath = "instance.history.entries". Will be removed "entries" data from the entityNode)
    */
-  private void findAndRemoveNestedField(String currentPath) {
+  private void findAndRemoveTheMostNestedField(String currentPath) {
     int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
     JsonNode result = entityNode;
     int startPosition = 0;
