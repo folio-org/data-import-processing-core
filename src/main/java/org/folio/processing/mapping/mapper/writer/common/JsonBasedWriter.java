@@ -78,7 +78,7 @@ public class JsonBasedWriter extends AbstractWriter {
   protected void writeListValueByAction(String fieldPath, ListValue listValue) {
     ArrayNode arrayValue = objectMapper.valueToTree(listValue.getValue());
     String pathForSearch = fieldPath.replace("[]", EMPTY);
-    JsonNode foundNode = findTheMostNestedField(pathForSearch);
+    JsonNode foundNode = findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, false);
 
     switch (listValue.getRepeatableFieldAction()) {
       case EXTEND_EXISTING:
@@ -86,7 +86,7 @@ public class JsonBasedWriter extends AbstractWriter {
         break;
       case EXCHANGE_EXISTING:
         if (!isAlreadyRemovedForExchange) {
-          findAndRemoveTheMostNestedField(pathForSearch);
+          findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
           isAlreadyRemovedForExchange = true;
         }
         setValueByFieldPath(fieldPath, arrayValue);
@@ -100,7 +100,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        findAndRemoveTheMostNestedField(pathForSearch);
+        findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -144,14 +144,14 @@ public class JsonBasedWriter extends AbstractWriter {
 
   private void setRepeatableValueByAction(MappingRule.RepeatableFieldAction action, String repeatableFieldPath, JsonNode currentObject) {
     String currentPath = repeatableFieldPath.replace("[]", EMPTY);
-    JsonNode pathObject = findTheMostNestedField(currentPath);
+    JsonNode pathObject = findAndRemoveTheMostNestedFieldIfNeeded(currentPath, false);
     switch (action) {
       case EXTEND_EXISTING:
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
         if (!isAlreadyRemovedForExchange) {
-          findAndRemoveTheMostNestedField(currentPath);
+          findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
           isAlreadyRemovedForExchange = true;
         }
         setValueByFieldPath(repeatableFieldPath, currentObject);
@@ -169,7 +169,7 @@ public class JsonBasedWriter extends AbstractWriter {
         }
         break;
       case DELETE_EXISTING:
-        findAndRemoveTheMostNestedField(currentPath);
+        findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -288,19 +288,21 @@ public class JsonBasedWriter extends AbstractWriter {
   private void processIfRepeatableFieldsAreEmpty(String repeatableFieldPath, RepeatableFieldValue value, List<Map<String, Value>> repeatableFields) {
     if (repeatableFields.isEmpty() && value.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
       String currentPath = repeatableFieldPath.replace("[]", EMPTY);
-      findAndRemoveTheMostNestedField(currentPath);
+      findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
     }
   }
 
   /**
-   * This method found the lowest level from the fields`s path and removes data from this field from entityNode.
+   * This method found the lowest level from the fields`s path and removes data from this field from entityNode if specific flag (parameter) is true.
    * It is calculates nesting count and retrieves field from the target place in entityNode.
-   * After that, it removes data from entityNode by lowest level path of the currentPath.
+   * After that, it removes data from entityNode by lowest level path of the currentPath if flag is true.
    *
    * @param currentPath - full path for processing.
    * (Example: currentPath = "instance.history.entries". Will be removed "entries" data from the entityNode)
+   * @param remove- flag if this data will be removed.
+   * @return JsonNode result - found node. (For the non-deleting way)
    */
-  private void findAndRemoveTheMostNestedField(String currentPath) {
+  private JsonNode findAndRemoveTheMostNestedFieldIfNeeded(String currentPath, boolean remove) {
     int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
     JsonNode result = entityNode;
     int startPosition = 0;
@@ -309,28 +311,11 @@ public class JsonBasedWriter extends AbstractWriter {
         result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
         startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
       } else {
-        ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf('.') + 1));
-      }
-    }
-  }
-
-  /**
-   * This method found the lowest level from the fields`s path and return JsonNode from the entityNode.
-   *
-   * @param currentPath - full path for processing.
-   * @return - JsonNode with the nested field for currentPath.
-   * (Example: currentPath = "instance.history.entries". Will be returned JsonNode with "entries" data)
-   */
-  private JsonNode findTheMostNestedField(String currentPath) {
-    int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
-    JsonNode result = entityNode;
-    int startPosition = 0;
-    for (int i = 0; i < nestedCount; i++) {
-      if (currentPath.indexOf('.', startPosition) != -1) {
-        result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
-        startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
-      } else {
-        result = result.get(currentPath.substring(startPosition));
+        if (remove) {
+          ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1));
+        } else {
+          result = result.get(currentPath.substring(startPosition));
+        }
       }
     }
     return result;
