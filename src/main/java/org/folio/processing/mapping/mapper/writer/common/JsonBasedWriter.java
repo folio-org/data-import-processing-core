@@ -41,7 +41,6 @@ public class JsonBasedWriter extends AbstractWriter {
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final String entityType;
   private JsonNode entityNode;
-  private boolean isAlreadyRemovedForExchange;
 
   public JsonBasedWriter(EntityType entityType) {
     this.entityType = entityType.value();
@@ -66,7 +65,6 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeListValue(String fieldPath, ListValue listValue) {
-    isAlreadyRemovedForExchange = false;
     if (listValue.getRepeatableFieldAction() == null) {
       ArrayNode arrayNode = objectMapper.valueToTree(listValue.getValue());
       setValueByFieldPath(fieldPath, arrayNode);
@@ -85,10 +83,7 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case EXCHANGE_EXISTING:
-        if (!isAlreadyRemovedForExchange) {
           findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
-          isAlreadyRemovedForExchange = true;
-        }
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case DELETE_INCOMING:
@@ -142,17 +137,17 @@ public class JsonBasedWriter extends AbstractWriter {
     }
   }
 
-  private void setRepeatableValueByAction(MappingRule.RepeatableFieldAction action, String repeatableFieldPath, JsonNode currentObject) {
+  private void setRepeatableValueByAction(RepeatableFieldValue value, String repeatableFieldPath, JsonNode currentObject) {
     String currentPath = repeatableFieldPath.replace("[]", EMPTY);
     JsonNode pathObject = findAndRemoveTheMostNestedFieldIfNeeded(currentPath, false);
-    switch (action) {
+    switch (value.getRepeatableFieldAction()) {
       case EXTEND_EXISTING:
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
-        if (!isAlreadyRemovedForExchange) {
+        if (!value.isAlreadyRemovedForExchange()) {
           findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
-          isAlreadyRemovedForExchange = true;
+          value.setAlreadyRemovedForExchange(true);
         }
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
@@ -179,15 +174,14 @@ public class JsonBasedWriter extends AbstractWriter {
   @Override
   protected void writeRepeatableValue(String repeatableFieldPath, RepeatableFieldValue value) {
     List<Map<String, Value>> repeatableFields = value.getValue();
-    MappingRule.RepeatableFieldAction action = value.getRepeatableFieldAction();
     processIfRepeatableFieldsAreEmpty(repeatableFieldPath, value, repeatableFields);
-    isAlreadyRemovedForExchange = false;
+    value.setAlreadyRemovedForExchange(false);
     for (Map<String, Value> subfield : repeatableFields) {
       JsonNode currentObject = objectMapper.createObjectNode();
       for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
         writeValuesForRepeatableObject(currentObject, objectFields);
       }
-      setRepeatableValueByAction(action, repeatableFieldPath, currentObject);
+      setRepeatableValueByAction(value, repeatableFieldPath, currentObject);
     }
   }
 
