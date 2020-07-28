@@ -211,7 +211,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableExtendValuesIfContextIsEmpty() throws IOException {
+  public void shouldNotChangeContext_RepeatableExtendValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -244,7 +244,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableDeleteIncomingValuesIfContextIsEmpty() throws IOException {
+  public void shouldNotChangeContext_RepeatableDeleteIncomingValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -276,7 +276,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableExchangeValuesIfContextIsEmpty() throws IOException {
+  public void shouldNotChangeContext_RepeatableExchangeValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -309,7 +309,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableDeleteValuesIfContextIsEmpty() throws IOException {
+  public void shouldNotChangeContext_RepeatableDeleteValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -501,7 +501,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListExtendValuesIfContextIsEmpty() throws IOException {
+  public void shouldWrite_ListExtendValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -535,7 +535,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListExchangeValuesAsExtendIfContextIsEmpty() throws IOException {
+  public void shouldWrite_ListExchangeValuesAsExtendIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -552,7 +552,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_ListDeleteIncomingValuesIfContextIsEmpty() throws IOException {
+  public void shouldNotChangeContext_ListDeleteIncomingValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -569,7 +569,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_ListDeleteExistingValuesIfContextIsEmpty() throws IOException {
+  public void shouldNotChangeContext_ListDeleteExistingValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
