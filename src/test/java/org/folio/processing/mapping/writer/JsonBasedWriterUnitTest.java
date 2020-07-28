@@ -210,6 +210,136 @@ public class JsonBasedWriterUnitTest {
     assertEquals("{\"instance\":{}}", resultInstance);
   }
 
+  @Test
+  public void shouldNotChangeContext_RepeatableExtendValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> objects = new ArrayList<>();
+    Map<String, Value> object1 = new HashMap<>();
+    Map<String, Value> object2 = new HashMap<>();
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].id", StringValue.of("UUID"));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
+    object2.put("instance.contributor[].id", StringValue.of("UUID2"));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    objects.add(object1);
+    objects.add(object2);
+
+    RepeatableFieldValue field = RepeatableFieldValue.of(objects, EXTEND_EXISTING, "contributor");
+    WRITER.write("instance.contributor[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldNotChangeContext_RepeatableDeleteIncomingValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> objects = new ArrayList<>();
+    Map<String, Value> object1 = new HashMap<>();
+    Map<String, Value> object2 = new HashMap<>();
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].id", StringValue.of("UUID"));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
+    object2.put("instance.contributor[].id", StringValue.of("UUID3"));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    objects.add(object1);
+    objects.add(object2);
+
+    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
+    WRITER.write("instance.contributor[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{}", resultInstance);
+  }
+
+  @Test
+  public void shouldNotChangeContext_RepeatableExchangeValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> objects = new ArrayList<>();
+    Map<String, Value> object1 = new HashMap<>();
+    Map<String, Value> object2 = new HashMap<>();
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].id", StringValue.of("UUID"));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
+    object2.put("instance.contributor[].id", StringValue.of("UUID2"));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    objects.add(object1);
+    objects.add(object2);
+
+    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING, "contributor");
+    WRITER.write("instance.contributor[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"contributor\":[{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldNotChangeContext_RepeatableDeleteValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> objects = new ArrayList<>();
+    Map<String, Value> object1 = new HashMap<>();
+    Map<String, Value> object2 = new HashMap<>();
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].id", StringValue.of("UUID"));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
+    object2.put("instance.contributor[].id", StringValue.of("UUID2"));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    objects.add(object1);
+    objects.add(object2);
+
+    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
+    WRITER.write("instance.contributor[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{}", resultInstance);
+  }
+
 
   @Test
   public void shouldOverride_StringValue() throws IOException {
@@ -369,4 +499,89 @@ public class JsonBasedWriterUnitTest {
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals("{\"instance\":{}}", resultInstance);
   }
+
+  @Test
+  public void shouldWrite_ListExtendValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListExtendValuesIfContextIsWithAnotherField() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"]}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"],\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListExchangeValuesAsExtendIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXCHANGE_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldNotChangeContext_ListDeleteIncomingValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID2"), DELETE_INCOMING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldNotChangeContext_ListDeleteExistingValuesIfContextIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID3"), DELETE_EXISTING));
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{}", resultInstance);
+  }
+
 }
