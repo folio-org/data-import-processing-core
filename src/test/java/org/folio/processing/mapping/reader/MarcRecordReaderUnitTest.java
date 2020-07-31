@@ -531,13 +531,13 @@ public class MarcRecordReaderUnitTest {
       .withName("natureOfContentTermIds")
       .withPath("instance.natureOfContentTermIds[]")
       .withEnabled("true")
-      .withValue("school program")
+      .withValue("\"school program\"")
       .withAcceptedValues(acceptedValues);
     MappingRule fieldRule2 = new MappingRule()
       .withName("natureOfContentTermIds")
       .withPath("instance.natureOfContentTermIds[]")
       .withEnabled("true")
-      .withValue("literature report")
+      .withValue("\"literature report\"")
       .withAcceptedValues(acceptedValues);
 
     MappingRule mappingRule = new MappingRule()

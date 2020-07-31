@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
@@ -192,7 +193,11 @@ public class MarcRecordReader implements Reader {
       HashMap<String, Value> object = new HashMap<>();
       for (MappingRule mappingRule : subfieldMapping.getFields()) {
         if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
-          repeatableStrings.add(readRepeatableStringField(mappingRule));
+          if (!mappingRule.getValue().contains(EXPRESSIONS_QUOTE)) {
+            retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
+          } else {
+            repeatableStrings.add(readRepeatableStringField(mappingRule));
+          }
         } else {
           Value value = mappingRule.getBooleanFieldAction() != null
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
@@ -204,6 +209,15 @@ public class MarcRecordReader implements Reader {
     }
     return repeatableStrings.isEmpty() ? RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath())
       : ListValue.of(repeatableStrings, ruleExpression.getRepeatableFieldAction());
+  }
+
+  private void retrieveValuesFromMarcRecord(List<String> repeatableStrings, MappingRule mappingRule) {
+    Object objValue = readSingleField(mappingRule).getValue();
+    if (objValue != null) {
+      for (String stringValue : (List<String>) objValue) {
+        repeatableStrings.add(stringValue);
+      }
+    }
   }
 
   private String readRepeatableStringField(MappingRule mappingRule) {
