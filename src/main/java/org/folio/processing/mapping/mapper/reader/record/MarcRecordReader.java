@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.folio.processing.value.Value.ValueType.LIST;
 
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
@@ -213,9 +214,9 @@ public class MarcRecordReader implements Reader {
   }
 
   private void retrieveValuesFromMarcRecord(List<String> repeatableStrings, MappingRule mappingRule) {
-    Object valueFromMarcFile = readSingleField(mappingRule).getValue();
-    if (valueFromMarcFile != null) {
-      for (String stringValue : (List<String>) valueFromMarcFile) {
+    Value valueFromMarcFile = readSingleField(mappingRule);
+    if (valueFromMarcFile != null && valueFromMarcFile.getType() == LIST) {
+      for (String stringValue : (List<String>) valueFromMarcFile.getValue()) {
         repeatableStrings.add(stringValue);
       }
     }
