@@ -564,7 +564,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValuection_FromRules() throws IOException {
+  public void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValue_FromRules() throws IOException {
     // given
     List<String> expectedFields = Arrays.asList("pcc", "UUID3");
     DataImportEventPayload eventPayload = new DataImportEventPayload();

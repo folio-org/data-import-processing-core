@@ -213,9 +213,9 @@ public class MarcRecordReader implements Reader {
   }
 
   private void retrieveValuesFromMarcRecord(List<String> repeatableStrings, MappingRule mappingRule) {
-    Object objValue = readSingleField(mappingRule).getValue();
-    if (objValue != null) {
-      for (String stringValue : (List<String>) objValue) {
+    Object valueFromMarcFile = readSingleField(mappingRule).getValue();
+    if (valueFromMarcFile != null) {
+      for (String stringValue : (List<String>) valueFromMarcFile) {
         repeatableStrings.add(stringValue);
       }
     }
