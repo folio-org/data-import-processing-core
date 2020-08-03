@@ -562,4 +562,57 @@ public class MarcRecordReaderUnitTest {
     assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
     assertEquals(expectedFields, value.getValue());
   }
+
+  @Test
+  public void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValuection_FromRules() throws IOException {
+    // given
+    List<String> expectedFields = Arrays.asList("pcc", "UUID3");
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("UUID1", "website");
+    acceptedValues.put("UUID2", "school program");
+    acceptedValues.put("UUID3", "literature report");
+
+    MappingRule fieldRule1 = new MappingRule()
+      .withName("formerIds")
+      .withPath("instance.formerIds[]")
+      .withEnabled("true")
+      .withValue("042$a")
+      .withAcceptedValues(acceptedValues);
+    MappingRule fieldRule2 = new MappingRule()
+      .withName("formerIds")
+      .withPath("instance.formerIds[]")
+      .withEnabled("true")
+      .withValue("\"literature report\"")
+      .withAcceptedValues(acceptedValues);
+
+    MappingRule mappingRule = new MappingRule()
+      .withPath("instance.formerIds[]")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(Arrays.asList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("instance.formerIds[]")
+          .withFields(singletonList(fieldRule1)),
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("instance.formerIds[]")
+          .withFields(singletonList(fieldRule2))));
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
+    assertEquals(expectedFields, value.getValue());
+  }
 }

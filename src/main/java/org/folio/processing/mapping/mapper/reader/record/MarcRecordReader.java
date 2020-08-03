@@ -193,7 +193,8 @@ public class MarcRecordReader implements Reader {
       HashMap<String, Value> object = new HashMap<>();
       for (MappingRule mappingRule : subfieldMapping.getFields()) {
         if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
-          if (!mappingRule.getValue().contains(EXPRESSIONS_QUOTE)) {
+          if (!mappingRule.getValue().startsWith(EXPRESSIONS_QUOTE) &&
+            !mappingRule.getValue().endsWith(EXPRESSIONS_QUOTE)) {
             retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
           } else {
             repeatableStrings.add(readRepeatableStringField(mappingRule));
