@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader.record;
 
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
@@ -43,6 +44,7 @@ import java.util.regex.Pattern;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.folio.processing.value.Value.ValueType.LIST;
 
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
@@ -192,7 +194,11 @@ public class MarcRecordReader implements Reader {
       HashMap<String, Value> object = new HashMap<>();
       for (MappingRule mappingRule : subfieldMapping.getFields()) {
         if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
-          repeatableStrings.add(readRepeatableStringField(mappingRule));
+          if (STRING_VALUE_PATTERN.matcher(mappingRule.getValue()).matches()) {
+            repeatableStrings.add(readRepeatableStringField(mappingRule));
+          } else {
+            retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
+          }
         } else {
           Value value = mappingRule.getBooleanFieldAction() != null
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
@@ -204,6 +210,15 @@ public class MarcRecordReader implements Reader {
     }
     return repeatableStrings.isEmpty() ? RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath())
       : ListValue.of(repeatableStrings, ruleExpression.getRepeatableFieldAction());
+  }
+
+  private void retrieveValuesFromMarcRecord(List<String> repeatableStrings, MappingRule mappingRule) {
+    Value valueFromMarcFile = readSingleField(mappingRule);
+    if (valueFromMarcFile != null && valueFromMarcFile.getType() == LIST) {
+      for (String stringValue : (List<String>) valueFromMarcFile.getValue()) {
+        repeatableStrings.add(stringValue);
+      }
+    }
   }
 
   private String readRepeatableStringField(MappingRule mappingRule) {
