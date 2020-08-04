@@ -298,14 +298,16 @@ public class JsonBasedWriter extends AbstractWriter {
     JsonNode result = entityNode;
     int startPosition = 0;
     for (int i = 0; i < nestedCount; i++) {
-      if (currentPath.indexOf('.', startPosition) != -1) {
-        result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
-        startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
-      } else {
-        if (remove) {
-          ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1));
+      if (result != null) {
+        if (currentPath.indexOf('.', startPosition) != -1) {
+          result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
+          startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
         } else {
-          result = result.get(currentPath.substring(startPosition));
+          if (remove) {
+            ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1));
+          } else {
+            result = result.get(currentPath.substring(startPosition));
+          }
         }
       }
     }

@@ -130,7 +130,7 @@ public class MarcRecordWriter implements Writer {
     String fieldTag = detail.getField().getField();
     if (Verifier.isControlField(fieldTag)) {
       ControlField controlField = marcFactory.newControlField(fieldTag, detail.getField().getSubfields().get(0).getData().getText());
-      addFieldInNumericalOrder(controlField);
+      addControlFieldInNumericalOrder(controlField);
     } else {
       char ind1 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
       char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
@@ -139,11 +139,11 @@ public class MarcRecordWriter implements Writer {
       for (MarcSubfield subfield : detail.getField().getSubfields()) {
         dataField.addSubfield(marcFactory.newSubfield(subfield.getSubfield().charAt(0), subfield.getData().getText()));
       }
-      addFieldInNumericalOrder(dataField);
+      addDataFieldInNumericalOrder(dataField);
     }
   }
 
-  private void addFieldInNumericalOrder(ControlField field) {
+  private void addControlFieldInNumericalOrder(ControlField field) {
     List<ControlField> controlFields = marcRecord.getControlFields();
     for (int i = 0; i < controlFields.size(); i++) {
       if (controlFields.get(i).getTag().compareTo(field.getTag()) > 0) {
@@ -166,20 +166,20 @@ public class MarcRecordWriter implements Writer {
    *
    * @param field data field for adding to a record
    */
-  private void addFieldInNumericalOrder(VariableField field) {
+  private void addDataFieldInNumericalOrder(DataField field) {
     String tag = field.getTag();
     List<DataField> dataFields = marcRecord.getDataFields();
     if (isNumericalSortableField(field)) {
       for (int i = 0; i < dataFields.size(); i++) {
         if (dataFields.get(i).getTag().compareTo(tag) > 0) {
-          marcRecord.getDataFields().add(i, (DataField) field);
+          marcRecord.getDataFields().add(i, field);
           return;
         }
       }
     } else {
       for (int i = 0; i < dataFields.size(); i++) {
         if (dataFields.get(i).getTag().charAt(0) > tag.charAt(0)) {
-          marcRecord.getDataFields().add(i, (DataField) field);
+          marcRecord.getDataFields().add(i, field);
           return;
         }
       }
@@ -342,8 +342,8 @@ public class MarcRecordWriter implements Writer {
     return Range.between(startPosition, endPosition);
   }
 
-  private boolean controlFieldContainsDataAtPositions(ControlField f, String data, Range<Integer> dataPositions) {
-    return f.getData().substring(dataPositions.getMinimum(), dataPositions.getMaximum() + 1).equals(data);
+  private boolean controlFieldContainsDataAtPositions(ControlField field, String data, Range<Integer> dataPositions) {
+    return field.getData().substring(dataPositions.getMinimum(), dataPositions.getMaximum() + 1).equals(data);
   }
 
   private void replaceDataInDataFields(String tag, String dataToReplace, String replacementData, MarcMappingDetail mappingRule) {
@@ -409,7 +409,7 @@ public class MarcRecordWriter implements Writer {
         newField.addSubfield(subfieldToMove);
       }
       if (!srcSubfields.isEmpty()) {
-        addFieldInNumericalOrder(newField);
+        addDataFieldInNumericalOrder(newField);
         deleteMovedDataFromSourceField(sourceField, srcSubfields, srcSubfieldCode);
       }
     }
