@@ -12,6 +12,7 @@ public class RepeatableFieldValue implements Value<List<Map<String, Value>>> {
   private List<Map<String, Value>> value;
   private MappingRule.RepeatableFieldAction repeatableFieldAction;
   private String rootPath;
+  private boolean isAlreadyRemovedForExchange;
 
   protected RepeatableFieldValue(List<Map<String, Value>> value, MappingRule.RepeatableFieldAction action, String rootPath) {
     this.value = value;
@@ -39,5 +40,13 @@ public class RepeatableFieldValue implements Value<List<Map<String, Value>>> {
   @Override
   public ValueType getType() {
     return REPEATABLE;
+  }
+
+  public boolean isAlreadyRemovedForExchange() {
+    return isAlreadyRemovedForExchange;
+  }
+
+  public void setAlreadyRemovedForExchange(boolean alreadyRemovedForExchange) {
+    isAlreadyRemovedForExchange = alreadyRemovedForExchange;
   }
 }
