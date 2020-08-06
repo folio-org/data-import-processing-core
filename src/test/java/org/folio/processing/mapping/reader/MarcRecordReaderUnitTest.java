@@ -428,7 +428,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableFieldAndCreateFiledItemPerEverySpecifiedField() throws IOException {
+  public void shouldReadRepeatableFieldAndCreateFieldItemPerEverySpecifiedField() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
