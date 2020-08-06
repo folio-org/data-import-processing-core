@@ -1,13 +1,23 @@
-## 2020-07-05 v2.2.0-SNAPSHOT
+## 2020-07-05 v2.1.6-SNAPSHOT
 * [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX.
 * [MODDICORE-72](https://issues.folio.org/browse/MODDICORE-72) Create holdings fails because mapping for holdings statement is not working - BUGFIX.
 * [MODDICORE-74](https://issues.folio.org/browse/MODDICORE-74) Create holdings fails because mapping for Former holdings ID is not working - BUGFIX.
+* [MODDICORE-75](https://issues.folio.org/browse/MODDICORE-75) Two 856 fields smushed into 1 eAccess row in holdings record.
 
-## 2020-06-05 v2.1.1-SNAPSHOT
+## 2020-07-08 v2.1.5
 * [MODDICORE-61](https://issues.folio.org/browse/MODDICORE-61) Field mappings: Repeatable fields dropdown action without subfields support.
+
+## 2020-06-29 v2.1.4
+* Fix error log
+
+## 2020-06-26 v2.1.3
+* Fix condition in normalization function to avoid string index out of bounds
+* Add details to logs
+
+## 2020-06-05 v2.1.2
+* [MODDICORE-52](https://issues.folio.org/browse/MODDICORE-52) Add support for MappingEngine work with a leader
 * [MODDICORE-66](https://issues.folio.org/browse/MODDICORE-66) Mapping exception in mod-inventory with rules for notes - BUGFIX.
 * [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
-* [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX.
 
 ## 2020-06-10 v2.1.1
 * Updated pubsub client dependency to v1.2.0
