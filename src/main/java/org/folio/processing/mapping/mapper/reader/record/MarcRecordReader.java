@@ -31,6 +31,7 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -102,6 +103,8 @@ public class MarcRecordReader implements Reader {
         return readSingleField(ruleExpression);
       } else if (!ruleExpression.getSubfields().isEmpty() && ruleExpression.getRepeatableFieldAction() != null) {
         return readRepeatableField(ruleExpression);
+      } else if (ruleExpression.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
+        return RepeatableFieldValue.of(Collections.emptyList(), ruleExpression.getRepeatableFieldAction(), ruleExpression.getPath());
       }
     } catch (Exception e) {
       LOGGER.error("Error during reading MappingRule expressions ", e);

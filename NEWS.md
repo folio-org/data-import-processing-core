@@ -1,7 +1,18 @@
-## 2020-06-05 v2.1.1-SNAPSHOT
+## 2020-07-08 v2.1.5
+* [MODDICORE-61](https://issues.folio.org/browse/MODDICORE-61) Field mappings: Repeatable fields dropdown action without subfields support
+* [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX.
+
+## 2020-06-29 v2.1.4
+* Fix error log
+
+## 2020-06-26 v2.1.3
+* Fix condition in normalization function to avoid string index out of bounds
+* Add details to logs
+
+## 2020-06-25 v2.1.2
+* [MODDICORE-52](https://issues.folio.org/browse/MODDICORE-52) Add support for MappingEngine work with a leader
 * [MODDICORE-66](https://issues.folio.org/browse/MODDICORE-66) Mapping exception in mod-inventory with rules for notes - BUGFIX.
 * [MODDICORE-62](https://issues.folio.org/browse/MODDICORE-62) Adjusted handling of repeatable fields
-* [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX.
 
 ## 2020-06-10 v2.1.1
 * Updated pubsub client dependency to v1.2.0

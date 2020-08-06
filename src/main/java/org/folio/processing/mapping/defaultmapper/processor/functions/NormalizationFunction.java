@@ -108,7 +108,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       DataField dataField = context.getDataField();
       int from = INTEGER_ZERO;
       int to = Character.getNumericValue(dataField.getIndicator2());
-      if (to < subFieldData.length()) {
+      if (0 < to && to < subFieldData.length()) {
         String prefixToRemove = subFieldData.substring(from, to);
         return StringUtils.remove(subFieldData, prefixToRemove);
       } else {
