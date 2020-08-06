@@ -83,19 +83,18 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case EXCHANGE_EXISTING:
+        if (foundNode != null && foundNode.size() != 0) {
           findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
+        }
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case DELETE_INCOMING:
-        ArrayNode arrayNode = (ArrayNode) foundNode;
-        for (int i = 0; i < arrayNode.size(); i++) {
-          if (listValue.getValue().contains(arrayNode.get(i).textValue())) {
-            arrayNode.remove(i);
-          }
-        }
+        deleteIncomingFieldByPath(listValue, foundNode);
         break;
       case DELETE_EXISTING:
-        findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
+        if (foundNode != null && foundNode.size() != 0) {
+          findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
+        }
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -145,26 +144,19 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
-        if (!value.isAlreadyRemovedForExchange()) {
+        if (!value.isAlreadyRemovedForExchange() && pathObject != null && pathObject.size() != 0) {
           findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
           value.setAlreadyRemovedForExchange(true);
         }
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case DELETE_INCOMING:
-        if (pathObject.isArray()) {
-          ArrayNode arrayNode = (ArrayNode) pathObject;
-          for (int i = 0; i < arrayNode.size(); i++) {
-            if (arrayNode.get(i).equals(currentObject)) {
-              arrayNode.remove(i);
-            }
-          }
-        } else if (pathObject.equals(currentObject) && !pathObject.isMissingNode()) {
-          ((ObjectNode) entityNode).remove(currentPath);
-        }
+        deleteIncomingFieldByPath(currentObject, currentPath, pathObject);
         break;
       case DELETE_EXISTING:
-        findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
+        if (pathObject != null && pathObject.size() != 0) {
+          findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
+        }
         break;
       default:
         throw new IllegalArgumentException("Can not define action type");
@@ -290,13 +282,18 @@ public class JsonBasedWriter extends AbstractWriter {
    * This method found the lowest level from the fields`s path and removes data from this field from entityNode if specific flag (parameter) is true.
    * It is calculates nesting count and retrieves field from the target place in entityNode.
    * After that, it removes data from entityNode by lowest level path of the currentPath if flag is true.
+   * <p>
+   * If entityNode is empty, then this method won`t find via this logic, and just return current entityNode.
    *
    * @param currentPath - full path for processing.
-   * (Example: currentPath = "instance.history.entries". Will be removed "entries" data from the entityNode)
-   * @param remove- flag if this data will be removed.
+   *                    (Example: currentPath = "instance.history.entries". Will be removed "entries" data from the entityNode)
+   * @param remove-     flag if this data will be removed.
    * @return JsonNode result - found node. (For the non-deleting way)
    */
   private JsonNode findAndRemoveTheMostNestedFieldIfNeeded(String currentPath, boolean remove) {
+    if (entityNode.size() == 0) {
+      return entityNode;
+    }
     int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
     JsonNode result = entityNode;
     int startPosition = 0;
@@ -313,5 +310,31 @@ public class JsonBasedWriter extends AbstractWriter {
       }
     }
     return result;
+  }
+
+  private void deleteIncomingFieldByPath(JsonNode currentObject, String currentPath, JsonNode pathObject) {
+    if (pathObject != null && pathObject.size() != 0) {
+      if (pathObject.isArray()) {
+        ArrayNode arrayNode = (ArrayNode) pathObject;
+        for (int i = 0; i < arrayNode.size(); i++) {
+          if (arrayNode.get(i).equals(currentObject)) {
+            arrayNode.remove(i);
+          }
+        }
+      } else if (pathObject.equals(currentObject) && !pathObject.isMissingNode()) {
+        ((ObjectNode) entityNode).remove(currentPath);
+      }
+    }
+  }
+
+  private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
+    if (foundNode != null && foundNode.size() != 0) {
+      ArrayNode arrayNode = (ArrayNode) foundNode;
+      for (int i = 0; i < arrayNode.size(); i++) {
+        if (listValue.getValue().contains(arrayNode.get(i).textValue())) {
+          arrayNode.remove(i);
+        }
+      }
+    }
   }
 }
