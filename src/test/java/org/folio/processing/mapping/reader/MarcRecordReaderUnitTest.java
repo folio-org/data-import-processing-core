@@ -35,6 +35,7 @@ import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELET
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class MarcRecordReaderUnitTest {
@@ -669,5 +670,23 @@ public class MarcRecordReaderUnitTest {
     assertEquals(ValueType.LIST, value.getType());
     assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
     assertEquals(expectedFields, value.getValue());
+  }
+
+  @Test
+  public void shouldReadRemoveExpressionFromRules() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("catalogedDate")
+      .withValue("###REMOVE###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertTrue(((StringValue)(value)).shouldRemoveOnWrite());
   }
 }

@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.writer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
 import org.folio.processing.value.BooleanValue;
@@ -584,4 +585,21 @@ public class JsonBasedWriterUnitTest {
     assertEquals("{}", resultInstance);
   }
 
+
+  @Test
+  public void shouldDeleteOnWrite_StringValue() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"title\":\"bla\", \"catalogedDate\": \"1970-01-01T00:00:00\"}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    StringValue value = StringValue.of(StringUtils.EMPTY, true);
+    WRITER.write("instance.catalogedDate", value);
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"title\":\"bla\"}}", resultInstance);
+  }
 }
