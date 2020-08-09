@@ -61,6 +61,7 @@ public class MarcRecordReader implements Reader {
   private final static String MARC_SPLITTER = "/";
   private final static String MARC_BYTES_SPLITTER = "-";
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
+  private static final String REMOVE_PLACEHOLDER = "###REMOVE###";
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
   public static final String[] DATE_FORMATS = new String[]{ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
 
@@ -130,6 +131,8 @@ public class MarcRecordReader implements Reader {
           processStringExpression(ruleExpression, arrayValue, resultList, sb, expressionPart);
         } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
           processTodayExpression(sb);
+        } else if (REMOVE_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
+          return StringValue.of(expressionPart, true);
         }
       }
       resultList.remove(StringUtils.SPACE);

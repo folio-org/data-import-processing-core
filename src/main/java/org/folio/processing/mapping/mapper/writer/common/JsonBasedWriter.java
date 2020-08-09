@@ -57,7 +57,9 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeStringValue(String fieldPath, StringValue stringValue) {
-    if (isNotEmpty(stringValue.getValue())) {
+    if (stringValue.shouldRemoveOnWrite()) {
+      removeFieldByFieldPath(fieldPath);
+    } else if (isNotEmpty(stringValue.getValue())) {
       TextNode textNode = new TextNode(stringValue.getValue());
       setValueByFieldPath(fieldPath, textNode);
     }
@@ -256,6 +258,20 @@ public class JsonBasedWriter extends AbstractWriter {
       ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
     } else {
       throw new IllegalStateException("Types mismatch: Type of path item and type of the value are incompatible");
+    }
+  }
+
+  private void removeFieldByFieldPath(String fieldPath) {
+    FieldPathIterator fieldPathIterator = new FieldPathIterator(fieldPath);
+    JsonNode parentNode = entityNode;
+    entityNode.findPath(fieldPath);
+    while (fieldPathIterator.hasNext()) {
+      FieldPathIterator.PathItem pathItem = fieldPathIterator.next();
+      if (fieldPathIterator.hasNext()) {
+        parentNode = parentNode.get(pathItem.getName());
+      } else {
+        ((ObjectNode) parentNode).remove(pathItem.getName());
+      }
     }
   }
 
