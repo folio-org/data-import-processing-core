@@ -1,4 +1,4 @@
-## 2020-08-10 v2.1.6-SNAPSHOT
+## 2020-08-10 v2.1.6
 * [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX.
 * [MODDICORE-72](https://issues.folio.org/browse/MODDICORE-72) Create holdings fails because mapping for holdings statement is not working - BUGFIX.
 * [MODDICORE-74](https://issues.folio.org/browse/MODDICORE-74) Create holdings fails because mapping for Former holdings ID is not working - BUGFIX.
