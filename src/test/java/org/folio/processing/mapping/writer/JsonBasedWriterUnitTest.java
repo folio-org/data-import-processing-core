@@ -28,6 +28,8 @@ import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHA
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.Lists;
+
 @RunWith(JUnit4.class)
 public class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
@@ -472,14 +474,31 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\"]}}");
+    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID2"), DELETE_INCOMING));
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Lists.newArrayList("UUID1", "UUID2", "UUID3"), DELETE_INCOMING));
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\"]}}";
+    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID4\"]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListDeleteIncomingValuesIfNonMatch() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Lists.newArrayList("UUID6", "UUID7", "UUID8"), DELETE_INCOMING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
