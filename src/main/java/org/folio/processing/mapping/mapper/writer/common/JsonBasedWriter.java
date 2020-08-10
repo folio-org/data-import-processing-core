@@ -348,9 +348,11 @@ public class JsonBasedWriter extends AbstractWriter {
   private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
     if (foundNode != null && foundNode.size() != 0) {
       ArrayNode arrayNode = (ArrayNode) foundNode;
-      for (int i = 0; i < arrayNode.size(); i++) {
-        if (listValue.getValue().contains(arrayNode.get(i).textValue())) {
-          arrayNode.remove(i);
+      int indexForDelete = 0;
+      for (int i = 0; i < arrayNode.size() + 1; i++) {
+        if (arrayNode.get(i - indexForDelete) != null && listValue.getValue().contains(arrayNode.get(i - indexForDelete).textValue())) {
+          arrayNode.remove(i - indexForDelete);
+          indexForDelete++;
         }
       }
     }
