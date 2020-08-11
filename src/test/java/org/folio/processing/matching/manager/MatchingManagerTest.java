@@ -1,28 +1,29 @@
 package org.folio.processing.matching.manager;
 
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.MatchProfile;
-import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
+import org.folio.processing.exceptions.MatchingException;
 import org.folio.processing.matching.MatchingManager;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-@RunWith(JUnit4.class)
+@RunWith(VertxUnitRunner.class)
 public class MatchingManagerTest {
 
   @Before
@@ -32,7 +33,7 @@ public class MatchingManagerTest {
   }
 
   @Test
-  public void shouldMatch_MarcBibliographicAndEdifact() {
+  public void shouldMatch_MarcBibliographicAndEdifact(TestContext testContext) {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
@@ -55,56 +56,67 @@ public class MatchingManagerTest {
     eventContext.setContext(context);
     eventContext.setCurrentNode(matchProfileWrapper);
     // when
-    boolean result = MatchingManager.match(eventContext);
+    CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
-    assertTrue(result);
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void shouldThrowException_ifNoEligibleReader() {
-    // given
-    MatchValueLoaderFactory.register(new TestMatchValueLoader());
-
-    MatchProfile matchProfile = new MatchProfile()
-      .withExistingRecordType(MARC_BIBLIOGRAPHIC)
-      .withIncomingRecordType(EDIFACT_INVOICE)
-      .withMatchDetails(Collections.singletonList(new MatchDetail()));
-
-    ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
-    matchProfileWrapper.setContent(matchProfile);
-    matchProfileWrapper.setContentType(MATCH_PROFILE);
-
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    eventContext.setCurrentNode(matchProfileWrapper);
-    // when
-    MatchingManager.match(eventContext);
-    // then expect runtime exception
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void shouldThrowException_ifNoEligibleLoader() {
-    // given
-    MatchValueReaderFactory.register(new TestMatchValueReader());
-
-    MatchProfile matchProfile = new MatchProfile()
-      .withExistingRecordType(MARC_BIBLIOGRAPHIC)
-      .withIncomingRecordType(EDIFACT_INVOICE)
-      .withMatchDetails(Collections.singletonList(new MatchDetail()));
-
-    ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
-    matchProfileWrapper.setContent(matchProfile);
-    matchProfileWrapper.setContentType(MATCH_PROFILE);
-
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    eventContext.setCurrentNode(matchProfileWrapper);
-
-    // when
-    MatchingManager.match(eventContext);
-    // then expect runtime exception
+    result.whenComplete((matched, throwable) -> {
+      testContext.assertNull(throwable);
+      testContext.assertTrue(matched);
+    });
   }
 
   @Test
-  public void shouldNotMatchIfWrongContentType() {
+  public void shouldCompleteExceptionally_ifNoEligibleReader(TestContext testContext) {
+    // given
+    MatchValueLoaderFactory.register(new TestMatchValueLoader());
+
+    MatchProfile matchProfile = new MatchProfile()
+      .withExistingRecordType(MARC_BIBLIOGRAPHIC)
+      .withIncomingRecordType(EDIFACT_INVOICE)
+      .withMatchDetails(Collections.singletonList(new MatchDetail()));
+
+    ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
+    matchProfileWrapper.setContent(matchProfile);
+    matchProfileWrapper.setContentType(MATCH_PROFILE);
+
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    eventContext.setCurrentNode(matchProfileWrapper);
+    // when
+    CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
+    // then
+    result.whenComplete((matched, throwable) -> {
+      testContext.assertNotNull(throwable);
+      testContext.assertTrue(throwable instanceof MatchingException);
+    });
+  }
+
+  @Test
+  public void shouldCompleteExceptionally_ifNoEligibleLoader(TestContext testContext) {
+    // given
+    MatchValueReaderFactory.register(new TestMatchValueReader());
+
+    MatchProfile matchProfile = new MatchProfile()
+      .withExistingRecordType(MARC_BIBLIOGRAPHIC)
+      .withIncomingRecordType(EDIFACT_INVOICE)
+      .withMatchDetails(Collections.singletonList(new MatchDetail()));
+
+    ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
+    matchProfileWrapper.setContent(matchProfile);
+    matchProfileWrapper.setContentType(MATCH_PROFILE);
+
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    eventContext.setCurrentNode(matchProfileWrapper);
+
+    // when
+    CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
+    // then
+    result.whenComplete((matched, throwable) -> {
+      testContext.assertNotNull(throwable);
+      testContext.assertTrue(throwable instanceof MatchingException);
+    });
+  }
+
+  @Test
+  public void shouldNotMatchIfWrongContentType(TestContext testContext) {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
@@ -126,8 +138,11 @@ public class MatchingManagerTest {
     eventContext.setContext(context);
     eventContext.setCurrentNode(matchProfileWrapper);
     // when
-    boolean result = MatchingManager.match(eventContext);
+    CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
-    assertFalse(result);
+    result.whenComplete((matched, throwable) -> {
+      testContext.assertNull(throwable);
+      testContext.assertFalse(matched);
+    });
   }
 }

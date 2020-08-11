@@ -4,7 +4,6 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.MatchProfile;
-import org.folio.processing.matching.loader.LoadResult;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
@@ -13,10 +12,12 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public interface Matcher {
 
-  default boolean match(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader, DataImportEventPayload eventPayload) {
+  default CompletableFuture<Boolean> match(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader, DataImportEventPayload eventPayload) {
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
     ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
     MatchProfile matchProfile;
     if (matchingProfileWrapper.getContent() instanceof Map) {
@@ -30,11 +31,19 @@ public interface Matcher {
 
     Value value = matchValueReader.read(eventPayload, matchDetail);
     LoadQuery query = LoadQueryBuilder.build(value, matchDetail);
-    LoadResult result = matchValueLoader.loadEntity(query, eventPayload);
-    if (result.getValue() != null) {
-      eventPayload.getContext().put(result.getEntityType(), result.getValue());
-      return true;
-    }
-    return false;
+    matchValueLoader.loadEntity(query, eventPayload)
+      .whenComplete((loadResult, throwable) -> {
+        if (throwable != null) {
+          future.completeExceptionally(throwable);
+        } else {
+          if (loadResult.getValue() != null) {
+            eventPayload.getContext().put(loadResult.getEntityType(), loadResult.getValue());
+            future.complete(true);
+          } else {
+            future.complete(false);
+          }
+        }
+      });
+    return future;
   }
 }

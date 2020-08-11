@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
@@ -26,11 +27,13 @@ public final class MatchingManager {
   private MatchingManager() {
   }
 
-  public static boolean match(DataImportEventPayload eventPayload) {
+  public static CompletableFuture<Boolean> match(DataImportEventPayload eventPayload) {
+    CompletableFuture<Boolean> future = new CompletableFuture<>();
     try {
       if (eventPayload.getCurrentNode().getContentType() != MATCH_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MATCH_PROFILE);
-        return false;
+        future.complete(false);
+        return future;
       }
       ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
       MatchProfile matchProfile;
@@ -41,10 +44,11 @@ public final class MatchingManager {
       }
       MatchValueReader reader = MatchValueReaderFactory.build(matchProfile.getIncomingRecordType());
       MatchValueLoader loader = MatchValueLoaderFactory.build(matchProfile.getExistingRecordType());
-      return new Matcher() {
+      future = new Matcher() {
       }.match(reader, loader, eventPayload);
     } catch (Exception e) {
-      throw new MatchingException(e);
+      future.completeExceptionally(new MatchingException(e));
     }
+    return future;
   }
 }
