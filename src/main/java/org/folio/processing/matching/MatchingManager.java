@@ -47,7 +47,7 @@ public final class MatchingManager {
       future = new Matcher() {
       }.match(reader, loader, eventPayload);
     } catch (Exception e) {
-      future.completeExceptionally(e);
+      future.completeExceptionally(new MatchingException(e));
     }
     return future;
   }

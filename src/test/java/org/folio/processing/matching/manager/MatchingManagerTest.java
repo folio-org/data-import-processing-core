@@ -5,6 +5,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.MatchProfile;
+import org.folio.processing.exceptions.MatchingException;
 import org.folio.processing.matching.MatchingManager;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
@@ -84,7 +85,7 @@ public class MatchingManagerTest {
     // then
     result.whenComplete((matched, throwable) -> {
       testContext.assertNotNull(throwable);
-      testContext.assertTrue(throwable instanceof RuntimeException);
+      testContext.assertTrue(throwable instanceof MatchingException);
     });
   }
 
@@ -110,7 +111,7 @@ public class MatchingManagerTest {
     // then
     result.whenComplete((matched, throwable) -> {
       testContext.assertNotNull(throwable);
-      testContext.assertTrue(throwable instanceof RuntimeException);
+      testContext.assertTrue(throwable instanceof MatchingException);
     });
   }
 
