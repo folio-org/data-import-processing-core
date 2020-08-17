@@ -624,11 +624,7 @@
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Edition Peters, no. 66303",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "C. F. Peters Corp.",
+        "value": "Edition Peters, no. 66303 C. F. Peters Corp.",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -1238,11 +1234,7 @@
     "series": [],
     "identifiers": [
       {
-        "value": "OCR 46",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Ocora",
+        "value": "OCR 46 Ocora",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -3674,143 +3666,71 @@
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945120",
+        "value": "5099969945120 (box set)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "(box set)",
+        "value": "5099969945120 Apple Corps Ltd. (box set)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945120",
+        "value": "5099969945229 Apple Corps Ltd. $q (Please please me)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd.",
+        "value": "5099969945328 Apple Corps Ltd. $q (With the Beatles)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "(box set)",
+        "value": "5099969945427 Apple Corps Ltd. $q (Hard day's night)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945229",
+        "value": "5099969945526 Apple Corps Ltd. $q (Beatles for sale)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd. $q (Please please me)",
+        "value": "5099969945625 Apple Corps Ltd. $q (Help!)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945328",
+        "value": "5099969945724 Apple Corps Ltd. $q (Rubber soul)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd. $q (With the Beatles)",
+        "value": "5099969945823 Apple Corps Ltd. $q (Revolver)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945427",
+        "value": "5099969945922 Apple Corps Ltd. $q (Sgt. Pepper's Lonely Hearts Club Band)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd. $q (Hard day's night)",
+        "value": "5099969946028 Apple Corps Ltd. $q (Magical mystery tour)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945526",
+        "value": "5099968495725 Apple Corps Ltd. $q (The Beatles, 2 CD set)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd. $q (Beatles for sale)",
+        "value": "5099969946127 Apple Corps Ltd. $q (The Beatles, CD 1)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945625",
+        "value": "5099969946226 Apple Corps Ltd. $q (The Beatles, CD 2)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd. $q (Help!)",
+        "value": "5099968495824 Apple Corps Ltd. $q (Mono masters, 2 CD set)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "5099969945724",
+        "value": "5099969946325 Apple Corps Ltd. $q (Mono masters, disc 1)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Apple Corps Ltd. $q (Rubber soul)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969945823",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (Revolver)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969945922",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (Sgt. Pepper's Lonely Hearts Club Band)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969946028",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (Magical mystery tour)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099968495725",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (The Beatles, 2 CD set)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969946127",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (The Beatles, CD 1)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969946226",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (The Beatles, CD 2)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099968495824",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (Mono masters, 2 CD set)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969946325",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (Mono masters, disc 1)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "5099969946424",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Apple Corps Ltd. $q (Mono masters, disc 2)",
+        "value": "5099969946424 Apple Corps Ltd. $q (Mono masters, disc 2)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -4484,19 +4404,11 @@
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "00881626932827",
+        "value": "00881626932827 gtin-14",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "gtin-14",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "iAS-CD/DVD-005",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "iASO Records",
+        "value": "iAS-CD/DVD-005 iASO Records",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -5117,11 +5029,7 @@
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "B0018946-02",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Decca",
+        "value": "B0018946-02 Decca",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -6034,39 +5942,15 @@
     "series": [],
     "identifiers": [
       {
-        "value": "FM 21-100",
+        "value": "FM 21-100 Third Man Records (manual)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Third Man Records",
+        "value": "203-1--203-12 Third Man Records (discs)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "(manual)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "203-1--203-12",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Third Man Records",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "(discs)",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "TMR203",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Third Man Records",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "(publisher's website)",
+        "value": "TMR203 Third Man Records (publisher's website)",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -7122,11 +7006,7 @@
     "series": [],
     "identifiers": [
       {
-        "value": "ARP 2017-02-02a",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Aki Rhythm Press",
+        "value": "ARP 2017-02-02a Aki Rhythm Press",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -7230,27 +7110,15 @@
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "140813",
+        "value": "140813 Ricordi",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "Ricordi",
+        "value": "140813 Ricordi",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "140813",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Ricordi",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "NR 14081300",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "Ricordi",
+        "value": "NR 14081300 Ricordi",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -7485,11 +7353,7 @@
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
-        "value": "0004501710611",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "danacode",
+        "value": "0004501710611 danacode",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
@@ -8200,11 +8064,7 @@
     "series": [],
     "identifiers": [
       {
-        "value": "00190295755553",
-        "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
-      },
-      {
-        "value": "gtin-14",
+        "value": "00190295755553 gtin-14",
         "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       },
       {
