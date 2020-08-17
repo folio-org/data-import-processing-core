@@ -5,7 +5,6 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATC
 import java.util.Map;
 
 import org.folio.DataImportEventPayload;
-import org.folio.MatchDetail;
 import org.folio.MatchProfile;
 import org.folio.processing.exceptions.MatchingException;
 import org.folio.processing.matching.loader.MatchValueLoader;
@@ -17,12 +16,8 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
-import io.netty.util.internal.StringUtil;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -30,8 +25,6 @@ import io.vertx.core.json.JsonObject;
  */
 public final class MatchingManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(MatchingManager.class);
-  private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
-  private static final String RELATIONS = "MATCHING_PARAMETERS_RELATIONS";
 
   private MatchingManager() {
   }
@@ -59,22 +52,5 @@ public final class MatchingManager {
       future.completeExceptionally(new MatchingException(e));
     }
     return future;
-  }
-
-  public static String retrieveIdFromContext(MatchDetail matchDetail, DataImportEventPayload eventPayload) {
-    JsonObject matchingParams = new JsonObject(eventPayload.getContext().get(MAPPING_PARAMS));
-    JsonObject relations = new JsonObject(eventPayload.getContext().get(RELATIONS));
-    String relation = String.valueOf(relations.getJsonObject("matchingRelations")
-      .getMap().get(matchDetail.getExistingMatchExpression().getFields().get(0).getValue()));
-    JsonArray jsonArray = matchingParams.getJsonArray(relation);
-
-    for (int i = 0; i < jsonArray.size(); i++) {
-      if (jsonArray.getJsonObject(i).getString("name")
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())) {
-        JsonObject result = jsonArray.getJsonObject(i);
-        return result.getString("id");
-      }
-    }
-    return StringUtil.EMPTY_STRING;
   }
 }
