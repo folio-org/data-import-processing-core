@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.writer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
 import org.folio.processing.value.BooleanValue;
@@ -27,6 +28,8 @@ import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELET
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
+
+import com.google.common.collect.Lists;
 
 @RunWith(JUnit4.class)
 public class JsonBasedWriterUnitTest {
@@ -472,14 +475,31 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\"]}}");
+    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID2"), DELETE_INCOMING));
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Lists.newArrayList("UUID1", "UUID2", "UUID3"), DELETE_INCOMING));
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\"]}}";
+    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID4\"]}}";
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals(expectedInstance, resultInstance);
+  }
+
+  @Test
+  public void shouldWrite_ListDeleteIncomingValuesIfNonMatch() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Lists.newArrayList("UUID6", "UUID7", "UUID8"), DELETE_INCOMING));
+    WRITER.getResult(eventContext);
+    // then
+    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -584,4 +604,21 @@ public class JsonBasedWriterUnitTest {
     assertEquals("{}", resultInstance);
   }
 
+
+  @Test
+  public void shouldDeleteOnWrite_StringValue() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"title\":\"bla\", \"catalogedDate\": \"1970-01-01T00:00:00\"}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    StringValue value = StringValue.of(StringUtils.EMPTY, true);
+    WRITER.write("instance.catalogedDate", value);
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"title\":\"bla\"}}", resultInstance);
+  }
 }

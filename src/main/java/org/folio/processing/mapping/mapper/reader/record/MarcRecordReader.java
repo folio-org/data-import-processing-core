@@ -38,11 +38,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.folio.processing.value.Value.ValueType.LIST;
 
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
@@ -59,6 +61,7 @@ public class MarcRecordReader implements Reader {
   private final static String MARC_SPLITTER = "/";
   private final static String MARC_BYTES_SPLITTER = "-";
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
+  private static final String REMOVE_PLACEHOLDER = "###REMOVE###";
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
   public static final String[] DATE_FORMATS = new String[]{ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
 
@@ -100,7 +103,7 @@ public class MarcRecordReader implements Reader {
       if (ruleExpression.getBooleanFieldAction() != null) {
         return BooleanValue.of(ruleExpression.getBooleanFieldAction());
       } else if (ruleExpression.getSubfields().isEmpty() && isNotEmpty(ruleExpression.getValue())) {
-        return readSingleField(ruleExpression);
+        return readSingleField(ruleExpression, false);
       } else if (!ruleExpression.getSubfields().isEmpty() && ruleExpression.getRepeatableFieldAction() != null) {
         return readRepeatableField(ruleExpression);
       } else if (ruleExpression.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
@@ -112,7 +115,7 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
-  private Value readSingleField(MappingRule ruleExpression) {
+  private Value readSingleField(MappingRule ruleExpression, boolean isRepeatableField) {
     String[] expressions = ruleExpression.getValue().split(EXPRESSIONS_DIVIDER);
     boolean arrayValue = ruleExpression.getPath().endsWith(EXPRESSIONS_ARRAY);
     List<String> resultList = new ArrayList<>();
@@ -123,15 +126,17 @@ public class MarcRecordReader implements Reader {
         if (MARC_PATTERN.matcher(expressionPart).matches()
           || (MARC_CONTROLLED.matcher(expressionPart).matches())
           || (MARC_LEADER.matcher(expressionPart).matches())) {
-          processMARCExpression(arrayValue, resultList, sb, expressionPart, ruleExpression);
+          processMARCExpression(arrayValue, isRepeatableField, resultList, sb, expressionPart, ruleExpression);
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
           processStringExpression(ruleExpression, arrayValue, resultList, sb, expressionPart);
         } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
           processTodayExpression(sb);
+        } else if (REMOVE_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
+          return StringValue.of(expressionPart, true);
         }
       }
       resultList.remove(StringUtils.SPACE);
-      if (arrayValue && !resultList.isEmpty()) {
+      if ((arrayValue || isRepeatableField) && !resultList.isEmpty()) {
         return ListValue.of(resultList);
       }
       if (isNotBlank(sb.toString())) {
@@ -141,9 +146,9 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
-  private void processMARCExpression(boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
+  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart);
-    if (arrayValue) {
+    if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
       resultList.addAll(marcValues);
     } else {
       marcValues.forEach(v -> {
@@ -185,25 +190,49 @@ public class MarcRecordReader implements Reader {
   private Value readRepeatableField(MappingRule ruleExpression) {
     List<RepeatableSubfieldMapping> subfields = ruleExpression.getSubfields();
     MappingRule.RepeatableFieldAction action = ruleExpression.getRepeatableFieldAction();
+    boolean isRepeatableField = true;
     List<Map<String, Value>> repeatableObject = new ArrayList<>();
     List<String> repeatableStrings = new ArrayList<>();
 
     for (RepeatableSubfieldMapping subfieldMapping : subfields) {
+      List<Map<String, Value>> repeatableObjectItems = new ArrayList<>();
       HashMap<String, Value> object = new HashMap<>();
+      repeatableObjectItems.add(object);
       for (MappingRule mappingRule : subfieldMapping.getFields()) {
         if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
-          repeatableStrings.add(readRepeatableStringField(mappingRule));
+          if (STRING_VALUE_PATTERN.matcher(mappingRule.getValue()).matches()) {
+            repeatableStrings.add(readRepeatableStringField(mappingRule));
+          } else {
+            retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
+          }
         } else {
           Value value = mappingRule.getBooleanFieldAction() != null
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
-            : readSingleField(mappingRule);
-          object.put(mappingRule.getPath(), value);
+            : readSingleField(mappingRule, isRepeatableField);
+
+          if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {
+            ListValue listValue = (ListValue) value;
+            ensureRepeatableObjectItemsAmount(repeatableObjectItems, listValue.getValue().size());
+            fillInRepeatableObjectItemsWithValue(repeatableObjectItems, mappingRule.getPath(), listValue);
+          } else {
+            object.put(mappingRule.getPath(), value);
+          }
         }
       }
-      repeatableObject.add(object);
+      fillInRepeatableFieldItemsWithMissedProperties(repeatableObjectItems);
+      repeatableObject.addAll(repeatableObjectItems);
     }
     return repeatableStrings.isEmpty() ? RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath())
       : ListValue.of(repeatableStrings, ruleExpression.getRepeatableFieldAction());
+  }
+
+  private void retrieveValuesFromMarcRecord(List<String> repeatableStrings, MappingRule mappingRule) {
+    Value valueFromMarcFile = readSingleField(mappingRule, false);
+    if (valueFromMarcFile != null && valueFromMarcFile.getType() == LIST) {
+      for (String stringValue : (List<String>) valueFromMarcFile.getValue()) {
+        repeatableStrings.add(stringValue);
+      }
+    }
   }
 
   private String readRepeatableStringField(MappingRule mappingRule) {
@@ -216,6 +245,38 @@ public class MarcRecordReader implements Reader {
       }
     }
     return value;
+  }
+
+  private boolean shouldCreateItemPerRepeatedMarcField(Value.ValueType valueType, MappingRule mappingRule) {
+    return valueType == Value.ValueType.LIST && !mappingRule.getPath().endsWith(EXPRESSIONS_ARRAY);
+  }
+
+  private void ensureRepeatableObjectItemsAmount(List<Map<String, Value>> repeatableObjectItems, int necessaryAmount) {
+    int newItemsAmount = necessaryAmount - repeatableObjectItems.size();
+    for (int i = 0; i < newItemsAmount; i++) {
+      HashMap<String, Value> itemCopyWtihPreviousProperties = new HashMap<>(repeatableObjectItems.get(0));
+      repeatableObjectItems.add(itemCopyWtihPreviousProperties);
+    }
+  }
+
+  private void fillInRepeatableObjectItemsWithValue(List<Map<String, Value>> repeatableObjectItems, String path, ListValue value) {
+    List<String> values = (List<String>) value.getValue();
+    for (int i = 0; i < values.size(); i++) {
+      repeatableObjectItems.get(i).put(path, StringValue.of(values.get(i)));
+    }
+  }
+
+  private void fillInRepeatableFieldItemsWithMissedProperties(List<Map<String, Value>> repeatableFieldItems) {
+    Map<String, Value> firstRepeatableFieldItem = repeatableFieldItems.get(0);
+    Set<Map.Entry<String, Value>> propertiesToFillIn = firstRepeatableFieldItem.entrySet();
+    for (Map.Entry<String, Value> property : propertiesToFillIn) {
+      for (int i = 1; i < repeatableFieldItems.size(); i++) {
+        Map<String, Value> itemToFillProperty = repeatableFieldItems.get(i);
+        if (itemToFillProperty.get(property.getKey()) == null) {
+          itemToFillProperty.put(property.getKey(), property.getValue());
+        }
+      }
+    }
   }
 
   private List<String> readValuesFromMarcRecord(String marcPath) {

@@ -35,11 +35,13 @@ import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELET
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class MarcRecordReaderUnitTest {
   private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
   private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
+  private final String RECORD_WITH_MULTIPLE_856 = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"856\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"u\": \"https://fod.infobase.com\" }, { \"z\": \"image\" } ] }}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"u\": \"https://cfvod.kaltura.com\" }, { \"z\": \"films collection\" }]} }]}";
 
   @Test
   public void shouldRead_Strings_FromRules() throws IOException {
@@ -427,6 +429,60 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldReadRepeatableFieldAndCreateFieldItemPerEverySpecifiedField() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    List<MappingRule> listRules = new ArrayList<>();
+
+    listRules.add(new MappingRule()
+      .withName("uri")
+      .withPath("holdings.electronicAccess[].uri")
+      .withEnabled("true")
+      .withValue("856$u"));
+    listRules.add(new MappingRule()
+      .withName("relationshipId")
+      .withPath("holdings.electronicAccess[].relationshipId")
+      .withEnabled("true")
+      .withValue("\"f5d0068e-6272-458e-8a81-b85e7b9a14aa\""));
+    listRules.add(new MappingRule()
+      .withName("linkText")
+      .withPath("holdings.electronicAccess[].linkText")
+      .withEnabled("true")
+      .withValue("856$z"));
+
+    Value value = reader.read(new MappingRule()
+      .withName("electronicAccess")
+      .withPath("holdings")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(singletonList(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath("holdings.electronicAccess[]")
+        .withFields(listRules))));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("holdings", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("holdings.electronicAccess[].uri", StringValue.of("https://fod.infobase.com"));
+    object1.put("holdings.electronicAccess[].relationshipId", StringValue.of("f5d0068e-6272-458e-8a81-b85e7b9a14aa"));
+    object1.put("holdings.electronicAccess[].linkText", StringValue.of("image"));
+
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("holdings.electronicAccess[].uri", StringValue.of("https://cfvod.kaltura.com"));
+    object2.put("holdings.electronicAccess[].relationshipId", StringValue.of("f5d0068e-6272-458e-8a81-b85e7b9a14aa"));
+    object2.put("holdings.electronicAccess[].linkText", StringValue.of("films collection"));
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "holdings")), JsonObject.mapFrom(value));
+  }
+
+  @Test
   public void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsDeleteExisting() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -531,13 +587,13 @@ public class MarcRecordReaderUnitTest {
       .withName("natureOfContentTermIds")
       .withPath("instance.natureOfContentTermIds[]")
       .withEnabled("true")
-      .withValue("school program")
+      .withValue("\"school program\"")
       .withAcceptedValues(acceptedValues);
     MappingRule fieldRule2 = new MappingRule()
       .withName("natureOfContentTermIds")
       .withPath("instance.natureOfContentTermIds[]")
       .withEnabled("true")
-      .withValue("literature report")
+      .withValue("\"literature report\"")
       .withAcceptedValues(acceptedValues);
 
     MappingRule mappingRule = new MappingRule()
@@ -561,5 +617,76 @@ public class MarcRecordReaderUnitTest {
     assertEquals(ValueType.LIST, value.getType());
     assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
     assertEquals(expectedFields, value.getValue());
+  }
+
+  @Test
+  public void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValue_FromRules() throws IOException {
+    // given
+    List<String> expectedFields = Arrays.asList("pcc", "UUID3");
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("UUID1", "website");
+    acceptedValues.put("UUID2", "school program");
+    acceptedValues.put("UUID3", "literature report");
+
+    MappingRule fieldRule1 = new MappingRule()
+      .withName("formerIds")
+      .withPath("instance.formerIds[]")
+      .withEnabled("true")
+      .withValue("042$a")
+      .withAcceptedValues(acceptedValues);
+    MappingRule fieldRule2 = new MappingRule()
+      .withName("formerIds")
+      .withPath("instance.formerIds[]")
+      .withEnabled("true")
+      .withValue("\"literature report\"")
+      .withAcceptedValues(acceptedValues);
+
+    MappingRule mappingRule = new MappingRule()
+      .withPath("instance.formerIds[]")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(Arrays.asList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("instance.formerIds[]")
+          .withFields(singletonList(fieldRule1)),
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("instance.formerIds[]")
+          .withFields(singletonList(fieldRule2))));
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
+    assertEquals(expectedFields, value.getValue());
+  }
+
+  @Test
+  public void shouldReadRemoveExpressionFromRules() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    Value value = reader.read(new MappingRule()
+      .withPath("catalogedDate")
+      .withValue("###REMOVE###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertTrue(((StringValue)(value)).shouldRemoveOnWrite());
   }
 }

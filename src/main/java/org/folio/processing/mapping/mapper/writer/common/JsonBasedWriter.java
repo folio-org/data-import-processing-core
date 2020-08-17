@@ -57,7 +57,9 @@ public class JsonBasedWriter extends AbstractWriter {
 
   @Override
   protected void writeStringValue(String fieldPath, StringValue stringValue) {
-    if (isNotEmpty(stringValue.getValue())) {
+    if (stringValue.shouldRemoveOnWrite()) {
+      removeFieldByFieldPath(fieldPath);
+    } else if (isNotEmpty(stringValue.getValue())) {
       TextNode textNode = new TextNode(stringValue.getValue());
       setValueByFieldPath(fieldPath, textNode);
     }
@@ -259,6 +261,20 @@ public class JsonBasedWriter extends AbstractWriter {
     }
   }
 
+  private void removeFieldByFieldPath(String fieldPath) {
+    FieldPathIterator fieldPathIterator = new FieldPathIterator(fieldPath);
+    JsonNode parentNode = entityNode;
+    entityNode.findPath(fieldPath);
+    while (fieldPathIterator.hasNext()) {
+      FieldPathIterator.PathItem pathItem = fieldPathIterator.next();
+      if (fieldPathIterator.hasNext()) {
+        parentNode = parentNode.get(pathItem.getName());
+      } else {
+        ((ObjectNode) parentNode).remove(pathItem.getName());
+      }
+    }
+  }
+
   @Override
   public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
     try {
@@ -298,14 +314,16 @@ public class JsonBasedWriter extends AbstractWriter {
     JsonNode result = entityNode;
     int startPosition = 0;
     for (int i = 0; i < nestedCount; i++) {
-      if (currentPath.indexOf('.', startPosition) != -1) {
-        result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
-        startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
-      } else {
-        if (remove) {
-          ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1));
+      if (result != null) {
+        if (currentPath.indexOf('.', startPosition) != -1) {
+          result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
+          startPosition += (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
         } else {
-          result = result.get(currentPath.substring(startPosition));
+          if (remove) {
+            ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1));
+          } else {
+            result = result.get(currentPath.substring(startPosition));
+          }
         }
       }
     }
@@ -330,9 +348,11 @@ public class JsonBasedWriter extends AbstractWriter {
   private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
     if (foundNode != null && foundNode.size() != 0) {
       ArrayNode arrayNode = (ArrayNode) foundNode;
-      for (int i = 0; i < arrayNode.size(); i++) {
-        if (listValue.getValue().contains(arrayNode.get(i).textValue())) {
-          arrayNode.remove(i);
+      int indexForDelete = 0;
+      for (int i = 0; i < arrayNode.size() + 1; i++) {
+        if (arrayNode.get(i - indexForDelete) != null && listValue.getValue().contains(arrayNode.get(i - indexForDelete).textValue())) {
+          arrayNode.remove(i - indexForDelete);
+          indexForDelete++;
         }
       }
     }

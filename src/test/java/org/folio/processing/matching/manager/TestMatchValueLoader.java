@@ -6,15 +6,19 @@ import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.rest.jaxrs.model.EntityType;
 
+import java.util.concurrent.CompletableFuture;
+
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class TestMatchValueLoader implements MatchValueLoader {
   @Override
-  public LoadResult loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload) {
+  public CompletableFuture<LoadResult> loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload) {
+    CompletableFuture<LoadResult> future = new CompletableFuture<>();
     LoadResult result = new LoadResult();
     result.setValue("Some value");
     result.setEntityType("MARC");
-    return result;
+    future.complete(result);
+    return future;
   }
 
   @Override
