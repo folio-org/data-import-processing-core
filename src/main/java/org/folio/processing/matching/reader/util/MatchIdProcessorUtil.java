@@ -24,11 +24,11 @@ public final class MatchIdProcessorUtil {
   private MatchIdProcessorUtil() {
   }
 
-  public static Value retrieveIdFromContext(MatchDetail matchDetail, DataImportEventPayload eventPayload, Value value) {
+  public static Value retrieveIdFromContext(String field, DataImportEventPayload eventPayload, Value value) {
     JsonObject matchingParams = new JsonObject(eventPayload.getContext().get(MAPPING_PARAMS));
     JsonObject relations = new JsonObject(eventPayload.getContext().get(RELATIONS));
     String relation = String.valueOf(relations.getJsonObject("matchingRelations")
-      .getMap().get(matchDetail.getExistingMatchExpression().getFields().get(0).getValue()));
+      .getMap().get(field));
     JsonArray jsonArray = matchingParams.getJsonArray(relation);
     if (jsonArray == null) {
       return value;

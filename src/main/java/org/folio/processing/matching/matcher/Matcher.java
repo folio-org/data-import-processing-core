@@ -32,8 +32,9 @@ public interface Matcher {
     MatchDetail matchDetail = matchProfile.getMatchDetails().get(0);
 
     Value value = matchValueReader.read(eventPayload, matchDetail);
-    if (value.getType().equals(Value.ValueType.STRING)) {
-      value = MatchIdProcessorUtil.retrieveIdFromContext(matchDetail, eventPayload, value);
+    if (value != null && value.getType().equals(Value.ValueType.STRING)) {
+      value = MatchIdProcessorUtil.retrieveIdFromContext(matchDetail.getExistingMatchExpression().getFields().get(0).getValue(),
+        eventPayload, value);
     }
 
     eventPayload.getContext().remove("MATCHING_PARAMETERS_RELATIONS");
