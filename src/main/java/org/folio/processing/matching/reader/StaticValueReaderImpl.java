@@ -74,34 +74,34 @@ public class StaticValueReaderImpl implements MatchValueReader {
       .getMap().get(matchDetail.getExistingMatchExpression().getFields().get(0).getValue()));
     JsonArray jsonArray = matchingParams.getJsonArray(relation);
     if (jsonArray == null) {
-      return matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim();
+      return matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText();
     }
     if (relation.equals(LOCATIONS_PROPERTY)) {
       return checkMatchByLocation(matchDetail, jsonArray);
     }
     for (int i = 0; i < jsonArray.size(); i++) {
       if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())) {
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())) {
         JsonObject result = jsonArray.getJsonObject(i);
         return result.getString(ID_PROPERTY);
       }
     }
     eventPayload.getContext().remove(RELATIONS);
-    return StringUtil.EMPTY_STRING;
+    return null;
   }
 
   private static String checkMatchByLocation(MatchDetail matchDetail, JsonArray jsonArray) {
     for (int i = 0; i < jsonArray.size(); i++) {
       if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())
         || jsonArray.getJsonObject(i).getString(CODE_PROPERTY)
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())
         || (String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY), jsonArray.getJsonObject(i).getString(CODE_PROPERTY)))
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())) {
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())) {
         JsonObject result = jsonArray.getJsonObject(i);
         return result.getString(ID_PROPERTY);
       }
     }
-    return StringUtil.EMPTY_STRING;
+    return null;
   }
 }
