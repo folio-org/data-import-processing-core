@@ -1,7 +1,6 @@
 package org.folio.processing.matching.reader;
 
 import java.util.Date;
-
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.processing.value.DateValue;
@@ -23,16 +22,11 @@ public class StaticValueReaderImpl implements MatchValueReader {
     if (matchExpression.getDataValueType() == STATIC_VALUE && nonNull(matchExpression.getStaticValueDetails())) {
       StaticValueDetails staticValueDetails = matchExpression.getStaticValueDetails();
       switch (staticValueDetails.getStaticValueType()) {
-        case TEXT:
-          return obtainStringValue(staticValueDetails.getText());
-        case NUMBER:
-          return obtainStringValue(staticValueDetails.getNumber());
-        case EXACT_DATE:
-          return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
-        case DATE_RANGE:
-          return obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
-        default:
-          return MissingValue.getInstance();
+        case TEXT: return obtainStringValue(staticValueDetails.getText());
+        case NUMBER: return obtainStringValue(staticValueDetails.getNumber());
+        case EXACT_DATE: return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
+        case DATE_RANGE: return obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
+        default: return MissingValue.getInstance();
       }
     }
     return MissingValue.getInstance();
