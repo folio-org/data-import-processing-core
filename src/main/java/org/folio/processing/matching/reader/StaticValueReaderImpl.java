@@ -15,18 +15,7 @@ import org.folio.rest.jaxrs.model.StaticValueDetails;
 import static java.util.Objects.nonNull;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
 
-import io.netty.util.internal.StringUtil;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
 public class StaticValueReaderImpl implements MatchValueReader {
-
-  private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
-  private static final String RELATIONS = "MATCHING_PARAMETERS_RELATIONS";
-  private static final String NAME_PROPERTY = "name";
-  private static final String ID_PROPERTY = "id";
-  private static final String CODE_PROPERTY = "code";
-  private static final String LOCATIONS_PROPERTY = "locations";
 
   @Override
   public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
@@ -35,9 +24,9 @@ public class StaticValueReaderImpl implements MatchValueReader {
       StaticValueDetails staticValueDetails = matchExpression.getStaticValueDetails();
       switch (staticValueDetails.getStaticValueType()) {
         case TEXT:
-          return obtainStringValue(matchDetail, eventPayload);
+          return obtainStringValue(staticValueDetails.getText());
         case NUMBER:
-          return obtainNumberValue(staticValueDetails.getNumber());
+          return obtainStringValue(staticValueDetails.getNumber());
         case EXACT_DATE:
           return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
         case DATE_RANGE:
@@ -54,54 +43,11 @@ public class StaticValueReaderImpl implements MatchValueReader {
     return incomingRecordType == EntityType.STATIC_VALUE;
   }
 
-  private Value obtainStringValue(MatchDetail matchDetail, DataImportEventPayload eventPayload) {
-    String id = retrieveIdFromContext(matchDetail, eventPayload);
-    return nonNull(id) ? StringValue.of(id) : MissingValue.getInstance();
-  }
-
-  private Value obtainNumberValue(String value) {
+  private Value obtainStringValue(String value) {
     return nonNull(value) ? StringValue.of(value) : MissingValue.getInstance();
   }
 
   private Value obtainDateValue(Date from, Date to) {
     return nonNull(from) && nonNull(to) ? DateValue.of(from, to) : MissingValue.getInstance();
-  }
-
-  public static String retrieveIdFromContext(MatchDetail matchDetail, DataImportEventPayload eventPayload) {
-    JsonObject matchingParams = new JsonObject(eventPayload.getContext().get(MAPPING_PARAMS));
-    JsonObject relations = new JsonObject(eventPayload.getContext().get(RELATIONS));
-    String relation = String.valueOf(relations.getJsonObject("matchingRelations")
-      .getMap().get(matchDetail.getExistingMatchExpression().getFields().get(0).getValue()));
-    JsonArray jsonArray = matchingParams.getJsonArray(relation);
-    if (jsonArray == null) {
-      return matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText();
-    }
-    if (relation.equals(LOCATIONS_PROPERTY)) {
-      return checkMatchByLocation(matchDetail, jsonArray);
-    }
-    for (int i = 0; i < jsonArray.size(); i++) {
-      if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())) {
-        JsonObject result = jsonArray.getJsonObject(i);
-        return result.getString(ID_PROPERTY);
-      }
-    }
-    eventPayload.getContext().remove(RELATIONS);
-    return null;
-  }
-
-  private static String checkMatchByLocation(MatchDetail matchDetail, JsonArray jsonArray) {
-    for (int i = 0; i < jsonArray.size(); i++) {
-      if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())
-        || jsonArray.getJsonObject(i).getString(CODE_PROPERTY)
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())
-        || (String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY), jsonArray.getJsonObject(i).getString(CODE_PROPERTY)))
-        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText())) {
-        JsonObject result = jsonArray.getJsonObject(i);
-        return result.getString(ID_PROPERTY);
-      }
-    }
-    return null;
   }
 }
