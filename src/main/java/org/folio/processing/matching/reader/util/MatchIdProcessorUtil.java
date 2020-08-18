@@ -1,7 +1,6 @@
 package org.folio.processing.matching.reader.util;
 
 import org.folio.DataImportEventPayload;
-import org.folio.MatchDetail;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
