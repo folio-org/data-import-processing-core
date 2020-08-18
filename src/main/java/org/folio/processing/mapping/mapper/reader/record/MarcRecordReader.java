@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -50,7 +51,7 @@ import static org.folio.processing.value.Value.ValueType.LIST;
 public class MarcRecordReader implements Reader {
   private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
 
-  private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z]$){0,2})");
+  private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
   private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
   private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
   private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
@@ -135,7 +136,7 @@ public class MarcRecordReader implements Reader {
           return StringValue.of(expressionPart, true);
         }
       }
-      resultList.remove(StringUtils.SPACE);
+      resultList = resultList.stream().filter(r -> isNotBlank(r)).collect(Collectors.toList());
       if ((arrayValue || isRepeatableField) && !resultList.isEmpty()) {
         return ListValue.of(resultList);
       }
@@ -147,7 +148,7 @@ public class MarcRecordReader implements Reader {
   }
 
   private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
-    List<String> marcValues = readValuesFromMarcRecord(expressionPart);
+    List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m->isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
       resultList.addAll(marcValues);
     } else {
