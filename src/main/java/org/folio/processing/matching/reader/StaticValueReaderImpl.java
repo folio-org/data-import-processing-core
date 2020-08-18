@@ -1,6 +1,7 @@
 package org.folio.processing.matching.reader;
 
 import java.util.Date;
+
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.processing.value.DateValue;
@@ -22,6 +23,10 @@ public class StaticValueReaderImpl implements MatchValueReader {
 
   private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
   private static final String RELATIONS = "MATCHING_PARAMETERS_RELATIONS";
+  private static final String NAME_PROPERTY = "name";
+  private static final String ID_PROPERTY = "id";
+  private static final String CODE_PROPERTY = "code";
+  private static final String LOCATIONS_PROPERTY = "locations";
 
   @Override
   public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
@@ -29,11 +34,16 @@ public class StaticValueReaderImpl implements MatchValueReader {
     if (matchExpression.getDataValueType() == STATIC_VALUE && nonNull(matchExpression.getStaticValueDetails())) {
       StaticValueDetails staticValueDetails = matchExpression.getStaticValueDetails();
       switch (staticValueDetails.getStaticValueType()) {
-        case TEXT: return obtainStringValue(matchDetail, eventPayload);
-        case NUMBER: return obtainNumberValue(staticValueDetails.getNumber());
-        case EXACT_DATE: return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
-        case DATE_RANGE: return obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
-        default: return MissingValue.getInstance();
+        case TEXT:
+          return obtainStringValue(matchDetail, eventPayload);
+        case NUMBER:
+          return obtainNumberValue(staticValueDetails.getNumber());
+        case EXACT_DATE:
+          return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
+        case DATE_RANGE:
+          return obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
+        default:
+          return MissingValue.getInstance();
       }
     }
     return MissingValue.getInstance();
@@ -63,15 +73,35 @@ public class StaticValueReaderImpl implements MatchValueReader {
     String relation = String.valueOf(relations.getJsonObject("matchingRelations")
       .getMap().get(matchDetail.getExistingMatchExpression().getFields().get(0).getValue()));
     JsonArray jsonArray = matchingParams.getJsonArray(relation);
-
+    if (jsonArray == null) {
+      return matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim();
+    }
+    if (relation.equals(LOCATIONS_PROPERTY)) {
+      return checkMatchByLocation(matchDetail, jsonArray);
+    }
     for (int i = 0; i < jsonArray.size(); i++) {
-      if (jsonArray.getJsonObject(i).getString("name")
+      if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
         .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())) {
         JsonObject result = jsonArray.getJsonObject(i);
-        return result.getString("id");
+        return result.getString(ID_PROPERTY);
       }
     }
     eventPayload.getContext().remove(RELATIONS);
+    return StringUtil.EMPTY_STRING;
+  }
+
+  private static String checkMatchByLocation(MatchDetail matchDetail, JsonArray jsonArray) {
+    for (int i = 0; i < jsonArray.size(); i++) {
+      if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())
+        || jsonArray.getJsonObject(i).getString(CODE_PROPERTY)
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())
+        || (String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY), jsonArray.getJsonObject(i).getString(CODE_PROPERTY)))
+        .equals(matchDetail.getIncomingMatchExpression().getStaticValueDetails().getText().trim())) {
+        JsonObject result = jsonArray.getJsonObject(i);
+        return result.getString(ID_PROPERTY);
+      }
+    }
     return StringUtil.EMPTY_STRING;
   }
 }

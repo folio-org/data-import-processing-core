@@ -31,6 +31,8 @@ public interface Matcher {
     MatchDetail matchDetail = matchProfile.getMatchDetails().get(0);
 
     Value value = matchValueReader.read(eventPayload, matchDetail);
+
+    eventPayload.getContext().remove("MATCHING_PARAMETERS_RELATIONS");
     LoadQuery query = LoadQueryBuilder.build(value, matchDetail);
     matchValueLoader.loadEntity(query, eventPayload)
       .whenComplete((loadResult, throwable) -> {
