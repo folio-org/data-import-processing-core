@@ -126,6 +126,205 @@ public class MarcValueReaderTest {
   }
 
   @Test
+  public void shouldRead_SubfieldValue_WithIndicatorAsterisk() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("050"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue("*"),
+          new Field().withLabel("recordSubfield").withValue("b")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals(".A43 2011", result.getValue());
+  }
+
+  @Test
+  public void shouldRead_SubfieldValue_WithFirstIndicatorAsterisk() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("050"),
+          new Field().withLabel("indicator1").withValue("*"),
+          new Field().withLabel("indicator2").withValue("4"),
+          new Field().withLabel("recordSubfield").withValue("b")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals(".A43 2011", result.getValue());
+  }
+
+  @Test
+  public void shouldRead_SubfieldValue_WithFirstEmptyIndicator() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("050"),
+          new Field().withLabel("indicator1").withValue(""),
+          new Field().withLabel("indicator2").withValue("4"),
+          new Field().withLabel("recordSubfield").withValue("b")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals(".A43 2011", result.getValue());
+  }
+
+  @Test
+  public void shouldRead_SubfieldValue_WithFirstSpaceIndicator() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("050"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue("4"),
+          new Field().withLabel("recordSubfield").withValue("b")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals(".A43 2011", result.getValue());
+  }
+
+  @Test
+  public void shouldRead_SubfieldValue_WithFirstEmptyIndicatorAndSecondAsterisk() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("050"),
+          new Field().withLabel("indicator1").withValue(""),
+          new Field().withLabel("indicator2").withValue("*"),
+          new Field().withLabel("recordSubfield").withValue("b")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals(".A43 2011", result.getValue());
+  }
+
+  @Test
+  public void shouldNotRead_SubfieldValue_WithTwoEmptyIndicators() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("050"),
+          new Field().withLabel("indicator1").withValue(""),
+          new Field().withLabel("indicator2").withValue(""),
+          new Field().withLabel("recordSubfield").withValue("b")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(MISSING, result.getType());
+  }
+
+  @Test
+  public void shouldRead_SubfieldValue_WithTwoEmptyIndicators() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("250"),
+          new Field().withLabel("indicator1").withValue(""),
+          new Field().withLabel("indicator2").withValue(""),
+          new Field().withLabel("recordSubfield").withValue("a")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("2nd ed.", result.getValue());
+  }
+
+  @Test
+  public void shouldRead_SubfieldValue_WithTwoAstersiskIndicators() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("250"),
+          new Field().withLabel("indicator1").withValue("*"),
+          new Field().withLabel("indicator2").withValue("*"),
+          new Field().withLabel("recordSubfield").withValue("a")
+        )));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(STRING, result.getType());
+    assertEquals("2nd ed.", result.getValue());
+  }
+
+  @Test
   public void shouldReturn_MissingValue_IfNoSuchField() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
