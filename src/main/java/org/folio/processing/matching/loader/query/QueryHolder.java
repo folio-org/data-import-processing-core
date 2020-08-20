@@ -27,8 +27,10 @@ public class QueryHolder {
 
   private String sqlQuery;
   private String cqlQuery;
+  private Value value;
 
   public QueryHolder(Value value, MatchDetail.MatchCriterion matchCriterion) {
+    this.value = value;
     if (value.getType() == Value.ValueType.DATE) {
       this.sqlQuery = constructDateRangeSQLQuery((DateValue) value);
       this.cqlQuery = constructDateRangeCQLQuery((DateValue) value);
@@ -75,7 +77,7 @@ public class QueryHolder {
   }
 
   public QueryHolder replaceCqlFieldReference(String fieldPath, boolean isJson) {
-    cqlQuery = isJson ? cqlQuery.replace(FIELD_NAME, fieldPath) : EMPTY;
+    cqlQuery = isJson ? replaceJsonFieldNameForCQLQuery(fieldPath) : EMPTY;
     return this;
   }
 
@@ -153,5 +155,26 @@ public class QueryHolder {
 
   private String constructDateRangeCQLQuery(DateValue value) {
     return format("FIELD_NAME >= \"%s\" AND FIELD_NAME <= \"%sT23:59:59.999\"", value.getFromDate(), value.getToDate());
+  }
+
+  private String replaceJsonFieldNameForCQLQuery(String fieldPath) {
+    if (fieldPath.contains(ARRAY_SIGN)) {
+      if (fieldPath.endsWith(ARRAY_SIGN)) {
+        return constructCQLFilterByArrayStringValue(fieldPath);
+      } else {
+        return constructCQLFilterByFieldValueOfArrayElement(fieldPath);
+      }
+    }
+    return cqlQuery.replace(FIELD_NAME, fieldPath);
+  }
+
+  private String constructCQLFilterByArrayStringValue(String fieldPath) {
+    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + value.getValue() + "\\\"";
+  }
+
+  private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath) {
+    return substringBefore(fieldPath, ARRAY_SIGN) + "=\"\\\""
+      + substringAfter(fieldPath, ARRAY_SIGN + ".") +
+      "\\\":\\\"" + value.getValue() + "\\\"\"";
   }
 }
