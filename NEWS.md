@@ -9,6 +9,7 @@
 * [MODDICORE-72](https://issues.folio.org/browse/MODDICORE-72) Create holdings fails because mapping for holdings statement is not working - BUGFIX
 * [MODDICORE-74](https://issues.folio.org/browse/MODDICORE-74) Create holdings fails because mapping for Former holdings ID is not working - BUGFIX
 * [MODDICORE-75](https://issues.folio.org/browse/MODDICORE-75) Two 856 fields smushed into 1 eAccess row in holdings record
+* [MODDICORE-76](https://issues.folio.org/browse/MODDICORE-76) Add support for wildcard indicators and empty indicators to the match engine
 
 ## 2020-07-08 v2.1.5
 * [MODDICORE-61](https://issues.folio.org/browse/MODDICORE-61) Field mappings: Repeatable fields dropdown action without subfields support

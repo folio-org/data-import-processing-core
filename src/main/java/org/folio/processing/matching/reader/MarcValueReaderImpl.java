@@ -2,7 +2,7 @@ package org.folio.processing.matching.reader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
+
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.Record;
@@ -14,6 +14,7 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -42,6 +43,7 @@ public class MarcValueReaderImpl implements MatchValueReader {
   private static final String IND_1_PROFILE_LABEL = "indicator1";
   private static final String IND_2_PROFILE_LABEL = "indicator2";
   private static final String SUBFIELD_PROFILE_LABEL = "recordSubfield";
+  private static final String ASTERISK_INDICATOR = "*";
 
   @Override
   public Value read(DataImportEventPayload eventPayload, MatchDetail matchDetail) {
@@ -113,8 +115,23 @@ public class MarcValueReaderImpl implements MatchValueReader {
   }
 
   private boolean isMatchingIdentifiers(JsonNode field, Map<String, String> matchExpressionFields) {
-    return field.findValue(MARC_IND_1_FIELD_NAME).textValue().equals(matchExpressionFields.get(IND_1_PROFILE_LABEL))
-      && field.findValue(MARC_IND_2_FIELD_NAME).textValue().equals(matchExpressionFields.get(IND_2_PROFILE_LABEL));
+    boolean isFirstIndicatorMatched = isIndicatorMatched(field, matchExpressionFields, IND_1_PROFILE_LABEL, MARC_IND_1_FIELD_NAME);
+    boolean isSecondIndicatorMatched = isIndicatorMatched(field, matchExpressionFields, IND_2_PROFILE_LABEL, MARC_IND_2_FIELD_NAME);
+    return isFirstIndicatorMatched && isSecondIndicatorMatched;
   }
 
+  private boolean isIndicatorMatched(JsonNode field, Map<String, String> matchExpressionFields,
+                                     String indicatorProfile, String indicatorFieldName) {
+    boolean isIndicatorMatched = false;
+    if (matchExpressionFields.get(indicatorProfile).equals(ASTERISK_INDICATOR)) {
+      isIndicatorMatched = true;
+    }
+    if (matchExpressionFields.get(indicatorProfile).trim().equals(StringUtils.EMPTY)) {
+      isIndicatorMatched = field.findValue(indicatorFieldName).textValue().equals(StringUtils.SPACE);
+    }
+    if (field.findValue(indicatorFieldName).textValue().equals(matchExpressionFields.get(indicatorProfile))) {
+      isIndicatorMatched = true;
+    }
+    return isIndicatorMatched;
+  }
 }
