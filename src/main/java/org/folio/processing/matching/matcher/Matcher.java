@@ -10,6 +10,7 @@ import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
 import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.processing.matching.reader.util.MatchIdProcessorUtil;
+import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
@@ -34,7 +35,7 @@ public interface Matcher {
     Value value = matchValueReader.read(eventPayload, matchDetail);
     if (value != null && value.getType().equals(Value.ValueType.STRING)) {
       value = MatchIdProcessorUtil.retrieveIdFromContext(matchDetail.getExistingMatchExpression().getFields().get(0).getValue(),
-        eventPayload, value);
+        eventPayload, (StringValue) value);
     }
 
     eventPayload.getContext().remove("MATCHING_PARAMETERS_RELATIONS");

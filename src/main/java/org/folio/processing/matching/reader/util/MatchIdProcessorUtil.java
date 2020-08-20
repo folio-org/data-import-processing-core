@@ -23,26 +23,24 @@ public final class MatchIdProcessorUtil {
   private MatchIdProcessorUtil() {
   }
 
-  public static Value retrieveIdFromContext(String field, DataImportEventPayload eventPayload, Value value) {
+  public static Value retrieveIdFromContext(String field, DataImportEventPayload eventPayload, StringValue value) {
     JsonObject matchingParams = new JsonObject(eventPayload.getContext().get(MAPPING_PARAMS));
     JsonObject relations = new JsonObject(eventPayload.getContext().get(RELATIONS));
-    String relation = String.valueOf(relations.getJsonObject("matchingRelations")
-      .getMap().get(field));
-    JsonArray jsonArray = matchingParams.getJsonArray(relation);
-    if (jsonArray == null) {
+    String relation = relations.getString(field);
+    if (relation == null) {
       return value;
     }
+    JsonArray jsonArray = matchingParams.getJsonArray(relation);
     if (relation.equals(LOCATIONS_PROPERTY)) {
-      return checkMatchByLocation(jsonArray, String.valueOf(value.getValue()));
+      return checkMatchByLocation(jsonArray, value.getValue());
     }
     for (int i = 0; i < jsonArray.size(); i++) {
       if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
-        .equals(String.valueOf(value.getValue()))) {
+        .equals(value.getValue())) {
         JsonObject result = jsonArray.getJsonObject(i);
         return StringValue.of(result.getString(ID_PROPERTY));
       }
     }
-    eventPayload.getContext().remove(RELATIONS);
     return MissingValue.getInstance();
   }
 
