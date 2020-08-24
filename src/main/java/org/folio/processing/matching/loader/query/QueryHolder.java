@@ -169,12 +169,16 @@ public class QueryHolder {
   }
 
   private String constructCQLFilterByArrayStringValue(String fieldPath) {
-    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + value.getValue() + "\\\"";
+    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + escapeSpecialCharacters(value) + "\\\"";
   }
 
   private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath) {
     return substringBefore(fieldPath, ARRAY_SIGN) + "=\"\\\""
       + substringAfter(fieldPath, ARRAY_SIGN + ".") +
-      "\\\":\\\"" + value.getValue() + "\\\"\"";
+      "\\\":\\\"" + escapeSpecialCharacters(value) + "\\\"\"";
+  }
+
+  private String escapeSpecialCharacters(Value value) {
+    return value.getValue().toString().replaceAll("([*?\"^])", "\\\\$0");
   }
 }
