@@ -1,6 +1,7 @@
 package org.folio.processing.matching.matcher;
 
 import io.vertx.core.json.JsonObject;
+
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.MatchProfile;
@@ -8,6 +9,8 @@ import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.loader.query.LoadQueryBuilder;
 import org.folio.processing.matching.reader.MatchValueReader;
+import org.folio.processing.matching.reader.util.MatchIdProcessorUtil;
+import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
@@ -30,6 +33,12 @@ public interface Matcher {
     MatchDetail matchDetail = matchProfile.getMatchDetails().get(0);
 
     Value value = matchValueReader.read(eventPayload, matchDetail);
+    if (value != null && value.getType().equals(Value.ValueType.STRING)) {
+      value = MatchIdProcessorUtil.retrieveIdFromContext(matchDetail.getExistingMatchExpression().getFields().get(0).getValue(),
+        eventPayload, (StringValue) value);
+    }
+
+    eventPayload.getContext().remove("MATCHING_PARAMETERS_RELATIONS");
     LoadQuery query = LoadQueryBuilder.build(value, matchDetail);
     matchValueLoader.loadEntity(query, eventPayload)
       .whenComplete((loadResult, throwable) -> {

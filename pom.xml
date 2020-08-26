@@ -28,6 +28,7 @@
     <vertx-unit.version>3.5.4</vertx-unit.version>
     <wiremock.version>2.19.0</wiremock.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
+    <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
     <sonar.exclusions>**/schemas/*</sonar.exclusions>
   </properties>
@@ -190,6 +191,20 @@
                 <path>${basedir}/ramls/settings/instanceformats.json</path>
                 <path>${basedir}/ramls/settings/instancenotetypes.json</path>
                 <path>${basedir}/ramls/settings/instancetypes.json</path>
+                <path>${basedir}/ramls/settings/instancestatuses.json</path>
+                <path>${basedir}/ramls/settings/natureofcontentterms.json</path>
+                <path>${basedir}/ramls/settings/instancerelationshiptypes.json</path>
+                <path>${basedir}/ramls/settings/holdingstypes.json</path>
+                <path>${basedir}/ramls/settings/holdingsnotetypes.json</path>
+                <path>${basedir}/ramls/settings/illpolicies.json</path>
+                <path>${basedir}/ramls/settings/callnumbertypes.json</path>
+                <path>${basedir}/ramls/settings/statisticalcodes.json</path>
+                <path>${basedir}/ramls/settings/statisticalcodetypes.json</path>
+                <path>${basedir}/ramls/settings/locations.json</path>
+                <path>${basedir}/ramls/settings/materialtypes.json</path>
+                <path>${basedir}/ramls/settings/itemdamagedstatuses.json</path>
+                <path>${basedir}/ramls/settings/loantypes.json</path>
+                <path>${basedir}/ramls/settings/itemnotetypes.json</path>
                 <path>${basedir}/ramls/settings/issuancemodes.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
