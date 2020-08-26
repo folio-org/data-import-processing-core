@@ -1,6 +1,9 @@
 package org.folio.processing.matching;
 
-import io.vertx.core.json.JsonObject;
+import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
+
+import java.util.Map;
+
 import org.folio.DataImportEventPayload;
 import org.folio.MatchProfile;
 import org.folio.processing.exceptions.MatchingException;
@@ -13,10 +16,9 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Matching Manager implementation, provides ability to perform matching

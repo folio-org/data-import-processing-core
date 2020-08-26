@@ -484,4 +484,73 @@ public class LoadQueryBuilderTest {
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayElement() {
+    // given
+    StringValue value = StringValue.of("boo");
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("holdings.electronicAccess[]"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements_text(holdings.jsonb -> 'electronicAccess') fields(field) WHERE field = '%s'", value.getValue());
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertNotNull(result.getCql());
+    String expectedCqlQuery = format("electronicAccess=\\\"%s\\\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayPath() {
+    // given
+    StringValue value = StringValue.of("https://www.emeraldinsight.com/loi/jepp");
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("holdings.electronicAccess[].uri"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(holdings.jsonb -> 'electronicAccess') fields(field) WHERE field ->> 'uri' = '%s'", value.getValue());
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertNotNull(result.getCql());
+    String expectedCqlQuery = format("electronicAccess=\"\\\"uri\\\":\\\"%s\\\"\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueWithSpecialCharactersJsonArrayPath() {
+    // given
+    StringValue value = StringValue.of("http://proxy2.missouristate.edu/login?url=https://fod.infobase.com/PortalPlaylists.aspx?wID=97835%26xtid=207292");
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("holdings.electronicAccess[].uri"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(holdings.jsonb -> 'electronicAccess') fields(field) WHERE field ->> 'uri' = '%s'", value.getValue());
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertNotNull(result.getCql());
+    String expectedCqlQuery = "electronicAccess=\"\\\"uri\\\":\\\"http://proxy2.missouristate.edu/login\\?url=https://fod.infobase.com/PortalPlaylists.aspx\\?wID=97835%26xtid=207292\\\"\"";
+    assertEquals(expectedCqlQuery, result.getCql());
+  }
+
 }
