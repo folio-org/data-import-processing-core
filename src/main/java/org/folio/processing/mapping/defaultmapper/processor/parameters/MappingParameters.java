@@ -25,6 +25,7 @@ import org.folio.Mtype;
 import org.folio.NatureOfContentTerm;
 import org.folio.StatisticalCode;
 import org.folio.StatisticalCodeType;
+import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,8 @@ public class MappingParameters {
   private List<ItemDamageStatus> itemDamageStatuses = new ArrayList<>();
   private List<Loantype> loanTypes = new ArrayList<>();
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
+  private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
+
 
   public MappingParameters withInitializedState(boolean initialized) {
     this.initialized = initialized;
@@ -325,6 +328,14 @@ public class MappingParameters {
     this.itemNoteTypes = itemNoteTypes;
   }
 
+  public List<MarcFieldProtectionSetting> getMarcFieldProtectionSettings() {
+    return marcFieldProtectionSettings;
+  }
+
+  public void setMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
+    this.marcFieldProtectionSettings = marcFieldProtectionSettings;
+  }
+
   public MappingParameters withInstanceRelationshipTypes(List<InstanceRelationshipType> instanceRelationshipTypes) {
     this.instanceRelationshipTypes = new UnmodifiableList<>(instanceRelationshipTypes);
     return this;
@@ -382,6 +393,11 @@ public class MappingParameters {
 
   public MappingParameters withItemNoteTypes(List<ItemNoteType> itemNoteTypes) {
     this.itemNoteTypes = new UnmodifiableList<>(itemNoteTypes);
+    return this;
+  }
+
+  public MappingParameters withMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
+    this.marcFieldProtectionSettings = new UnmodifiableList<>(marcFieldProtectionSettings);
     return this;
   }
 }
