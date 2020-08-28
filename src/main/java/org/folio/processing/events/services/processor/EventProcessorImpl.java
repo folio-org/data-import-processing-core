@@ -4,7 +4,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
-import org.folio.processing.exceptions.EventProcessingException;
+import org.folio.processing.exceptions.EventHandlerNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,8 @@ public class EventProcessorImpl implements EventProcessor {
           }
         });
       } else {
-        future.completeExceptionally(new EventProcessingException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
+        LOG.warn("No suitable handler found for {} event type and current profile {}", eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType());
+        future.completeExceptionally(new EventHandlerNotFoundException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
       }
     } catch (Exception e) {
       future.completeExceptionally(e);

@@ -139,7 +139,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
   }
 
   @Test
-  public void shouldHandleAsErrorEventIfNoHandlersDefined(TestContext testContext) {
+  public void shouldIgnoreEventIfNoHandlersDefined(TestContext testContext) {
     Async async = testContext.async();
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload()
@@ -160,8 +160,8 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.handleEvent(eventPayload).whenComplete((nextEventContext, throwable) -> {
       // then
       testContext.assertNull(throwable);
-      testContext.assertEquals(1, eventPayload.getEventsChain().size());
-      testContext.assertEquals("DI_ERROR", eventPayload.getEventType());
+      testContext.assertEquals(0, eventPayload.getEventsChain().size());
+      testContext.assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
       async.complete();
     });
   }

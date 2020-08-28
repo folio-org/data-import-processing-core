@@ -6,6 +6,8 @@ import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.EventProcessorImpl;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
+import org.folio.processing.exceptions.EventHandlerNotFoundException;
+import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
@@ -53,7 +56,7 @@ public final class EventManager {
       setCurrentNodeIfRoot(eventPayload);
       eventProcessor.process(eventPayload)
         .whenComplete((processPayload, processThrowable) ->
-          eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+          publishEventIfNecessary(eventPayload, processThrowable)
             .whenComplete((publishPayload, publishThrowable) -> {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
@@ -79,6 +82,14 @@ public final class EventManager {
     }
   }
 
+  private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, Throwable processThrowable) {
+    if (processThrowable instanceof EventHandlerNotFoundException) {
+      return CompletableFuture.completedFuture(false);
+    }
+    return eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+      .thenApply(sentEvent -> true);
+  }
+
   /**
    * Prepares given eventPayload for publishing.
    *
@@ -99,7 +110,6 @@ public final class EventManager {
     return eventPayload;
   }
 
-  // probably can be improved in scope of {@link https://issues.folio.org/browse/MODDICORE-33}
   private static Optional<ProfileSnapshotWrapper> findNext(DataImportEventPayload eventPayload) {
     String eventType = eventPayload.getEventType();
     ProfileSnapshotWrapper currentNode = eventPayload.getCurrentNode();
