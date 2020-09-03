@@ -1,5 +1,7 @@
 package org.folio.processing.events;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.events.services.processor.EventProcessor;
@@ -7,7 +9,6 @@ import org.folio.processing.events.services.processor.EventProcessorImpl;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.processing.exceptions.EventHandlerNotFoundException;
-import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.ArrayList;
@@ -16,9 +17,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
+import static java.lang.Boolean.parseBoolean;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
@@ -26,18 +28,19 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * The central class to use for handlers registration and event handling.
  */
 public final class EventManager {
 
+  public static final String POST_PROCESSING_INDICATOR = "POST-PROC";
+  public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST-PROCESSING_RESULT_EVENT";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
   private static final EventPublisher eventPublisher = new RestEventPublisher();
+
 
   private EventManager() {
   }
@@ -99,6 +102,14 @@ public final class EventManager {
     if (throwable != null) {
       return prepareErrorEventPayload(eventPayload, throwable);
     }
+    if (parseBoolean(eventPayload.getContext().get(POST_PROCESSING_INDICATOR))) {
+      eventPayload.getContext().remove(POST_PROCESSING_INDICATOR);
+      return eventPayload;
+    }
+    if (isNotBlank(eventPayload.getContext().get(POST_PROCESSING_RESULT_EVENT_KEY))) {
+      eventPayload.setEventType(eventPayload.getContext().remove(POST_PROCESSING_RESULT_EVENT_KEY));
+    }
+
     eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
     Optional<ProfileSnapshotWrapper> next = findNext(eventPayload);
     if (next.isPresent()) {

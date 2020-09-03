@@ -13,6 +13,8 @@ import org.folio.processing.events.handlers.CreateHoldingsRecordEventHandler;
 import org.folio.processing.events.handlers.CreateInstanceEventHandler;
 import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
 import org.folio.processing.events.handlers.FailExceptionallyHandler;
+import org.folio.processing.events.handlers.InstanceEventHandlerPostProcessor;
+import org.folio.processing.events.handlers.UpdateInstanceEventHandler;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
@@ -26,8 +28,11 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static org.folio.ActionProfile.Action.UPDATE;
+import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
 import static org.folio.DataImportEventTypes.DI_SRS_MARC_BIB_RECORD_CREATED;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
@@ -366,6 +371,89 @@ public class EventManagerUnitTest extends AbstractRestTest {
       testContext.assertNull(throwable);
       testContext.assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
       testContext.assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
+      async.complete();
+    });
+  }
+
+  @Test
+  public void shouldHandleEventAndPreparePayloadForPostProcessing(TestContext testContext) {
+    Async async = testContext.async();
+    // given
+    String jobProfileId = UUID.randomUUID().toString();
+    String actionProfileId = UUID.randomUUID().toString();
+    EventManager.registerEventHandler(new UpdateInstanceEventHandler());
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_SRS_MARC_BIB_RECORD_CREATED.value())
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>())
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(jobProfileId)
+        .withContentType(JOB_PROFILE)
+        .withContent(JsonObject.mapFrom(new JobProfile()))
+        .withChildSnapshotWrappers(Collections.singletonList(
+          new ProfileSnapshotWrapper()
+            .withId(actionProfileId)
+            .withContentType(ACTION_PROFILE)
+            .withContent(JsonObject.mapFrom(new ActionProfile().withAction(UPDATE).withFolioRecord(ActionProfile.FolioRecord.INSTANCE))))));
+    // when
+    EventManager.handleEvent(eventPayload).whenComplete((payload, throwable) -> {
+    // then
+      testContext.assertNull(throwable);
+      HashMap<String, String> context = payload.getContext();
+      testContext.assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
+      testContext.assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT, context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+
+      testContext.assertEquals(1, payload.getEventsChain().size());
+      testContext.assertEquals(1, payload.getCurrentNodePath().size());
+      testContext.assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
+      testContext.assertEquals(payload.getEventsChain(), Collections.singletonList(DI_SRS_MARC_BIB_RECORD_CREATED.value()));
+      async.complete();
+    });
+  }
+
+  @Test
+  public void shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing(TestContext testContext) {
+    Async async = testContext.async();
+    // given
+    String jobProfileId = UUID.randomUUID().toString();
+    String actionProfileId = UUID.randomUUID().toString();
+    EventManager.registerEventHandler(new InstanceEventHandlerPostProcessor());
+
+
+    HashMap<String, String> payloadContext = new HashMap<>();
+    payloadContext.put(EventManager.POST_PROCESSING_RESULT_EVENT_KEY, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT);
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT)
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN)
+      .withContext(payloadContext)
+      .withProfileSnapshot(new ProfileSnapshotWrapper()
+        .withId(jobProfileId)
+        .withContentType(JOB_PROFILE)
+        .withContent(JsonObject.mapFrom(new JobProfile()))
+        .withChildSnapshotWrappers(Collections.singletonList(
+          new ProfileSnapshotWrapper()
+            .withId(actionProfileId)
+            .withContentType(ACTION_PROFILE)
+            .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.INSTANCE))))));
+    // when
+    EventManager.handleEvent(eventPayload).whenComplete((payload, throwable) -> {
+    // then
+      testContext.assertNull(throwable);
+      HashMap<String, String> context = payload.getContext();
+      testContext.assertEquals(DI_COMPLETED.value(), payload.getEventType());
+      testContext.assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+
+      testContext.assertEquals(2, payload.getEventsChain().size());
+      testContext.assertEquals(2, payload.getCurrentNodePath().size());
+      testContext.assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
+      testContext.assertEquals(payload.getEventsChain(),
+        Arrays.asList(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT));
       async.complete();
     });
   }

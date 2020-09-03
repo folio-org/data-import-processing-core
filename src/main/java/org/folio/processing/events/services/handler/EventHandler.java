@@ -25,4 +25,22 @@ public interface EventHandler {
    */
   boolean isEligible(DataImportEventPayload eventPayload);
 
+  /**
+   * Checks whether post-processing should be applied to event payload after handling by this handler
+   *
+   * @return true if event payload should pass post-processing
+   */
+  default boolean isPostProcessingNeeded() {
+    return false;
+  }
+
+  /**
+   * Returns event type to initiate post-processing of event payload by a handler in another module
+   *
+   * @return event type
+   */
+  default String getPostProcessingInitializationEventType() {
+    throw new UnsupportedOperationException();
+  }
+
 }
