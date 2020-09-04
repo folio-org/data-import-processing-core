@@ -239,6 +239,7 @@ public class MarcRecordWriter implements Writer {
         break;
       case REMOVE:
         processRemove(mappingDetail);
+        break;
       default:
     }
   }

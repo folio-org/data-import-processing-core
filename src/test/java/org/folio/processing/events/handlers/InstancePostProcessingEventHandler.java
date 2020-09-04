@@ -7,14 +7,13 @@ import org.folio.processing.events.services.handler.EventHandler;
 
 import java.util.concurrent.CompletableFuture;
 
-import static org.folio.ActionProfile.Action.UPDATE;
 import static org.folio.ActionProfile.FolioRecord.INSTANCE;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
 
-public class InstanceEventHandlerPostProcessor implements EventHandler {
+public class InstancePostProcessingEventHandler implements EventHandler {
 
-  public static final String POST_PROC_RESULT_EVENT = DI_INVENTORY_INSTANCE_UPDATED.value();
+  public static final String POST_PROCESSING_RESULT_EVENT = DI_INVENTORY_INSTANCE_UPDATED.value();
 
   @Override
   public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload) {

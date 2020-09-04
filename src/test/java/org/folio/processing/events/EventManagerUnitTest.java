@@ -13,7 +13,7 @@ import org.folio.processing.events.handlers.CreateHoldingsRecordEventHandler;
 import org.folio.processing.events.handlers.CreateInstanceEventHandler;
 import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
 import org.folio.processing.events.handlers.FailExceptionallyHandler;
-import org.folio.processing.events.handlers.InstanceEventHandlerPostProcessor;
+import org.folio.processing.events.handlers.InstancePostProcessingEventHandler;
 import org.folio.processing.events.handlers.UpdateInstanceEventHandler;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
@@ -32,7 +32,6 @@ import static org.folio.ActionProfile.Action.UPDATE;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
 import static org.folio.DataImportEventTypes.DI_SRS_MARC_BIB_RECORD_CREATED;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
@@ -420,7 +419,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
-    EventManager.registerEventHandler(new InstanceEventHandlerPostProcessor());
+    EventManager.registerEventHandler(new InstancePostProcessingEventHandler());
 
 
     HashMap<String, String> payloadContext = new HashMap<>();

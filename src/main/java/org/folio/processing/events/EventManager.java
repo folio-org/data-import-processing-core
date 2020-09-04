@@ -33,8 +33,8 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATC
  */
 public final class EventManager {
 
-  public static final String POST_PROCESSING_INDICATOR = "POST-PROC";
-  public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST-PROCESSING_RESULT_EVENT";
+  public static final String POST_PROCESSING_INDICATOR = "POST_PROCESSING";
+  public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST_PROCESSING_RESULT_EVENT";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
