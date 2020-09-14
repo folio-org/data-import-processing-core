@@ -3,6 +3,7 @@
 * [MODDICORE-69](https://issues.folio.org/browse/MODDICORE-69) Implemented ###REMOVE### expression logic
 * [MODDICORE-53](https://issues.folio.org/browse/MODDICORE-53) Refactored matching in asynchronous style
 * [MODDICORE-81](https://issues.folio.org/browse/MODDICORE-81) 856$3 not mapping into holdings record
+* [MODSOURMAN-281](https://issues.folio.org/browse/MODSOURMAN-281) Added support for event post-processing
 
 ## 2020-08-10 v2.1.6
 * [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX

@@ -81,11 +81,13 @@ public class MarcRecordWriter implements Writer {
   }
 
   private MarcReader buildMarcReader(org.folio.Record record) {
-    return new MarcJsonReader(new ByteArrayInputStream(
-      record.getParsedRecord()
-        .getContent()
-        .toString()
-        .getBytes(StandardCharsets.UTF_8)));
+    JsonObject parsedContent = record.getParsedRecord().getContent() instanceof String
+      ? new JsonObject(record.getParsedRecord().getContent().toString())
+      : JsonObject.mapFrom(record.getParsedRecord().getContent());
+
+    return new MarcJsonReader(new ByteArrayInputStream(parsedContent
+      .toString()
+      .getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
@@ -237,6 +239,7 @@ public class MarcRecordWriter implements Writer {
         break;
       case REMOVE:
         processRemove(mappingDetail);
+        break;
       default:
     }
   }

@@ -1,11 +1,14 @@
 package org.folio.processing.events;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.EventProcessorImpl;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
+import org.folio.processing.exceptions.EventHandlerNotFoundException;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.ArrayList;
@@ -15,7 +18,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static java.lang.Boolean.parseBoolean;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
@@ -23,18 +28,19 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * The central class to use for handlers registration and event handling.
  */
 public final class EventManager {
 
+  public static final String POST_PROCESSING_INDICATOR = "POST_PROCESSING";
+  public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST_PROCESSING_RESULT_EVENT";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
   private static final EventPublisher eventPublisher = new RestEventPublisher();
+
 
   private EventManager() {
   }
@@ -53,7 +59,7 @@ public final class EventManager {
       setCurrentNodeIfRoot(eventPayload);
       eventProcessor.process(eventPayload)
         .whenComplete((processPayload, processThrowable) ->
-          eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+          publishEventIfNecessary(eventPayload, processThrowable)
             .whenComplete((publishPayload, publishThrowable) -> {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
@@ -79,6 +85,14 @@ public final class EventManager {
     }
   }
 
+  private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, Throwable processThrowable) {
+    if (processThrowable instanceof EventHandlerNotFoundException) {
+      return CompletableFuture.completedFuture(false);
+    }
+    return eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+      .thenApply(sentEvent -> true);
+  }
+
   /**
    * Prepares given eventPayload for publishing.
    *
@@ -88,6 +102,14 @@ public final class EventManager {
     if (throwable != null) {
       return prepareErrorEventPayload(eventPayload, throwable);
     }
+    if (parseBoolean(eventPayload.getContext().get(POST_PROCESSING_INDICATOR))) {
+      eventPayload.getContext().remove(POST_PROCESSING_INDICATOR);
+      return eventPayload;
+    }
+    if (isNotBlank(eventPayload.getContext().get(POST_PROCESSING_RESULT_EVENT_KEY))) {
+      eventPayload.setEventType(eventPayload.getContext().remove(POST_PROCESSING_RESULT_EVENT_KEY));
+    }
+
     eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
     Optional<ProfileSnapshotWrapper> next = findNext(eventPayload);
     if (next.isPresent()) {
@@ -99,7 +121,6 @@ public final class EventManager {
     return eventPayload;
   }
 
-  // probably can be improved in scope of {@link https://issues.folio.org/browse/MODDICORE-33}
   private static Optional<ProfileSnapshotWrapper> findNext(DataImportEventPayload eventPayload) {
     String eventType = eventPayload.getEventType();
     ProfileSnapshotWrapper currentNode = eventPayload.getCurrentNode();
