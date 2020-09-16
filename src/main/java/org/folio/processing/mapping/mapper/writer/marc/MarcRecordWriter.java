@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.ArrayUtils;
@@ -71,7 +72,7 @@ public class MarcRecordWriter implements Writer {
     }
 
     String recordAsString = eventPayload.getContext().get(entityType);
-    sourceRecord = ObjectMapperTool.getMapper().readValue(recordAsString, Record.class);
+    sourceRecord = new ObjectMapper().readValue(recordAsString, Record.class);
     if (nonNull(sourceRecord.getParsedRecord()) && isNotBlank(sourceRecord.getParsedRecord().getContent().toString())) {
       MarcReader marcReader = buildMarcReader(sourceRecord);
       if (marcReader.hasNext()) {
