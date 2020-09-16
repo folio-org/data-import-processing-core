@@ -3,7 +3,6 @@ package org.folio.processing.matching.loader.query;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.MatchDetail;
 import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
 
@@ -30,7 +29,7 @@ public class LoadQueryBuilder {
    * applicable only for VALUE_FROM_RECORD data type,
    * currently supports building query only by single field (support for loading MARC records will be added later)
    *
-   * @param value       value to match against
+   * @param value value to match against
    * @param matchDetail match detail
    * @return LoadQuery or null if query cannot be built
    */
@@ -47,24 +46,6 @@ public class LoadQueryBuilder {
             .applyQualifier(matchExpression.getQualifier())
             .replaceFieldReference(fieldName, true);
           return new DefaultJsonLoadQuery(tableName, queryHolder.getSqlQuery(), queryHolder.getCqlQuery());
-        }
-        if (fields != null && matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC
-          && matchDetail.getExistingRecordType() == EntityType.MARC_BIBLIOGRAPHIC) {
-          StringBuilder result = new StringBuilder();
-          for (Field field : fields) {
-            result.append(field.getValue().trim());
-          }
-
-          switch (result.toString()) {
-            case "999ffs":
-              return new MarcLoadQuery(String.format("WHERE records_lb.matchedid = '%s'", value.getValue()));
-            case "999ffi":
-              return new MarcLoadQuery(String.format("WHERE records_lb.instanceid = '%s'", value.getValue()));
-            case "001":
-              return new MarcLoadQuery(String.format("WHERE records_lb.instancehrid = '%s'", value.getValue()));
-            default:
-              return null;
-          }
         }
       }
     }
