@@ -21,7 +21,7 @@ import org.folio.rest.jaxrs.model.MatchExpression;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class MarcValueReaderUtil {
+public final class MarcValueReaderUtil {
 
   private static final String MARC_FIELDS_POINTER = "/fields";
   private static final String MARC_SUBFIELDS_POINTER = "/subfields";
