@@ -21,6 +21,10 @@ import org.folio.rest.jaxrs.model.MatchExpression;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Util for reading specific fields from MARC-file, based on MatchExpression.
+ * It is really helpful for using it from another modules.
+ */
 public final class MarcValueReaderUtil {
 
   private static final String MARC_FIELDS_POINTER = "/fields";
@@ -36,6 +40,12 @@ public final class MarcValueReaderUtil {
   private MarcValueReaderUtil() {
   }
 
+  /**
+   * Read value from MARC-file
+   * @param marcRecord - marcRecord as String
+   * @param matchExpression - expression which contains fields.
+   * @return - Value with result.
+   */
   public static Value readValueFromRecord(String marcRecord, MatchExpression matchExpression) {
     if (org.apache.commons.lang3.StringUtils.isBlank(marcRecord)) {
       return MissingValue.getInstance();
