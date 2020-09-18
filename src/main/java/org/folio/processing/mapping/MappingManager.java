@@ -6,12 +6,10 @@ import org.folio.MappingProfile;
 import org.folio.processing.exceptions.MappingException;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
-import org.folio.processing.mapping.mapper.MarcRecordMapper;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
-import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +57,8 @@ public final class MappingManager {
       }
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
-      Mapper mapper = createMapper(mappingProfile);
-      return mapper.map(reader, writer, mappingProfile, eventPayload);
+      return new Mapper() {
+      }.map(reader, writer, mappingProfile, eventPayload);
     } catch (Exception e) {
       throw new MappingException(e);
     }
@@ -98,12 +96,5 @@ public final class MappingManager {
    */
   public static void clearWriterFactories() {
     FACTORY_REGISTRY.getWriterFactories().clear();
-  }
-
-  private static Mapper createMapper(MappingProfile mappingProfile) {
-    if (mappingProfile.getExistingRecordType().equals(EntityType.MARC_BIBLIOGRAPHIC)) {
-      return new MarcRecordMapper();
-    }
-    return new Mapper() {};
   }
 }

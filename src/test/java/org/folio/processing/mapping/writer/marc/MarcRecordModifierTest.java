@@ -2,12 +2,15 @@ package org.folio.processing.mapping.writer.marc;
 
 import io.vertx.core.json.Json;
 import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
-import org.folio.processing.mapping.mapper.writer.marc.MarcRecordWriter;
-import org.folio.processing.value.MarcDetailValue;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.mapper.writer.marc.MarcRecordModifier;
 import org.folio.rest.jaxrs.model.Data;
+import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MarcField;
+import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MarcMappingDetail;
 import org.folio.rest.jaxrs.model.MarcSubfield;
 import org.junit.Assert;
@@ -17,9 +20,14 @@ import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
 
+import static org.folio.processing.mapping.mapper.writer.marc.MarcRecordModifier.MATCHED_MARC_BIB_KEY;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
+import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.UPDATE;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Position.AFTER_STRING;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Position.BEFORE_STRING;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Position.NEW_SUBFIELD;
@@ -30,15 +38,17 @@ import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REMOVE;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
 
 @RunWith(JUnit4.class)
-public class MarcRecordWriterTest {
+public class MarcRecordModifierTest {
 
-  private MarcRecordWriter marcRecordWriter = new MarcRecordWriter(MARC_BIBLIOGRAPHIC);
+  public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
+  private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowExceptionWhenHasNoMarcRecord() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(new HashMap<>());
-    marcRecordWriter.initialize(eventPayload);
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail().withMarcMappingOption(MODIFY));
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
   }
 
   @Test
@@ -52,6 +62,7 @@ public class MarcRecordWriterTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -64,10 +75,14 @@ public class MarcRecordWriterTest {
         .withSubfields(Arrays.asList(new MarcSubfield()
           .withSubfield("a")
           .withData(new Data().withText("green")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -86,6 +101,7 @@ public class MarcRecordWriterTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -98,10 +114,14 @@ public class MarcRecordWriterTest {
         .withSubfields(Arrays.asList(new MarcSubfield()
           .withSubfield("a")
           .withData(new Data().withText("index")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -120,6 +140,7 @@ public class MarcRecordWriterTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -129,10 +150,14 @@ public class MarcRecordWriterTest {
         .withField("003")
         .withSubfields(Arrays.asList(new MarcSubfield()
           .withData(new Data().withText("OCoLC")))));
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -151,6 +176,7 @@ public class MarcRecordWriterTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -158,10 +184,14 @@ public class MarcRecordWriterTest {
       .withAction(MarcMappingDetail.Action.DELETE)
       .withField(new MarcField()
         .withField("007"));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -190,10 +220,14 @@ public class MarcRecordWriterTest {
         .withIndicator1("*")
         .withIndicator2("*")
         .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("*"))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -222,10 +256,14 @@ public class MarcRecordWriterTest {
         .withIndicator1("*")
         .withIndicator2("0")
         .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("*"))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -254,10 +292,14 @@ public class MarcRecordWriterTest {
         .withIndicator1("*")
         .withIndicator2("*")
         .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -286,10 +328,14 @@ public class MarcRecordWriterTest {
         .withIndicator1(null)
         .withIndicator2(null)
         .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -327,10 +373,14 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -367,10 +417,14 @@ public class MarcRecordWriterTest {
           .withSubfield("*")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -408,10 +462,14 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -447,10 +505,14 @@ public class MarcRecordWriterTest {
           .withSubfield("b")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -488,10 +550,14 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -529,10 +595,14 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -570,10 +640,14 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -611,10 +685,15 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -650,10 +729,14 @@ public class MarcRecordWriterTest {
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -689,10 +772,14 @@ public class MarcRecordWriterTest {
           .withSubfield("b")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -725,10 +812,14 @@ public class MarcRecordWriterTest {
           .withSubaction(INSERT)
           .withPosition(BEFORE_STRING)
           .withData(new Data().withText("http://libproxy.smith.edu?url=")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -761,10 +852,14 @@ public class MarcRecordWriterTest {
           .withSubaction(INSERT)
           .withPosition(AFTER_STRING)
           .withData(new Data().withText("; updated 28 April 2020")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -797,10 +892,14 @@ public class MarcRecordWriterTest {
           .withSubaction(INSERT)
           .withPosition(NEW_SUBFIELD)
           .withData(new Data().withText("to access, click the link")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -834,10 +933,14 @@ public class MarcRecordWriterTest {
           .withData(new Data()
             .withFind("http://")
             .withReplaceWith("https://")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -871,10 +974,14 @@ public class MarcRecordWriterTest {
           .withData(new Data()
             .withFind("*")
             .withReplaceWith("McCarthy")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -905,10 +1012,14 @@ public class MarcRecordWriterTest {
           .withData(new Data()
             .withFind("s")
             .withReplaceWith("p")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -938,10 +1049,14 @@ public class MarcRecordWriterTest {
           .withData(new Data()
             .withFind("2019")
             .withReplaceWith("2020")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -972,10 +1087,14 @@ public class MarcRecordWriterTest {
           .withData(new Data()
             .withFind("n")
             .withReplaceWith("c")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -1004,10 +1123,14 @@ public class MarcRecordWriterTest {
           .withData(new Data()
             .withFind("00079")
             .withReplaceWith("00123")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -1040,10 +1163,14 @@ public class MarcRecordWriterTest {
           .withSubaction(REMOVE)
           .withData(new Data()
             .withText("Cat")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
 
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
@@ -1072,12 +1199,291 @@ public class MarcRecordWriterTest {
           .withSubaction(REMOVE)
           .withData(new Data()
             .withText("2019")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordWriter.initialize(eventPayload);
-    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
-    marcRecordWriter.getResult(eventPayload);
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldReplaceOnlySpecifiedSubfield() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}}, {\"856\": {\"subfields\": [{\"u\": \"example.com\"},{\"z\":\"to access, click the link\"}], \"ind1\": \" \", \"ind2\": \" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00167nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1(null)
+        .withIndicator2(null)
+        .withSubfields(Arrays.asList(new MarcSubfield()
+          .withSubfield("u"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldReplaceEntireExistingFieldWhenWildcardSubfield() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00140nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1("*")
+        .withIndicator2("0")
+        .withSubfields(Arrays.asList(new MarcSubfield()
+          .withSubfield("*"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldAddIncomingFieldToExistingRecordWhenNoCorrespondingExistingField() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00130nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("590")
+        .withIndicator1(" ")
+        .withIndicator2(" ")
+        .withSubfields(Arrays.asList(new MarcSubfield()
+          .withSubfield("*"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldReplaceIncomingFieldsWithAllExistingFieldsWhenNoMarcMappingDetails() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"motion\"},{\"b\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.org\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00123nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.org\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    eventPayload.setContext(context);
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldNotReplaceProtectedExistingField() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
+        .withField("650")
+        .withSubfield("a")
+        .withIndicator1(" ")
+        .withIndicator2(" ")
+        .withData("pictures")));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    context.put("MAPPING_PARAMS", Json.encodePrettily(mappingParameters));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingRule1 = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("650")
+        .withIndicator1(" ")
+        .withIndicator2("*")
+        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+
+    MarcMappingDetail mappingRule2 = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("700")
+        .withIndicator1(null)
+        .withIndicator2(null)
+        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(Arrays.asList(mappingRule1, mappingRule2)));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Arrays.asList(mappingRule1, mappingRule2));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldReplaceOverriddenProtectedExistingField() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
+      .withId(UUID.randomUUID().toString())
+      .withField("650")
+      .withSubfield("a")
+      .withIndicator1(" ")
+      .withIndicator2(" ")
+      .withData("pictures");
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Arrays.asList(marcFieldProtectionSetting));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(mappingParameters));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingRule1 = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("650")
+        .withIndicator1(" ")
+        .withIndicator2("*")
+        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+
+    MarcMappingDetail mappingRule2 = new MarcMappingDetail()
+      .withOrder(0)
+      .withField(new MarcField()
+        .withField("700")
+        .withIndicator1(null)
+        .withIndicator2(null)
+        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMarcFieldProtectionSettings(Arrays.asList(marcFieldProtectionSetting))
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(Arrays.asList(mappingRule1, mappingRule2)));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Arrays.asList(mappingRule1, mappingRule2));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
     Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
     Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
