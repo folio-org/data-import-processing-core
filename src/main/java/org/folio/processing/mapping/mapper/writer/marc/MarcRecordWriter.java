@@ -12,9 +12,9 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MarcField;
+import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MarcMappingDetail;
 import org.folio.rest.jaxrs.model.MarcSubfield;
-import org.folio.rest.tools.utils.ObjectMapperTool;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcReader;
@@ -34,6 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,12 +54,13 @@ public class MarcRecordWriter implements Writer {
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
+  private static final String ANY_STRING = "*";
 
   private String entityType;
   private Record sourceRecord;
   private org.marc4j.marc.Record marcRecord;
   private MarcFactory marcFactory = MarcFactory.newInstance();
-
+  private List<MarcFieldProtectionSetting> protectionSettings = new ArrayList<>();
 
   public MarcRecordWriter(EntityType entityType) {
     this.entityType = entityType.value();
@@ -79,6 +81,12 @@ public class MarcRecordWriter implements Writer {
         this.marcRecord = marcReader.next();
       }
     }
+  }
+
+  public void initializeWithProtectionSettings(DataImportEventPayload eventPayload,
+                                               List<MarcFieldProtectionSetting> protectionSettings) throws IOException {
+    initialize(eventPayload);
+    this.protectionSettings = protectionSettings;
   }
 
   private MarcReader buildMarcReader(org.folio.Record record) {
@@ -201,17 +209,19 @@ public class MarcRecordWriter implements Writer {
 
     if (Verifier.isControlField(fieldTag)) {
       for (VariableField field : marcRecord.getVariableFields(fieldTag)) {
-        marcRecord.removeVariableField(field);
+        if (isNotProtected((ControlField) field)) {
+          marcRecord.removeVariableField(field);
+        }
       }
     } else if (detail.getField().getSubfields().get(0).getSubfield().charAt(0) == '*') {
       marcRecord.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2) && isNotProtected(field))
         .collect(Collectors.toList())
         .forEach(fieldToDelete -> marcRecord.removeVariableField(fieldToDelete));
     } else {
       char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
       marcRecord.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2) && isNotProtected(field))
         .peek(targetField -> targetField.removeSubfield(targetField.getSubfield(subfieldCode)))
         .filter(field -> field.getSubfields().isEmpty())
         .collect(Collectors.toList())
@@ -253,7 +263,7 @@ public class MarcRecordWriter implements Writer {
     MarcSubfield.Position dataPosition = mappingRule.getField().getSubfields().get(0).getPosition();
 
     List<DataField> fieldsToEdit = marcRecord.getDataFields().stream()
-      .filter(field -> fieldMatches(field, tag, ind1, ind2))
+      .filter(field -> fieldMatches(field, tag, ind1, ind2) && isNotProtected(field))
       .collect(Collectors.toList());
 
     for (DataField field : fieldsToEdit) {
@@ -301,6 +311,7 @@ public class MarcRecordWriter implements Writer {
 
       marcRecord.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && dataToReplace.equals("*") || controlFieldContainsDataAtPositions(field, dataToReplace, positions))
+        .filter(field -> isNotProtected(field))
         .forEach(fieldToEdit -> {
           StringBuilder newData = new StringBuilder(fieldToEdit.getData()).replace(startPosition, endPosition + 1, replacementData);
           fieldToEdit.setData(newData.toString());
@@ -318,6 +329,7 @@ public class MarcRecordWriter implements Writer {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
       marcRecord.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && controlFieldContainsDataAtPositions(field, dataToRemove, positions))
+        .filter(field -> isNotProtected(field))
         .forEach(fieldToEdit -> fieldToEdit.setData(new StringBuilder(fieldToEdit.getData()).delete(positions.getMinimum(), positions.getMaximum() + 1).toString()));
     } else {
       replaceDataInDataFields(tag, dataToRemove, EMPTY, mappingRule);
@@ -356,7 +368,7 @@ public class MarcRecordWriter implements Writer {
     char subfieldCode = mappingRule.getField().getSubfields().get(0).getSubfield().charAt(0);
 
     marcRecord.getDataFields().stream()
-      .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode))
+      .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode) && isNotProtected(field))
       .flatMap(fieldToEdit -> findSubfields(fieldToEdit, subfieldCode, dataToReplace).stream())
       .forEach(sf -> sf.setData(dataToReplace.equals("*") ? replacementData : sf.getData().replace(dataToReplace, replacementData)));
   }
@@ -380,7 +392,7 @@ public class MarcRecordWriter implements Writer {
     char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
 
     List<DataField> sourceFields = marcRecord.getDataFields().stream()
-      .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2))
+      .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2) && isNotProtected(field))
       .collect(Collectors.toList());
 
     for (MarcSubfield subfieldRule : detail.getField().getSubfields()) {
@@ -453,4 +465,22 @@ public class MarcRecordWriter implements Writer {
     }
   }
 
+  private boolean isNotProtected(ControlField field) {
+      return protectionSettings.stream()
+        .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
+        .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getData()));
+  }
+
+  private boolean isNotProtected(DataField field) {
+      return protectionSettings.stream()
+        .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
+        .filter(setting -> setting.getIndicator1().equals(ANY_STRING)
+          || (isNotEmpty(setting.getIndicator1()) ? setting.getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE)
+          == field.getIndicator1())
+        .filter(setting -> setting.getIndicator2().equals(ANY_STRING)
+          || (isNotEmpty(setting.getIndicator2()) ? setting.getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE)
+          == field.getIndicator2())
+        .filter(setting -> setting.getSubfield().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)) != null)
+        .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getSubfield(setting.getSubfield().charAt(0)).getData()));
+    }
 }
