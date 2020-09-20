@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.writer;
+package org.folio.processing.mapping.mapper.writer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;

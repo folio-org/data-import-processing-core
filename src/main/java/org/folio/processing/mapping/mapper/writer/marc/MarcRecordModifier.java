@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -7,10 +8,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
 import org.folio.Record;
-import org.folio.processing.mapping.mapper.writer.Writer;
-import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MarcField;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MarcMappingDetail;
@@ -45,48 +46,95 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.folio.processing.value.Value.ValueType.MARC_DETAIL;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 
-public class MarcRecordWriter implements Writer {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordWriter.class);
-  private static final String PAYLOAD_HAS_NO_DATA_MSG = "Can not initialize MarcRecordWriter, cause event payload context does not contain MARC_BIBLIOGRAPHIC data";
+public class MarcRecordModifier {
+  private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordModifier.class);
+  private static final String PAYLOAD_HAS_NO_DATA_MSG = "Can not initialize MarcRecordModifier, cause event payload context does not contain MARC_BIBLIOGRAPHIC data";
+  public static final String ERROR_RECORD_PARSING_MSG = "Error record parsing from payload";
 
+  public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
+  public static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
   private static final String ANY_STRING = "*";
 
-  private String entityType;
-  private Record sourceRecord;
-  private org.marc4j.marc.Record marcRecord;
+  private MappingDetail.MarcMappingOption marcMappingOption;
+  private Record recordToChange;
+  private org.marc4j.marc.Record incomingMarcRecord;
+  private org.marc4j.marc.Record marcRecordToChange;
   private MarcFactory marcFactory = MarcFactory.newInstance();
-  private List<MarcFieldProtectionSetting> protectionSettings = new ArrayList<>();
+  private List<MarcFieldProtectionSetting> applicableProtectionSettings = new ArrayList<>();
 
-  public MarcRecordWriter(EntityType entityType) {
-    this.entityType = entityType.value();
+  public void initialize(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
+    marcMappingOption = mappingProfile.getMappingDetails().getMarcMappingOption();
+    switch (mappingProfile.getMappingDetails().getMarcMappingOption()) {
+      case MODIFY:
+        initializeForModifyOption(eventPayload, mappingProfile);
+        break;
+      case UPDATE:
+        initializeForUpdateOption(eventPayload, mappingProfile);
+    }
   }
 
-  @Override
-  public void initialize(DataImportEventPayload eventPayload) throws IOException {
-    if (isNull(eventPayload.getContext()) || isBlank(eventPayload.getContext().get(entityType))) {
+  private void initializeForModifyOption(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
+    if (isNull(eventPayload.getContext()) || isBlank(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()))) {
       LOGGER.error(PAYLOAD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
     }
 
-    String recordAsString = eventPayload.getContext().get(entityType);
-    sourceRecord = new ObjectMapper().readValue(recordAsString, Record.class);
-    if (nonNull(sourceRecord.getParsedRecord()) && isNotBlank(sourceRecord.getParsedRecord().getContent().toString())) {
-      MarcReader marcReader = buildMarcReader(sourceRecord);
-      if (marcReader.hasNext()) {
-        this.marcRecord = marcReader.next();
-      }
+    String recordAsString = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    recordToChange = new ObjectMapper().readValue(recordAsString, Record.class);
+    if (isRecordValid(recordToChange)) {
+      this.marcRecordToChange = readParsedContentToObjectRepresentation(recordToChange);
+      initMappingParams(eventPayload, mappingProfile);
     }
   }
 
-  public void initializeWithProtectionSettings(DataImportEventPayload eventPayload,
-                                               List<MarcFieldProtectionSetting> protectionSettings) throws IOException {
-    initialize(eventPayload);
-    this.protectionSettings = protectionSettings;
+  private void initializeForUpdateOption(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
+    if (isNull(eventPayload.getContext())
+      || isBlank(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()))
+      || isBlank(eventPayload.getContext().get(MATCHED_MARC_BIB_KEY))) {
+      LOGGER.error(PAYLOAD_HAS_NO_DATA_MSG);
+      throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
+    }
+
+    String incomingRecordAsString = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    String existingRecordAsString = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    ObjectMapper objectMapper = new ObjectMapper();
+    Record incomingRecord = objectMapper.readValue(incomingRecordAsString, Record.class);
+    recordToChange = objectMapper.readValue(existingRecordAsString, Record.class);
+
+    if (isRecordValid(incomingRecord) && isRecordValid(recordToChange)) {
+      this.incomingMarcRecord = readParsedContentToObjectRepresentation(incomingRecord);
+      this.marcRecordToChange = readParsedContentToObjectRepresentation(recordToChange);
+      initMappingParams(eventPayload, mappingProfile);
+    }
+  }
+
+  private void initMappingParams(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws JsonProcessingException {
+    if (isNotBlank(eventPayload.getContext().get(MAPPING_PARAMS_KEY))) {
+      MappingParameters mappingParameters = new ObjectMapper().readValue(eventPayload.getContext().get(MAPPING_PARAMS_KEY), MappingParameters.class);
+      List<MarcFieldProtectionSetting> fieldProtectionSettings = mappingParameters.getMarcFieldProtectionSettings();
+      List<MarcFieldProtectionSetting> overriddenProtectionSettings = mappingProfile.getMarcFieldProtectionSettings();
+      applicableProtectionSettings = filterOutOverriddenProtectionSettings(fieldProtectionSettings, overriddenProtectionSettings);
+    }
+  }
+
+  private boolean isRecordValid(Record record) {
+    return nonNull(record.getParsedRecord()) && isNotBlank(record.getParsedRecord().getContent().toString());
+  }
+
+  private org.marc4j.marc.Record readParsedContentToObjectRepresentation(Record record) {
+    MarcReader existingRecordReader = buildMarcReader(record);
+    if (existingRecordReader.hasNext()) {
+      return existingRecordReader.next();
+    } else {
+      LOGGER.error(ERROR_RECORD_PARSING_MSG);
+      throw new IllegalArgumentException(ERROR_RECORD_PARSING_MSG);
+    }
   }
 
   private MarcReader buildMarcReader(org.folio.Record record) {
@@ -99,42 +147,48 @@ public class MarcRecordWriter implements Writer {
       .getBytes(StandardCharsets.UTF_8)));
   }
 
-  @Override
-  public void write(String fieldPath, Value value) {
-    if (value.getType() != MARC_DETAIL) {
-      throw new IllegalArgumentException("Unsupported value type, it should be 'MARC_DETAIL' value type");
-    }
-
-    MarcMappingDetail mappingDetail = (MarcMappingDetail) value.getValue();
-    switch (mappingDetail.getAction()) {
-      case ADD:
-        processAddAction(mappingDetail);
+  public void modifyRecord(List<MarcMappingDetail> mappingDetails) {
+    switch (marcMappingOption) {
+      case MODIFY:
+        processModifyMappingOption(mappingDetails);
         break;
-      case DELETE:
-        processDeleteAction(mappingDetail);
-        break;
-      case EDIT:
-        processEditAction(mappingDetail);
-        break;
-      case MOVE:
-        processMoveAction(mappingDetail);
+      case UPDATE:
+        processUpdateMappingOption(mappingDetails);
     }
   }
 
-  @Override
   public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
     try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
       MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
       MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
-      streamWriter.write(marcRecord);
-      jsonWriter.write(marcRecord);
-      sourceRecord.getParsedRecord().setContent(new JsonObject(new String(os.toByteArray())).encode());
-      eventPayload.getContext().put(entityType, Json.encode(sourceRecord));
+      streamWriter.write(marcRecordToChange);
+      jsonWriter.write(marcRecordToChange);
+      recordToChange.getParsedRecord().setContent(new JsonObject(new String(os.toByteArray())).encode());
+      String resultKey = marcMappingOption == MODIFY ? MARC_BIBLIOGRAPHIC.value() : MATCHED_MARC_BIB_KEY;
+      eventPayload.getContext().put(resultKey, Json.encode(recordToChange));
     } catch (Exception e) {
-      LOGGER.error("Can not put the newly mapped record to the event payload", e);
+      LOGGER.error("Can not put the modified record to the event payload", e);
       throw new IllegalStateException(e);
     }
     return eventPayload;
+  }
+
+  private void processModifyMappingOption(List<MarcMappingDetail> mappingDetails) {
+    for (MarcMappingDetail mappingDetail : mappingDetails) {
+      switch (mappingDetail.getAction()) {
+        case ADD:
+          processAddAction(mappingDetail);
+          break;
+        case DELETE:
+          processDeleteAction(mappingDetail);
+          break;
+        case EDIT:
+          processEditAction(mappingDetail);
+          break;
+        case MOVE:
+          processMoveAction(mappingDetail);
+      }
+    }
   }
 
   private void processAddAction(MarcMappingDetail detail) {
@@ -155,14 +209,14 @@ public class MarcRecordWriter implements Writer {
   }
 
   private void addControlFieldInNumericalOrder(ControlField field) {
-    List<ControlField> controlFields = marcRecord.getControlFields();
+    List<ControlField> controlFields = marcRecordToChange.getControlFields();
     for (int i = 0; i < controlFields.size(); i++) {
       if (controlFields.get(i).getTag().compareTo(field.getTag()) > 0) {
-        marcRecord.getControlFields().add(i, field);
+        marcRecordToChange.getControlFields().add(i, field);
         return;
       }
     }
-    marcRecord.addVariableField(field);
+    marcRecordToChange.addVariableField(field);
   }
 
   /**
@@ -179,23 +233,23 @@ public class MarcRecordWriter implements Writer {
    */
   private void addDataFieldInNumericalOrder(DataField field) {
     String tag = field.getTag();
-    List<DataField> dataFields = marcRecord.getDataFields();
+    List<DataField> dataFields = marcRecordToChange.getDataFields();
     if (isNumericalSortableField(field)) {
       for (int i = 0; i < dataFields.size(); i++) {
         if (dataFields.get(i).getTag().compareTo(tag) > 0) {
-          marcRecord.getDataFields().add(i, field);
+          marcRecordToChange.getDataFields().add(i, field);
           return;
         }
       }
     } else {
       for (int i = 0; i < dataFields.size(); i++) {
         if (dataFields.get(i).getTag().charAt(0) > tag.charAt(0)) {
-          marcRecord.getDataFields().add(i, field);
+          marcRecordToChange.getDataFields().add(i, field);
           return;
         }
       }
     }
-    marcRecord.addVariableField(field);
+    marcRecordToChange.addVariableField(field);
   }
 
   private boolean isNumericalSortableField(VariableField field) {
@@ -208,24 +262,24 @@ public class MarcRecordWriter implements Writer {
     char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
 
     if (Verifier.isControlField(fieldTag)) {
-      for (VariableField field : marcRecord.getVariableFields(fieldTag)) {
+      for (VariableField field : marcRecordToChange.getVariableFields(fieldTag)) {
         if (isNotProtected((ControlField) field)) {
-          marcRecord.removeVariableField(field);
+          marcRecordToChange.removeVariableField(field);
         }
       }
     } else if (detail.getField().getSubfields().get(0).getSubfield().charAt(0) == '*') {
-      marcRecord.getDataFields().stream()
+      marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2) && isNotProtected(field))
         .collect(Collectors.toList())
-        .forEach(fieldToDelete -> marcRecord.removeVariableField(fieldToDelete));
+        .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
       char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
-      marcRecord.getDataFields().stream()
+      marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2) && isNotProtected(field))
         .peek(targetField -> targetField.removeSubfield(targetField.getSubfield(subfieldCode)))
         .filter(field -> field.getSubfields().isEmpty())
         .collect(Collectors.toList())
-        .forEach(targetField -> marcRecord.removeVariableField(targetField));
+        .forEach(targetField -> marcRecordToChange.removeVariableField(targetField));
     }
   }
 
@@ -262,7 +316,7 @@ public class MarcRecordWriter implements Writer {
     String dataToInsert = mappingRule.getField().getSubfields().get(0).getData().getText();
     MarcSubfield.Position dataPosition = mappingRule.getField().getSubfields().get(0).getPosition();
 
-    List<DataField> fieldsToEdit = marcRecord.getDataFields().stream()
+    List<DataField> fieldsToEdit = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, tag, ind1, ind2) && isNotProtected(field))
       .collect(Collectors.toList());
 
@@ -297,7 +351,7 @@ public class MarcRecordWriter implements Writer {
         return;
       }
 
-      Leader leader = marcRecord.getLeader();
+      Leader leader = marcRecordToChange.getLeader();
       String leaderAsString = leader.marshal();
       boolean dataToReplaceExists = dataToReplace.equals("*") || leaderAsString.substring(positions.getMinimum(), positions.getMaximum() + 1).equals(dataToReplace);
       if (dataToReplaceExists) {
@@ -309,9 +363,9 @@ public class MarcRecordWriter implements Writer {
       int startPosition = positions.getMinimum();
       int endPosition = positions.getMaximum();
 
-      marcRecord.getControlFields().stream()
+      marcRecordToChange.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && dataToReplace.equals("*") || controlFieldContainsDataAtPositions(field, dataToReplace, positions))
-        .filter(this::isNotProtected)
+        .filter(field -> isNotProtected(field))
         .forEach(fieldToEdit -> {
           StringBuilder newData = new StringBuilder(fieldToEdit.getData()).replace(startPosition, endPosition + 1, replacementData);
           fieldToEdit.setData(newData.toString());
@@ -327,9 +381,9 @@ public class MarcRecordWriter implements Writer {
 
     if (Verifier.isControlField(tag)) {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
-      marcRecord.getControlFields().stream()
+      marcRecordToChange.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && controlFieldContainsDataAtPositions(field, dataToRemove, positions))
-        .filter(this::isNotProtected)
+        .filter(field -> isNotProtected(field))
         .forEach(fieldToEdit -> fieldToEdit.setData(new StringBuilder(fieldToEdit.getData()).delete(positions.getMinimum(), positions.getMaximum() + 1).toString()));
     } else {
       replaceDataInDataFields(tag, dataToRemove, EMPTY, mappingRule);
@@ -367,7 +421,7 @@ public class MarcRecordWriter implements Writer {
     char ind2 = isNotEmpty(mappingRule.getField().getIndicator2()) ? mappingRule.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
     char subfieldCode = mappingRule.getField().getSubfields().get(0).getSubfield().charAt(0);
 
-    marcRecord.getDataFields().stream()
+    marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode) && isNotProtected(field))
       .flatMap(fieldToEdit -> findSubfields(fieldToEdit, subfieldCode, dataToReplace).stream())
       .forEach(sf -> sf.setData(dataToReplace.equals("*") ? replacementData : sf.getData().replace(dataToReplace, replacementData)));
@@ -391,7 +445,7 @@ public class MarcRecordWriter implements Writer {
     char ind1 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
     char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
 
-    List<DataField> sourceFields = marcRecord.getDataFields().stream()
+    List<DataField> sourceFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2) && isNotProtected(field))
       .collect(Collectors.toList());
 
@@ -440,7 +494,7 @@ public class MarcRecordWriter implements Writer {
     char srcSubfieldCode = subfieldRule.getSubfield().charAt(0);
     char existingFieldSfCode = subfieldRule.getData().getMarcField().getSubfields().get(0).getSubfield().charAt(0);
 
-    List<DataField> existingFields = marcRecord.getDataFields().stream()
+    List<DataField> existingFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, existingFieldTag, existingFieldInd1, existingFieldInd2))
       .collect(Collectors.toList());
 
@@ -459,20 +513,89 @@ public class MarcRecordWriter implements Writer {
 
   private void deleteMovedDataFromSourceField(DataField sourceField, List<Subfield> movedDataSubfields, char srcSubfieldCodeFromRule) {
     if (srcSubfieldCodeFromRule == '*' || sourceField.getSubfields().size() == movedDataSubfields.size()) {
-      marcRecord.removeVariableField(sourceField);
+      marcRecordToChange.removeVariableField(sourceField);
     } else {
       movedDataSubfields.forEach(sourceField::removeSubfield);
     }
   }
 
+  public void processUpdateMappingOption(List<MarcMappingDetail> marcMappingRules) {
+    if (marcMappingRules.isEmpty()) {
+      incomingMarcRecord.getDataFields()
+        .forEach(field -> replaceField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), "*"));
+      return;
+    }
+
+    for (MarcMappingDetail detail : marcMappingRules) {
+      String fieldTag = detail.getField().getField();
+      char ind1 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
+      char ind2 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
+      String subfieldCode = detail.getField().getSubfields().get(0).getSubfield();
+
+      incomingMarcRecord.getDataFields().stream()
+        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)))
+        .findFirst()
+        .ifPresent(field -> replaceField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode));
+    }
+  }
+
+  private void replaceField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
+    boolean fieldsUpdated = false;
+    boolean correspondingFieldExists = false;
+
+    List<DataField> dataFields = marcRecordToChange.getDataFields();
+    for (int i = 0; i < dataFields.size(); i++) {
+      DataField fieldToUpdate = dataFields.get(i);
+
+      if (fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+        correspondingFieldExists = true;
+        if (isProtectedField(fieldToUpdate, subfieldCode)) {
+          LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
+        } else {
+          if (subfieldCode.equals("*")) {
+            dataFields.set(i, fieldReplacement);
+          } else {
+            String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
+            fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
+          }
+          fieldsUpdated = true;
+        }
+      }
+    }
+
+    if (!fieldsUpdated && !correspondingFieldExists) {
+      addDataFieldInNumericalOrder(fieldReplacement);
+    }
+  }
+
+  private boolean isProtectedField(DataField field, String subfieldCode) {
+    MarcFieldProtectionSetting setting = getFieldProtectionSetting(field, subfieldCode);
+    return setting != null;
+  }
+
+  private MarcFieldProtectionSetting getFieldProtectionSetting(DataField field, String subfieldCode) {
+    for (MarcFieldProtectionSetting setting : applicableProtectionSettings) {
+      boolean isSettingMatchesToField = field.getTag().equals(setting.getField())
+        && String.valueOf(field.getIndicator1()).equals(setting.getIndicator1())
+        && String.valueOf(field.getIndicator2()).equals(setting.getIndicator2())
+        && subfieldCode.equals(setting.getSubfield())
+        && (setting.getData().equals("*") || String.valueOf(field.getSubfield(subfieldCode.charAt(0)).getData()).equals(setting.getData()));
+
+      if (isSettingMatchesToField) {
+        return setting;
+      }
+    }
+    return null;
+  }
+
   private boolean isNotProtected(ControlField field) {
-      return protectionSettings.stream()
+      return applicableProtectionSettings.stream()
         .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
         .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getData()));
   }
 
   private boolean isNotProtected(DataField field) {
-      return protectionSettings.stream()
+      return applicableProtectionSettings.stream()
         .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
         .filter(setting -> setting.getIndicator1().equals(ANY_STRING)
           || (isNotEmpty(setting.getIndicator1()) ? setting.getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE)
@@ -483,4 +606,14 @@ public class MarcRecordWriter implements Writer {
         .filter(setting -> setting.getSubfield().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)) != null)
         .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getSubfield(setting.getSubfield().charAt(0)).getData()));
     }
+
+  protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
+                                                                                   List<MarcFieldProtectionSetting> protectionOverrides) {
+    return marcFieldProtectionSettings.stream()
+      .filter(originalSetting -> protectionOverrides.stream()
+        .noneMatch(overriddenSetting -> overriddenSetting.getId().equals(originalSetting.getId())
+          && overriddenSetting.getSource().equals(MarcFieldProtectionSetting.Source.USER)
+          && overriddenSetting.getOverride()))
+      .collect(Collectors.toList());
+  }
 }

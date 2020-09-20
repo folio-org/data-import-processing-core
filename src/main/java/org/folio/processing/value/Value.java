@@ -38,7 +38,6 @@ public interface Value<T> {
     MAP,
     MISSING,
     REPEATABLE,
-    DATE,
-    MARC_DETAIL
+    DATE
   }
 }
