@@ -344,4 +344,53 @@ public class ProtectedMarcRecordWriterTest {
     Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
+  @Test
+  public void shouldNotMoveDataFromProtectedField() throws IOException {
+    // given
+    String parsedContent = "{\"leader\":\"00082nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = parsedContent;
+
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    eventPayload.setContext(context);
+
+    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
+      .withField("020")
+      .withIndicator1("*")
+      .withIndicator2("*")
+      .withSubfield("*")
+      .withData("*");
+
+    MarcField newFieldRule = new MarcField()
+      .withField("991")
+      .withIndicator1("1")
+      .withIndicator2("1")
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("c")));
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.MOVE)
+      .withField(new MarcField()
+        .withField("020")
+        .withIndicator1(" ")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("a")
+          .withSubaction(CREATE_NEW_FIELD)
+          .withData(new Data().withMarcField(newFieldRule)))));
+    //when
+    marcRecordWriter.initializeWithProtectionSettings(eventPayload, Collections.singletonList(marcFieldProtectionSetting));
+    marcRecordWriter.write(mappingDetail.getField().getField(), MarcDetailValue.of(mappingDetail));
+    marcRecordWriter.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+
 }

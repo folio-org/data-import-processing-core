@@ -44,7 +44,7 @@ public class MarcRecordMapper implements Mapper {
     return marcRecordWriter.getResult(eventPayload);
   }
 
-  private List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
+  protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
                                                                                  List<MarcFieldProtectionSetting> protectionOverrides) {
     return marcFieldProtectionSettings.stream()
       .filter(originalSetting -> protectionOverrides.stream()
