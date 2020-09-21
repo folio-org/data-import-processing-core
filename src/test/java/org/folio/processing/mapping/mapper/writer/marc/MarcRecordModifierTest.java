@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.writer.marc;
+package org.folio.processing.mapping.mapper.writer.marc;
 
 import io.vertx.core.json.Json;
 import org.folio.DataImportEventPayload;
@@ -6,7 +6,6 @@ import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.folio.processing.mapping.mapper.writer.marc.MarcRecordModifier;
 import org.folio.rest.jaxrs.model.Data;
 import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MarcField;
@@ -62,7 +61,7 @@ public class MarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -101,7 +100,7 @@ public class MarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -140,7 +139,7 @@ public class MarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -176,7 +175,7 @@ public class MarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1229,7 +1228,7 @@ public class MarcRecordModifierTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
     context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1271,7 +1270,7 @@ public class MarcRecordModifierTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
     context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1313,7 +1312,7 @@ public class MarcRecordModifierTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
     context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1355,7 +1354,7 @@ public class MarcRecordModifierTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
     context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
-    context.put("MAPPING_PARAMS", Json.encodePrettily(new MappingParameters()));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()));
     eventPayload.setContext(context);
 
     MappingProfile mappingProfile = new MappingProfile()
@@ -1445,7 +1444,9 @@ public class MarcRecordModifierTest {
       .withSubfield("a")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withData("pictures");
+      .withData("pictures")
+      .withSource(MarcFieldProtectionSetting.Source.USER)
+      .withOverride(true);
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(Arrays.asList(marcFieldProtectionSetting));

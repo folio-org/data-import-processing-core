@@ -133,5 +133,4 @@ public class MappingManagerUnitTest {
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
   }
-
 }
