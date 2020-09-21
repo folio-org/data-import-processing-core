@@ -47,7 +47,6 @@ public class LoadQueryBuilder {
             .replaceFieldReference(fieldName, true);
           return new DefaultJsonLoadQuery(tableName, queryHolder.getSqlQuery(), queryHolder.getCqlQuery());
         }
-        // TODO Support loading of MARC records
       }
     }
     return null;
