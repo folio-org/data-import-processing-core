@@ -366,7 +366,7 @@ public class MarcRecordModifier {
 
       marcRecordToChange.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && dataToReplace.equals("*") || controlFieldContainsDataAtPositions(field, dataToReplace, positions))
-        .filter(field -> isNotProtected(field))
+        .filter(this::isNotProtected)
         .forEach(fieldToEdit -> {
           StringBuilder newData = new StringBuilder(fieldToEdit.getData()).replace(startPosition, endPosition + 1, replacementData);
           fieldToEdit.setData(newData.toString());
@@ -384,7 +384,7 @@ public class MarcRecordModifier {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
       marcRecordToChange.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && controlFieldContainsDataAtPositions(field, dataToRemove, positions))
-        .filter(field -> isNotProtected(field))
+        .filter(this::isNotProtected)
         .forEach(fieldToEdit -> fieldToEdit.setData(new StringBuilder(fieldToEdit.getData()).delete(positions.getMinimum(), positions.getMaximum() + 1).toString()));
     } else {
       replaceDataInDataFields(tag, dataToRemove, EMPTY, mappingRule);

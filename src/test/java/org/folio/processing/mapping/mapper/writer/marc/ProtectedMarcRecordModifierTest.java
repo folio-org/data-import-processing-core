@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class ProtectedMarcRecordWriterTest {
+public class ProtectedMarcRecordModifierTest {
 
   public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
   private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();

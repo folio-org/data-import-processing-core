@@ -97,5 +97,4 @@ public final class MappingManager {
   public static void clearWriterFactories() {
     FACTORY_REGISTRY.getWriterFactories().clear();
   }
-
 }
