@@ -550,16 +550,16 @@ public class MarcRecordModifier {
 
       if (fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
         correspondingFieldExists = true;
-        if (isProtectedField(fieldToUpdate)) {
-          LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
-        } else {
-          if (subfieldCode.equals("*")) {
+        if (isNotProtected(fieldToUpdate)) {
+          if (subfieldCode.equals(ANY_STRING)) {
             dataFields.set(i, fieldReplacement);
           } else {
             String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
             fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
           }
           fieldsUpdated = true;
+        } else {
+          LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
         }
       }
     }
@@ -567,26 +567,6 @@ public class MarcRecordModifier {
     if (!fieldsUpdated && !correspondingFieldExists) {
       addDataFieldInNumericalOrder(fieldReplacement);
     }
-  }
-
-  private boolean isProtectedField(DataField field) {
-    MarcFieldProtectionSetting setting = getFieldProtectionSetting(field);
-    return setting != null;
-  }
-
-  private MarcFieldProtectionSetting getFieldProtectionSetting(DataField field) {
-    for (MarcFieldProtectionSetting setting : applicableProtectionSettings) {
-      boolean isSettingMatchesToField = field.getTag().equals(setting.getField())
-        && (setting.getIndicator2().equals(ANY_STRING) || String.valueOf(field.getIndicator1()).equals(setting.getIndicator1()))
-        && (setting.getIndicator2().equals(ANY_STRING) || String.valueOf(field.getIndicator2()).equals(setting.getIndicator2()))
-        && (setting.getSubfield().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)) != null)
-        && (setting.getData().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)).getData().equals(setting.getData()));
-
-      if (isSettingMatchesToField) {
-        return setting;
-      }
-    }
-    return null;
   }
 
   private boolean isNotProtected(ControlField field) {
