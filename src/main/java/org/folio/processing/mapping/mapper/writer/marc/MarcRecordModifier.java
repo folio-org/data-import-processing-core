@@ -530,7 +530,7 @@ public class MarcRecordModifier {
     for (MarcMappingDetail detail : marcMappingRules) {
       String fieldTag = detail.getField().getField();
       char ind1 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
-      char ind2 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
+      char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
       String subfieldCode = detail.getField().getSubfields().get(0).getSubfield();
 
       incomingMarcRecord.getDataFields().stream()
@@ -577,10 +577,10 @@ public class MarcRecordModifier {
   private MarcFieldProtectionSetting getFieldProtectionSetting(DataField field, String subfieldCode) {
     for (MarcFieldProtectionSetting setting : applicableProtectionSettings) {
       boolean isSettingMatchesToField = field.getTag().equals(setting.getField())
-        && String.valueOf(field.getIndicator1()).equals(setting.getIndicator1())
-        && String.valueOf(field.getIndicator2()).equals(setting.getIndicator2())
-        && subfieldCode.equals(setting.getSubfield())
-        && (setting.getData().equals("*") || String.valueOf(field.getSubfield(subfieldCode.charAt(0)).getData()).equals(setting.getData()));
+        && (setting.getIndicator2().equals(ANY_STRING) || String.valueOf(field.getIndicator1()).equals(setting.getIndicator1()))
+        && (setting.getIndicator2().equals(ANY_STRING) || String.valueOf(field.getIndicator2()).equals(setting.getIndicator2()))
+        && (setting.getSubfield().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)) != null)
+        && (setting.getData().equals(ANY_STRING) || field.getSubfield(subfieldCode.charAt(0)).getData().equals(setting.getData()));
 
       if (isSettingMatchesToField) {
         return setting;
