@@ -80,7 +80,7 @@ public class ProtectedMarcRecordModifierTest {
   }
 
   @Test
-  public void shouldDeleteUnprotectControlField() throws IOException {
+  public void shouldDeleteUnprotectedControlField() throws IOException {
     // given
     String parsedContent = "{\"leader\":\"00097nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"002\":\"whatever\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     String expectedParsedContent = "{\"leader\":\"00097nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
@@ -171,7 +171,7 @@ public class ProtectedMarcRecordModifierTest {
   }
 
   @Test
-  public void shouldDeleteUnprotectDataField() throws IOException {
+  public void shouldDeleteUnprotectedField() throws IOException {
     // given
     String parsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}},{\"999\":{\"subfields\":[{\"a\":\"original\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     String expectedParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
@@ -353,6 +353,53 @@ public class ProtectedMarcRecordModifierTest {
     Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
+
+  @Test
+  public void shouldProtectFromAddingSubfieldToProtectedDataField() throws IOException {
+    // given
+    String parsedContent = "{\"leader\":\"00151nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"690\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"690\":{\"subfields\":[{\"9\":\"local\"}],\"ind1\":\"9\",\"ind2\":\"9\"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00151nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"690\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"690\":{\"subfields\":[{\"9\":\"local\"}],\"ind1\":\"9\",\"ind2\":\"9\"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
+
+    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
+      .withField("690")
+      .withIndicator1("*")
+      .withIndicator2("*")
+      .withSubfield("*")
+      .withData("*");
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.ADD)
+      .withField(new MarcField()
+        .withField("690")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("c").withData(new Data().withText("new data")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
+    assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
 
   @Test
   public void shouldDeleteUnprotectedDataField() throws IOException {
