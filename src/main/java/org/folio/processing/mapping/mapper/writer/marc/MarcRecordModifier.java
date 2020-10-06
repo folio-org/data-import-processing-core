@@ -35,7 +35,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -323,18 +322,15 @@ public class MarcRecordModifier {
       .filter(field -> fieldMatches(field, tag, ind1, ind2) && isNotProtected(field))
       .collect(Collectors.toList());
 
+    char subfieldCode = ruleSubfield.getSubfield().charAt(0);
     for (DataField field : fieldsToEdit) {
-      Subfield subfieldToEdit = field.getSubfield(ruleSubfield.getSubfield().charAt(0));
+      List<Subfield> subfieldsToEdit = subfieldCode == ANY_CHAR ? field.getSubfields() : field.getSubfields(subfieldCode);
       switch (dataPosition) {
         case BEFORE_STRING:
-          if (subfieldToEdit != null) {
-            subfieldToEdit.setData(dataToInsert + subfieldToEdit.getData());
-          }
+          subfieldsToEdit.forEach(subfield -> subfield.setData(dataToInsert + subfield.getData()));
           break;
         case AFTER_STRING:
-          if (subfieldToEdit != null) {
-            subfieldToEdit.setData(subfieldToEdit.getData() + dataToInsert);
-          }
+          subfieldsToEdit.forEach(subfield -> subfield.setData(subfield.getData() + dataToInsert));
           break;
         case NEW_SUBFIELD:
           field.addSubfield(marcFactory.newSubfield(ruleSubfield.getSubfield().charAt(0), dataToInsert));

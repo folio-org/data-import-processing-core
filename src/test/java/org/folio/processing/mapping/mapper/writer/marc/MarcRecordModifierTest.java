@@ -906,6 +906,46 @@ public class MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldInsertDataBeforeExistingToFieldRegardlessIndicatorsAndSubfield() throws IOException {
+    // given
+    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00084nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.EDIT)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Arrays.asList(new MarcSubfield()
+          .withSubfield("*")
+          .withSubaction(INSERT)
+          .withPosition(BEFORE_STRING)
+          .withData(new Data().withText("http://libproxy.smith.edu?url=")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = Json.mapper.readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
   public void shouldReplaceDataIntoFieldWithAnyIndicatorsAndSubfields() throws IOException {
     // given
     String parsedContent = "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"http://libproxy.smith.edu\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
