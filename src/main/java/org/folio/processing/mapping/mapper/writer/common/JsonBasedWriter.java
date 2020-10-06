@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -335,7 +336,7 @@ public class JsonBasedWriter extends AbstractWriter {
       if (pathObject.isArray()) {
         ArrayNode arrayNode = (ArrayNode) pathObject;
         for (int i = 0; i < arrayNode.size(); i++) {
-          if (arrayNode.get(i).equals(currentObject)) {
+          if (arrayNode.get(i).equals(currentObject) || ifDeepEquals(currentObject, arrayNode.get(i))) {
             arrayNode.remove(i);
           }
         }
@@ -343,6 +344,22 @@ public class JsonBasedWriter extends AbstractWriter {
         ((ObjectNode) entityNode).remove(currentPath);
       }
     }
+  }
+
+  private boolean ifDeepEquals(JsonNode currentObject, JsonNode jsonNode) {
+    if (currentObject.isObject()) {
+      Iterator<String> stringIterator = currentObject.fieldNames();
+      while (stringIterator.hasNext()) {
+        String fieldName = stringIterator.next();
+        JsonNode valueFromMappingProfile = currentObject.get(fieldName);
+        JsonNode valueFromEntity = jsonNode.get(fieldName);
+        if (!valueFromMappingProfile.equals(valueFromEntity)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
   }
 
   private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
