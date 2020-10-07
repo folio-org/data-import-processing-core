@@ -312,7 +312,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) " +
         "WHERE (field ->> 'value' = '%s' OR field ->> 'value' = '%s')",
       value.getValue().get(0), value.getValue().get(1));
-    String expectedCQLQuery = format("identifiers=\"\\\"value\\\":\\\"%s\\\"\" AND identifiers=\"\\\"value\\\":\\\"%s\\\"\"",
+    String expectedCQLQuery = format("identifiers=\"\\\"value\\\":\\\"%s\\\"\" OR identifiers=\"\\\"value\\\":\\\"%s\\\"\"",
       value.getValue().get(0), value.getValue().get(1));
     assertEquals(expectedSQLQuery, result.getSql());
     assertEquals(expectedCQLQuery, result.getCql());

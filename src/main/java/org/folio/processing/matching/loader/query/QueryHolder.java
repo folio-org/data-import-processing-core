@@ -184,7 +184,7 @@ public class QueryHolder {
       List<String> conditions = listValue.getValue().stream()
         .map(val -> constructCQLFilterByFieldValueOfArrayElement(fieldPath, val))
         .collect(Collectors.toList());
-      return join(conditions, " AND ");
+      return join(conditions, " OR ");
     }
     return EMPTY;
   }
