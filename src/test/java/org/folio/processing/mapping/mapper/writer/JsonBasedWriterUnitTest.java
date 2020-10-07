@@ -129,6 +129,36 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
+  public void shouldWrite_RepeatableDeleteIncomingValuesIfThereAreSomeAdditionalFieldsExistsInEntity() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> objects = new ArrayList<>();
+    Map<String, Value> object1 = new HashMap<>();
+    Map<String, Value> object2 = new HashMap<>();
+    object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
+    object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
+
+    object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
+    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    objects.add(object1);
+    objects.add(object2);
+
+    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
+    WRITER.write("instance.contributor[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}", resultInstance);
+  }
+
+  @Test
   public void shouldWrite_RepeatableExchangeValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
