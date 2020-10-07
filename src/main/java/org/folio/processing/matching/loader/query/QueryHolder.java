@@ -2,10 +2,12 @@ package org.folio.processing.matching.loader.query;
 
 import org.folio.MatchDetail;
 import org.folio.processing.value.DateValue;
+import org.folio.processing.value.ListValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.Qualifier;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -15,6 +17,8 @@ import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.split;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
+import static org.folio.processing.value.Value.ValueType.LIST;
+import static org.folio.processing.value.Value.ValueType.STRING;
 
 /**
  * Helper class that allows to build sql and cql queries based on MatchCriterion and apply Qualifier
@@ -169,16 +173,29 @@ public class QueryHolder {
   }
 
   private String constructCQLFilterByArrayStringValue(String fieldPath) {
-    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + escapeSpecialCharacters(value) + "\\\"";
+    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + escapeSpecialCharacters(value.getValue().toString()) + "\\\"";
   }
 
   private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath) {
+    if (value.getType() == STRING) {
+      return constructCQLFilterByFieldValueOfArrayElement(fieldPath, value.getValue().toString());
+    } else if (value.getType() == LIST) {
+      ListValue listValue = (ListValue) value;
+      List<String> conditions = listValue.getValue().stream()
+        .map(val -> constructCQLFilterByFieldValueOfArrayElement(fieldPath, val))
+        .collect(Collectors.toList());
+      return join(conditions, " AND ");
+    }
+    return EMPTY;
+  }
+
+  private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath, String value) {
     return substringBefore(fieldPath, ARRAY_SIGN) + "=\"\\\""
       + substringAfter(fieldPath, ARRAY_SIGN + ".") +
       "\\\":\\\"" + escapeSpecialCharacters(value) + "\\\"\"";
   }
 
-  private String escapeSpecialCharacters(Value value) {
-    return value.getValue().toString().replaceAll("([*?\"^])", "\\\\$0");
+  private String escapeSpecialCharacters(String value) {
+    return value.replaceAll("([*?\"^])", "\\\\$0");
   }
 }

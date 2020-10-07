@@ -61,12 +61,12 @@ public enum MatchingCondition {
    * Builds cql query passing an actual value to the cqlQuery structure
    *
    * @param value {@link Value} that should be applied in cql query,
-   *              currently supports only STRING value type
+   *              currently supports only STRING and LIST value type
    * @return cql query or an empty string if no query structure is provided for {@link MatchCriterion}
    * or query cannot be built for specified value type
    */
   public String constructCqlQuery(Value value) {
-    return value.getType() == STRING ? format(cqlQuery, value.getValue()) : EMPTY;
+    return constructConditionWithValue(value, cqlQuery);
   }
 
   private String constructConditionWithValue(Value value, String format) {
@@ -82,4 +82,5 @@ public enum MatchingCondition {
     }
     return condition;
   }
+
 }
