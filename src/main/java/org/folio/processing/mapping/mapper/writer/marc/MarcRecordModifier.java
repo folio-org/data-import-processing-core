@@ -522,25 +522,63 @@ public class MarcRecordModifier {
 
   public void processUpdateMappingOption(List<MarcMappingDetail> marcMappingRules) {
     if (marcMappingRules.isEmpty()) {
-      incomingMarcRecord.getDataFields()
-        .forEach(field -> replaceField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), "*"));
+      replaceAllFields(incomingMarcRecord.getVariableFields());
       return;
     }
 
     for (MarcMappingDetail detail : marcMappingRules) {
       String fieldTag = detail.getField().getField();
-      char ind1 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
-      char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
-      String subfieldCode = detail.getField().getSubfields().get(0).getSubfield();
+      if (Verifier.isControlField(fieldTag)) {
+        incomingMarcRecord.getControlFields().stream()
+          .filter(field -> field.getTag().equals(fieldTag))
+          .findFirst()
+          .ifPresent(this::replaceControlField);
+      } else {
+        char ind1 = isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
+        char ind2 = isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
+        String subfieldCode = detail.getField().getSubfields().get(0).getSubfield();
 
-      incomingMarcRecord.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)))
-        .findFirst()
-        .ifPresent(field -> replaceField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode));
+        incomingMarcRecord.getDataFields().stream()
+          .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)))
+          .findFirst()
+          .ifPresent(field -> replaceDataField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode));
+      }
     }
   }
 
-  private void replaceField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
+  private void replaceAllFields(List<VariableField> fieldReplacements) {
+    for (VariableField field : fieldReplacements) {
+      if (Verifier.isControlField(field.getTag())) {
+        replaceControlField((ControlField) field);
+      } else {
+        DataField dataField = (DataField) field;
+        replaceDataField(dataField, dataField.getTag(), dataField.getIndicator1(), dataField.getIndicator2(), "*");
+      }
+    }
+  }
+
+  private void replaceControlField(ControlField fieldReplacement) {
+    boolean fieldsUpdated = false;
+    List<ControlField> controlFields = marcRecordToChange.getControlFields();
+
+    for (int i = 0; i < controlFields.size(); i++) {
+      ControlField fieldToReplace = controlFields.get(i);
+      if (fieldToReplace.getTag().equals(fieldReplacement.getTag())) {
+        if (isNotProtected(fieldToReplace)) {
+          controlFields.set(i, fieldReplacement);
+          fieldsUpdated = true;
+        } else {
+          LOGGER.info("Field {} was not updated, because it is protected", fieldToReplace);
+        }
+      }
+    }
+
+    if (!fieldsUpdated) {
+      addControlFieldInNumericalOrder(fieldReplacement);
+    }
+  }
+
+  private void replaceDataField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
     boolean fieldsUpdated = false;
     boolean correspondingFieldExists = false;
 
