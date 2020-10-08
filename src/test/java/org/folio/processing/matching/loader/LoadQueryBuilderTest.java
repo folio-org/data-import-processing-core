@@ -200,7 +200,7 @@ public class LoadQueryBuilderTest {
       value.getValue().get(0), value.getValue().get(1));
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = "";
+    String expectedCQLQuery = "(poNumber == \"ybp7406411*\" OR poNumber == \"NhCcYBP*\")";
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -290,6 +290,57 @@ public class LoadQueryBuilderTest {
         "WHERE (field ->> 'value' LIKE '%s%%' OR field ->> 'value' LIKE '%s%%') AND LIKE '978%%'",
       value.getValue().get(0), value.getValue().get(1));
     assertEquals(expectedSQLQuery, result.getSql());
+  }
+
+  @Test
+  public void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue_JsonArrayPath() {
+    // given
+    ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    assertNotNull(result.getCql());
+    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) " +
+        "WHERE (field ->> 'value' = '%s' OR field ->> 'value' = '%s')",
+      value.getValue().get(0), value.getValue().get(1));
+    String expectedCQLQuery = format("identifiers=\"\\\"value\\\":\\\"%s\\\"\" OR identifiers=\"\\\"value\\\":\\\"%s\\\"\"",
+      value.getValue().get(0), value.getValue().get(1));
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue() {
+    // given
+    ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Collections.singletonList(
+          new Field().withLabel("field").withValue("instance.value"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    assertNotNull(result.getCql());
+    String expectedSQLQuery = format("WHERE (instance.jsonb ->> 'value' = '%s' OR instance.jsonb ->> 'value' = '%s')",
+      value.getValue().get(0), value.getValue().get(1));
+    String expectedCQLQuery = format("(value == \"%s\" OR value == \"%s\")",
+      value.getValue().get(0), value.getValue().get(1));
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertEquals(expectedCQLQuery, result.getCql());
   }
 
   @Test
