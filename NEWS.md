@@ -9,6 +9,7 @@
 * [MODDICORE-94](https://issues.folio.org/browse/MODDICORE-94) Edit action for Modify MARC action profile works only for explicitly specified fields
 * [MODDICORE-85](https://issues.folio.org/browse/MODDICORE-85) Added support to match by multiple values (fix matching MARC 035 to Instance Identifier)
 * [MODINV-346](https://issues.folio.org/browse/MODINV-346) Problem with the repeatable check in/out notes field mapping actions[BUGFIX]
+* [MODDICORE-88](https://issues.folio.org/browse/MODDICORE-88) Refine identifier matching for Instances: backend
 
 ## 2020-08-10 v2.1.6
 * [MODDICORE-70](https://issues.folio.org/browse/MODDICORE-70) Actions in mapping profile don`t work correctly - BUGFIX

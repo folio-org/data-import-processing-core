@@ -1,8 +1,5 @@
 package org.folio.processing.matching.loader;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import org.folio.MatchDetail;
 import org.folio.processing.matching.loader.query.DefaultLoadQuery;
 import org.folio.processing.matching.loader.query.LoadQuery;
@@ -20,8 +17,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 
 import static java.lang.String.format;
 import static org.folio.MatchDetail.MatchCriterion.EXACTLY_MATCHES;
@@ -62,6 +62,54 @@ public class LoadQueryBuilderTest {
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
     String expectedCQLQuery = format("poNumber == \"%s\"", value.getValue());
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingStringValue() {
+    // given
+    StringValue value = StringValue.of("ybp7406411");
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) WHERE field ->> 'value' = 'ybp7406411' AND  field ->> 'identifierTypeId' = '439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef'", value.getValue());
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertNotNull(result.getCql());
+    String expectedCQLQuery = format("identifiers=\"\\\"identifierTypeId\\\":\\\"439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef\\\"\" AND (identifiers=\"\\\"value\\\":\\\"ybp7406411\\\"\")", value.getValue());
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValue() {
+    // given
+    ListValue value = ListValue.of(Arrays.asList("ybp7406411", "ybp74064123"));
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef"))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertNotNull(result.getSql());
+    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) WHERE (field ->> 'value' = 'ybp7406411' OR field ->> 'value' = 'ybp74064123') AND  field ->> 'identifierTypeId' = '439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef'", value.getValue());
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertNotNull(result.getCql());
+    String expectedCQLQuery = format("identifiers=\"\\\"identifierTypeId\\\":\\\"439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef\\\"\" AND (identifiers=\"\\\"value\\\":\\\"ybp7406411\\\"\" OR identifiers=\"\\\"value\\\":\\\"ybp74064123\\\"\")", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 

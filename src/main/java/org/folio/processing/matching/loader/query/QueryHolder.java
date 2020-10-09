@@ -29,6 +29,9 @@ public class QueryHolder {
   private static final String FIELD_NAME = "FIELD_NAME";
   private static final String ARRAY_SIGN = "[]";
 
+  private static final String AND_CONDITION = " AND ";
+  private static final String WHERE_CLAUSE = "WHERE";
+
   private String sqlQuery;
   private String cqlQuery;
   private Value value;
@@ -197,5 +200,11 @@ public class QueryHolder {
 
   private String escapeSpecialCharacters(String value) {
     return value.replaceAll("([*?\"^])", "\\\\$0");
+  }
+
+  public QueryHolder applyAdditionalCondition(QueryHolder additionalQuery) {
+    cqlQuery = additionalQuery.getCqlQuery() + AND_CONDITION + "(" + cqlQuery + ")";
+    sqlQuery = sqlQuery + AND_CONDITION + additionalQuery.getSqlQuery().split(WHERE_CLAUSE)[1];
+    return this;
   }
 }
