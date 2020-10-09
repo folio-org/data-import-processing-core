@@ -203,7 +203,7 @@ public class QueryHolder {
   }
 
   public QueryHolder applyAdditionalCondition(QueryHolder additionalQuery) {
-    cqlQuery = additionalQuery.getCqlQuery() + AND_CONDITION + cqlQuery;
+    cqlQuery = additionalQuery.getCqlQuery() + AND_CONDITION + "(" + cqlQuery + ")";
     sqlQuery = sqlQuery + AND_CONDITION + additionalQuery.getSqlQuery().split(WHERE_CLAUSE)[1];
     return this;
   }
