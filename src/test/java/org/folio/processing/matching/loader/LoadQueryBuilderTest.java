@@ -85,7 +85,7 @@ public class LoadQueryBuilderTest {
     String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) WHERE field ->> 'value' = 'ybp7406411' AND  field ->> 'identifierTypeId' = '439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef'", value.getValue());
     assertEquals(expectedSQLQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("identifiers=\"\\\"identifierTypeId\\\":\\\"439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef\\\"\" AND identifiers=\"\\\"value\\\":\\\"ybp7406411\\\"\"", value.getValue());
+    String expectedCQLQuery = format("identifiers=\"\\\"identifierTypeId\\\":\\\"439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef\\\"\" AND (identifiers=\"\\\"value\\\":\\\"ybp7406411\\\"\")", value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
