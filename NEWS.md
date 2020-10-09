@@ -6,6 +6,7 @@
 * [MODSOURMAN-281](https://issues.folio.org/browse/MODSOURMAN-281) Added support for event post-processing
 * [MODDICORE-77](https://issues.folio.org/browse/MODDICORE-77) Applied MARC field mapping protection settings
 * [MODSOURCE-184](https://issues.folio.org/browse/MODSOURCE-184) Added support for "Update" option of mapping profile for marc bib modification
+* [MODDICORE-94](https://issues.folio.org/browse/MODDICORE-94) Edit action for Modify MARC action profile works only for explicitly specified fields
 * [MODDICORE-85](https://issues.folio.org/browse/MODDICORE-85) Added support to match by multiple values (fix matching MARC 035 to Instance Identifier)
 * [MODINV-346](https://issues.folio.org/browse/MODINV-346) Problem with the repeatable check in/out notes field mapping actions[BUGFIX]
 * [MODDICORE-88](https://issues.folio.org/browse/MODDICORE-88) Refine identifier matching for Instances: backend
