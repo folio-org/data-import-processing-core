@@ -6,6 +6,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
+import org.folio.DataImportEventTypes;
 import org.folio.JobProfile;
 import org.folio.MappingProfile;
 import org.folio.MatchProfile;
@@ -32,6 +33,7 @@ import static org.folio.ActionProfile.Action.UPDATE;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
 import static org.folio.DataImportEventTypes.DI_SRS_MARC_BIB_RECORD_CREATED;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
@@ -370,6 +372,72 @@ public class EventManagerUnitTest extends AbstractRestTest {
       testContext.assertNull(throwable);
       testContext.assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
       testContext.assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
+      async.complete();
+    });
+  }
+
+  @Test
+  public void shouldHandleAndSetToCurrentNodeMatchWrapper2(TestContext testContext) {
+    Async async = testContext.async();
+    // given
+    EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
+    Mockito.doAnswer(invocationOnMock -> {
+      DataImportEventPayload payload = invocationOnMock.getArgument(0);
+      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().get(0));
+      return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_UPDATED.value()));
+    }).when(updateInstanceHandler).handle(any(DataImportEventPayload.class));
+    Mockito.when(updateInstanceHandler.isEligible(any(DataImportEventPayload.class))).thenReturn(true);
+
+    EventManager.registerEventHandler(updateInstanceHandler);
+
+    ProfileSnapshotWrapper mappingWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MAPPING_PROFILE)
+      .withContent(JsonObject.mapFrom(new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+
+    ProfileSnapshotWrapper actionWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(MATCH)
+      .withOrder(0)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))
+      .withChildSnapshotWrappers(Collections.singletonList(mappingWrapper));
+
+    ProfileSnapshotWrapper matchWrapper1 = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MATCH_PROFILE)
+      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+
+    ProfileSnapshotWrapper matchWrapper2 = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(1)
+      .withContentType(MATCH_PROFILE)
+      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+
+    ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withContentType(JOB_PROFILE)
+      .withContent(JsonObject.mapFrom(new JobProfile()))
+      .withChildSnapshotWrappers(Arrays.asList(
+        matchWrapper1.withChildSnapshotWrappers(Collections.singletonList(actionWrapper)), matchWrapper2));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_SRS_MARC_BIB_RECORD_CREATED.value())
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>())
+      .withProfileSnapshot(jobProfileWrapper)
+      .withCurrentNode(actionWrapper);
+
+    // when
+    EventManager.handleEvent(eventPayload).whenComplete((eventContext, throwable) -> {
+    // then
+      testContext.assertNull(throwable);
+      testContext.assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
+      testContext.assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
       async.complete();
     });
   }

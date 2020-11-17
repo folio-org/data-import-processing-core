@@ -143,7 +143,9 @@ public final class EventManager {
     if (currentNode.getContentType() == MAPPING_PROFILE) {
       return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
         .flatMap(mappingParent -> findParent(mappingParent.getId(), eventPayload.getProfileSnapshot())
-          .flatMap(actionParent -> getNextChildProfile(mappingParent, actionParent)));
+          .flatMap(actionParent -> getNextChildProfile(mappingParent, actionParent)
+            .or(() -> findParent(actionParent.getId(), eventPayload.getProfileSnapshot())
+              .flatMap(matchParent -> getNextChildProfile(actionParent, matchParent)))));
     }
     if (currentNode.getContentType() == ACTION_PROFILE) {
       if (isNotEmpty(currentNode.getChildSnapshotWrappers())) {
