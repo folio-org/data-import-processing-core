@@ -1,3 +1,6 @@
+## 2020-10-09 v2.2.1-SNAPSHOT
+* [MODDICORE-103](https://issues.folio.org/browse/MODDICORE-103) Fixed searching for next match profile
+
 ## 2020-10-09 v2.2.0
 * [MODDICORE-59](https://issues.folio.org/browse/MODDICORE-59) Implemented MARC Record Writer/Modifier
 * [MODDICORE-69](https://issues.folio.org/browse/MODDICORE-69) Implemented ###REMOVE### expression logic
