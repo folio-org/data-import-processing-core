@@ -1,4 +1,4 @@
-## 2020-10-09 v2.2.1-SNAPSHOT
+## 2020-11-20 v2.2.1
 * [MODDICORE-103](https://issues.folio.org/browse/MODDICORE-103) Fixed searching for next match profile
 
 ## 2020-10-09 v2.2.0
