@@ -1,17 +1,21 @@
 package org.folio.processing.events;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.folio.DataImportEventPayload;
+import org.folio.kafka.KafkaConfig;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.EventProcessorImpl;
 import org.folio.processing.events.services.publisher.EventPublisher;
+import org.folio.processing.events.services.publisher.KafkaEventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.processing.exceptions.EventHandlerNotFoundException;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -39,7 +43,7 @@ public final class EventManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
-  private static final EventPublisher eventPublisher = new RestEventPublisher();
+  private static final List<EventPublisher> eventPublisher = Arrays.asList(new RestEventPublisher());
 
 
   private EventManager() {
@@ -89,7 +93,7 @@ public final class EventManager {
     if (processThrowable instanceof EventHandlerNotFoundException) {
       return CompletableFuture.completedFuture(false);
     }
-    return eventPublisher.publish(prepareEventPayload(eventPayload, processThrowable))
+    return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, processThrowable))
       .thenApply(sentEvent -> true);
   }
 
@@ -195,6 +199,25 @@ public final class EventManager {
    */
   public static <T extends EventHandler> boolean registerEventHandler(T eventHandler) {
     return eventProcessor.getEventHandlers().add(eventHandler);
+  }
+
+  /**
+   * Performs registration for kafka event publisher in publishers list
+   *
+   * @param kafkaConfig - object with kafka initial params
+   * @param vertx       - vertx instance
+   */
+  public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
+    eventPublisher.clear();
+    eventPublisher.add(new KafkaEventPublisher(kafkaConfig, vertx, maxDistributionNum));
+  }
+
+  /**
+   * Performs registration for rest event publisher in publishers list
+   */
+  public static void registerRestEventPublisher() {
+    eventPublisher.clear();
+    eventPublisher.add(new RestEventPublisher());
   }
 
   /**
