@@ -1,4 +1,5 @@
 ## xxxx-xx-xx v2.3.0-SNAPSHOT
+* [MODDICORE-82](https://issues.folio.org/browse/MODDICORE-82) Change transport layer implementation to use Kafka
 
 ## 2020-11-20 v2.2.1
 * [MODDICORE-103](https://issues.folio.org/browse/MODDICORE-103) Fixed searching for next match profile
