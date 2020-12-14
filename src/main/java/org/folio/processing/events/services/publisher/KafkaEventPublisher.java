@@ -40,7 +40,11 @@ public class KafkaEventPublisher implements EventPublisher {
   @Override
   public CompletableFuture<Event> publish(DataImportEventPayload eventPayload) {
     CompletableFuture<Event> future = new CompletableFuture<>();
-    String eventType = eventPayload == null ? "UNKNOWN" : eventPayload.getEventType();
+    if (eventPayload == null) {
+      future.completeExceptionally(new IllegalArgumentException("DataImportEventPayload can't be null"));
+      return future;
+    }
+    String eventType = eventPayload.getEventType();
     try {
       OkapiConnectionParams params = new OkapiConnectionParams();
       params.setOkapiUrl(eventPayload.getOkapiUrl());
@@ -76,7 +80,7 @@ public class KafkaEventPublisher implements EventPublisher {
       producer.write(record, war -> {
         producer.end(ear -> producer.close());
         if (war.succeeded()) {
-          LOGGER.debug("Event with type {} was sent to the topic", eventType);
+          LOGGER.info("Event with type {} was sent to the topic", eventType);
           future.complete(event);
         } else {
           Throwable cause = war.cause();
