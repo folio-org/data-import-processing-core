@@ -14,13 +14,16 @@ import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.processing.events.utils.ZIPArchiver;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
-import org.folio.rest.util.OkapiConnectionParams;
 import org.folio.util.pubsub.PubSubClientUtils;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventPublisher.class);
@@ -46,16 +49,12 @@ public class KafkaEventPublisher implements EventPublisher {
     }
     String eventType = eventPayload.getEventType();
     try {
-      OkapiConnectionParams params = new OkapiConnectionParams();
-      params.setOkapiUrl(eventPayload.getOkapiUrl());
-      params.setTenantId(eventPayload.getTenant());
-      params.setToken(eventPayload.getToken());
       Event event = new Event()
         .withId(UUID.randomUUID().toString())
         .withEventType(eventPayload.getEventType())
         .withEventPayload(ZIPArchiver.zip(JsonObject.mapFrom(eventPayload).encode()))
         .withEventMetadata(new EventMetadata()
-          .withTenantId(params.getTenantId())
+          .withTenantId(eventPayload.getTenant())
           .withEventTTL(1)
           .withPublishedBy(PubSubClientUtils.constructModuleName()));
 
@@ -67,11 +66,10 @@ public class KafkaEventPublisher implements EventPublisher {
       KafkaProducerRecord<String, String> record =
         KafkaProducerRecord.create(topicName, key, Json.encode(event));
 
-      record.addHeaders(params.getHeaders()
-        .entrySet()
-        .stream()
-        .map(e -> KafkaHeader.header(e.getKey(), e.getValue()))
-        .collect(Collectors.toList()));
+      record.addHeaders(List.of(
+        KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()),
+        KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()),
+        KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken())));
 
       String producerName = eventType + "_Producer";
       KafkaProducer<String, String> producer =
