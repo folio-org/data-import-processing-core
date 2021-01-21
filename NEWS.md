@@ -1,5 +1,9 @@
-## 2021-01-21 v2.3.0-SNAPSHOT
+## xxxx-xx-xx v2.3.0-SNAPSHOT
+* [MODDICORE-82](https://issues.folio.org/browse/MODDICORE-82) Change transport layer implementation to use Kafka
 * [MODDICORE-114](https://issues.folio.org/browse/MODDICORE-114) Add MARC-Instance default mappings for 880 fields.
+
+## 2020-11-20 v2.2.1
+* [MODDICORE-103](https://issues.folio.org/browse/MODDICORE-103) Fixed searching for next match profile
 
 ## 2020-10-09 v2.2.0
 * [MODDICORE-59](https://issues.folio.org/browse/MODDICORE-59) Implemented MARC Record Writer/Modifier
