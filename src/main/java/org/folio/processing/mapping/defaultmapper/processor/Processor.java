@@ -252,7 +252,7 @@ public class Processor {
     String[] embeddedFields = jObj.getString("target").split("\\.");
 
 
-    if (!(embeddedFields.length == 1 && embeddedFields[0].equals("targetPostProcessingFor880")) && !isMappingValid(instance, embeddedFields)) {
+    if (!isMappingValid(instance, embeddedFields)) {
       LOGGER.debug("bad mapping {}", jObj.encode());
       return;
     }
