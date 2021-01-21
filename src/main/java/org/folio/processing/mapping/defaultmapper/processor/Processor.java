@@ -4,11 +4,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Instance;
 import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -18,6 +20,7 @@ import org.marc4j.marc.Subfield;
 import org.marc4j.marc.impl.SubfieldImpl;
 
 import javax.script.ScriptException;
+
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -82,6 +85,7 @@ public class Processor {
     try {
       instance = new Instance();
       leader = record.getLeader();
+      ExtraFieldUtil.findAndModify880FieldIfExists(record);
       processControlFieldSection(record.getControlFields().iterator(), mappingParameters);
       processDataFieldSection(record.getDataFields().iterator(), mappingParameters);
       return instance;
@@ -246,7 +250,9 @@ public class Processor {
     handleDelimiters();
 
     String[] embeddedFields = jObj.getString("target").split("\\.");
-    if (!isMappingValid(instance, embeddedFields)) {
+
+
+    if (!(embeddedFields.length == 1 && embeddedFields[0].equals("targetPostProcessingFor880")) && !isMappingValid(instance, embeddedFields)) {
       LOGGER.debug("bad mapping {}", jObj.encode());
       return;
     }

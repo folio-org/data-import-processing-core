@@ -1,3 +1,6 @@
+## 2021-01-21 v2.3.0-SNAPSHOT
+* [MODDICORE-114](https://issues.folio.org/browse/MODDICORE-114) Add MARC-Instance default mappings for 880 fields.
+
 ## 2020-10-09 v2.2.0
 * [MODDICORE-59](https://issues.folio.org/browse/MODDICORE-59) Implemented MARC Record Writer/Modifier
 * [MODDICORE-69](https://issues.folio.org/browse/MODDICORE-69) Implemented ###REMOVE### expression logic

@@ -2,6 +2,7 @@ package org.folio.processing.mapping;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.folio.Instance;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordToInstanceMapper;
@@ -20,6 +21,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,6 +40,9 @@ public class MappingTest {
   private static final String PRECEDING_FILE_PATH = "src/test/resources/org/folio/processing/mapping/780_785_examples.mrc";
   private static final String BIBS_ERRORS_PATH = "src/test/resources/org/folio/processing/mapping/test1_err.mrc";
   private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH = "src/test/resources/org/folio/processing/mapping/336_repeated_subfields.mrc";
+  private static final String BIB_WITH_880 = "src/test/resources/org/folio/processing/mapping/880_111_to_711.mrc";
+  private static final String BIB_WITH_880_2 = "src/test/resources/org/folio/processing/mapping/880_245_to_246.mrc";
+  private static final String BIB_WITH_880_3 = "src/test/resources/org/folio/processing/mapping/880_to_830.mrc";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/rules.json";
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
   private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/856_missing_uri.mrc";
@@ -108,6 +113,84 @@ public class MappingTest {
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
       Assert.assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      Assert.assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstance880FieldToContributorMeetingName() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Assert.assertNotNull(instance.getTitle());
+      Assert.assertNotNull(instance.getSource());
+      Assert.assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
+      Assert.assertNotNull(instance.getContributors().get(1));
+      Assert.assertEquals("fe19bae4-da28-472b-be90-d442e2428ead", instance.getContributors().get(1).getContributorNameTypeId());
+      Assert.assertEquals("testingMeetingName", instance.getContributors().get(1).getName());
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      Assert.assertTrue(violations.isEmpty());
+    }
+
+
+  }
+
+  @Test
+  public void testMarcToInstance880FieldToAlternativeTitleName() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_3).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Assert.assertNotNull(instance.getTitle());
+      Assert.assertNotNull(instance.getSource());
+      Assert.assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
+      Assert.assertEquals(3, instance.getAlternativeTitles().size());
+      Assert.assertNotNull(instance.getAlternativeTitles().stream().filter(e -> e.getAlternativeTitle().equals("testingAlternativeTitle")).findAny().orElse(null));
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      Assert.assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstance880FieldToSeriesStatement() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_3).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Assert.assertNotNull(instance.getTitle());
+      Assert.assertNotNull(instance.getSource());
+      Assert.assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
+      Assert.assertNotNull(instance.getSeries());
+      Assert.assertEquals(1, instance.getSeries().size());
+      Assert.assertNotNull(instance.getSeries().stream().filter(e -> e.equals("testingSeries")).findAny().orElse(null));
+      Assert.assertEquals(3, instance.getAlternativeTitles().size());
+      Assert.assertNotNull(instance.getAlternativeTitles().stream().filter(e -> e.getAlternativeTitle().equals("testingAlternativeTitle")).findAny().orElse(null));
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
