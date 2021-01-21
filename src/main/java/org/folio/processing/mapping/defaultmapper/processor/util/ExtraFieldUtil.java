@@ -3,6 +3,9 @@ package org.folio.processing.mapping.defaultmapper.processor.util;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
 
+/**
+ * Util for processing fields with specific logic.
+ */
 public final class ExtraFieldUtil {
 
   public static final String FIELD_880 = "880";
@@ -19,6 +22,13 @@ public final class ExtraFieldUtil {
   private ExtraFieldUtil() {
   }
 
+  /**
+   * Finds 880 field from record. If exists, then retrieve first 3 digits from subfield '6'.
+   * If there is value from this list: 100, 110, 111, 245 - then field-value '880' will be changed on 700,710,711,246 respectively.
+   * Otherwise, '880' wil be changed on the first 3-digits value.
+   * More info: https://issues.folio.org/browse/MODDICORE-114
+   * @param record - target Record.
+   */
   public static void findAndModify880FieldIfExists(Record record) {
     for (DataField field : record.getDataFields()) {
       if (field.getTag().equals(FIELD_880)) {
