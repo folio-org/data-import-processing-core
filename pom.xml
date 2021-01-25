@@ -187,6 +187,7 @@
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/actionProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/marc-field-protection/marcFieldProtectionSettingsCollection.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/dto/record.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/dto/edifactParsedContent.json</path>
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
                 <path>${basedir}/ramls/settings/classificationtypes.json</path>
