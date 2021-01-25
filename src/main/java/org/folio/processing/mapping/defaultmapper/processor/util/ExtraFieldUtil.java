@@ -52,8 +52,7 @@ public final class ExtraFieldUtil {
 
   private static void processReplacementBasedOn3Digits(DataField field, JsonObject subFieldMapping) {
     JsonArray fieldReplacementRules = subFieldMapping.getJsonArray(FIELD_REPLACEMENT_RULE_PROPERTY);
-    Map<String, String> replacementRules = new HashMap<>();
-    retrieveReplacementRules(fieldReplacementRules, replacementRules);
+    Map<String, String> replacementRules =  retrieveReplacementRules(fieldReplacementRules);
     JsonArray subfields = subFieldMapping.getJsonArray(SUBFIELD_PROPERTY);
     for (Object subfield : subfields) {
       String data = field.getSubfield(String.valueOf(subfield).charAt(0)).getData();
@@ -64,10 +63,12 @@ public final class ExtraFieldUtil {
     }
   }
 
-  private static void retrieveReplacementRules(JsonArray fieldReplacementRules, Map<String, String> replacementRules) {
+  private static Map<String, String> retrieveReplacementRules(JsonArray fieldReplacementRules) {
+    Map<String, String> replacementRules = new HashMap<>();
     for (int i = 0; i < fieldReplacementRules.size(); i++) {
       replacementRules.put(fieldReplacementRules.getJsonObject(i).getString(SOURCE_DIGITS_PROPERTY),
         fieldReplacementRules.getJsonObject(i).getString(TARGET_FIELD_PROPERTY));
     }
+    return replacementRules;
   }
 }
