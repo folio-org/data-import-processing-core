@@ -85,7 +85,6 @@ public class Processor {
     try {
       instance = new Instance();
       leader = record.getLeader();
-      ExtraFieldUtil.findAndModify880FieldIfExists(record);
       processControlFieldSection(record.getControlFields().iterator(), mappingParameters);
       processDataFieldSection(record.getDataFields().iterator(), mappingParameters);
       return instance;
@@ -100,6 +99,7 @@ public class Processor {
 
     while (dfIter.hasNext()) {
       DataField dataField = dfIter.next();
+      ExtraFieldUtil.findAndReplaceFieldsIfNeed(dataField, mappingRules);
       RuleExecutionContext ruleExecutionContext = new RuleExecutionContext();
       ruleExecutionContext.setMappingParameters(mappingParameters);
       ruleExecutionContext.setDataField(dataField);
