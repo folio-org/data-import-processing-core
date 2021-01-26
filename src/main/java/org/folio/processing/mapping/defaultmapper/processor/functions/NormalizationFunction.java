@@ -2,6 +2,7 @@ package org.folio.processing.mapping.defaultmapper.processor.functions;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.lang.StringUtils;
 import org.folio.AlternativeTitleType;
 import org.folio.ClassificationType;
@@ -381,6 +382,18 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     private String matchIssuanceModeIdViaLeaderSymbol(char seventhChar, List<IssuanceMode> issuanceModes, String defaultId) {
       IssuanceModeEnum issuanceMode = matchSymbolToIssuanceMode(seventhChar);
       return findIssuanceModeId(issuanceModes, issuanceMode, defaultId);
+    }
+  },
+
+  SET_NOTE_STAFF_ONLY_VIA_INDICATOR() {
+    @Override
+    public String apply(RuleExecutionContext context) {
+      DataField dataField = context.getDataField();
+      char firstIndicator = dataField.getIndicator1();
+      if (firstIndicator == '0') {
+        return "true";
+      }
+      return "false";
     }
   };
 
