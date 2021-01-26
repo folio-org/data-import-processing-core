@@ -30,7 +30,7 @@ public final class ExtraFieldUtil {
    * If not matches, change just on first 3 digits value.
    * More info: https://issues.folio.org/browse/MODDICORE-114
    *
-   * @param field - field from record, which will be changed if need
+   * @param field        - field from record, which will be changed if need
    * @param mappingRules - rules for default mapping.
    */
   public static void findAndReplaceFieldsIfNeed(DataField field, JsonObject mappingRules) {
@@ -52,10 +52,13 @@ public final class ExtraFieldUtil {
 
   private static void processReplacementBasedOn3Digits(DataField field, JsonObject subFieldMapping) {
     JsonArray fieldReplacementRules = subFieldMapping.getJsonArray(FIELD_REPLACEMENT_RULE_PROPERTY);
-    Map<String, String> replacementRules =  retrieveReplacementRules(fieldReplacementRules);
+    Map<String, String> replacementRules = retrieveReplacementRules(fieldReplacementRules);
     JsonArray subfields = subFieldMapping.getJsonArray(SUBFIELD_PROPERTY);
     for (Object subfield : subfields) {
       String data = field.getSubfield(String.valueOf(subfield).charAt(0)).getData();
+      if (data == null || data.length() < 3) {
+        return;
+      }
       String targetField;
       String first3Digits = data.substring(0, 3);
       targetField = replacementRules.getOrDefault(first3Digits, first3Digits);
