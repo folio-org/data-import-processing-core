@@ -2,6 +2,7 @@ package org.folio.processing.mapping;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.folio.Instance;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordToInstanceMapper;
@@ -20,6 +21,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
