@@ -43,7 +43,7 @@ public final class EventManager {
   private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
-  private static final List<EventPublisher> eventPublisher = Arrays.asList(new RestEventPublisher());
+  private static final List<EventPublisher> eventPublisher = new ArrayList<>(Arrays.<EventPublisher>asList(new RestEventPublisher()));
 
 
   private EventManager() {
