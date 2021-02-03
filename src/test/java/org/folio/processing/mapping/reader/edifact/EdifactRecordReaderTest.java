@@ -296,4 +296,16 @@ public class EdifactRecordReaderTest {
     Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowExceptionWhenMappingRuleHasInvalidMappingSyntax() throws IOException {
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+    reader.read(new MappingRule().withPath("invoice.status").withValue("bla expression"));
+  }
+
 }

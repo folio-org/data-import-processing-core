@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -51,6 +52,7 @@ public class EdifactRecordReader implements Reader {
   private static final String QUALIFIER_SIGN = "?";
   private static final String QUOTATION_MARK = "\"";
   private static final int SEGMENT_TAG_LENGTH = 3;
+  public static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
@@ -114,8 +116,9 @@ public class EdifactRecordReader implements Reader {
         List<String> segmentsData = extractSegmentsData(expressionPart);
         readValue = String.join(EMPTY, segmentsData);
       } else {
-        LOGGER.error("The specified mapping expression: {} is invalid", expressionPart);
-        return MissingValue.getInstance();
+        String msg = format(INVALID_MAPPING_EXPRESSION_MSG, expressionPart);
+        LOGGER.error(msg);
+        throw new IllegalArgumentException(msg);
       }
 
       if (isNoneBlank(readValue)) {
