@@ -1,22 +1,32 @@
 package org.folio.processing.mapping.reader.edifact;
 
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.edifact.EdifactReaderFactory;
-import org.folio.processing.mapping.mapper.reader.record.edifact.EdifactRecordReader;
+import org.folio.processing.value.BooleanValue;
+import org.folio.processing.value.RepeatableFieldValue;
+import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
+import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
+import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 
 public class EdifactRecordReaderTest {
 
@@ -24,8 +34,44 @@ public class EdifactRecordReaderTest {
 
   private final ReaderFactory readerFactory = new EdifactReaderFactory();
 
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowExceptionWhenPayloadHasNoRecord() throws IOException {
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    dataImportEventPayload.setContext(new HashMap<>());
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() throws IOException {
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord())));
+    dataImportEventPayload.setContext(context);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+  }
+
   @Test
-  public void shouldReadStringValue() throws IOException {
+  public void shouldReadStringConstantFromMappingRule() throws IOException {
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    Value value = reader.read(new MappingRule().withPath("invoice.status").withValue("\"Open\""));
+
+    Assert.assertEquals(Value.ValueType.STRING, value.getType());
+    Assert.assertEquals("Open", value.getValue());
+  }
+
+  @Test
+  public void shouldReturnStringValue() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -38,6 +84,216 @@ public class EdifactRecordReaderTest {
 
     Assert.assertEquals(Value.ValueType.STRING, value.getType());
     Assert.assertEquals("18929.07", value.getValue());
+  }
+
+  @Test
+  public void shouldReturnStringValueWhenMappingExpressionHasQualifier() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    // when
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+    Value value = reader.read(new MappingRule().withPath("invoice.lockTotal").withValue("CUX+2?4[2]"));
+
+    // then
+    Assert.assertEquals(Value.ValueType.STRING, value.getType());
+    Assert.assertEquals("USD", value.getValue());
+  }
+
+  @Test
+  public void shouldReadBooleanValueWhenMappingRuleHasBooleanFieldAction() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    // when
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+    Value value = reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap").withBooleanFieldAction(ALL_TRUE));
+
+    // then
+    Assert.assertEquals(Value.ValueType.BOOLEAN, value.getType());
+    Assert.assertEquals(ALL_TRUE, value.getValue());
+  }
+
+  @Test
+  public void shouldReturnListValueWhenMappingRuleHasArrayFieldPath() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    HashMap<String, String> acqUnitsAcceptedValues = new HashMap<>(Map.of(
+      "b2c0e100-0485-43f2-b161-3c60aac9f68a", "ackUnit-1",
+      "b2c0e100-0485-43f2-b161-3c60aac9f128", "ackUnit-2",
+      "b2c0e100-0485-43f2-b161-3c60aac9f256", "ackUnit-3"));
+
+    MappingRule mappingRule = new MappingRule().withPath("invoice.acqUnitIds[]")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(Arrays.asList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("invoice.acqUnitIds[]")
+          .withFields(singletonList(
+            new MappingRule()
+              .withPath("invoice.acqUnitIds[]")
+              .withValue("\"ackUnit-1\"")
+              .withAcceptedValues(acqUnitsAcceptedValues))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("invoice.acqUnitIds[]")
+          .withFields(singletonList(
+            new MappingRule()
+              .withPath("invoice.acqUnitIds[]")
+              .withValue("\"ackUnit-2\"")
+              .withAcceptedValues(acqUnitsAcceptedValues)))
+      ));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.LIST, value.getType());
+    Assert.assertEquals(Arrays.asList("b2c0e100-0485-43f2-b161-3c60aac9f68a", "b2c0e100-0485-43f2-b161-3c60aac9f128"), value.getValue());
+  }
+
+  @Test
+  public void shouldReturnRepeatableFieldValue() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    HashMap<String, String> fundAcceptedValues = new HashMap<>(Map.of(
+      "b2c0e100-0485-43f2-b161-3c60aac9f687", "fund-1",
+      "b2c0e100-0485-43f2-b161-3c60aac9f177", "fund-2",
+      "b2c0e100-0485-43f2-b161-3c60aac9f777", "fund-3"));
+
+    String rootPath = "invoice.adjustments[]";
+    String fundDistributionsRootPath = "invoice.adjustments[].fundDistributions[]";
+    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(singletonList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath(rootPath)
+          .withFields(Arrays.asList(
+            new MappingRule()
+              .withPath("invoice.adjustments[].description")
+              .withValue("\"description-1\""),
+            new MappingRule()
+              .withPath("invoice.adjustments[].exportToAccounting")
+              .withBooleanFieldAction(ALL_TRUE),
+            new MappingRule()
+              .withPath("invoice.adjustments[].fundDistributions[]")
+              .withRepeatableFieldAction(EXTEND_EXISTING)
+              .withSubfields(singletonList(new RepeatableSubfieldMapping()
+                .withOrder(0)
+                .withPath(fundDistributionsRootPath)
+                .withFields(Arrays.asList(
+                  new MappingRule()
+                    .withPath("invoice.adjustments[].fundDistributions[].fundId")
+                    .withValue("\"fund-3\"")
+                    .withAcceptedValues(fundAcceptedValues),
+                  new MappingRule()
+                    .withPath("invoice.adjustments[].fundDistributions[].code")
+                    .withValue("\"USHIST\""))))))
+          )));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    // when
+    Value actualValue = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
+    RepeatableFieldValue repeatableFieldValue = (RepeatableFieldValue) actualValue;
+    Assert.assertEquals(rootPath, repeatableFieldValue.getRootPath());
+    Assert.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
+
+    Map<String, Value> expectedFundDistributionElement = Map.of(
+      "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f777"),
+      "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST"));
+
+    Map<String, Value> expectedAdjustments = Map.of(
+      "invoice.adjustments[].description", StringValue.of("description-1"),
+      "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE),
+      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
+    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+  }
+
+  @Test
+  public void shouldReadMappingRuleWithElseClause() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    String expressionWithElseClause = "MOA+86[2]; else MOA+9[2]";
+    String rootPath = "invoice.adjustments[]";
+    String fundDistributionsRootPath = "invoice.adjustments[].fundDistributions[]";
+    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(singletonList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath(rootPath)
+          .withFields(Arrays.asList(
+            new MappingRule()
+              .withPath("invoice.adjustments[].description")
+              .withValue("\"test adjustment\""),
+            new MappingRule()
+              .withPath("invoice.adjustments[].fundDistributions[]")
+              .withRepeatableFieldAction(EXTEND_EXISTING)
+              .withSubfields(singletonList(new RepeatableSubfieldMapping()
+                .withOrder(0)
+                .withPath(fundDistributionsRootPath)
+                .withFields(Arrays.asList(
+                  new MappingRule()
+                    .withPath("invoice.adjustments[].fundDistributions[].value")
+                    .withValue(expressionWithElseClause),
+                  new MappingRule()
+                    .withPath("invoice.adjustments[].fundDistributions[].code")
+                    .withValue("\"USHIST\""))))))
+          )));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    // when
+    Value actualValue = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
+    RepeatableFieldValue repeatableFieldValue = (RepeatableFieldValue) actualValue;
+    Assert.assertEquals(rootPath, repeatableFieldValue.getRootPath());
+    Assert.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
+
+    Map<String, Value> expectedFundDistributionElement = Map.of(
+      "invoice.adjustments[].fundDistributions[].value", StringValue.of("18929.07"),
+      "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST"));
+
+    Map<String, Value> expectedAdjustments = Map.of(
+      "invoice.adjustments[].description", StringValue.of("test adjustment"),
+      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
+    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
 }
