@@ -318,8 +318,15 @@ public class EdifactRecordReaderTest {
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
+    HashMap<String, String> fundIdAcceptedValues = new HashMap<>(Map.of(
+      "b2c0e100-0485-43f2-b161-3c60aac9f687", "fund-1",
+      "b2c0e100-0485-43f2-b161-3c60aac9f177", "fund-2",
+      "b2c0e100-0485-43f2-b161-3c60aac9f777", "fund-3"));
+
     String rootPath = "invoice.invoiceLine[]";
     String adjustmentsPath = "invoice.invoiceLine[].adjustments[]";
+    String fundDistributionsPath = "invoice.invoiceLine[].fundDistributions[]";
+
     MappingRule mappingRule = new MappingRule().withPath(rootPath)
       .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
       .withSubfields(singletonList(new RepeatableSubfieldMapping()
@@ -342,15 +349,24 @@ public class EdifactRecordReaderTest {
               .withOrder(0)
               .withPath(adjustmentsPath)
               .withFields(Arrays.asList(
-                new MappingRule()
-                  .withPath("invoice.invoiceLine[].adjustments[].description")
+                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].description")
                   .withValue("ALC+C++++[4]"),
-                new MappingRule()
-                  .withPath("invoice.invoiceLine[].adjustments[].value")
+                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].value")
                   .withValue("MOA+8[2]"),
-                new MappingRule()
-                  .withPath("invoice.invoiceLine[].adjustments[].exportToAccounting")
-                  .withBooleanFieldAction(ALL_TRUE)))))
+                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].exportToAccounting")
+                  .withBooleanFieldAction(ALL_TRUE))))),
+          new MappingRule()
+            .withPath(fundDistributionsPath)
+            .withRepeatableFieldAction(EXTEND_EXISTING)
+            .withSubfields(singletonList(new RepeatableSubfieldMapping()
+              .withOrder(0)
+              .withPath(adjustmentsPath)
+              .withFields(Arrays.asList(
+                new MappingRule().withPath("invoice.invoiceLine[].fundDistributions[].fundId")
+                  .withValue("\"fund-3\"")
+                  .withAcceptedValues(fundIdAcceptedValues),
+                new MappingRule().withPath("invoice.invoiceLine[].fundDistributions[].distributionType")
+                  .withValue("\"percentage\"")))))
         ))));
 
     Reader reader = readerFactory.createReader();
@@ -378,58 +394,29 @@ public class EdifactRecordReaderTest {
       "invoice.invoiceLine[].adjustments[].value", StringValue.of("12.5"),
       "invoice.invoiceLine[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
 
+    Map<String, Value> fundDistribution = Map.of(
+      "invoice.invoiceLine[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f777"),
+      "invoice.invoiceLine[].fundDistributions[].distributionType", StringValue.of("percentage"));
+
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLine[].description", StringValue.of("ACADEMY OF MANAGEMENT ANNALS -   ON"),
         "invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
-        "invoice.invoiceLine[].adjustments[]", RepeatableFieldValue.of(List.of(expectedAdjustment1), EXTEND_EXISTING, adjustmentsPath),
+        adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment1), EXTEND_EXISTING, adjustmentsPath),
+        fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         "invoice.invoiceLine[].vendorRefNo", StringValue.of("C6546362")),
       Map.of("invoice.invoiceLine[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -"),
         "invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
-        "invoice.invoiceLine[].adjustments[]", RepeatableFieldValue.of(List.of(expectedAdjustment2), EXTEND_EXISTING, adjustmentsPath),
+        adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment2), EXTEND_EXISTING, adjustmentsPath),
+        fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         "invoice.invoiceLine[].vendorRefNo", StringValue.of("E9498295")),
       Map.of("invoice.invoiceLine[].description", StringValue.of("ACI STRUCTURAL JOURNAL -   ON"),
         "invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
-        "invoice.invoiceLine[].adjustments[]", RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath),
+        adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath),
+        fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         "invoice.invoiceLine[].vendorRefNo", StringValue.of("E9498296")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
     Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
-  }
-
-  // todo:
-  @Ignore
-  @Test
-  public void shouldReturnValueWhenSegmentPathHasMultipleCriteria() throws IOException {
-    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
-    dataImportEventPayload.setContext(context);
-
-    Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload);
-
-    Value value = reader.read(new MappingRule().withPath("invoice_line.description").withValue("IMD+L+050+[4]"));
-
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("18929.07", value.getValue());
-  }
-
-  @Ignore
-  @Test
-  public void shouldReturnStringValueWhenMappingExpressionHasQualifier2() throws IOException {
-    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
-    dataImportEventPayload.setContext(context);
-
-    Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload);
-
-    Value value = reader.read(new MappingRule().withPath("invoice.lockTotal").withValue("MOA+203?4[2]"));
-
-    // then
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("18929.07", value.getValue());
   }
 
 }
