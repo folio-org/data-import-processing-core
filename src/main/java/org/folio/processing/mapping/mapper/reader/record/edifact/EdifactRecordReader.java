@@ -56,6 +56,8 @@ public class EdifactRecordReader implements Reader {
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
+  private List<Segment> invoiceSegments;
+  private List<List<Segment>> invoiceLinesSegmentGroups;
 
   public EdifactRecordReader(EntityType entityType) {
     this.entityType = entityType;
@@ -68,35 +70,101 @@ public class EdifactRecordReader implements Reader {
       Record sourceRecord = Json.decodeValue(recordAsString, Record.class);
       if (ObjectUtils.allNotNull(sourceRecord.getParsedRecord(), sourceRecord.getParsedRecord().getContent())) {
         edifactParsedContent = DatabindCodec.mapper().readValue(sourceRecord.getParsedRecord().getContent().toString(), EdifactParsedContent.class);
+        invoiceSegments = getInvoiceSegments();
+        invoiceLinesSegmentGroups = getInvoiceLinesSegments();
         return;
       }
     }
     throw new IllegalArgumentException("Can not initialize EdifactRecordReader, event payload has no EDIFACT parsed content");
   }
 
+  private List<Segment> getInvoiceSegments() {
+    List<Segment> segments = edifactParsedContent.getSegments();
+    int invoiceHeaderSegmentsEnd = 0;
+    int invoiceSummarySegmentsStart = 0;
+
+    for (int i = 0; i < segments.size(); i++) {
+      Segment segment = segments.get(i);
+      if ("LIN".equals(segment.getTag())) {
+        invoiceHeaderSegmentsEnd = i - 1;
+      } else if ("UNS".equals(segment.getTag())) {
+        invoiceSummarySegmentsStart = i;
+        break;
+      }
+    }
+    ArrayList<Segment> invoiceSegments = new ArrayList<>(segments.subList(0, invoiceHeaderSegmentsEnd));
+    invoiceSegments.addAll(segments.subList(invoiceSummarySegmentsStart, segments.size()));
+    return invoiceSegments;
+  }
+
+  private List<List<Segment>> getInvoiceLinesSegments() {
+    List<List<Segment>> invoiceLinesSegments = new ArrayList<>();
+    int invoiceLineStart = 0;
+    int invoiceLineEndExclusive;
+    List<Segment> segments = edifactParsedContent.getSegments();
+
+    for (int i = 0; i < segments.size(); i++) {
+      Segment segment = segments.get(i);
+      if ("LIN".equals(segment.getTag())) {
+        if (invoiceLineStart != 0) {
+          invoiceLineEndExclusive = i;
+          invoiceLinesSegments.add(segments.subList(invoiceLineStart, invoiceLineEndExclusive));
+        }
+        invoiceLineStart = i;
+      } else if ("UNS".equals(segment.getTag())) {
+        invoiceLineEndExclusive = i;
+        invoiceLinesSegments.add(segments.subList(invoiceLineStart, invoiceLineEndExclusive));
+        break;
+      }
+    }
+    return invoiceLinesSegments;
+  }
+
   @Override
   public Value read(MappingRule mappingRule) {
+    if (mappingRule.getPath().contains("invoiceLine")) {
+      return readInvoiceLinesRepeatableFieldValue(mappingRule);
+    }
+    return read(mappingRule, invoiceSegments);
+  }
+
+  private Value read(MappingRule mappingRule, List<Segment> segments) {
     if (mappingRule.getBooleanFieldAction() != null) {
       // todo: create task for ui to add "booleanFieldAction" : "ALL_TRUE" to the rule
       return BooleanValue.of(mappingRule.getBooleanFieldAction());
     } else if (mappingRule.getSubfields().isEmpty()) {
-      return readSingleFieldValue(mappingRule);
+      return readSingleFieldValue(mappingRule, segments);
     } else if (isListValueMappingRule(mappingRule)) {
       return readListValue(mappingRule);
     } else if (!mappingRule.getSubfields().isEmpty()) {
-      return readRepeatableFieldValue(mappingRule);
+      return readRepeatableFieldValue(mappingRule, segments);
     }
     return MissingValue.getInstance();
   }
 
-  private Value readRepeatableFieldValue(MappingRule mappingRule) {
+  private RepeatableFieldValue readInvoiceLinesRepeatableFieldValue(MappingRule mappingRule) {
+    List<Map<String, Value>> repeatableObjects = new ArrayList<>();
+    for (List<Segment> invoiceLineSegments : invoiceLinesSegmentGroups) {
+      HashMap<String, Value> objectModel = new HashMap<>();
+      for (RepeatableSubfieldMapping repeatableObjectRule : mappingRule.getSubfields()) {
+        for (MappingRule fieldRule : repeatableObjectRule.getFields()) {
+          Value value = read(fieldRule, invoiceLineSegments);
+          objectModel.put(fieldRule.getPath(), value);
+        }
+      }
+      repeatableObjects.add(objectModel);
+    }
+    return RepeatableFieldValue.of(repeatableObjects, mappingRule.getRepeatableFieldAction(), mappingRule.getPath());
+  }
+
+  private Value readRepeatableFieldValue(MappingRule mappingRule, List<Segment> segments) {
     MappingRule.RepeatableFieldAction action = mappingRule.getRepeatableFieldAction();
     List<Map<String, Value>> repeatableObjects = new ArrayList<>();
 
     for (RepeatableSubfieldMapping elementRule : mappingRule.getSubfields()) {
       HashMap<String, Value> objectModel = new HashMap<>();
       for (MappingRule fieldRule : elementRule.getFields()) {
-        Value readValue = read(fieldRule);
+        Value readValue = read(fieldRule, segments);
         objectModel.put(fieldRule.getPath(), readValue);
       }
       repeatableObjects.add(objectModel);
@@ -104,7 +172,7 @@ public class EdifactRecordReader implements Reader {
     return RepeatableFieldValue.of(repeatableObjects, action, mappingRule.getPath());
   }
 
-  private Value readSingleFieldValue(MappingRule mappingRule) {
+  private Value readSingleFieldValue(MappingRule mappingRule, List<Segment> invoiceLineSegments) {
     String readValue;
     String mappingExpression = mappingRule.getValue();
     String[] expressionParts = mappingExpression.split(EXPRESSIONS_DELIMITER);
@@ -113,7 +181,7 @@ public class EdifactRecordReader implements Reader {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
         readValue = readAcceptableValue(mappingRule);
       } else if (SEGMENT_QUERY_PATTERN.matcher(expressionPart).matches()) {
-        List<String> segmentsData = extractSegmentsData(expressionPart);
+        List<String> segmentsData = extractSegmentsData(expressionPart, invoiceLineSegments);
         readValue = String.join(EMPTY, segmentsData);
       } else {
         String msg = format(INVALID_MAPPING_EXPRESSION_MSG, expressionPart);
@@ -157,7 +225,7 @@ public class EdifactRecordReader implements Reader {
     return value;
   }
 
-  private List<String> extractSegmentsData(String segmentQuery) {
+  private List<String> extractSegmentsData(String segmentQuery, List<Segment> segments) {
     List<String> componentsValues = new ArrayList<>();
 
     String segmentTag = segmentQuery.substring(0, SEGMENT_TAG_LENGTH);
@@ -174,7 +242,7 @@ public class EdifactRecordReader implements Reader {
       dataElementsFilterValues = Arrays.asList(StringUtils.split(segmentQuery.substring(4, segmentQuery.indexOf('[')), dataElementSeparator));
     }
 
-    for (Segment segment : edifactParsedContent.getSegments()) {
+    for (Segment segment : segments) {
       if (segment.getTag().equals(segmentTag) && segment.getDataElements().size() >= dataElementsFilterValues.size()) {
         DataElement lastDataElement = Iterables.getLast(segment.getDataElements());
         String segmentValueQualifier = Iterables.getLast(lastDataElement.getComponents()).getData();
