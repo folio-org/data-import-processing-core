@@ -37,6 +37,7 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.folio.processing.value.Value.ValueType.MISSING;
 
 /**
  * The {@link Reader} implementation for EDIFACT INVOICE.
@@ -148,13 +149,40 @@ public class EdifactRecordReader implements Reader {
       HashMap<String, Value> objectModel = new HashMap<>();
       for (RepeatableSubfieldMapping repeatableObjectRule : mappingRule.getSubfields()) {
         for (MappingRule fieldRule : repeatableObjectRule.getFields()) {
-          Value value = read(fieldRule, invoiceLineSegments);
+          Value value;
+          if (!fieldRule.getSubfields().isEmpty()) {
+            value = readFullFilledRepeatableFieldValueObjects(fieldRule, invoiceLineSegments);
+          } else {
+            value = read(fieldRule, invoiceLineSegments);
+          }
           objectModel.put(fieldRule.getPath(), value);
         }
       }
       repeatableObjects.add(objectModel);
     }
     return RepeatableFieldValue.of(repeatableObjects, mappingRule.getRepeatableFieldAction(), mappingRule.getPath());
+  }
+
+  private Value<?> readFullFilledRepeatableFieldValueObjects(MappingRule mappingRule, List<Segment> segments) {
+    MappingRule.RepeatableFieldAction action = mappingRule.getRepeatableFieldAction();
+    List<Map<String, Value>> repeatableObjects = new ArrayList<>();
+
+    for (RepeatableSubfieldMapping subfield : mappingRule.getSubfields()) {
+      HashMap<String, Value> objectModel = new HashMap<>();
+      for (MappingRule fieldRule : subfield.getFields()) {
+        Value<?> value = read(fieldRule, segments);
+        if (value.getType().equals(MISSING)) {
+          break;
+        }
+        objectModel.put(fieldRule.getPath(), value);
+      }
+      if (!objectModel.isEmpty()) {
+        repeatableObjects.add(objectModel);
+      }
+    }
+
+    return repeatableObjects.isEmpty() ? MissingValue.getInstance()
+      : RepeatableFieldValue.of(repeatableObjects, action, mappingRule.getPath());
   }
 
   private Value readRepeatableFieldValue(MappingRule mappingRule, List<Segment> segments) {
