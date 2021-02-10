@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
+import org.folio.dbschema.ObjectMapperTool;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.edifact.EdifactReaderFactory;
@@ -116,6 +117,22 @@ public class EdifactRecordReaderTest {
     reader.initialize(dataImportEventPayload);
 
     reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[2-1]"));
+  }
+
+  @Test
+  public void shouldFormatDateToIsoFormatWhenDateTimeSegmentIsSpecifiedInMappingRule() throws IOException {
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    Value value = reader.read(new MappingRule().withPath("invoice.invoiceDate").withValue("DTM+137[2]"));
+
+    Assert.assertEquals(Value.ValueType.STRING, value.getType());
+    Assert.assertEquals("2019-10-02T00:00:00.000+0000", value.getValue());
   }
 
   @Test

@@ -27,6 +27,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.time.LocalTime.MIDNIGHT;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -57,6 +62,9 @@ public class EdifactRecordReader implements Reader {
   private static final int SEGMENT_TAG_LENGTH = 3;
   public static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
   public static final String INVALID_DATA_RANGE_MSG = "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
+  private static final String DATE_TIME_TAG = "DTM";
+  private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
+  private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
@@ -292,6 +300,9 @@ public class EdifactRecordReader implements Reader {
       }
     }
 
+    if (segmentTag.equals(DATE_TIME_TAG)) {
+      formatDateValues(componentsValues);
+    }
     return componentsValues;
   }
 
@@ -331,6 +342,14 @@ public class EdifactRecordReader implements Reader {
       .stream()
       .map(Component::getData)
       .collect(Collectors.joining());
+  }
+
+  private void formatDateValues(List<String> componentsData) {
+    for (int i = 0; i < componentsData.size(); i++) {
+      LocalDate parsedDate = LocalDate.parse(componentsData.get(i), DateTimeFormatter.ofPattern(INCOMING_DATE_FORMAT));
+      String formattedDate = ZONE_DATE_TIME_FORMATTER.format(ZonedDateTime.of(parsedDate, MIDNIGHT, ZoneId.of("UTC")));
+      componentsData.set(i, formattedDate);
+    }
   }
 
 }
