@@ -300,7 +300,8 @@ public class EdifactRecordReader implements Reader {
   }
 
   private boolean isContainsQualifier(String segmentQuery) {
-    return StringUtils.substringAfterLast(segmentQuery, "+").contains(QUALIFIER_SIGN);
+    String dataElementSeparator = determineDataElementSeparator(segmentQuery);
+    return StringUtils.substringAfterLast(segmentQuery, dataElementSeparator).contains(QUALIFIER_SIGN);
   }
 
   private Pair<Integer, Integer> extractComponentPositionsRange(String segmentQuery) {
