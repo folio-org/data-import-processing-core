@@ -6,6 +6,8 @@ import io.vertx.core.json.jackson.DatabindCodec;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.folio.Component;
 import org.folio.DataElement;
 import org.folio.DataImportEventPayload;
 import org.folio.EdifactParsedContent;
@@ -54,6 +56,7 @@ public class EdifactRecordReader implements Reader {
   private static final String QUOTATION_MARK = "\"";
   private static final int SEGMENT_TAG_LENGTH = 3;
   public static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
+  public static final String INVALID_DATA_RANGE_MSG = "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
@@ -261,7 +264,6 @@ public class EdifactRecordReader implements Reader {
     List<String> dataElementsFilterValues;
     String dataElementSeparator = determineDataElementSeparator(segmentQuery);
     int targetDataElementIndex = StringUtils.countMatches(segmentQuery, dataElementSeparator) - 1;
-    int targetComponentIndex = Integer.parseInt(StringUtils.substringBetween(segmentQuery, "[", "]")) - 1;
 
     if (isContainsQualifier(segmentQuery)) {
       qualifierValue = StringUtils.substringBetween(segmentQuery, QUALIFIER_SIGN, "[");
@@ -283,7 +285,8 @@ public class EdifactRecordReader implements Reader {
 
           if (dataElementsFilterValues.equals(currentDataElementsValues)) {
             DataElement targetDataElement = segment.getDataElements().get(targetDataElementIndex);
-            componentsValues.add(targetDataElement.getComponents().get(targetComponentIndex).getData());  // todo: implement for range
+            Pair<Integer, Integer> componentsRange = extractComponentPositionsRange(segmentQuery);
+            componentsValues.add(getComponentsData(targetDataElement, componentsRange));
           }
         }
       }
@@ -298,6 +301,35 @@ public class EdifactRecordReader implements Reader {
 
   private boolean isContainsQualifier(String segmentQuery) {
     return StringUtils.substringAfterLast(segmentQuery, "+").contains(QUALIFIER_SIGN);
+  }
+
+  private Pair<Integer, Integer> extractComponentPositionsRange(String segmentQuery) {
+    int fromIndex;
+    int toIndex;
+    String positionsStatement = StringUtils.substringBetween(segmentQuery, "[", "]");
+    if (positionsStatement.contains("-")) {
+      fromIndex = Integer.parseInt(StringUtils.substringBefore(positionsStatement, "-"));
+      toIndex = Integer.parseInt(StringUtils.substringAfter(positionsStatement, "-"));
+    } else {
+      fromIndex = Integer.parseInt(positionsStatement);
+      toIndex = fromIndex;
+    }
+    return Pair.of(fromIndex, toIndex);
+  }
+
+  private String getComponentsData(DataElement dataElement, Pair<Integer, Integer> componentsRange) {
+    int fromComponent = componentsRange.getLeft();
+    int toComponent = componentsRange.getRight();
+
+    if (fromComponent > toComponent) {
+      throw new IllegalArgumentException(String.format(INVALID_DATA_RANGE_MSG, fromComponent, toComponent));
+    }
+
+    int lastComponentIndex = Math.min(toComponent, dataElement.getComponents().size());
+    return dataElement.getComponents().subList(fromComponent - 1, lastComponentIndex )
+      .stream()
+      .map(Component::getData)
+      .collect(Collectors.joining());
   }
 
 }
