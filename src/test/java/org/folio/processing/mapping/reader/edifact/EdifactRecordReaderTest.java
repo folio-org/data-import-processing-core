@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.reader.edifact;
 
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
@@ -415,7 +416,7 @@ public class EdifactRecordReaderTest {
             .withRepeatableFieldAction(EXTEND_EXISTING)
             .withSubfields(List.of(new RepeatableSubfieldMapping()
               .withOrder(0)
-              .withPath(adjustmentsPath)
+              .withPath(fundDistributionsPath)
               .withFields(List.of(
                 new MappingRule().withPath("invoice.invoiceLines[].fundDistributions[].fundId")
                   .withValue("\"US History (USHIST)\"")
@@ -537,6 +538,122 @@ public class EdifactRecordReaderTest {
         adjustmentsPath, MissingValue.getInstance()),
       Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath)));
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
+    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+  }
+
+  @Test
+  public void shouldReadInvoiceLineDescriptionFromPOLineExternalData() throws IOException {
+    // given
+    String expectedPOLineTitle1 = "POLineTitle-1";
+    String expectedPOLineTitle3 = "POLineTitle-3";
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put("POL_TITLE_0", expectedPOLineTitle1);
+    context.put("POL_TITLE_2", expectedPOLineTitle3);
+    dataImportEventPayload.setContext(context);
+
+    String rootPath = "invoice.invoiceLines[]";
+
+    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(List.of(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath(rootPath)
+        .withFields(List.of(
+          new MappingRule()
+            .withPath("invoice.invoiceLines[].invoiceLineStatus")
+            .withValue("\"Open\""),
+          new MappingRule()
+            .withPath("invoice.invoiceLines[].description")
+            .withValue("{POL_title}; else IMD+L+050+[4]")))));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
+    Assert.assertEquals(rootPath, actualValue.getRootPath());
+    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+
+    List<Map<String, Value>> expectedInvoiceLines = List.of(
+      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle1),
+        "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")),
+      Map.of("invoice.invoiceLines[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -"),
+        "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")),
+      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle3),
+        "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")));
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
+    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+  }
+
+  @Test
+  public void shouldReadInvoiceLineFundDistributionFromPOLineExternalData() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+
+    JsonArray fundDistributions1 = new JsonArray()
+      .add(new JsonObject().put("code", "USHIST").put("fundId", "1d1574f1-9196-4a57-8d1f-3b2e4309eb81"));
+    JsonArray fundDistributions3 = new JsonArray()
+      .add(new JsonObject().put("code", "EUHIST").put("fundId", "63157e96-0693-426d-b0df-948bacdfdb08"));
+
+    context.put("POL_FUND_DISTRIBUTIONS_0", fundDistributions1.encode());
+    context.put("POL_FUND_DISTRIBUTIONS_2", fundDistributions3.encode());
+    dataImportEventPayload.setContext(context);
+
+    String rootPath = "invoice.invoiceLines[]";
+    String fundDistributionsPath = "invoice.invoiceLines[].fundDistributions[]";
+
+    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(singletonList(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath(rootPath)
+        .withFields(Arrays.asList(
+          new MappingRule()
+            .withPath("invoice.invoiceLines[].invoiceLineStatus")
+            .withValue("\"Open\""),
+          new MappingRule()
+            .withPath(fundDistributionsPath)
+            .withRepeatableFieldAction(EXTEND_EXISTING)
+            .withValue("{POL_FUND_DISTRIBUTIONS}")
+        ))));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
+    Assert.assertEquals(rootPath, actualValue.getRootPath());
+    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+
+    Map<String, Value> expectedFundDistributions1 = Map.of(
+      "invoice.invoiceLines[].fundDistributions[].fundId", StringValue.of("1d1574f1-9196-4a57-8d1f-3b2e4309eb81"),
+      "invoice.invoiceLines[].fundDistributions[].code", StringValue.of("USHIST"));
+    Map<String, Value> expectedFundDistributions3 = Map.of(
+      "invoice.invoiceLines[].fundDistributions[].fundId", StringValue.of("63157e96-0693-426d-b0df-948bacdfdb08"),
+      "invoice.invoiceLines[].fundDistributions[].code", StringValue.of("EUHIST"));
+
+    List<Map<String, Value>> expectedInvoiceLines = List.of(
+      Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
+        fundDistributionsPath, RepeatableFieldValue.of(List.of(expectedFundDistributions1), EXTEND_EXISTING, fundDistributionsPath)),
+      Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
+        fundDistributionsPath, MissingValue.getInstance()),
+      Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
+        fundDistributionsPath, RepeatableFieldValue.of(List.of(expectedFundDistributions3), EXTEND_EXISTING, fundDistributionsPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
     Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
