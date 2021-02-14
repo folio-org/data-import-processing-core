@@ -56,16 +56,19 @@ public class EdifactRecordReader implements Reader {
 
   private static final Pattern CONSTANT_EXPRESSION_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private static final Pattern SEGMENT_QUERY_PATTERN = Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
-  private static final String EXPRESSIONS_DELIMITER = "; else ";
+  private static final String ELSE_DELIMITER = "; else ";
+  private static final String RANGE_DELIMITER = "-";
   private static final String QUALIFIER_SIGN = "?";
   private static final String QUOTATION_MARK = "\"";
   private static final int SEGMENT_TAG_LENGTH = 3;
-  public static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
-  public static final String INVALID_DATA_RANGE_MSG = "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
+  private static final String INVOICE_LINE_ITEM_TAG = "LIN";
+  private static final String INVOICE_SUMMARY_TAG = "UNS";
   private static final String DATE_TIME_TAG = "DTM";
+  private static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
+  private static final String INVALID_DATA_RANGE_MSG = "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
   private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-  public static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
+  private static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
@@ -98,9 +101,9 @@ public class EdifactRecordReader implements Reader {
 
     for (int i = 0; i < segments.size(); i++) {
       Segment segment = segments.get(i);
-      if ("LIN".equals(segment.getTag())) {
+      if (INVOICE_LINE_ITEM_TAG.equals(segment.getTag())) {
         invoiceHeaderSegmentsEnd = i - 1;
-      } else if ("UNS".equals(segment.getTag())) {
+      } else if (INVOICE_SUMMARY_TAG.equals(segment.getTag())) {
         invoiceSummarySegmentsStart = i;
         break;
       }
@@ -118,13 +121,13 @@ public class EdifactRecordReader implements Reader {
 
     for (int i = 0; i < segments.size(); i++) {
       Segment segment = segments.get(i);
-      if ("LIN".equals(segment.getTag())) {
+      if (INVOICE_LINE_ITEM_TAG.equals(segment.getTag())) {
         if (invoiceLineStart != 0) {
           invoiceLineEndExclusive = i;
           invoiceLinesSegments.add(segments.subList(invoiceLineStart, invoiceLineEndExclusive));
         }
         invoiceLineStart = i;
-      } else if ("UNS".equals(segment.getTag())) {
+      } else if (INVOICE_SUMMARY_TAG.equals(segment.getTag())) {
         invoiceLineEndExclusive = i;
         invoiceLinesSegments.add(segments.subList(invoiceLineStart, invoiceLineEndExclusive));
         break;
@@ -215,7 +218,7 @@ public class EdifactRecordReader implements Reader {
   private Value readSingleFieldValue(MappingRule mappingRule, List<Segment> invoiceLineSegments) {
     String readValue;
     String mappingExpression = mappingRule.getValue();
-    String[] expressionParts = mappingExpression.split(EXPRESSIONS_DELIMITER);
+    String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
 
     for (String expressionPart : expressionParts) {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
@@ -320,9 +323,9 @@ public class EdifactRecordReader implements Reader {
     int fromIndex;
     int toIndex;
     String positionsStatement = StringUtils.substringBetween(segmentQuery, "[", "]");
-    if (positionsStatement.contains("-")) {
-      fromIndex = Integer.parseInt(StringUtils.substringBefore(positionsStatement, "-"));
-      toIndex = Integer.parseInt(StringUtils.substringAfter(positionsStatement, "-"));
+    if (positionsStatement.contains(RANGE_DELIMITER)) {
+      fromIndex = Integer.parseInt(StringUtils.substringBefore(positionsStatement, RANGE_DELIMITER));
+      toIndex = Integer.parseInt(StringUtils.substringAfter(positionsStatement, RANGE_DELIMITER));
     } else {
       fromIndex = Integer.parseInt(positionsStatement);
       toIndex = fromIndex;
