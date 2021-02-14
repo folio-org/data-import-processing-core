@@ -157,7 +157,6 @@ public class EdifactRecordReader implements Reader {
 
   private Value read(MappingRule mappingRule, List<Segment> segments) {
     if (mappingRule.getBooleanFieldAction() != null) {
-      // todo: create task for ui to add "booleanFieldAction" : "ALL_TRUE" to the rule
       return BooleanValue.of(mappingRule.getBooleanFieldAction());
     } else if (mappingRule.getSubfields().isEmpty()) {
       return readSingleFieldValue(mappingRule, segments);
