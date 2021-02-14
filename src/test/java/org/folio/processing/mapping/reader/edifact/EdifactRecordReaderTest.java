@@ -369,10 +369,10 @@ public class EdifactRecordReaderTest {
       "1b6d3338-186e-4e35-9e75-1b886b0da53e", "Grants (GRANT-SUBN)",
       "65032151-39a5-4cef-8810-5350eb316300", "US History (USHIST)"));
 
-    String rootPath = "invoice.invoiceLine[]";
-    String adjustmentsPath = "invoice.invoiceLine[].adjustments[]";
-    String fundDistributionsPath = "invoice.invoiceLine[].fundDistributions[]";
-    String referenceNumbersPath = "invoice.invoiceLine[].referenceNumbers[]";
+    String rootPath = "invoice.invoiceLines[]";
+    String adjustmentsPath = "invoice.invoiceLines[].adjustments[]";
+    String fundDistributionsPath = "invoice.invoiceLines[].fundDistributions[]";
+    String referenceNumbersPath = "invoice.invoiceLines[].referenceNumbers[]";
 
     MappingRule mappingRule = new MappingRule().withPath(rootPath)
       .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
@@ -381,10 +381,10 @@ public class EdifactRecordReaderTest {
         .withPath(rootPath)
         .withFields(List.of(
           new MappingRule()
-            .withPath("invoice.invoiceLine[].invoiceLineStatus")
+            .withPath("invoice.invoiceLines[].invoiceLineStatus")
             .withValue("\"Open\""),
           new MappingRule()
-            .withPath("invoice.invoiceLine[].description")
+            .withPath("invoice.invoiceLines[].description")
             .withValue("IMD+L+050+[4]"),
           new MappingRule()
             .withPath(referenceNumbersPath)
@@ -393,9 +393,9 @@ public class EdifactRecordReaderTest {
               .withOrder(0)
               .withPath(referenceNumbersPath)
               .withFields(List.of(
-                new MappingRule().withPath("invoice.invoiceLine[].referenceNumbers[].refNumber")
+                new MappingRule().withPath("invoice.invoiceLines[].referenceNumbers[].refNumber")
                   .withValue("RFF+SNA[2]"),
-                new MappingRule().withPath("invoice.invoiceLine[].referenceNumbers[].refNumberType")
+                new MappingRule().withPath("invoice.invoiceLines[].referenceNumbers[].refNumberType")
                   .withValue("\"Vendor continuation reference number\""))))),
           new MappingRule()
             .withPath(adjustmentsPath)
@@ -404,11 +404,11 @@ public class EdifactRecordReaderTest {
               .withOrder(0)
               .withPath(adjustmentsPath)
               .withFields(List.of(
-                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].description")
+                new MappingRule().withPath("invoice.invoiceLines[].adjustments[].description")
                   .withValue("ALC+C++++[4]"),
-                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].value")
+                new MappingRule().withPath("invoice.invoiceLines[].adjustments[].value")
                   .withValue("MOA+8[2]"),
-                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].exportToAccounting")
+                new MappingRule().withPath("invoice.invoiceLines[].adjustments[].exportToAccounting")
                   .withBooleanFieldAction(ALL_TRUE))))),
           new MappingRule()
             .withPath(fundDistributionsPath)
@@ -417,10 +417,10 @@ public class EdifactRecordReaderTest {
               .withOrder(0)
               .withPath(adjustmentsPath)
               .withFields(List.of(
-                new MappingRule().withPath("invoice.invoiceLine[].fundDistributions[].fundId")
+                new MappingRule().withPath("invoice.invoiceLines[].fundDistributions[].fundId")
                   .withValue("\"US History (USHIST)\"")
                   .withAcceptedValues(fundIdAcceptedValues),
-                new MappingRule().withPath("invoice.invoiceLine[].fundDistributions[].distributionType")
+                new MappingRule().withPath("invoice.invoiceLines[].fundDistributions[].distributionType")
                   .withValue("\"percentage\"")))))
         ))));
 
@@ -437,45 +437,45 @@ public class EdifactRecordReaderTest {
     Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedAdjustment1 = Map.of(
-      "invoice.invoiceLine[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
-      "invoice.invoiceLine[].adjustments[].value", StringValue.of("3.59"),
-      "invoice.invoiceLine[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
+      "invoice.invoiceLines[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
+      "invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"),
+      "invoice.invoiceLines[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
     Map<String, Value> expectedAdjustment2 = Map.of(
-      "invoice.invoiceLine[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
-      "invoice.invoiceLine[].adjustments[].value", StringValue.of("12.5"),
-      "invoice.invoiceLine[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
+      "invoice.invoiceLines[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
+      "invoice.invoiceLines[].adjustments[].value", StringValue.of("12.5"),
+      "invoice.invoiceLines[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
     Map<String, Value> expectedAdjustment3 = Map.of(
-      "invoice.invoiceLine[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
-      "invoice.invoiceLine[].adjustments[].value", StringValue.of("12.5"),
-      "invoice.invoiceLine[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
+      "invoice.invoiceLines[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
+      "invoice.invoiceLines[].adjustments[].value", StringValue.of("12.5"),
+      "invoice.invoiceLines[].adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE));
 
     Map<String, Value> fundDistribution = Map.of(
-      "invoice.invoiceLine[].fundDistributions[].fundId", StringValue.of("65032151-39a5-4cef-8810-5350eb316300"),
-      "invoice.invoiceLine[].fundDistributions[].distributionType", StringValue.of("percentage"));
+      "invoice.invoiceLines[].fundDistributions[].fundId", StringValue.of("65032151-39a5-4cef-8810-5350eb316300"),
+      "invoice.invoiceLines[].fundDistributions[].distributionType", StringValue.of("percentage"));
 
     Map<String, Value> expectedReferenceNumber1 = Map.of(
-      "invoice.invoiceLine[].referenceNumbers[].refNumber", StringValue.of("C6546362"),
-      "invoice.invoiceLine[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
+      "invoice.invoiceLines[].referenceNumbers[].refNumber", StringValue.of("C6546362"),
+      "invoice.invoiceLines[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
     Map<String, Value> expectedReferenceNumber2 = Map.of(
-      "invoice.invoiceLine[].referenceNumbers[].refNumber", StringValue.of("E9498295"),
-      "invoice.invoiceLine[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
+      "invoice.invoiceLines[].referenceNumbers[].refNumber", StringValue.of("E9498295"),
+      "invoice.invoiceLines[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
     Map<String, Value> expectedReferenceNumber3 = Map.of(
-      "invoice.invoiceLine[].referenceNumbers[].refNumber", StringValue.of("E9498296"),
-      "invoice.invoiceLine[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
+      "invoice.invoiceLines[].referenceNumbers[].refNumber", StringValue.of("E9498296"),
+      "invoice.invoiceLines[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
-      Map.of("invoice.invoiceLine[].description", StringValue.of("ACADEMY OF MANAGEMENT ANNALS -   ON"),
-        "invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
+      Map.of("invoice.invoiceLines[].description", StringValue.of("ACADEMY OF MANAGEMENT ANNALS -   ON"),
+        "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment1), EXTEND_EXISTING, adjustmentsPath),
         fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber1), EXTEND_EXISTING, referenceNumbersPath)),
-      Map.of("invoice.invoiceLine[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -"),
-        "invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
+      Map.of("invoice.invoiceLines[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -"),
+        "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment2), EXTEND_EXISTING, adjustmentsPath),
         fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber2), EXTEND_EXISTING, referenceNumbersPath)),
-      Map.of("invoice.invoiceLine[].description", StringValue.of("ACI STRUCTURAL JOURNAL -   ON"),
-        "invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
+      Map.of("invoice.invoiceLines[].description", StringValue.of("ACI STRUCTURAL JOURNAL -   ON"),
+        "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath),
         fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber3), EXTEND_EXISTING, referenceNumbersPath)));
@@ -492,8 +492,8 @@ public class EdifactRecordReaderTest {
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINES_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
-    String rootPath = "invoice.invoiceLine[]";
-    String adjustmentsPath = "invoice.invoiceLine[].adjustments[]";
+    String rootPath = "invoice.invoiceLines[]";
+    String adjustmentsPath = "invoice.invoiceLines[].adjustments[]";
 
     MappingRule mappingRule = new MappingRule().withPath(rootPath)
       .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
@@ -502,7 +502,7 @@ public class EdifactRecordReaderTest {
         .withPath(rootPath)
         .withFields(List.of(
           new MappingRule()
-            .withPath("invoice.invoiceLine[].invoiceLineStatus")
+            .withPath("invoice.invoiceLines[].invoiceLineStatus")
             .withValue("\"Open\""),
           new MappingRule()
             .withPath(adjustmentsPath)
@@ -511,7 +511,7 @@ public class EdifactRecordReaderTest {
               .withOrder(0)
               .withPath(adjustmentsPath)
               .withFields(List.of(
-                new MappingRule().withPath("invoice.invoiceLine[].adjustments[].value")
+                new MappingRule().withPath("invoice.invoiceLines[].adjustments[].value")
                   .withValue("MOA+8[2]")))))
         ))));
 
@@ -527,15 +527,15 @@ public class EdifactRecordReaderTest {
     Assert.assertEquals(rootPath, actualValue.getRootPath());
     Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
-    Map<String, Value> expectedAdjustment1 = Map.of("invoice.invoiceLine[].adjustments[].value", StringValue.of("3.59"));
-    Map<String, Value> expectedAdjustment3 = Map.of("invoice.invoiceLine[].adjustments[].value", StringValue.of("12.5"));
+    Map<String, Value> expectedAdjustment1 = Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"));
+    Map<String, Value> expectedAdjustment3 = Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("12.5"));
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
-      Map.of("invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
+      Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment1), EXTEND_EXISTING, adjustmentsPath)),
-      Map.of("invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
+      Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, MissingValue.getInstance()),
-      Map.of("invoice.invoiceLine[].invoiceLineStatus", StringValue.of("Open"),
+      Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);

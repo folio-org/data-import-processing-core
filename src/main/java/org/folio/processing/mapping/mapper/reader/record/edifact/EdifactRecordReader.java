@@ -65,6 +65,7 @@ public class EdifactRecordReader implements Reader {
   private static final String DATE_TIME_TAG = "DTM";
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
   private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+  public static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
@@ -134,7 +135,7 @@ public class EdifactRecordReader implements Reader {
 
   @Override
   public Value read(MappingRule mappingRule) {
-    if (mappingRule.getPath().contains("invoiceLine")) {
+    if (mappingRule.getPath().startsWith(INVOICE_LINES_ROOT_PATH)) {
       return readInvoiceLinesRepeatableFieldValue(mappingRule);
     }
     return read(mappingRule, invoiceSegments);
