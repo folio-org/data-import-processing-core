@@ -4,11 +4,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Instance;
 import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -18,6 +20,7 @@ import org.marc4j.marc.Subfield;
 import org.marc4j.marc.impl.SubfieldImpl;
 
 import javax.script.ScriptException;
+
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -96,6 +99,7 @@ public class Processor {
 
     while (dfIter.hasNext()) {
       DataField dataField = dfIter.next();
+      ExtraFieldUtil.findAndReplaceFieldsIfNeed(dataField, mappingRules);
       RuleExecutionContext ruleExecutionContext = new RuleExecutionContext();
       ruleExecutionContext.setMappingParameters(mappingParameters);
       ruleExecutionContext.setDataField(dataField);
@@ -246,6 +250,8 @@ public class Processor {
     handleDelimiters();
 
     String[] embeddedFields = jObj.getString("target").split("\\.");
+
+
     if (!isMappingValid(instance, embeddedFields)) {
       LOGGER.debug("bad mapping {}", jObj.encode());
       return;
