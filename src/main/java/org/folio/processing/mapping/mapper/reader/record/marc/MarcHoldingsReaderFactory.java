@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.reader.record;
+package org.folio.processing.mapping.mapper.reader.record.marc;
 
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
