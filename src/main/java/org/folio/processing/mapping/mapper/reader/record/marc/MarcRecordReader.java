@@ -1,4 +1,4 @@
-package org.folio.processing.mapping.mapper.reader.record;
+package org.folio.processing.mapping.mapper.reader.record.marc;
 
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.MapUtils;
