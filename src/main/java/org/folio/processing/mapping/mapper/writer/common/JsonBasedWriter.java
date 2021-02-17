@@ -267,12 +267,12 @@ public class JsonBasedWriter extends AbstractWriter {
     }
 
     if (pathItem.isArray() && fieldValue.isArray()) {
-      ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+      ArrayNode arrayNode = parentNode.withArray(pathItem.getName());
       for (JsonNode jsonNode : fieldValue) {
         arrayNode.add(jsonNode);
       }
     } else if (pathItem.isArray() && fieldValue.isObject()) {
-      ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+      ArrayNode arrayNode = parentNode.withArray(pathItem.getName());
       arrayNode.add(fieldValue);
     } else if (pathItem.isObject() && !fieldValue.isArray()) {
       ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);
