@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import static io.vertx.core.json.jackson.DatabindCodec.mapper;
+import static io.vertx.core.json.Json.mapper;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
@@ -75,7 +75,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -118,7 +118,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -166,7 +166,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -212,7 +212,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -258,7 +258,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -304,7 +304,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -350,7 +350,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -396,7 +396,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -443,7 +443,7 @@ public class ProtectedMarcRecordModifierTest {
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Record actualRecord = mapper.readValue(recordJson, Record.class);
     assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
