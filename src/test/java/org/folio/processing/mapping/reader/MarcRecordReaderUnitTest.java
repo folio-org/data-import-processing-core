@@ -5,7 +5,7 @@ import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.reader.record.MarcBibReaderFactory;
+import org.folio.processing.mapping.mapper.reader.record.marc.MarcBibReaderFactory;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.RepeatableFieldValue;
