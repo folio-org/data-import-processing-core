@@ -7,6 +7,8 @@
 
 ## 2020-11-20 v2.2.1
 * [MODDICORE-103](https://issues.folio.org/browse/MODDICORE-103) Fixed searching for next match profile
+* [MODDICORE-111](https://issues.folio.org/browse/MODDICORE-111) Add personal data disclosure form.
+
 
 ## 2020-10-09 v2.2.0
 * [MODDICORE-59](https://issues.folio.org/browse/MODDICORE-59) Implemented MARC Record Writer/Modifier
