@@ -184,10 +184,10 @@ public final class EventManager {
   }
 
   private static DataImportEventPayload prepareErrorEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
-    eventPayload.setEventType(DI_ERROR.value());
     // an error occurred during handling of current event type, so it is pushed to the events chain
     eventPayload.getEventsChain().add(eventPayload.getEventType());
     eventPayload.getContext().put("ERROR", throwable.getMessage());
+    eventPayload.setEventType(DI_ERROR.value());
     return eventPayload;
   }
 
