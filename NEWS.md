@@ -2,6 +2,8 @@
 * [MODDICORE-82](https://issues.folio.org/browse/MODDICORE-82) Change transport layer implementation to use Kafka
 * [MODDICORE-114](https://issues.folio.org/browse/MODDICORE-114) Add MARC-Instance default mappings for 880 fields.
 * [MODDSOURMAN-377](https://issues.folio.org/browse/MODSOURMAN-377) Update 5xx Notes mappings to indicate staff only for some notes.
+* [MODDICORE-115](https://issues.folio.org/browse/MODDICORE-115) Add implementation for EDIFACT reader
+* [MODDICORE-116](https://issues.folio.org/browse/MODDICORE-116) Support for invoice adjustments mapping
 
 ## 2020-11-20 v2.2.1
 * [MODDICORE-103](https://issues.folio.org/browse/MODDICORE-103) Fixed searching for next match profile

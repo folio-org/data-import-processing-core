@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
@@ -31,6 +30,7 @@ import java.util.Map;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
+import static org.folio.processing.value.Value.ValueType.REPEATABLE;
 
 /**
  * A common Writer based on json. The idea is to hold Jackson's JsonNode and fill up it by incoming values in runtime.
@@ -110,18 +110,18 @@ public class JsonBasedWriter extends AbstractWriter {
     setValueByFieldPath(fieldPath, objectNode);
   }
 
-  private void writeValuesForRepeatableObject(JsonNode object, Map.Entry<String, Value> objectFields) {
+  private void writeValuesForRepeatableObject(JsonNode object, Map.Entry<String, Value> objectField) {
     JsonNode field = MissingNode.getInstance();
-    switch (objectFields.getValue().getType()) {
+    switch (objectField.getValue().getType()) {
       case LIST:
       case MAP:
-        field = objectMapper.valueToTree(objectFields.getValue().getValue());
+        field = objectMapper.valueToTree(objectField.getValue().getValue());
         break;
       case STRING:
-        field = new TextNode((String) objectFields.getValue().getValue());
+        field = new TextNode((String) objectField.getValue().getValue());
         break;
       case BOOLEAN:
-        BooleanValue bool = (BooleanValue) objectFields.getValue();
+        BooleanValue bool = (BooleanValue) objectField.getValue();
         MappingRule.BooleanFieldAction booleanFieldAction = bool.getValue();
         if (booleanFieldAction.equals(MappingRule.BooleanFieldAction.ALL_TRUE)) {
           field = BooleanNode.TRUE;
@@ -135,7 +135,7 @@ public class JsonBasedWriter extends AbstractWriter {
         break;
     }
     if (!field.isMissingNode()) {
-      setValueByFieldPath(objectFields.getKey().substring(objectFields.getKey().lastIndexOf('.') + 1), field, object);
+      setValueByFieldPath(objectField.getKey().substring(objectField.getKey().lastIndexOf('.') + 1), field, object);
     }
   }
 
@@ -173,10 +173,29 @@ public class JsonBasedWriter extends AbstractWriter {
     value.setAlreadyRemovedForExchange(false);
     for (Map<String, Value> subfield : repeatableFields) {
       JsonNode currentObject = objectMapper.createObjectNode();
-      for (Map.Entry<String, Value> objectFields : subfield.entrySet()) {
-        writeValuesForRepeatableObject(currentObject, objectFields);
+      for (Map.Entry<String, Value> objectField : subfield.entrySet()) {
+        if (objectField.getValue().getType().equals(REPEATABLE)) {
+          writeNestedRepeatableValue(objectField.getKey(), (RepeatableFieldValue) objectField.getValue(), currentObject);
+        } else {
+          writeValuesForRepeatableObject(currentObject, objectField);
+        }
       }
       setRepeatableValueByAction(value, repeatableFieldPath, currentObject);
+    }
+  }
+
+  private void writeNestedRepeatableValue(String repeatableFieldPath, RepeatableFieldValue value, JsonNode parentNode) {
+    List<Map<String, Value>> repeatableFields = value.getValue();
+    for (Map<String, Value> subfield : repeatableFields) {
+      JsonNode currentObject = objectMapper.createObjectNode();
+      for (Map.Entry<String, Value> objectField : subfield.entrySet()) {
+        if (objectField.getValue().getType().equals(REPEATABLE)) {
+          writeNestedRepeatableValue(objectField.getKey(), (RepeatableFieldValue) objectField.getValue(), currentObject);
+        } else {
+          writeValuesForRepeatableObject(currentObject, objectField);
+        }
+      }
+      setValueByFieldPath(repeatableFieldPath.substring(repeatableFieldPath.lastIndexOf('.') + 1), currentObject, parentNode);
     }
   }
 
@@ -248,12 +267,12 @@ public class JsonBasedWriter extends AbstractWriter {
     }
 
     if (pathItem.isArray() && fieldValue.isArray()) {
-      ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+      ArrayNode arrayNode = parentNode.withArray(pathItem.getName());
       for (JsonNode jsonNode : fieldValue) {
         arrayNode.add(jsonNode);
       }
     } else if (pathItem.isArray() && fieldValue.isObject()) {
-      ArrayNode arrayNode = (ArrayNode) parentNode.withArray(pathItem.getName());
+      ArrayNode arrayNode = parentNode.withArray(pathItem.getName());
       arrayNode.add(fieldValue);
     } else if (pathItem.isObject() && !fieldValue.isArray()) {
       ((ObjectNode) parentNode).set(pathItem.getName(), fieldValue);

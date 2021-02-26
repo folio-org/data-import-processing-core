@@ -1,5 +1,7 @@
 package org.folio.processing.mapping.mapper.writer;
 
+import com.google.common.collect.Lists;
+import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
@@ -23,13 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_FALSE;
+import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_INCOMING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
-
-import com.google.common.collect.Lists;
 
 @RunWith(JUnit4.class)
 public class JsonBasedWriterUnitTest {
@@ -82,7 +84,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -114,7 +116,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
     object2.put("instance.contributor[].id", StringValue.of("UUID3"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -144,7 +146,7 @@ public class JsonBasedWriterUnitTest {
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -176,7 +178,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -209,7 +211,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -261,7 +263,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -294,7 +296,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
     object2.put("instance.contributor[].id", StringValue.of("UUID3"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -326,7 +328,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -359,7 +361,7 @@ public class JsonBasedWriterUnitTest {
 
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
-    object2.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+    object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
     objects.add(object1);
     objects.add(object2);
@@ -651,4 +653,51 @@ public class JsonBasedWriterUnitTest {
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals("{\"instance\":{\"title\":\"bla\"}}", resultInstance);
   }
+
+  @Test
+  public void shouldWriteNestedRepeatableFieldValue() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INVOICE.value(), "{}");
+    eventContext.setContext(context);
+
+    String rootPath = "invoice.adjustments[]";
+    String fundDistributionsRootPath = "invoice.adjustments[].fundDistributions[]";
+    Map<String, Value> fundDistributionElement1_1 = Map.of(
+      "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f711"),
+      "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-1.1"));
+    Map<String, Value> fundDistributionElement1_2 = Map.of(
+      "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f712"),
+      "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-1.2"));
+    Map<String, Value> fundDistributionElement2_1 = Map.of(
+      "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f721"),
+      "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-2.1"));
+    Map<String, Value> fundDistributionElement2_2 = Map.of(
+      "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f722"),
+      "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-2.2"));
+
+    Map<String, Value> adjustment1 = Map.of(
+      "invoice.adjustments[].description", StringValue.of("description-1"),
+      "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE),
+      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(fundDistributionElement1_1, fundDistributionElement1_2), EXTEND_EXISTING, fundDistributionsRootPath));
+    Map<String, Value> adjustment2 = Map.of(
+      "invoice.adjustments[].description", StringValue.of("description-2"),
+      "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_FALSE),
+      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(fundDistributionElement2_1, fundDistributionElement2_2), EXTEND_EXISTING, fundDistributionsRootPath));
+
+    RepeatableFieldValue value = RepeatableFieldValue.of(List.of(adjustment1, adjustment2), EXTEND_EXISTING, rootPath);
+
+    // when
+    JsonBasedWriter writer = new JsonBasedWriter(EntityType.INVOICE);
+    writer.initialize(eventContext);
+    writer.write(value.getRootPath(), value);
+    writer.getResult(eventContext);
+
+    // then
+    String expectedInvoiceAsString = "{\"invoice\":{\"adjustments\":[{\"fundDistributions\":[{\"code\":\"USHIST-1.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f711\"},{\"code\":\"USHIST-1.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f712\"}],\"exportToAccounting\":true,\"description\":\"description-1\"},{\"fundDistributions\":[{\"code\":\"USHIST-2.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f721\"},{\"code\":\"USHIST-2.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f722\"}],\"exportToAccounting\":false,\"description\":\"description-2\"}]}}";
+    String resultInvoice = eventContext.getContext().get(EntityType.INVOICE.value());
+    assertEquals(new JsonObject(expectedInvoiceAsString), new JsonObject(resultInvoice));
+  }
+
 }
