@@ -1,8 +1,8 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import java.lang.reflect.ParameterizedType;
 
 public class LoaderHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(LoaderHelper.class);
+  private static final Logger LOGGER = LogManager.getLogger(LoaderHelper.class);
   private LoaderHelper() {}
 
   public static boolean isMappingValid(Object object, String[] path)

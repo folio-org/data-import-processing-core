@@ -2,8 +2,8 @@ package org.folio.processing.mapping.defaultmapper.processor;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +44,7 @@ import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.
 
 public class Processor {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class);
+  private static final Logger LOGGER = LogManager.getLogger(Processor.class);
   private static final String VALUE = "value";
   private static final String CUSTOM = "custom";
   private static final String TYPE = "type";

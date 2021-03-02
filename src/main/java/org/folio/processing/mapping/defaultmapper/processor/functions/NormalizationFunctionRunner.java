@@ -3,8 +3,8 @@ package org.folio.processing.mapping.defaultmapper.processor.functions;
 import com.google.common.base.Splitter;
 import org.apache.commons.lang.StringUtils;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Iterator;
 
@@ -12,7 +12,7 @@ import java.util.Iterator;
  * Run a splitter on a string or run a function.
  */
 public class NormalizationFunctionRunner {
-  private static final Logger LOGGER = LoggerFactory.getLogger(NormalizationFunctionRunner.class);
+  private static final Logger LOGGER = LogManager.getLogger(NormalizationFunctionRunner.class);
   private static final String SPLIT_FUNCTION_SPLIT_EVERY = "split_every";
 
   private NormalizationFunctionRunner() {

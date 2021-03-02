@@ -21,8 +21,8 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.ControlFieldImpl;
 import org.marc4j.marc.impl.DataFieldImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -49,7 +49,7 @@ import static org.folio.processing.value.Value.ValueType.LIST;
 
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordReader.class);
+  private static final Logger LOGGER = LogManager.getLogger(MarcRecordReader.class);
 
   private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
   private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
