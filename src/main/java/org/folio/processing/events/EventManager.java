@@ -1,8 +1,8 @@
 package org.folio.processing.events;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.processing.events.services.handler.EventHandler;
@@ -40,7 +40,7 @@ public final class EventManager {
   public static final String POST_PROCESSING_INDICATOR = "POST_PROCESSING";
   public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST_PROCESSING_RESULT_EVENT";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EventManager.class);
+  private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
   private static final List<EventPublisher> eventPublisher = new ArrayList<>(Arrays.<EventPublisher>asList(new RestEventPublisher()));

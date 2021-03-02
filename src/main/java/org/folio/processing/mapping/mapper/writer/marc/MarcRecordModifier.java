@@ -28,8 +28,8 @@ import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.Verifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,7 +50,7 @@ import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 
 public class MarcRecordModifier {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MarcRecordModifier.class);
+  private static final Logger LOGGER = LogManager.getLogger(MarcRecordModifier.class);
   private static final String PAYLOAD_HAS_NO_DATA_MSG = "Cannot initialize MarcRecordModifier - event payload context does not contain MARC_BIBLIOGRAPHIC data";
   public static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
 

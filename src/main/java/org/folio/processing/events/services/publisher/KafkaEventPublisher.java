@@ -3,8 +3,8 @@ package org.folio.processing.events.services.publisher;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.kafka.client.producer.KafkaHeader;
 import io.vertx.kafka.client.producer.KafkaProducer;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
@@ -26,7 +26,7 @@ import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher {
-  private static final Logger LOGGER = LoggerFactory.getLogger(KafkaEventPublisher.class);
+  private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
 
   private static final AtomicLong indexer = new AtomicLong();
 
@@ -82,12 +82,12 @@ public class KafkaEventPublisher implements EventPublisher {
           future.complete(event);
         } else {
           Throwable cause = war.cause();
-          LOGGER.error("{} write error for event {}:", cause, producerName, eventType);
+          LOGGER.error("{} write error for event {}:",  producerName, eventType, cause);
           future.completeExceptionally(cause);
         }
       });
     } catch (Exception e) {
-      LOGGER.error("Can not publish event {}", e, eventType);
+      LOGGER.error("Can not publish event {}", eventType, e);
       future.completeExceptionally(e);
     }
     return future;

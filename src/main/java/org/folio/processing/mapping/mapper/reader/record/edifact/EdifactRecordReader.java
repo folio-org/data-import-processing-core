@@ -27,8 +27,8 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ import static org.folio.processing.value.Value.ValueType.MISSING;
  */
 public class EdifactRecordReader implements Reader {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EdifactRecordReader.class);
+  private static final Logger LOGGER = LogManager.getLogger(EdifactRecordReader.class);
 
   private static final Pattern CONSTANT_EXPRESSION_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private static final Pattern SEGMENT_QUERY_PATTERN = Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
