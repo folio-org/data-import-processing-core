@@ -19,8 +19,8 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -37,7 +37,7 @@ import static org.folio.processing.value.Value.ValueType.REPEATABLE;
  */
 @SuppressWarnings("rawtypes")
 public class JsonBasedWriter extends AbstractWriter {
-  private static final Logger LOGGER = LoggerFactory.getLogger(JsonBasedWriter.class);
+  private static final Logger LOGGER = LogManager.getLogger(JsonBasedWriter.class);
   private static final char DOT_SYMBOL = '.';
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final String entityType;
@@ -301,7 +301,7 @@ public class JsonBasedWriter extends AbstractWriter {
       String jsonEntity = objectMapper.writeValueAsString(this.entityNode);
       eventPayload.getContext().put(entityType, jsonEntity);
     } catch (JsonProcessingException e) {
-      LOGGER.error(format("Can not write entity node to json string. Cause:  %s", e));
+      LOGGER.error("Can not write entity node to json string", e);
       throw new IllegalStateException(e);
     }
     return eventPayload;

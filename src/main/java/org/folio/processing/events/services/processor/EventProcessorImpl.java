@@ -1,7 +1,7 @@
 package org.folio.processing.events.services.processor;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.exceptions.EventHandlerNotFoundException;
@@ -17,7 +17,7 @@ import static org.folio.processing.events.EventManager.POST_PROCESSING_RESULT_EV
 
 public class EventProcessorImpl implements EventProcessor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EventProcessorImpl.class);
+  private static final Logger LOG = LogManager.getLogger(EventProcessorImpl.class);
 
   private List<EventHandler> eventHandlers = new ArrayList<>();
 

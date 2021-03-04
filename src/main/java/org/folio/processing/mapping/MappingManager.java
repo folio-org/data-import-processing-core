@@ -11,8 +11,8 @@ import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
 
@@ -28,7 +28,7 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPP
  * @see Writer
  */
 public final class MappingManager {
-  private static final Logger LOGGER = LoggerFactory.getLogger(MappingManager.class);
+  private static final Logger LOGGER = LogManager.getLogger(MappingManager.class);
   private static final FactoryRegistry FACTORY_REGISTRY = new FactoryRegistry();
 
   private MappingManager() {
