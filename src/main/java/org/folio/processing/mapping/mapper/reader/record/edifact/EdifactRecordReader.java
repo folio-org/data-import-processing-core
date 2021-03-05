@@ -14,6 +14,7 @@ import org.folio.Component;
 import org.folio.DataElement;
 import org.folio.DataImportEventPayload;
 import org.folio.EdifactParsedContent;
+import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.Segment;
 import org.folio.processing.exceptions.ReaderException;
@@ -71,6 +72,7 @@ public class EdifactRecordReader implements Reader {
   private static final String INVOICE_LINE_ITEM_TAG = "LIN";
   private static final String INVOICE_SUMMARY_TAG = "UNS";
   private static final String DATE_TIME_TAG = "DTM";
+  private static final String PARSED_RECORD_HAS_NO_DATA_MSG = "Failed to retrieve segments data - parsed record does not contain EDIFACT data";
   private static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
   private static final String INVALID_DATA_RANGE_MSG = "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
@@ -85,6 +87,41 @@ public class EdifactRecordReader implements Reader {
   private Map<String, String> payloadContext;
   private int invoiceLineCounter = -1;
 
+  /**
+   * Extracts data from the invoice lines segments specified in the {@code segmentMappingExpression}.
+   *
+   * @param parsedRecord             parsed record with EDIFACT parsed content
+   * @param segmentMappingExpression mapping expression with segment to extract data from
+   * @return map with segments data and corresponding invoice lines numbers
+   * @throws IllegalArgumentException if {@code parsedRecord} has no EDIFACT parsed content
+   *   and when invalid segment mapping expression is specified
+   */
+  public static Map<Integer, String> getInvoiceLinesSegmentsValues(ParsedRecord parsedRecord, String segmentMappingExpression) {
+    if (parsedRecord == null || parsedRecord.getContent() == null) {
+      LOGGER.error(PARSED_RECORD_HAS_NO_DATA_MSG);
+      throw new IllegalArgumentException(PARSED_RECORD_HAS_NO_DATA_MSG);
+    } else if (!SEGMENT_QUERY_PATTERN.matcher(segmentMappingExpression).matches()) {
+      String msg = format(INVALID_MAPPING_EXPRESSION_MSG, segmentMappingExpression);
+      LOGGER.error(msg);
+      throw new IllegalArgumentException(msg);
+    }
+
+    EdifactParsedContent parsedContent = Json.decodeValue(parsedRecord.getContent().toString(), EdifactParsedContent.class);
+    List<List<Segment>> invoiceLinesSegmentGroups = getInvoiceLinesSegments(parsedContent);
+    HashMap<Integer, String> invLineNoToSegmentValue = new HashMap<>();
+
+    for (int i = 0; i < invoiceLinesSegmentGroups.size(); i++) {
+      List<Segment> invoiceLineSegments = invoiceLinesSegmentGroups.get(i);
+      List<String> segmentsData = extractSegmentsData(segmentMappingExpression, invoiceLineSegments);
+
+      if (!segmentsData.isEmpty()) {
+        String readValue = String.join(EMPTY, segmentsData);
+        invLineNoToSegmentValue.put(i + 1, readValue);
+      }
+    }
+    return invLineNoToSegmentValue;
+  }
+
   public EdifactRecordReader(EntityType entityType) {
     this.entityType = entityType;
   }
@@ -96,8 +133,8 @@ public class EdifactRecordReader implements Reader {
       Record sourceRecord = Json.decodeValue(recordAsString, Record.class);
       if (ObjectUtils.allNotNull(sourceRecord.getParsedRecord(), sourceRecord.getParsedRecord().getContent())) {
         edifactParsedContent = DatabindCodec.mapper().readValue(sourceRecord.getParsedRecord().getContent().toString(), EdifactParsedContent.class);
-        invoiceSegments = getInvoiceSegments();
-        invoiceLinesSegmentGroups = getInvoiceLinesSegments();
+        invoiceSegments = getInvoiceSegments(edifactParsedContent);
+        invoiceLinesSegmentGroups = getInvoiceLinesSegments(edifactParsedContent);
         payloadContext = eventPayload.getContext();
         return;
       }
@@ -105,7 +142,7 @@ public class EdifactRecordReader implements Reader {
     throw new IllegalArgumentException("Can not initialize EdifactRecordReader, event payload has no EDIFACT parsed content");
   }
 
-  private List<Segment> getInvoiceSegments() {
+  private List<Segment> getInvoiceSegments(EdifactParsedContent edifactParsedContent) {
     List<Segment> segments = edifactParsedContent.getSegments();
     int invoiceHeaderSegmentsEnd = 0;
     int invoiceSummarySegmentsStart = 0;
@@ -124,7 +161,7 @@ public class EdifactRecordReader implements Reader {
     return invoiceSegments;
   }
 
-  private List<List<Segment>> getInvoiceLinesSegments() {
+  private static List<List<Segment>> getInvoiceLinesSegments(EdifactParsedContent edifactParsedContent) {
     List<List<Segment>> invoiceLinesSegments = new ArrayList<>();
     int invoiceLineStart = 0;
     int invoiceLineEndExclusive;
@@ -238,7 +275,7 @@ public class EdifactRecordReader implements Reader {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
         readValue = readAcceptableValue(mappingRule);
       } else if (SEGMENT_QUERY_PATTERN.matcher(expressionPart).matches()) {
-        List<String> segmentsData = extractSegmentsData(expressionPart, invoiceLineSegments);
+        List<String> segmentsData = extractSegmentsDataBySegmentExpression(expressionPart, invoiceLineSegments);
         readValue = String.join(EMPTY, segmentsData);
       } else if (EXTERNAL_DATA_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
         readValue = extractDataByExternalDataExpression(expressionPart);
@@ -284,7 +321,17 @@ public class EdifactRecordReader implements Reader {
     return value;
   }
 
-  private List<String> extractSegmentsData(String segmentQuery, List<Segment> segments) {
+  private List<String> extractSegmentsDataBySegmentExpression(String segmentExpression, List<Segment> segments) {
+    List<String> extractedValues = extractSegmentsData(segmentExpression, segments);
+    String segmentTag = segmentExpression.substring(0, SEGMENT_TAG_LENGTH);
+
+    if (segmentTag.equals(DATE_TIME_TAG)) {
+      formatDateValues(extractedValues);
+    }
+    return extractedValues;
+  }
+
+  private static List<String> extractSegmentsData(String segmentQuery, List<Segment> segments) {
     List<String> componentsValues = new ArrayList<>();
 
     String segmentTag = segmentQuery.substring(0, SEGMENT_TAG_LENGTH);
@@ -319,23 +366,19 @@ public class EdifactRecordReader implements Reader {
         }
       }
     }
-
-    if (segmentTag.equals(DATE_TIME_TAG)) {
-      formatDateValues(componentsValues);
-    }
     return componentsValues;
   }
 
-  private String determineDataElementSeparator(String segmentQuery) {
+  private static String determineDataElementSeparator(String segmentQuery) {
     return segmentQuery.substring(3, 4);
   }
 
-  private boolean isContainsQualifier(String segmentQuery) {
+  private static boolean isContainsQualifier(String segmentQuery) {
     String dataElementSeparator = determineDataElementSeparator(segmentQuery);
     return StringUtils.substringAfterLast(segmentQuery, dataElementSeparator).contains(QUALIFIER_SIGN);
   }
 
-  private Pair<Integer, Integer> extractComponentPositionsRange(String segmentQuery) {
+  private static Pair<Integer, Integer> extractComponentPositionsRange(String segmentQuery) {
     int fromIndex;
     int toIndex;
     String positionsStatement = StringUtils.substringBetween(segmentQuery, "[", "]");
@@ -349,7 +392,7 @@ public class EdifactRecordReader implements Reader {
     return Pair.of(fromIndex, toIndex);
   }
 
-  private String getComponentsData(DataElement dataElement, Pair<Integer, Integer> componentsRange) {
+  private static String getComponentsData(DataElement dataElement, Pair<Integer, Integer> componentsRange) {
     int fromComponent = componentsRange.getLeft();
     int toComponent = componentsRange.getRight();
 
