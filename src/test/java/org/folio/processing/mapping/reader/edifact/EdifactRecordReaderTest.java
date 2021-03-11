@@ -106,6 +106,21 @@ public class EdifactRecordReaderTest {
     Assert.assertEquals("INVOICD96A", value.getValue());
   }
 
+  @Test
+  public void shouldReturnMissingValueWhenMappingRuleHasNoMappingExpression() throws IOException {
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    Value value = reader.read(new MappingRule().withPath("invoice.note").withValue(""));
+
+    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowExceptionWhenMappingRuleHasInvalidPositionsRange() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
