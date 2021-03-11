@@ -237,7 +237,7 @@ public class EdifactRecordReader implements Reader {
       HashMap<String, Value> objectModel = new HashMap<>();
       for (MappingRule fieldRule : subfield.getFields()) {
         Value<?> value = read(fieldRule, segments);
-        if (value.getType().equals(MISSING)) {
+        if (value.getType().equals(MISSING) && SEGMENT_QUERY_PATTERN.matcher(fieldRule.getValue()).matches()) {
           break;
         }
         objectModel.put(fieldRule.getPath(), value);
