@@ -210,7 +210,7 @@ public class EdifactRecordReaderTest {
           .withFields(singletonList(
             new MappingRule()
               .withPath("invoice.acqUnitIds[]")
-              .withValue("")
+              .withValue("\"ackUnit-1\"")
               .withAcceptedValues(acqUnitsAcceptedValues))),
         new RepeatableSubfieldMapping()
           .withOrder(1)
