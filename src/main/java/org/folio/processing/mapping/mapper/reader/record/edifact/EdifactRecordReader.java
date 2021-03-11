@@ -271,6 +271,10 @@ public class EdifactRecordReader implements Reader {
     String mappingExpression = mappingRule.getValue();
     String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
 
+    if (StringUtils.isBlank(mappingExpression)) {
+      return MissingValue.getInstance();
+    }
+
     for (String expressionPart : expressionParts) {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
         readValue = readAcceptableValue(mappingRule);
