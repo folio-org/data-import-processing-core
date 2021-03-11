@@ -3,6 +3,7 @@ package org.folio.processing.mapping.reader.edifact;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -11,6 +12,7 @@ import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.edifact.EdifactReaderFactory;
 import org.folio.processing.mapping.mapper.reader.record.edifact.EdifactRecordReader;
 import org.folio.processing.value.BooleanValue;
+import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
@@ -208,7 +210,7 @@ public class EdifactRecordReaderTest {
           .withFields(singletonList(
             new MappingRule()
               .withPath("invoice.acqUnitIds[]")
-              .withValue("\"ackUnit-1\"")
+              .withValue("")
               .withAcceptedValues(acqUnitsAcceptedValues))),
         new RepeatableSubfieldMapping()
           .withOrder(1)
@@ -229,6 +231,42 @@ public class EdifactRecordReaderTest {
     // then
     Assert.assertEquals(Value.ValueType.LIST, value.getType());
     Assert.assertEquals(Arrays.asList("b2c0e100-0485-43f2-b161-3c60aac9f68a", "b2c0e100-0485-43f2-b161-3c60aac9f128"), value.getValue());
+  }
+
+  @Test
+  public void shouldReturnMissingValueWhenMappingRuleHasArrayFieldPathAndSubfieldRulesHaveNoValue() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    MappingRule mappingRule = new MappingRule().withPath("invoice.acqUnitIds[]")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(Arrays.asList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("invoice.acqUnitIds[]")
+          .withFields(singletonList(
+            new MappingRule()
+              .withPath("invoice.acqUnitIds[]")
+              .withValue(""))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("invoice.acqUnitIds[]")
+          .withFields(singletonList(
+            new MappingRule()
+              .withPath("invoice.acqUnitIds[]")
+              .withValue("")))));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
   @Test

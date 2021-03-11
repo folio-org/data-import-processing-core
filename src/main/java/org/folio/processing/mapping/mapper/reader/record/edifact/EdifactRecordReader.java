@@ -42,11 +42,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.time.LocalTime.MIDNIGHT;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
@@ -215,7 +217,7 @@ public class EdifactRecordReader implements Reader {
           Value value;
           if (!fieldRule.getSubfields().isEmpty()) {
             value = readFullFilledRepeatableFieldValueObjects(fieldRule, invoiceLineSegments);
-          } else if (EXTERNAL_DATA_EXPRESSION_PATTERN.matcher(fieldRule.getValue()).matches()) {
+          } else if (nonNull(fieldRule.getValue()) && EXTERNAL_DATA_EXPRESSION_PATTERN.matcher(fieldRule.getValue()).matches()) {
             value = readValueByExternalDataExpression(fieldRule, fieldRule.getValue());
           } else {
             value = read(fieldRule, invoiceLineSegments);
@@ -237,7 +239,8 @@ public class EdifactRecordReader implements Reader {
       HashMap<String, Value> objectModel = new HashMap<>();
       for (MappingRule fieldRule : subfield.getFields()) {
         Value<?> value = read(fieldRule, segments);
-        if (value.getType().equals(MISSING) && SEGMENT_QUERY_PATTERN.matcher(fieldRule.getValue()).matches()) {
+        if (value.getType().equals(MISSING) && StringUtils.isNotBlank(fieldRule.getValue())
+          && SEGMENT_QUERY_PATTERN.matcher(fieldRule.getValue()).matches()) {
           break;
         }
         objectModel.put(fieldRule.getPath(), value);
@@ -303,14 +306,16 @@ public class EdifactRecordReader implements Reader {
       .orElse(false);
   }
 
-  private ListValue readListValue(MappingRule mappingRule) {
+  private Value<?> readListValue(MappingRule mappingRule) {
     List<String> values = new ArrayList<>();
     for (RepeatableSubfieldMapping elementRule : mappingRule.getSubfields()) {
       for (MappingRule fieldRule : elementRule.getFields()) {
-        values.add(readAcceptableValue(fieldRule));
+        if (StringUtils.isNotBlank(fieldRule.getValue())) {
+          values.add(readAcceptableValue(fieldRule));
+        }
       }
     }
-    return ListValue.of(values);
+    return values.isEmpty() ? MissingValue.getInstance() : ListValue.of(values);
   }
 
   private String readAcceptableValue(MappingRule mappingRule) {
