@@ -34,7 +34,9 @@ import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
@@ -42,6 +44,9 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"3\": \"test\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
   private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
   private final String RECORD_WITH_MULTIPLE_856 = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"856\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"u\": \"https://fod.infobase.com\" }, { \"z\": \"image\" } ] }}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"u\": \"https://cfvod.kaltura.com\" }, { \"z\": \"films collection\" }]} }]}";
+  private final String RECORD_WITH_049 = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"KU/CC/DI/M\"},{\"z\":\"Testing data\"}]}}]}";
+  private final String RECORD_WITH_049_AND_BRACKETS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"(KU/CC/DI/M)\"},{\"z\":\"Testing data\"}]}}]}";
+  private final String RECORD_WITH_049_AND_INVALID_BRACKETS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"K)U/CC(/D)I/M)\"},{\"z\":\"Testing data\"}]}}]}";
 
   @Test
   public void shouldRead_Strings_FromRules() throws IOException {
@@ -707,5 +712,158 @@ public class MarcRecordReaderUnitTest {
 
     assertEquals(ValueType.STRING, value.getType());
     assertTrue(((StringValue)(value)).shouldRemoveOnWrite());
+  }
+
+  @Test
+  public void shouldReadSpecificPermanentLocationWithBrackets() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
+    acceptedValues.put(expectedId, "Main Library (KU/CC/DI/M)");
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/O)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/2)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+    .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals(expectedId, value.getValue());
+  }
+
+  @Test
+  public void shouldReadEqualsPermanentLocationWithBracketsIfContainsSameCode() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
+    acceptedValues.put(expectedId, "Main Library (KU/CC/DI/M)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/MU)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals(expectedId, value.getValue());
+  }
+
+  @Test
+  public void shouldNotReadPermanentLocationWithBracketsNotEqualsCode() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/MK)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("KU/CC/DI/M", value.getValue());
+  }
+
+
+  @Test
+  public void shouldNotReadPermanentLocationWithoutBrackets() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library KU/CC/DI/M");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals( "KU/CC/DI/M", value.getValue());
+  }
+
+  @Test
+  public void shouldReadPermanentLocationIfRecordContainsBrackets() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_BRACKETS))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", value.getValue());
+  }
+
+  @Test
+  public void shouldNotReadPermanentLocationWhenRecordContainsInvalidBrackets() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_INVALID_BRACKETS))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library KU/CC/DI/M");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals( "K)U/CC(/D)I/M)", value.getValue());
   }
 }

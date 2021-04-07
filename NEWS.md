@@ -1,3 +1,6 @@
+## 2021-XX-XX v3.1.0-SNAPSHOT
+* [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems [BUGFIX]
+
 ## 2021-03-12 v3.0.0
 * [MODDICORE-82](https://issues.folio.org/browse/MODDICORE-82) Change transport layer implementation to use Kafka
 * [MODDICORE-114](https://issues.folio.org/browse/MODDICORE-114) Add MARC-Instance default mappings for 880 fields.

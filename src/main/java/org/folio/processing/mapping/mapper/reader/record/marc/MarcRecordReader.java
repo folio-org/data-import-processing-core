@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader.record.marc;
 
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
@@ -61,6 +62,8 @@ public class MarcRecordReader implements Reader {
   private final static String EXPRESSIONS_QUOTE = "\"";
   private final static String MARC_SPLITTER = "/";
   private final static String MARC_BYTES_SPLITTER = "-";
+  private final static String FIRST_BRACKET = "(";
+  private final static String SECOND_BRACKET = ")";
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
   private static final String REMOVE_PLACEHOLDER = "###REMOVE###";
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
@@ -148,7 +151,7 @@ public class MarcRecordReader implements Reader {
   }
 
   private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
-    List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m->isNotBlank(m)).collect(Collectors.toList());
+    List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
       resultList.addAll(marcValues);
     } else {
@@ -163,12 +166,32 @@ public class MarcRecordReader implements Reader {
   private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equalsIgnoreCase(value) || entry.getValue().contains(value)) {
+        if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
           value = entry.getKey();
         }
       }
     }
     return value;
+  }
+
+  private boolean equalsBasedOnBrackets(String mappingParameter, String value) {
+    if (mappingParameter.contains(FIRST_BRACKET) && mappingParameter.contains(SECOND_BRACKET)) {
+      if (retrieveStringFromBrackets(mappingParameter).equalsIgnoreCase(value)) {
+        return true;
+      } else if (retrieveStringWithBrackets(mappingParameter).equalsIgnoreCase(value)) {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  private String retrieveStringFromBrackets(String mappingParameter) {
+    return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET) + 1, mappingParameter.indexOf(SECOND_BRACKET));
+  }
+
+  private String retrieveStringWithBrackets(String mappingParameter) {
+    return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
   private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
