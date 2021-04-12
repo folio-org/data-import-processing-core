@@ -27,6 +27,7 @@ import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
+  public static final String CORRELATION_ID_HEADER = "correlationId";
 
   private static final AtomicLong indexer = new AtomicLong();
 
@@ -47,7 +48,11 @@ public class KafkaEventPublisher implements EventPublisher {
       future.completeExceptionally(new IllegalArgumentException("DataImportEventPayload can't be null"));
       return future;
     }
+
     String eventType = eventPayload.getEventType();
+    String correlationId = eventPayload.getContext().get(CORRELATION_ID_HEADER) != null
+      ? eventPayload.getContext().get(CORRELATION_ID_HEADER) : UUID.randomUUID().toString();
+
     try {
       Event event = new Event()
         .withId(UUID.randomUUID().toString())
@@ -69,7 +74,8 @@ public class KafkaEventPublisher implements EventPublisher {
       record.addHeaders(List.of(
         KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()),
         KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()),
-        KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken())));
+        KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()),
+        KafkaHeader.header(CORRELATION_ID_HEADER, correlationId)));
 
       String producerName = eventType + "_Producer";
       KafkaProducer<String, String> producer =
@@ -78,16 +84,16 @@ public class KafkaEventPublisher implements EventPublisher {
       producer.write(record, war -> {
         producer.end(ear -> producer.close());
         if (war.succeeded()) {
-          LOGGER.info("Event with type {} was sent to the topic", eventType);
+          LOGGER.info("Event with type: {} and correlationId: {} was sent to the topic {}", eventType, correlationId, topicName);
           future.complete(event);
         } else {
           Throwable cause = war.cause();
-          LOGGER.error("{} write error for event {}:",  producerName, eventType, cause);
+          LOGGER.error("{} write error for event: {} with correlationId: {}",  producerName, eventType, correlationId, cause);
           future.completeExceptionally(cause);
         }
       });
     } catch (Exception e) {
-      LOGGER.error("Can not publish event {}", eventType, e);
+      LOGGER.error("Can not publish event: {} with correlationId: {}", eventType, correlationId, e);
       future.completeExceptionally(e);
     }
     return future;
