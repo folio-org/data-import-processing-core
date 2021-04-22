@@ -166,8 +166,7 @@ public class MarcRecordReader implements Reader {
   private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)
-          || value.equalsIgnoreCase(retrieveNameWithoutCode(entry.getValue()))) {
+        if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
           value = entry.getKey();
         }
       }
@@ -180,6 +179,8 @@ public class MarcRecordReader implements Reader {
       if (retrieveStringFromBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       } else if (retrieveStringWithBrackets(mappingParameter).equalsIgnoreCase(value)) {
+        return true;
+      } else if (retrieveNameWithoutCode(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       }
       return false;
@@ -196,10 +197,7 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveNameWithoutCode(String mappingParameter) {
-    if (mappingParameter.contains(FIRST_BRACKET) && mappingParameter.contains(SECOND_BRACKET)) {
       return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
-    }
-    return EMPTY;
   }
 
   private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
