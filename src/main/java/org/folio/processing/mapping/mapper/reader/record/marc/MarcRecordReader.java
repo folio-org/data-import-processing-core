@@ -196,7 +196,10 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveNameWithoutCode(String mappingParameter) {
-    return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
+    if (mappingParameter.contains(FIRST_BRACKET) && mappingParameter.contains(SECOND_BRACKET)) {
+      return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
+    }
+    return EMPTY;
   }
 
   private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
