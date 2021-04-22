@@ -166,7 +166,8 @@ public class MarcRecordReader implements Reader {
   private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
+        if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)
+          || value.equalsIgnoreCase(retrieveNameWithoutCode(entry.getValue()))) {
           value = entry.getKey();
         }
       }
@@ -192,6 +193,10 @@ public class MarcRecordReader implements Reader {
 
   private String retrieveStringWithBrackets(String mappingParameter) {
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
+  }
+
+  private String retrieveNameWithoutCode(String mappingParameter) {
+    return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
 
   private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
