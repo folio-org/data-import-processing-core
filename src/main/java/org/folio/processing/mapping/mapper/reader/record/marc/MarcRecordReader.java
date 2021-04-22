@@ -1,11 +1,13 @@
 package org.folio.processing.mapping.mapper.reader.record.marc;
 
 import io.vertx.core.json.JsonObject;
-
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.reader.Reader;
+import org.folio.processing.mapping.mapper.reader.utils.RequiredFields;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
@@ -22,8 +24,6 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.ControlFieldImpl;
 import org.marc4j.marc.impl.DataFieldImpl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,6 +47,7 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.folio.processing.value.Value.ValueType.LIST;
+import static org.folio.processing.value.Value.ValueType.MISSING;
 
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
@@ -234,7 +235,10 @@ public class MarcRecordReader implements Reader {
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
             : readSingleField(mappingRule, isRepeatableField);
 
-          if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {
+          if (value.getType() == MISSING && RequiredFields.isRequiredFieldName(mappingRule.getName())) {
+            repeatableObjectItems.remove(repeatableObjectItems.size() - 1);
+            break;
+          } else if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {
             ListValue listValue = (ListValue) value;
             ensureRepeatableObjectItemsAmount(repeatableObjectItems, listValue.getValue().size());
             fillInRepeatableObjectItemsWithValue(repeatableObjectItems, mappingRule.getPath(), listValue);
@@ -291,13 +295,15 @@ public class MarcRecordReader implements Reader {
   }
 
   private void fillInRepeatableFieldItemsWithMissedProperties(List<Map<String, Value>> repeatableFieldItems) {
-    Map<String, Value> firstRepeatableFieldItem = repeatableFieldItems.get(0);
-    Set<Map.Entry<String, Value>> propertiesToFillIn = firstRepeatableFieldItem.entrySet();
-    for (Map.Entry<String, Value> property : propertiesToFillIn) {
-      for (int i = 1; i < repeatableFieldItems.size(); i++) {
-        Map<String, Value> itemToFillProperty = repeatableFieldItems.get(i);
-        if (itemToFillProperty.get(property.getKey()) == null) {
-          itemToFillProperty.put(property.getKey(), property.getValue());
+    if (!repeatableFieldItems.isEmpty()) {
+      Map<String, Value> firstRepeatableFieldItem = repeatableFieldItems.get(0);
+      Set<Map.Entry<String, Value>> propertiesToFillIn = firstRepeatableFieldItem.entrySet();
+      for (Map.Entry<String, Value> property : propertiesToFillIn) {
+        for (int i = 1; i < repeatableFieldItems.size(); i++) {
+          Map<String, Value> itemToFillProperty = repeatableFieldItems.get(i);
+          if (itemToFillProperty.get(property.getKey()) == null) {
+            itemToFillProperty.put(property.getKey(), property.getValue());
+          }
         }
       }
     }
