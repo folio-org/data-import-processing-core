@@ -1,4 +1,4 @@
-## 2021-XX-XX v3.0.1-SNAPSHOT
+## 2021-04-22 v3.0.1
 * [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems [BUGFIX]
 * [MODSOURMAN-437](https://issues.folio.org/browse/MODSOURMAN-437) Add correlationId header to kafka record on publishing
 * [MODDICORE-128](https://issues.folio.org/browse/MODDICORE-128) Holdings fails to create due to Location code not being recognized.
