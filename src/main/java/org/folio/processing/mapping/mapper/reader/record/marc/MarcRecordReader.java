@@ -180,6 +180,8 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveStringWithBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
+      } else if (retrieveNameWithoutCode(mappingParameter).equalsIgnoreCase(value)) {
+        return true;
       }
       return false;
     }
@@ -192,6 +194,10 @@ public class MarcRecordReader implements Reader {
 
   private String retrieveStringWithBrackets(String mappingParameter) {
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
+  }
+
+  private String retrieveNameWithoutCode(String mappingParameter) {
+      return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
 
   private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {

@@ -102,7 +102,12 @@ public final class MappingManager {
     if (StringUtils.isNotEmpty(mappingParams)) {
       MappingParameters mappingParameters = new JsonObject(mappingParams).mapTo(MappingParameters.class);
       for (Location location : mappingParameters.getLocations()) {
-        locations.put(location.getId(), location.getCode());
+        StringBuilder locationValue = new StringBuilder()
+          .append(location.getName())
+          .append(" (")
+          .append(location.getCode())
+          .append(")");
+        locations.put(location.getId(), String.valueOf(locationValue));
       }
     }
     return locations;
