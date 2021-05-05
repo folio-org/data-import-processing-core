@@ -71,6 +71,7 @@ public class MarcRecordModifier {
   private MarcFactory marcFactory = MarcFactory.newInstance();
   private List<MarcFieldProtectionSetting> applicableProtectionSettings = new ArrayList<>();
   private DataField fieldToRemove = null;
+  private List<DataField> updatedFields = new ArrayList<>();
 
   public void initialize(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
     marcMappingOption = mappingProfile.getMappingDetails().getMarcMappingOption();
@@ -558,6 +559,7 @@ public class MarcRecordModifier {
         replaceDataField(dataField, dataField.getTag(), dataField.getIndicator1(), dataField.getIndicator2(), "*");
       }
     }
+    clearUnUpdatedDataFields();
   }
 
   private void replaceControlField(ControlField fieldReplacement) {
@@ -610,8 +612,20 @@ public class MarcRecordModifier {
 
 
     if (ifNewDataShouldBeAdded) {
+      updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  private void clearUnUpdatedDataFields() {
+    List<DataField> tmpFields = new ArrayList<>();
+    for (DataField dataField : marcRecordToChange.getDataFields()) {
+      if (!updatedFields.contains(dataField) && isNotProtected(dataField)) {
+        tmpFields.add(dataField);
+      }
+    }
+    updatedFields = new ArrayList<>();
+    marcRecordToChange.getDataFields().removeAll(tmpFields);
   }
 
   private boolean isNotProtected(ControlField field) {
