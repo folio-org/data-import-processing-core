@@ -1,4 +1,5 @@
 ## xxxx-xx-xx v3.1.0-SNAPSHOT
+* [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly [HOTFIX]
 
 ## 2021-04-22 v3.0.1
 * [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems

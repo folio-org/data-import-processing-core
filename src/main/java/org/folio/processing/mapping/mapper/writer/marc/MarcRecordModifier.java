@@ -2,8 +2,10 @@ package org.folio.processing.mapping.mapper.writer.marc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +70,8 @@ public class MarcRecordModifier {
   private org.marc4j.marc.Record marcRecordToChange;
   private MarcFactory marcFactory = MarcFactory.newInstance();
   private List<MarcFieldProtectionSetting> applicableProtectionSettings = new ArrayList<>();
+  private DataField fieldToRemove = null;
+  private List<DataField> updatedFields = new ArrayList<>();
 
   public void initialize(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
     marcMappingOption = mappingProfile.getMappingDetails().getMarcMappingOption();
@@ -555,6 +559,7 @@ public class MarcRecordModifier {
         replaceDataField(dataField, dataField.getTag(), dataField.getIndicator1(), dataField.getIndicator2(), "*");
       }
     }
+    clearUnUpdatedDataFields();
   }
 
   private void replaceControlField(ControlField fieldReplacement) {
@@ -579,32 +584,48 @@ public class MarcRecordModifier {
   }
 
   private void replaceDataField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
-    boolean fieldsUpdated = false;
-    boolean correspondingFieldExists = false;
+    boolean ifNewDataShouldBeAdded = true;
 
     List<DataField> dataFields = marcRecordToChange.getDataFields();
-    for (int i = 0; i < dataFields.size(); i++) {
-      DataField fieldToUpdate = dataFields.get(i);
+    List<DataField> tmpFields = new ArrayList<>();
 
-      if (fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
-        correspondingFieldExists = true;
-        if (isNotProtected(fieldToUpdate)) {
-          if (subfieldCode.equals(ANY_STRING)) {
-            dataFields.set(i, fieldReplacement);
+    if (fieldToRemove == null || !fieldMatches(fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+      fieldToRemove = fieldReplacement;
+      for (DataField fieldToUpdate : dataFields) {
+        if (fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+          if (isNotProtected(fieldToUpdate)) {
+            if (subfieldCode.equals(ANY_STRING)) {
+              tmpFields.add(fieldToUpdate);
+            } else {
+              String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
+              fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
+              ifNewDataShouldBeAdded = false;
+            }
           } else {
-            String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
-            fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
+            ifNewDataShouldBeAdded = false;
+            LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
           }
-          fieldsUpdated = true;
-        } else {
-          LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
         }
       }
+      dataFields.removeAll(tmpFields);
     }
 
-    if (!fieldsUpdated && !correspondingFieldExists) {
+
+    if (ifNewDataShouldBeAdded) {
+      updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  private void clearUnUpdatedDataFields() {
+    List<DataField> tmpFields = new ArrayList<>();
+    for (DataField dataField : marcRecordToChange.getDataFields()) {
+      if (!updatedFields.contains(dataField) && isNotProtected(dataField)) {
+        tmpFields.add(dataField);
+      }
+    }
+    updatedFields = new ArrayList<>();
+    marcRecordToChange.getDataFields().removeAll(tmpFields);
   }
 
   private boolean isNotProtected(ControlField field) {
@@ -626,8 +647,9 @@ public class MarcRecordModifier {
       .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getSubfield(setting.getSubfield().charAt(0)).getData()));
   }
 
-  protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
-                                                                                   List<MarcFieldProtectionSetting> protectionOverrides) {
+  protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings
+    (List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
+     List<MarcFieldProtectionSetting> protectionOverrides) {
     return marcFieldProtectionSettings.stream()
       .filter(originalSetting -> protectionOverrides.stream()
         .noneMatch(overriddenSetting -> overriddenSetting.getId().equals(originalSetting.getId())
