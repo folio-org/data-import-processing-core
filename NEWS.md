@@ -1,8 +1,11 @@
+## xxxx-xx-xx v3.1.0-SNAPSHOT
+* [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly [HOTFIX]
+
 ## 2021-04-22 v3.0.1
-* [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems [BUGFIX]
+* [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems
 * [MODSOURMAN-437](https://issues.folio.org/browse/MODSOURMAN-437) Add correlationId header to kafka record on publishing
-* [MODDICORE-128](https://issues.folio.org/browse/MODDICORE-128) Holdings fails to create due to Location code not being recognized.
-* [MODDICORE-135](https://issues.folio.org/browse/MODDICORE-135) Holdings fails to create due to Location code not being recognized[BUGFIX]
+* [MODDICORE-128](https://issues.folio.org/browse/MODDICORE-128) Holdings fails to create due to Location code not being recognized
+* [MODDICORE-135](https://issues.folio.org/browse/MODDICORE-135) Fix Holdings ctreation failure due to Location code
 * [MODDICORE-132](https://issues.folio.org/browse/MODDICORE-132) Holdings and item record are not created due to electronicAccess without uri
 
 ## 2021-03-12 v3.0.0
