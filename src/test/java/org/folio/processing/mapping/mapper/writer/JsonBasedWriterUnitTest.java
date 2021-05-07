@@ -659,7 +659,7 @@ public class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"item\": {\"temporaryLoanType\": {\"id\": \"8d0a5eca-25de-4391-81a9-236eeefdd20b\"}, \"hrid\": \"it00000000001\"}}");
+    context.put(EntityType.INSTANCE.value(), "{\"item\": {\"temporaryLoanType\": {\"id\": \"8d0a5eca-25de-4391-81a9-236eeefdd20b\", \"name\": \"Can circulate\"}, \"hrid\": \"it00000000001\"}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
@@ -284,6 +285,7 @@ public class JsonBasedWriter extends AbstractWriter {
     FieldPathIterator fieldPathIterator = new FieldPathIterator(fieldPath);
     JsonNode parentNode = entityNode;
     JsonNode currentNode = entityNode;
+    String rootNodeFieldName = StringUtils.substringBefore(fieldPath, ".");
     String currentNodeFieldName = null;
 
     while (fieldPathIterator.hasNext()) {
@@ -293,9 +295,9 @@ public class JsonBasedWriter extends AbstractWriter {
         currentNode = parentNode.findPath(pathItem.getName());
         currentNodeFieldName = pathItem.getName();
       } else if (currentNode.isObject()) {
-        ((ObjectNode) currentNode).remove(pathItem.getName());
-
-        if (currentNode.isEmpty()) {
+        if (Objects.equals(currentNodeFieldName, rootNodeFieldName)) {
+          ((ObjectNode) currentNode).remove(pathItem.getName());
+        } else {
           ((ObjectNode) parentNode).remove(currentNodeFieldName);
         }
       }
