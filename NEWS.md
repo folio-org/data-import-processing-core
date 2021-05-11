@@ -1,6 +1,3 @@
-## xxxx-xx-xx v3.1.1-SNAPSHOT
-* [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
-
 ## xxxx-xx-xx v3.1.0-SNAPSHOT
 * [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly [HOTFIX]
 
