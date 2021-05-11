@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.value.BooleanValue;
@@ -19,15 +21,13 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.apache.logging.log4j.util.Strings.EMPTY;
 import static org.folio.processing.value.Value.ValueType.REPEATABLE;
@@ -284,13 +284,22 @@ public class JsonBasedWriter extends AbstractWriter {
   private void removeFieldByFieldPath(String fieldPath) {
     FieldPathIterator fieldPathIterator = new FieldPathIterator(fieldPath);
     JsonNode parentNode = entityNode;
-    entityNode.findPath(fieldPath);
+    JsonNode currentNode = entityNode;
+    String rootNodeFieldName = StringUtils.substringBefore(fieldPath, ".");
+    String currentNodeFieldName = null;
+
     while (fieldPathIterator.hasNext()) {
       FieldPathIterator.PathItem pathItem = fieldPathIterator.next();
       if (fieldPathIterator.hasNext()) {
-        parentNode = parentNode.get(pathItem.getName());
-      } else {
-        ((ObjectNode) parentNode).remove(pathItem.getName());
+        parentNode = currentNode;
+        currentNode = parentNode.findPath(pathItem.getName());
+        currentNodeFieldName = pathItem.getName();
+      } else if (currentNode.isObject()) {
+        if (Objects.equals(currentNodeFieldName, rootNodeFieldName)) {
+          ((ObjectNode) currentNode).remove(pathItem.getName());
+        } else {
+          ((ObjectNode) parentNode).remove(currentNodeFieldName);
+        }
       }
     }
   }
