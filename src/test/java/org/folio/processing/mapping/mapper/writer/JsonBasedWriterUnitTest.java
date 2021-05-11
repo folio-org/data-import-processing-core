@@ -655,6 +655,40 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
+  public void shouldDeleteOnWrite_WhenObjectNodePathIsSpecified() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"item\": {\"temporaryLoanType\": {\"id\": \"8d0a5eca-25de-4391-81a9-236eeefdd20b\", \"name\": \"Can circulate\"}, \"hrid\": \"it00000000001\"}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    StringValue value = StringValue.of(StringUtils.EMPTY, true);
+    WRITER.write("item.temporaryLoanType.id", value);
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"item\":{\"hrid\":\"it00000000001\"}}", resultInstance);
+  }
+
+  @Test
+  public void shouldProcessRemoveOnWriteOption_WhenHasNoSpecifiedField() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{\"item\": {\"hrid\": \"it00000000001\"}}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    StringValue value = StringValue.of(StringUtils.EMPTY, true);
+    WRITER.write("item.temporaryLoanType.id", value);
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"item\":{\"hrid\":\"it00000000001\"}}", resultInstance);
+  }
+
+  @Test
   public void shouldWriteNestedRepeatableFieldValue() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
