@@ -607,6 +607,7 @@ public class MarcRecordModifier {
           }
         }
       }
+      tmpFields.removeAll(updatedFields);
       dataFields.removeAll(tmpFields);
     }
 
