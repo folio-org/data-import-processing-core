@@ -1,5 +1,6 @@
 ## xxxx-xx-xx v3.1.0-SNAPSHOT
 * [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly [HOTFIX]
+* [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
 
 ## xxxx-xx-xx v3.0.2-SNAPSHOT
 * [MODDICORE-137](https://issues.folio.org/browse/MODDICORE-137) Fixed ###REMOVE### expression logic, added support for fields represented as object in entity schema
