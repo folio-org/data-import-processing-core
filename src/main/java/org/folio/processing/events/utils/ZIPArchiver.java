@@ -4,10 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -31,7 +31,7 @@ public final class ZIPArchiver {
     gzip.write(source.getBytes());
     gzip.flush();
     gzip.close();
-    return Base64.encodeBase64String(baos.toByteArray());
+    return Base64.getEncoder().encodeToString(baos.toByteArray());
   }
 
   /**
@@ -43,7 +43,7 @@ public final class ZIPArchiver {
   public static String unzip(String zippedString)
     throws IOException {
     String result;
-    byte[] decoded = Base64.decodeBase64(zippedString);
+    byte[] decoded = Base64.getDecoder().decode(zippedString);
     try (GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(decoded))) {
       result = IOUtils.toString(gzip, StandardCharsets.UTF_8);
     }
