@@ -5,6 +5,9 @@
 ## xxxx-xx-xx v3.0.2-SNAPSHOT
 * [MODDICORE-137](https://issues.folio.org/browse/MODDICORE-137) Fixed ###REMOVE### expression logic, added support for fields represented as object in entity schema
 
+## xxxx-xx-xx v3.0.2-SNAPSHOT
+* [MODDICORE-137](https://issues.folio.org/browse/MODDICORE-137) Fixed ###REMOVE### expression logic, added support for fields represented as object in entity schema
+
 ## 2021-04-22 v3.0.1
 * [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems
 * [MODSOURMAN-437](https://issues.folio.org/browse/MODSOURMAN-437) Add correlationId header to kafka record on publishing
