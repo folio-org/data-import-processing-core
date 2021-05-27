@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
+import static org.folio.DataImportEventTypes.DI_SRS_MARC_AUTHORITY_RECORD_CREATED;
 import static org.folio.processing.events.EventManager.POST_PROCESSING_INDICATOR;
 import static org.folio.processing.events.EventManager.POST_PROCESSING_RESULT_EVENT_KEY;
 
@@ -65,9 +66,23 @@ public class EventProcessorImpl implements EventProcessor {
   }
 
   private void logEventProcessingTime(String eventType, long startTime, DataImportEventPayload eventPayload) {
-    long endTime = System.nanoTime();
-    String profileType = eventPayload.getCurrentNode().getContentType().toString();
-    String profileId = eventPayload.getCurrentNode().getProfileId();
-    LOG.debug("Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
+    try {
+      var endTime = System.nanoTime();
+      final String lastEvent = getLastEvent(eventPayload);
+      if (DI_SRS_MARC_AUTHORITY_RECORD_CREATED.value().equals(lastEvent)) {
+        LOG.debug("Event '{}' has been processed for {} ms", lastEvent, (endTime - startTime) / 1000000L);
+      } else {
+        String profileType = eventPayload.getCurrentNode().getContentType().toString();
+        String profileId = eventPayload.getCurrentNode().getProfileId();
+        LOG.debug("Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
+      }
+    } catch (Exception e) {
+      LOG.error("An Exception occurred {}", e.getMessage());
+    }
+  }
+
+  private String getLastEvent(DataImportEventPayload eventPayload) {
+    final var eventsChain = eventPayload.getEventsChain();
+    return eventsChain.get(eventsChain.size() - 1);
   }
 }
