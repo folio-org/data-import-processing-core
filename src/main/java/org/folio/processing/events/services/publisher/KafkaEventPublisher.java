@@ -11,6 +11,7 @@ import io.vertx.kafka.client.producer.KafkaProducerRecord;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
+import org.folio.processing.events.utils.EventProcessingUtil;
 import org.folio.processing.events.utils.ZIPArchiver;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
@@ -61,7 +62,7 @@ public class KafkaEventPublisher implements EventPublisher {
         .withEventMetadata(new EventMetadata()
           .withTenantId(eventPayload.getTenant())
           .withEventTTL(1)
-          .withPublishedBy(PubSubClientUtils.constructModuleName()));
+          .withPublishedBy(EventProcessingUtil.getModuleName()));
 
       String key = String.valueOf(indexer.incrementAndGet() % maxDistributionNum);
 
