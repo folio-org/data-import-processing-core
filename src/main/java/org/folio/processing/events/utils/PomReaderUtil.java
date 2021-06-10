@@ -12,13 +12,15 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
+/**
+ * Util for constructing and building module name + module id.
+ * It has similar implementation as in the rmb.
+ */
 public enum PomReaderUtil {
 
   INSTANCE;
@@ -27,8 +29,6 @@ public enum PomReaderUtil {
   private String version = null;
   private Properties props = null;
   private List<Dependency> dependencies = null;
-
-  private static final Logger LOGGER = LogManager.getLogger(PomReaderUtil.class);
 
   private PomReaderUtil() {
     init("pom.xml");
@@ -51,7 +51,6 @@ public enum PomReaderUtil {
         readIt(null, "META-INF/maven");
       }
     } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
       throw new IllegalArgumentException(e);
     }
   }
@@ -65,7 +64,6 @@ public enum PomReaderUtil {
   void readIt(String pomFilename, String directoryName) throws IOException, XmlPullParserException {
     Model model;
     if (pomFilename != null) {
-      LOGGER.info("Reading from: {}", pomFilename);
       //the runtime is the jar run when deploying during unit tests
       //the interface-extensions is the jar run when running build time tools,
       //like MDGenerator, ClientGenerator, etc..
@@ -74,7 +72,6 @@ public enum PomReaderUtil {
       var mavenReader = new MavenXpp3Reader();
       model = mavenReader.read(new FileReader(pomFile));
     } else { //this is runtime, the jar called via java -jar is the module's jar
-      LOGGER.info("Reading from jar");
       model = getModelFromJar(directoryName);
     }
     if (model == null) {
@@ -96,7 +93,6 @@ public enum PomReaderUtil {
     //the version is a placeholder to a value in the props section
     version = replacePlaceHolderWithValue(version);
 
-    LOGGER.info("module name: {}, version: {}", moduleName, version);
   }
 
   private Model getModelFromJar(String directoryName) throws IOException, XmlPullParserException {
