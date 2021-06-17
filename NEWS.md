@@ -1,3 +1,6 @@
+## 2021-06-17 v3.0.3
+* Update folio-kafka-wrapper dependency to v2.0.8
+
 ## 2021-05-21 v3.0.2
 * [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly
 * [MODDICORE-137](https://issues.folio.org/browse/MODDICORE-137) Fixed ###REMOVE### expression logic, added support for fields represented as object in entity schema
