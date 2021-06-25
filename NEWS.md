@@ -1,4 +1,7 @@
-## 20201-06-17 v3.1.1
+## 2021-06-25 v3.2.2
+* [MODDICORE-153](https://issues.folio.org/browse/MODDICORE-153) Change dataType to have have common type for MARC related subtypes
+
+## 2021-06-17 v3.1.1
 * Update folio-kafka-wrapper dependency to v2.3.1
 
 ## 2021-06-11 v3.1.0
