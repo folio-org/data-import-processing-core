@@ -1,4 +1,4 @@
-## 2021-06-25 v3.2.2
+## 2021-06-25 v3.1.2
 * [MODDICORE-153](https://issues.folio.org/browse/MODDICORE-153) Change dataType to have have common type for MARC related subtypes
 
 ## 2021-06-17 v3.1.1
