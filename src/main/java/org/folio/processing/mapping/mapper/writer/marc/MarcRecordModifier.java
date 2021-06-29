@@ -551,6 +551,7 @@ public class MarcRecordModifier {
   }
 
   private void replaceAllFields(List<VariableField> fieldReplacements) {
+    marcRecordToChange.setLeader(incomingMarcRecord.getLeader());
     for (VariableField field : fieldReplacements) {
       if (Verifier.isControlField(field.getTag())) {
         replaceControlField((ControlField) field);
