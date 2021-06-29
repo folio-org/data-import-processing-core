@@ -525,7 +525,6 @@ public class MarcRecordModifier {
   }
 
   public void processUpdateMappingOption(List<MarcMappingDetail> marcMappingRules) {
-    marcRecordToChange.setLeader(incomingMarcRecord.getLeader());
     if (marcMappingRules.isEmpty()) {
       replaceAllFields(incomingMarcRecord.getVariableFields());
       return;
@@ -552,6 +551,7 @@ public class MarcRecordModifier {
   }
 
   private void replaceAllFields(List<VariableField> fieldReplacements) {
+    marcRecordToChange.setLeader(incomingMarcRecord.getLeader());
     for (VariableField field : fieldReplacements) {
       if (Verifier.isControlField(field.getTag())) {
         replaceControlField((ControlField) field);
