@@ -1,3 +1,6 @@
+## 2021-XX-XX v3.2.0-SNAPSHOT
+* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS.
+
 ## 2021-06-11 v3.1.0
 * [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
 * [MODDICORE-150](https://issues.folio.org/browse/MODDICORE-150) Fix util methods to support modules with different rmb versions.
