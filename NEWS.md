@@ -1,3 +1,6 @@
+## 2021-XX-XX v3.1.3-SNAPSHOT
+* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS.
+
 ## 2021-06-25 v3.1.2
 * [MODDICORE-153](https://issues.folio.org/browse/MODDICORE-153) Change dataType to have have common type for MARC related subtypes
 
