@@ -1,5 +1,6 @@
-## 2021-XX-XX v3.0.4-SNAPSHOT
-* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS.
+## 2021-07-15 v3.0.4
+* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS
+* [MODDICORE-163](https://issues.folio.org/browse/MODDICORE-163) Use reliable apache commons fo mapping MARC records to Instance records
 
 ## 2021-06-17 v3.0.3
 * Update folio-kafka-wrapper dependency to v2.0.8
