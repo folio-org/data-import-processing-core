@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.codehaus.plexus.util.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class MarcToInstanceMapper implements RecordToInstanceMapper {
 
