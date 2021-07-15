@@ -6,10 +6,10 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
-import org.folio.DataImportEventTypes;
 import org.folio.JobProfile;
 import org.folio.MappingProfile;
 import org.folio.MatchProfile;
+import org.folio.processing.events.handlers.CreateAuthorityEventHandler;
 import org.folio.processing.events.handlers.CreateHoldingsRecordEventHandler;
 import org.folio.processing.events.handlers.CreateInstanceEventHandler;
 import org.folio.processing.events.handlers.CreateItemRecordEventHandler;
@@ -61,6 +61,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
     EventManager.registerEventHandler(new CreateItemRecordEventHandler());
+    EventManager.registerEventHandler(new CreateAuthorityEventHandler());
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
       .withTenant(TENANT_ID)
@@ -116,6 +117,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
     EventManager.registerEventHandler(new CreateItemRecordEventHandler());
+    EventManager.registerEventHandler(new CreateAuthorityEventHandler());
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)

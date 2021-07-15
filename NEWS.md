@@ -1,7 +1,12 @@
-## xxxx-xx-xx v3.1.0-SNAPSHOT
-* [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly [HOTFIX]
+## 2021-XX-XX v3.2.0-SNAPSHOT
+* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS.
 
-## xxxx-xx-xx v3.0.2-SNAPSHOT
+## 2021-06-11 v3.1.0
+* [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
+* [MODDICORE-150](https://issues.folio.org/browse/MODDICORE-150) Fix util methods to support modules with different rmb versions.
+
+## 2021-05-21 v3.0.2
+* [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly
 * [MODDICORE-137](https://issues.folio.org/browse/MODDICORE-137) Fixed ###REMOVE### expression logic, added support for fields represented as object in entity schema
 
 ## 2021-04-22 v3.0.1

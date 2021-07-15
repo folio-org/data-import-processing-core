@@ -16,7 +16,7 @@ public class TestMatchValueLoader implements MatchValueLoader {
     CompletableFuture<LoadResult> future = new CompletableFuture<>();
     LoadResult result = new LoadResult();
     result.setValue("Some value");
-    result.setEntityType("MARC");
+    result.setEntityType("MARC_BIB");
     future.complete(result);
     return future;
   }

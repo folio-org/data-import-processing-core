@@ -19,12 +19,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.codehaus.plexus.util.StringUtils.isNotEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class MarcToInstanceMapper implements RecordToInstanceMapper {
 
   private static final Pattern UUID_DUPLICATE_PATTERN = Pattern.compile("([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} ){2,}");
   private static final String BLANK_STRING = " ";
+  public static final String MARC = "MARC";
 
   @Override
   public Instance mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules) {
@@ -43,7 +44,7 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
 
   @Override
   public String getMapperFormat() {
-    return "MARC";
+    return MARC;
   }
 
   private Instance fixDuplicatedUUIDs(Instance instance) {
