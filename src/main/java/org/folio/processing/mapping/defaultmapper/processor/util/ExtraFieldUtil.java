@@ -2,9 +2,11 @@ package org.folio.processing.mapping.defaultmapper.processor.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang.BooleanUtils;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -53,17 +55,17 @@ public final class ExtraFieldUtil {
   private static void processReplacementBasedOn3Digits(DataField field, JsonObject subFieldMapping) {
     JsonArray fieldReplacementRules = subFieldMapping.getJsonArray(FIELD_REPLACEMENT_RULE_PROPERTY);
     Map<String, String> replacementRules = retrieveReplacementRules(fieldReplacementRules);
-    JsonArray subfields = subFieldMapping.getJsonArray(SUBFIELD_PROPERTY);
-    for (Object subfield : subfields) {
-      String data = field.getSubfield(String.valueOf(subfield).charAt(0)).getData();
-      if (data == null || data.length() < 3) {
-        return;
-      }
-      String targetField;
-      String first3Digits = data.substring(0, 3);
-      targetField = replacementRules.getOrDefault(first3Digits, first3Digits);
-      field.setTag(targetField);
-    }
+    subFieldMapping.getJsonArray(SUBFIELD_PROPERTY)
+      .stream()
+      .map(sf -> field.getSubfield(String.valueOf(sf).charAt(0)))
+      .filter(Objects::nonNull)
+      .map(sf -> sf.getData())
+      .filter(Objects::nonNull)
+      .filter(data -> data.length() >= 3)
+      .map(data -> data.substring(0, 3))
+      .forEach(data -> {
+        field.setTag(replacementRules.getOrDefault(data, data));
+      });
   }
 
   private static Map<String, String> retrieveReplacementRules(JsonArray fieldReplacementRules) {
