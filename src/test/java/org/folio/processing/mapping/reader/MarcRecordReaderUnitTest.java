@@ -46,6 +46,9 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD_WITH_049 = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"KU/CC/DI/M\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_AND_BRACKETS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"(KU/CC/DI/M)\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_AND_INVALID_BRACKETS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"K)U/CC(/D)I/M)\"},{\"z\":\"Testing data\"}]}}]}";
+  private final String RECORD_WITH_049_WITH_OLI_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli\"},{\"z\":\"Testing data\"}]}}]}";
+  private final String RECORD_WITH_049_WITH_OLI_ALS_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli,als\"},{\"z\":\"Testing data\"}]}}]}";
+  private final String RECORD_WITH_049_WITH_OL_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"ol\"},{\"z\":\"Testing data\"}]}}]}";
 
   @Test
   public void shouldRead_Strings_FromRules() throws IOException {
@@ -880,6 +883,110 @@ public class MarcRecordReaderUnitTest {
 
     assertEquals(ValueType.STRING, value.getType());
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", value.getValue());
+  }
+
+  @Test
+  public void shouldReadPermanentLocationFromTheLastBracketsEvenIfThereIsCommonValueInBracketsFromName() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (oli,ils)");
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli)(oli,als)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("758258bc-ecc1-41b8-abca-f7b610822ffd", value.getValue());
+  }
+
+  @Test
+  public void shouldReadPermanentLocationFromTheLastBracketsWithSpecificLocation() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_ALS_LOCATION))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (oli,ils)");
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli) (oli,als)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", value.getValue());
+  }
+
+  @Test
+  public void shouldReadPermanentLocationFromTheLastBracketsEvenIfThereMoreThan2() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss) (oli) (ollll) (olls)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (oli))");
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli)(oli,als)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("758258bc-ecc1-41b8-abca-f7b610822ffd", value.getValue());
+  }
+
+  @Test
+  public void shouldNotReadPermanentLocationEvenIfNameContainsBracketsButNotEquals() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OL_LOCATION))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
+    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (ol) (oli,ils)");
+    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli) (oli,als)");
+
+    Value value = reader.read(new MappingRule()
+      .withPath("holdings.permanentLocationId")
+      .withValue("049$a")
+      .withAcceptedValues(acceptedValues));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("ol", value.getValue());
   }
 
   @Test
