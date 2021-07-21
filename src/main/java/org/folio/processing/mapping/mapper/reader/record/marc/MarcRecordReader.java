@@ -177,9 +177,9 @@ public class MarcRecordReader implements Reader {
 
   private boolean equalsBasedOnBrackets(String mappingParameter, String value) {
     if (mappingParameter.contains(FIRST_BRACKET) && mappingParameter.contains(SECOND_BRACKET)) {
-      if (retrieveStringFromBrackets(mappingParameter).equalsIgnoreCase(value)) {
+      if (retrieveStringFromLastBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveStringWithBrackets(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       } else if (retrieveNameWithoutCode(mappingParameter).equalsIgnoreCase(value)) {
         return true;
@@ -189,11 +189,11 @@ public class MarcRecordReader implements Reader {
     return false;
   }
 
-  private String retrieveStringFromBrackets(String mappingParameter) {
-    return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET) + 1, mappingParameter.indexOf(SECOND_BRACKET));
+  private String retrieveStringFromLastBrackets(String mappingParameter) {
+    return mappingParameter.substring(mappingParameter.lastIndexOf(FIRST_BRACKET) + 1, mappingParameter.lastIndexOf(SECOND_BRACKET));
   }
 
-  private String retrieveStringWithBrackets(String mappingParameter) {
+  private String retrieveStringWithBracketsFromLastOne(String mappingParameter) {
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
