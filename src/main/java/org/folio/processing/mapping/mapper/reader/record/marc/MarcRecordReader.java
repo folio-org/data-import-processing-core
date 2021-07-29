@@ -1,11 +1,13 @@
 package org.folio.processing.mapping.mapper.reader.record.marc;
 
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.utils.RequiredFields;
 import org.folio.processing.value.BooleanValue;
@@ -31,6 +33,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -69,9 +75,15 @@ public class MarcRecordReader implements Reader {
   private static final String REMOVE_PLACEHOLDER = "###REMOVE###";
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
   public static final String[] DATE_FORMATS = new String[]{ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
+  private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
+  private static final String TIMEZONE_PROPERTY = "timezone";
+  private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
+  private static final String UTC_TIMEZONE = "UTC";
+
 
   private EntityType entityType;
   private Record marcRecord;
+  private DataImportEventPayload eventPayload;
 
   MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
@@ -81,6 +93,7 @@ public class MarcRecordReader implements Reader {
   public void initialize(DataImportEventPayload eventPayload) {
     try {
       if (eventPayload.getContext() != null && eventPayload.getContext().containsKey(entityType.value())) {
+        this.eventPayload = eventPayload;
         String stringRecord = eventPayload.getContext().get(entityType.value());
         org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
         if (sourceRecord != null
@@ -198,7 +211,7 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveNameWithoutCode(String mappingParameter) {
-      return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
+    return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
 
   private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
@@ -214,8 +227,33 @@ public class MarcRecordReader implements Reader {
   }
 
   private void processTodayExpression(StringBuilder sb) {
-    SimpleDateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
-    sb.append(df.format(new Date()));
+    String mappingParams = eventPayload.getContext().get(MAPPING_PARAMS);
+    if (StringUtils.isNotEmpty(mappingParams)) {
+      MappingParameters mappingParameters = new JsonObject(mappingParams).mapTo(MappingParameters.class);
+      String tenantConfiguration = mappingParameters.getTenantConfiguration();
+      String tenantTimezone;
+      if (ifTimezonePatameterIsValid(tenantConfiguration)) {
+        tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
+      } else {
+        tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
+      }
+      String currentDateTime = new SimpleDateFormat(DATE_TIME_FORMAT).format(new Date());
+      LocalDateTime ldt = LocalDateTime.parse(currentDateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+      ZoneId utcZoneId = ZoneId.of(UTC_TIMEZONE);
+      ZonedDateTime utcZonedDateTime = ldt.atZone(utcZoneId);
+
+      ZoneId currentZoneId = ZoneId.of(tenantTimezone);
+      ZonedDateTime currentZonedDateTime = utcZonedDateTime.withZoneSameInstant(currentZoneId); //convert time from UTC to tenant's timezone(if exists).
+
+      DateTimeFormatter format = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
+      sb.append(format.format(currentZonedDateTime));
+    }
+  }
+
+  private boolean ifTimezonePatameterIsValid(String tenantConfiguration) {
+    return tenantConfiguration == null || tenantConfiguration.isBlank()
+      || new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY) == null
+      || new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY).isBlank();
   }
 
   private Value readRepeatableField(MappingRule ruleExpression) {
