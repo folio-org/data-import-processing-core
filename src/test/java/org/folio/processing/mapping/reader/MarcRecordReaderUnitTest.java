@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.reader;
 
 import io.vertx.core.json.JsonObject;
+
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -20,6 +21,9 @@ import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class MarcRecordReaderUnitTest {
+
   private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"3\": \"test\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
   private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
   private final String RECORD_WITH_MULTIPLE_856 = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"856\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"u\": \"https://fod.infobase.com\" }, { \"z\": \"image\" } ] }}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"u\": \"https://cfvod.kaltura.com\" }, { \"z\": \"films collection\" }]} }]}";
@@ -49,6 +54,7 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD_WITH_049_WITH_OLI_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_WITH_OLI_ALS_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli,als\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_WITH_OL_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"ol\"},{\"z\":\"Testing data\"}]}}]}";
+  private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
 
   @Test
   public void shouldRead_Strings_FromRules() throws IOException {
@@ -612,6 +618,75 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldReadMARCFieldsFromRulesWithTodayExpressionWithoutTenantConfiguration() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    context.put(MAPPING_PARAMS, "{\"initialized\":\"true\"}");
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("902$a; else ###TODAY###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals(expectedDateString, value.getValue());
+  }
+
+  @Test
+  public void shouldReadMARCFieldsFromRulesWithTodayExpressionAndTenantConfigurationWithDayDifferenceLessThan2days() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    context.put(MAPPING_PARAMS, "{\"initialized\":true,\"tenantConfiguration\":\"{\\\"locale\\\":\\\"en-US\\\",\\\"timezone\\\":\\\"Australia/Tasmania\\\",\\\"currency\\\":\\\"USD\\\"}\"}");
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("902$a; else ###TODAY###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.STRING, value.getType());
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    LocalDate expectedDate = LocalDate.parse(expectedDateString, formatter);
+    LocalDate actualDate = LocalDate.parse(String.valueOf(value.getValue()), formatter);
+    Period age = Period.between(expectedDate, actualDate);
+    int days = age.getDays();
+    assertTrue(days < 2);
+  }
+
+  @Test
+  public void shouldNotReadMARCFieldsFromRulesWithTodayExpressionAndInvalidTimezone() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    context.put(MAPPING_PARAMS, "{\"initialized\":true,\"tenantConfiguration\":\"{\\\"locale\\\":\\\"en-US\\\",\\\"timezone\\\":\\\"asdas/sadas\\\",\\\"currency\\\":\\\"USD\\\"}\"}");
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload);
+    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+    Value value = reader.read(new MappingRule()
+      .withPath("")
+      .withValue("902$a; else ###TODAY###"));
+    assertNotNull(value);
+
+    assertEquals(ValueType.MISSING, value.getType());
+  }
+
+
+  @Test
   public void shouldRead_MARCFieldsArrayAndFormatToISOFormat() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -628,7 +703,7 @@ public class MarcRecordReaderUnitTest {
     // then
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
-    ((ListValue)value).getValue().forEach(s -> {
+    ((ListValue) value).getValue().forEach(s -> {
       assertEquals("2020-05-27", s);
     });
   }
@@ -754,7 +829,7 @@ public class MarcRecordReaderUnitTest {
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
-    assertTrue(((StringValue)(value)).shouldRemoveOnWrite());
+    assertTrue(((StringValue) (value)).shouldRemoveOnWrite());
   }
 
   @Test
@@ -776,7 +851,7 @@ public class MarcRecordReaderUnitTest {
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
-    .withAcceptedValues(acceptedValues));
+      .withAcceptedValues(acceptedValues));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -857,7 +932,7 @@ public class MarcRecordReaderUnitTest {
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
-    assertEquals( "KU/CC/DI/M", value.getValue());
+    assertEquals("KU/CC/DI/M", value.getValue());
   }
 
   @Test
@@ -1011,6 +1086,6 @@ public class MarcRecordReaderUnitTest {
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
-    assertEquals( "K)U/CC(/D)I/M)", value.getValue());
+    assertEquals("K)U/CC(/D)I/M)", value.getValue());
   }
 }

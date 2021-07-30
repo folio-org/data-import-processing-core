@@ -227,26 +227,34 @@ public class MarcRecordReader implements Reader {
   }
 
   private void processTodayExpression(StringBuilder sb) {
-    String mappingParams = eventPayload.getContext().get(MAPPING_PARAMS);
-    if (StringUtils.isNotEmpty(mappingParams)) {
-      MappingParameters mappingParameters = new JsonObject(mappingParams).mapTo(MappingParameters.class);
-      String tenantConfiguration = mappingParameters.getTenantConfiguration();
-      String tenantTimezone;
-      if (ifTimezonePatameterIsValid(tenantConfiguration)) {
-        tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
+    try {
+      String mappingParams = eventPayload.getContext().get(MAPPING_PARAMS);
+      if (StringUtils.isNotEmpty(mappingParams)) {
+        MappingParameters mappingParameters = new JsonObject(mappingParams).mapTo(MappingParameters.class);
+        String tenantConfiguration = mappingParameters.getTenantConfiguration();
+        String tenantTimezone;
+        if (ifTimezonePatameterIsValid(tenantConfiguration)) {
+          tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
+        } else {
+          tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
+        }
+        String currentDateTime = new SimpleDateFormat(DATE_TIME_FORMAT).format(new Date());
+        LocalDateTime ldt = LocalDateTime.parse(currentDateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
+        ZoneId utcZoneId = ZoneId.of(UTC_TIMEZONE);
+        ZonedDateTime utcZonedDateTime = ldt.atZone(utcZoneId);
+
+        ZoneId currentZoneId = ZoneId.of(tenantTimezone);
+        ZonedDateTime currentZonedDateTime = utcZonedDateTime.withZoneSameInstant(currentZoneId); //convert time from UTC to tenant's timezone(if exists).
+
+        DateTimeFormatter format = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
+        sb.append(format.format(currentZonedDateTime));
       } else {
-        tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
+        SimpleDateFormat df = new SimpleDateFormat(ISO_DATE_FORMAT);
+        sb.append(df.format(new Date()));
       }
-      String currentDateTime = new SimpleDateFormat(DATE_TIME_FORMAT).format(new Date());
-      LocalDateTime ldt = LocalDateTime.parse(currentDateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-      ZoneId utcZoneId = ZoneId.of(UTC_TIMEZONE);
-      ZonedDateTime utcZonedDateTime = ldt.atZone(utcZoneId);
-
-      ZoneId currentZoneId = ZoneId.of(tenantTimezone);
-      ZonedDateTime currentZonedDateTime = utcZonedDateTime.withZoneSameInstant(currentZoneId); //convert time from UTC to tenant's timezone(if exists).
-
-      DateTimeFormatter format = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
-      sb.append(format.format(currentZonedDateTime));
+    } catch (Exception e) {
+      LOGGER.error("Can not process ##TODAY## expression", e);
+      throw new IllegalArgumentException("Can not process ##TODAY## expression", e);
     }
   }
 
