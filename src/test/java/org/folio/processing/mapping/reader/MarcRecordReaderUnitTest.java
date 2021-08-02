@@ -644,7 +644,7 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
-    context.put(MAPPING_PARAMS, "{\"initialized\":true,\"tenantConfiguration\":\"{\\\"locale\\\":\\\"en-US\\\",\\\"timezone\\\":\\\"Australia/Tasmania\\\",\\\"currency\\\":\\\"USD\\\"}\"}");
+    context.put(MAPPING_PARAMS, "{\"initialized\":true,\"tenantConfiguration\":\"{\\\"locale\\\":\\\"en-US\\\",\\\"timezone\\\":\\\"Pacific/Kiritimati\\\",\\\"currency\\\":\\\"USD\\\"}\"}");
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload);

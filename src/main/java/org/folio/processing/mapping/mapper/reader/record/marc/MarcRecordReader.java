@@ -240,16 +240,10 @@ public class MarcRecordReader implements Reader {
         } else {
           tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
         }
-        String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        LocalDateTime currentLocalDateTime = LocalDateTime.parse(currentDateTime, DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
-        ZoneId utcZoneId = ZoneId.of(UTC_TIMEZONE);
-        ZonedDateTime utcZonedDateTime = currentLocalDateTime.atZone(utcZoneId);
-
-        ZoneId currentZoneId = ZoneId.of(tenantTimezone);
-        ZonedDateTime currentZonedDateTime = utcZonedDateTime.withZoneSameInstant(currentZoneId); //convert time from UTC to tenant's timezone(if exists).
-        sb.append(isoFormatter.format(currentZonedDateTime));
+        ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
+        sb.append(isoFormatter.format(utcZonedDateTime));
       } else {
-        sb.append(LocalDate.now().format(isoFormatter));
+        sb.append(LocalDate.now(ZoneId.of(UTC_TIMEZONE)).format(isoFormatter));
       }
     } catch (Exception e) {
       LOGGER.error("Can not process ##TODAY## expression", e);
