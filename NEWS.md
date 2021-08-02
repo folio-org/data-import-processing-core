@@ -1,6 +1,7 @@
 ## 2021-XX-XX v3.2.0-SNAPSHOT
 * [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS.
 * [MODDICORE-165](https://issues.folio.org/browse/MODDICORE-165)  Data import matches to first possible location in list  instead of exact location.
+* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly.
 
 ## 2021-06-11 v3.1.0
 * [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
