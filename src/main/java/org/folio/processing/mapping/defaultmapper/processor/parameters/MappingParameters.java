@@ -61,6 +61,7 @@ public class MappingParameters {
   private List<Loantype> loanTypes = new ArrayList<>();
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
   private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
+  private String tenantConfiguration;
 
 
   public MappingParameters withInitializedState(boolean initialized) {
@@ -332,6 +333,14 @@ public class MappingParameters {
     return marcFieldProtectionSettings;
   }
 
+  public String getTenantConfiguration() {
+    return tenantConfiguration;
+  }
+
+  public void setTenantConfiguration(String tenantConfiguration) {
+    this.tenantConfiguration = tenantConfiguration;
+  }
+
   public void setMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
     this.marcFieldProtectionSettings = marcFieldProtectionSettings;
   }
@@ -393,6 +402,11 @@ public class MappingParameters {
 
   public MappingParameters withItemNoteTypes(List<ItemNoteType> itemNoteTypes) {
     this.itemNoteTypes = new UnmodifiableList<>(itemNoteTypes);
+    return this;
+  }
+
+  public MappingParameters withTenantConfiguration(String tenantConfiguration) {
+    this.tenantConfiguration = tenantConfiguration;
     return this;
   }
 
