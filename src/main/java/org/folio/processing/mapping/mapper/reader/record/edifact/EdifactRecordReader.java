@@ -10,6 +10,8 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.Component;
 import org.folio.DataElement;
 import org.folio.DataImportEventPayload;
@@ -28,8 +30,6 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -367,7 +366,7 @@ public class EdifactRecordReader implements Reader {
             .map(dataElement -> dataElement.getComponents().get(0).getData())
             .collect(Collectors.toList());
 
-          if (dataElementsFilterValues.equals(currentDataElementsValues)) {
+          if (dataElementsFilterValues.equals(currentDataElementsValues) && segment.getDataElements().size() > targetDataElementIndex) {
             DataElement targetDataElement = segment.getDataElements().get(targetDataElementIndex);
             Pair<Integer, Integer> componentsRange = extractComponentPositionsRange(segmentQuery);
             componentsValues.add(getComponentsData(targetDataElement, componentsRange));
