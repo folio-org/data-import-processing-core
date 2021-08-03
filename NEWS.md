@@ -1,9 +1,11 @@
+## 2021-XX-XX v3.1.4-SNAPSHOT
+* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly.
+
 ## 2021-07-21 v3.1.3
 * [MODDICORE-162](https://issues.folio.org/browse/MODDICORE-162) Mode of issuance not updated when overlaying or updating record with existing SRS.
 * [MODDICORE-165](https://issues.folio.org/browse/MODDICORE-165) Data import matches to first possible location in list  instead of exact location.
 * [MODDICORE-164](https://issues.folio.org/browse/MODDICORE-164) Error in marc to instance mapping
 * [MODSOURMAN-527](https://issues.folio.org/browse/MODSOURMAN-527) Cannot import EDIFACT invoices
-* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly.
 
 ## 2021-06-25 v3.1.2
 * [MODDICORE-153](https://issues.folio.org/browse/MODDICORE-153) Change dataType to have have common type for MARC related subtypes
