@@ -1,5 +1,6 @@
-## 2021-XX-XX v3.1.4-SNAPSHOT
-* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly.
+## 2021-0804 v3.1.4
+* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly
+* Update folio-kafka-wrapper dependency to v2.3.3
 
 ## 2021-07-21 v3.1.3
 * [MODDICORE-162](https://issues.folio.org/browse/MODDICORE-162) Mode of issuance not updated when overlaying or updating record with existing SRS.
