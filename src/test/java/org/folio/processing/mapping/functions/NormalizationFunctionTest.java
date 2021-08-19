@@ -3,16 +3,7 @@ package org.folio.processing.mapping.functions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.AlternativeTitleType;
-import org.folio.ClassificationType;
-import org.folio.ContributorNameType;
-import org.folio.ContributorType;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.IdentifierType;
-import org.folio.InstanceFormat;
-import org.folio.InstanceNoteType;
-import org.folio.InstanceType;
-import org.folio.IssuanceMode;
+import org.folio.*;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Test;
@@ -21,10 +12,7 @@ import org.junit.runners.JUnit4;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.impl.DataFieldImpl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner.runFunction;
@@ -712,5 +700,136 @@ public class NormalizationFunctionTest {
     String actualIssuanceModeId = runFunction("set_issuance_mode_id", context);
     // then
     assertEquals(StringUtils.EMPTY, actualIssuanceModeId);
+  }
+
+  @Test
+  public void SET_HOLDINGS_TYPE_ID_shouldReturnValidId() {
+    // given
+    List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
+    String expectedSerialHoldingsId = holdingsMappingParameter.get(0).getId();
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withHoldingsTypes(holdingsMappingParameter));
+    context.setSubFieldValue("00379cy  a22001334  4500");
+    // when
+    String holdingsTypeId = runFunction("set_holdings_type_id", context);
+    // then
+    assertEquals(expectedSerialHoldingsId, holdingsTypeId);
+
+  }
+
+  @Test
+  public void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfUnknownChar() {
+    // given
+    List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withHoldingsTypes(holdingsMappingParameter));
+    context.setSubFieldValue("00379cu  a22001334  4500");
+    // when
+    String holdingsTypeId = runFunction("set_holdings_type_id", context);
+    // then
+    assertEquals(StringUtils.EMPTY, holdingsTypeId);
+  }
+
+  @Test
+  public void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfNotMappedChar() {
+    // given
+    List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withHoldingsTypes(holdingsMappingParameter));
+    context.setSubFieldValue("00379ca  a22001334  4500");
+    // when
+    String holdingsTypeId = runFunction("set_holdings_type_id", context);
+    // then
+    assertEquals(StringUtils.EMPTY, holdingsTypeId);
+
+  }
+
+  @Test
+  public void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfMappingParametersEmpty() {
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    context.setSubFieldValue("00379cy  a22001334  4500");
+    // when
+    String holdingsTypeId = runFunction("set_holdings_type_id", context);
+    // then
+    assertEquals(StringUtils.EMPTY, holdingsTypeId);
+  }
+
+  @Test
+  public void SET_CALL_NUMBER_TYPE_ID_shouldReturnValidValue() {
+    RuleExecutionContext context = new RuleExecutionContext();
+    List<CallNumberType> callNumberTypeMappingParameter = getCallNumberTypeMappingParameter();
+    String expectedLibraryOfCongressId = callNumberTypeMappingParameter.get(0).getId();
+    context.setMappingParameters(new MappingParameters().withCallNumberTypes(callNumberTypeMappingParameter));
+    context.setDataField(new DataFieldImpl("852", '0', '1'));
+    // when
+    String callNumberTypeId = runFunction("set_call_number_type_id", context);
+    // then
+    assertEquals(expectedLibraryOfCongressId, callNumberTypeId);
+  }
+
+  @Test
+  public void SET_CALL_NUMBER_TYPE_ID_shouldReturnEmptyStringWhenNoMappingParams() {
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    context.setDataField(new DataFieldImpl("852", '0', '1'));
+    // when
+    String callNumberTypeId = runFunction("set_call_number_type_id", context);
+    // then
+    assertEquals(StringUtils.EMPTY, callNumberTypeId);
+  }
+
+  private List<HoldingsType> getHoldingsMappingParameter() {
+
+    HoldingsType serial = new HoldingsType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Serial");
+    HoldingsType multiPartMonograph = new HoldingsType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Multi-part monograph");
+    HoldingsType monograph = new HoldingsType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Monograph");
+    HoldingsType physical = new HoldingsType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Physical");
+    HoldingsType electronic = new HoldingsType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Electronic");
+    return Arrays.asList(serial, multiPartMonograph, monograph, physical, electronic);
+  }
+  private List<CallNumberType> getCallNumberTypeMappingParameter() {
+
+    CallNumberType libraryOfCongressClassification = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Library of Congress classification");
+    CallNumberType deweyDecimalClassification = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Dewey Decimal classification");
+    CallNumberType nationalLibraryOfMedicineClassification = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("National Library of Medicine classification");
+    CallNumberType superintendentOfDocumentsClassification = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Superintendent of Documents classification");
+    CallNumberType shelvingControlNumber = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Shelving control number");
+    CallNumberType title = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Title");
+    CallNumberType shelvedSeparately = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Shelved separately");
+    CallNumberType sourceSpecifiedInSubfield_2 = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Source specified in subfield $2");
+    CallNumberType otherScheme = new CallNumberType()
+        .withId(UUID.randomUUID().toString())
+        .withName("Other scheme");
+
+    return Arrays.asList(libraryOfCongressClassification, deweyDecimalClassification,
+        nationalLibraryOfMedicineClassification, superintendentOfDocumentsClassification, shelvingControlNumber,
+        title, shelvedSeparately, sourceSpecifiedInSubfield_2, otherScheme);
   }
 }

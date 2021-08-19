@@ -4,18 +4,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import org.apache.commons.lang.StringUtils;
-import org.folio.AlternativeTitleType;
-import org.folio.ClassificationType;
-import org.folio.ContributorNameType;
-import org.folio.ContributorType;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.IdentifierType;
-import org.folio.InstanceFormat;
-import org.folio.InstanceNoteType;
-import org.folio.InstanceType;
-import org.folio.IssuanceMode;
+import org.folio.*;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.HoldingsTypeEnum;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
 import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
 import org.marc4j.marc.DataField;
@@ -23,6 +16,7 @@ import org.marc4j.marc.DataField;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
@@ -394,6 +388,63 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return "true";
       }
       return "false";
+    }
+  },
+
+  SET_HOLDINGS_TYPE_ID() {
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String subFieldValue = context.getSubFieldValue();
+      char sixthChar = subFieldValue.charAt(6);
+      List<HoldingsType> holdingsTypes = context.getMappingParameters().getHoldingsTypes();
+      if (holdingsTypes == null || holdingsTypes.isEmpty()) {
+        return StringUtils.EMPTY;
+      }
+      String marcHoldingsType = HoldingsTypeEnum.getNameByCharacter(sixthChar);
+      return findHoldingsTypeId(holdingsTypes, marcHoldingsType);
+    }
+
+    private String findHoldingsTypeId(List<HoldingsType> holdingsTypes, String marcHoldingsType) {
+      return holdingsTypes.stream()
+          .filter(holdingsType -> holdingsType.getName().equalsIgnoreCase(marcHoldingsType))
+          .findFirst()
+          .map(HoldingsType::getId)
+          .orElse(StringUtils.EMPTY);
+    }
+  },
+
+  SET_CALL_NUMBER_TYPE_ID() {
+    @Override
+    public String apply(RuleExecutionContext context) {
+      List<CallNumberType> callNumberTypes = context.getMappingParameters().getCallNumberTypes();
+      if (callNumberTypes == null || context.getDataField() == null) {
+        return StringUtils.EMPTY;
+      }
+      char ind1 = context.getDataField().getIndicator1();
+      String name = CallNumberTypesEnum.getNameByIndicator(ind1);
+      return callNumberTypes
+          .stream()
+          .filter(callNumberType -> callNumberType.getName().equalsIgnoreCase(name))
+          .findFirst()
+          .map(CallNumberType::getId)
+          .orElse(StringUtils.EMPTY);
+    }
+  },
+
+  SET_HOLDINGS_NOTE_TYPE_ID() {
+    private static final String NAME_PARAMETER = "name";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String noteTypeName = context.getRuleParameter().getString(NAME_PARAMETER);
+      List<HoldingsNoteType> holdingsNoteTypes = context.getMappingParameters().getHoldingsNoteTypes();
+      if (holdingsNoteTypes == null || noteTypeName == null) {
+        return STUB_FIELD_TYPE_ID;
+      }
+      return holdingsNoteTypes
+          .stream()
+          .filter(holdingsNoteType -> holdingsNoteType.getName().equalsIgnoreCase(noteTypeName))
+          .map(HoldingsNoteType::getId).collect(Collectors.joining());
     }
   };
 
