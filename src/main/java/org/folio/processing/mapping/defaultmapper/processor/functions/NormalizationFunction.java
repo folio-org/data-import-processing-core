@@ -1,25 +1,37 @@
 package org.folio.processing.mapping.defaultmapper.processor.functions;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.folio.*;
-import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.HoldingsTypeEnum;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
-import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
-import org.marc4j.marc.DataField;
+import static io.netty.util.internal.StringUtil.EMPTY_STRING;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static io.netty.util.internal.StringUtil.EMPTY_STRING;
-import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.StringUtils;
+import org.folio.AlternativeTitleType;
+import org.folio.CallNumberType;
+import org.folio.ClassificationType;
+import org.folio.ContributorNameType;
+import org.folio.ContributorType;
+import org.folio.ElectronicAccessRelationship;
+import org.folio.HoldingsNoteType;
+import org.folio.HoldingsType;
+import org.folio.IdentifierType;
+import org.folio.InstanceFormat;
+import org.folio.InstanceNoteType;
+import org.folio.InstanceType;
+import org.folio.IssuanceMode;
+import org.marc4j.marc.DataField;
+
+import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.HoldingsTypeEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
+import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
 
 /**
  * Enumeration to store normalization functions
