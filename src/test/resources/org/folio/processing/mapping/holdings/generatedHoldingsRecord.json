@@ -1,0 +1,41 @@
+{
+  "holdings" : {
+    "hrid" : "366832",
+    "formerIds" : [ "(CStRLIN)NYCX1604275S", "(NIC)notisABP6388", "366832", "(OCoLC)1604275" ],
+    "electronicAccess" : [ {
+      "relationshipId" : "d5180620-0a7b-40d3-9557-86f516f4852a",
+      "uri" : "uri",
+      "linkText" : "linkText",
+      "materialsSpecification" : "materialsSpecification",
+      "publicNote" : "publicNote"
+    } ],
+    "notes" : [ {
+      "note" : "note$a;note$u;note$3;note$5;note$6;note$8",
+      "staffOnly" : false,
+      "holdingsNoteTypeId" : "b3f445ea-e351-4af1-bbe7-4f1edeccdc8b"
+    }, {
+      "note" : "note$a;note$b;note$c;note$d;note$e;note$3;note$5;note$6;note$8",
+      "staffOnly" : false,
+      "holdingsNoteTypeId" : "38536d56-ee2c-45c0-bc69-75540491dc05"
+    }, {
+      "note" : "note$a;note$b;note$c;note$d;note$e;note$f;note$h;note$i;note$j;note$k;note$l;note$n;note$o;note$u;note$x;note$z;note$2;note$3;note$5;note$8",
+      "staffOnly" : false,
+      "holdingsNoteTypeId" : "85dc6d25-478c-465c-9ad3-d02adb826170"
+    } ],
+    "holdingsStatements" : [ {
+      "statement" : "holdingsStatements.statement",
+      "staffNote" : "holdingsStatements.staffNote",
+      "note" : "holdingsStatements.note"
+    } ],
+    "holdingsStatementsForSupplements" : [ {
+      "statement" : "holdingsStatementsForSupplements.statement",
+      "note" : "holdingsStatementsForSupplements.note",
+      "staffNote" : "holdingsStatementsForSupplements.staffNote"
+    } ],
+    "holdingsStatementsForIndexes" : [ {
+      "note" : "holdingsStatementsForIndexes.note",
+      "statement" : "holdingsStatementsForIndexes.statement",
+      "staffNote" : "holdingsStatementsForIndexes.staffNote"
+    } ]
+  }
+}

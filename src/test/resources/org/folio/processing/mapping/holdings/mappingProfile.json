@@ -1,0 +1,527 @@
+{
+  "id": "13cf7adf-c7a7-4c2e-838f-14d0ac36ec0a",
+  "name": "Default - Create holdings",
+  "deleted": false,
+  "metadata": {
+    "createdDate": "2021-08-05T14:00:00.000",
+    "updatedDate": "2021-08-05T15:00:00.462+0000",
+    "createdByUserId": "00000000-0000-0000-0000-000000000000",
+    "updatedByUserId": "00000000-0000-0000-0000-000000000000"
+  },
+  "userInfo": {
+    "lastName": "System",
+    "userName": "System",
+    "firstName": "System"
+  },
+  "description": "This field mapping profile is used with FOLIO''s default job profile for creating Inventory Holdings and SRS MARC Holdings records. It can be edited, duplicated, deleted, or linked to additional action profiles.",
+  "childProfiles": [],
+  "mappingDetails": {
+    "name": "holdings",
+    "recordType": "HOLDINGS",
+    "mappingFields": [
+      {
+        "name": "hrid",
+        "enabled": "true",
+        "path": "holdings.hrid",
+        "value": "001",
+        "subfields": []
+      },
+      {
+        "name": "holdingsTypeId",
+        "path": "holdings.holdingsTypeId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "discoverySuppress",
+        "path": "holdings.discoverySuppress",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "formerIds",
+        "enabled": "true",
+        "path": "holdings.formerIds[]",
+        "value": "",
+        "repeatableFieldAction": "EXTEND_EXISTING",
+        "subfields": [
+          {
+            "order": 0,
+            "path": "holdings.formerIds[]",
+            "fields": [
+              {
+                "name": "formerId",
+                "enabled": "true",
+                "path": "holdings.formerIds[]",
+                "value": "035$a",
+                "subfields": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "instanceId",
+        "path": "holdings.instanceId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "permanentLocationId",
+        "path": "holdings.permanentLocationId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "temporaryLocationId",
+        "path": "holdings.temporaryLocationId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "effectiveLocationId",
+        "path": "holdings.effectiveLocationId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "callNumberTypeId",
+        "path": "holdings.callNumberTypeId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "callNumberPrefix",
+        "enabled": "true",
+        "path": "holdings.callNumberPrefix",
+        "value": "852$k",
+        "subfields": []
+      },
+      {
+        "name": "callNumber",
+        "enabled": "true",
+        "path": "holdings.callNumber",
+        "value": "852$h \" \" 852$i",
+        "subfields": []
+      },
+      {
+        "name": "callNumberSuffix",
+        "enabled": "true",
+        "path": "holdings.callNumberSuffix",
+        "value": "852$m",
+        "subfields": []
+      },
+      {
+        "name": "shelvingTitle",
+        "path": "holdings.shelvingTitle",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "acquisitionFormat",
+        "path": "holdings.acquisitionFormat",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "acquisitionMethod",
+        "path": "holdings.acquisitionMethod",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "receiptStatus",
+        "path": "holdings.receiptStatus",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "illPolicyId",
+        "path": "holdings.illPolicyId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "retentionPolicy",
+        "path": "holdings.retentionPolicy",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "digitizationPolicy",
+        "path": "holdings.digitizationPolicy",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "copyNumber",
+        "enabled": "true",
+        "path": "holdings.copyNumber",
+        "value": "852$t",
+        "subfields": []
+      },
+      {
+        "name": "numberOfItems",
+        "path": "holdings.numberOfItems",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "electronicAccess",
+        "enabled": "true",
+        "path": "holdings.electronicAccess[]",
+        "value": "",
+        "repeatableFieldAction": "EXTEND_EXISTING",
+        "subfields": [
+          {
+            "order": 0,
+            "path": "holdings.electronicAccess[]",
+            "fields": [
+              {
+                "name": "relationshipId",
+                "enabled": "true",
+                "path": "holdings.electronicAccess[].relationshipId",
+                "value": "\"Test\"",
+                "subfields": [],
+                "acceptedValues": {
+                  "d5180620-0a7b-40d3-9557-86f516f4852a": "Test",
+                  "027de9e3-cc74-4434-a425-960c7b422fa9": "Version of resource",
+                  "5b85196f-4714-446c-b7e4-042385f76951": "Unrelated resource",
+                  "1a24d87d-d247-4a7e-8f66-da0726f42081": "No information provided",
+                  "44231dbd-1926-4241-b5dc-a6348b3bad8a": "Encompassed by boundwith",
+                  "9c165396-e2cf-478d-b5ae-d2ca497f8c7b": "Related resource",
+                  "bbd8166a-a3a2-40de-9a95-f097e8b517a3": "Resource",
+                  "eea2e2a7-0a19-44f4-8afd-23f76d45a11b": "Boundiwth encompasses"
+                }
+              },
+              {
+                "name": "uri",
+                "enabled": "true",
+                "path": "holdings.electronicAccess[].uri",
+                "value": "856$u",
+                "subfields": []
+              },
+              {
+                "name": "linkText",
+                "enabled": "true",
+                "path": "holdings.electronicAccess[].linkText",
+                "value": "856$y",
+                "subfields": []
+              },
+              {
+                "name": "materialsSpecification",
+                "enabled": "true",
+                "path": "holdings.electronicAccess[].materialsSpecification",
+                "value": "856$3",
+                "subfields": []
+              },
+              {
+                "name": "publicNote",
+                "enabled": "true",
+                "path": "holdings.electronicAccess[].publicNote",
+                "value": "856$z",
+                "subfields": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "notes",
+        "enabled": "true",
+        "path": "holdings.notes[]",
+        "value": "",
+        "repeatableFieldAction": "EXTEND_EXISTING",
+        "subfields": [
+          {
+            "order": 0,
+            "path": "holdings.notes[]",
+            "fields": [
+              {
+                "name": "noteType",
+                "enabled": "true",
+                "path": "holdings.notes[].holdingsNoteTypeId",
+                "value": "\"Provenance\"",
+                "subfields": [],
+                "acceptedValues": {
+                  "85dc6d25-478c-465c-9ad3-d02adb826170": "Action! note",
+                  "0a225ed5-380a-4feb-8f2b-2f08ae7300a6": "so many notes",
+                  "6b2e40ad-7752-416f-b684-06bfb01eee16": "Electronic bookplate",
+                  "0fe80632-2616-4626-a316-c3bba0e3eeb9": "receiving_note",
+                  "a9b2d02a-0760-48a0-942d-521f73ae1ac8": "Reproduction",
+                  "b3f445ea-e351-4af1-bbe7-4f1edeccdc8b": "Provenance",
+                  "38536d56-ee2c-45c0-bc69-75540491dc05": "Copy note",
+                  "7ca7dc63-c053-4aec-8272-c03aeda4840c": "latest_in",
+                  "97fbb130-beb4-4eec-84a6-c69768ca3eea": "Note",
+                  "f453de0f-8b54-4e99-9180-52932529e3a6": "Access restrictions"
+                }
+              },
+              {
+                "name": "note",
+                "enabled": "true",
+                "path": "holdings.notes[].note",
+                "value": "561$a \";\" 561$u \";\" 561$3 \";\" 561$5 \";\" 561$6 \";\" 561$8",
+                "subfields": []
+              },
+              {
+                "name": "staffOnly",
+                "enabled": "true",
+                "path": "holdings.notes[].staffOnly",
+                "booleanFieldAction": "ALL_FALSE",
+                "subfields": []
+              }
+            ]
+          },
+          {
+            "order": 1,
+            "path": "holdings.notes[]",
+            "fields": [
+              {
+                "name": "noteType",
+                "enabled": "true",
+                "path": "holdings.notes[].holdingsNoteTypeId",
+                "value": "\"Copy note\"",
+                "subfields": [],
+                "acceptedValues": {
+                  "85dc6d25-478c-465c-9ad3-d02adb826170": "Action! note",
+                  "0a225ed5-380a-4feb-8f2b-2f08ae7300a6": "so many notes",
+                  "6b2e40ad-7752-416f-b684-06bfb01eee16": "Electronic bookplate",
+                  "0fe80632-2616-4626-a316-c3bba0e3eeb9": "receiving_note",
+                  "a9b2d02a-0760-48a0-942d-521f73ae1ac8": "Reproduction",
+                  "b3f445ea-e351-4af1-bbe7-4f1edeccdc8b": "Provenance",
+                  "38536d56-ee2c-45c0-bc69-75540491dc05": "Copy note",
+                  "7ca7dc63-c053-4aec-8272-c03aeda4840c": "latest_in",
+                  "97fbb130-beb4-4eec-84a6-c69768ca3eea": "Note",
+                  "f453de0f-8b54-4e99-9180-52932529e3a6": "Access restrictions"
+                }
+              },
+              {
+                "name": "note",
+                "enabled": "true",
+                "path": "holdings.notes[].note",
+                "value": "562$a \";\" 562$b \";\" 562$c \";\" 562$d \";\" 562$e \";\" 562$3 \";\" 562$5 \";\" 562$6 \";\" 562$8",
+                "subfields": []
+              },
+              {
+                "name": "staffOnly",
+                "enabled": "true",
+                "path": "holdings.notes[].staffOnly",
+                "booleanFieldAction": "ALL_FALSE",
+                "subfields": []
+              }
+            ]
+          },
+          {
+            "order": 2,
+            "path": "holdings.notes[]",
+            "fields": [
+              {
+                "name": "noteType",
+                "enabled": "true",
+                "path": "holdings.notes[].holdingsNoteTypeId",
+                "value": "\"Action! note\"",
+                "subfields": [],
+                "acceptedValues": {
+                  "85dc6d25-478c-465c-9ad3-d02adb826170": "Action! note",
+                  "0a225ed5-380a-4feb-8f2b-2f08ae7300a6": "so many notes",
+                  "6b2e40ad-7752-416f-b684-06bfb01eee16": "Electronic bookplate",
+                  "0fe80632-2616-4626-a316-c3bba0e3eeb9": "receiving_note",
+                  "a9b2d02a-0760-48a0-942d-521f73ae1ac8": "Reproduction",
+                  "b3f445ea-e351-4af1-bbe7-4f1edeccdc8b": "Provenance",
+                  "38536d56-ee2c-45c0-bc69-75540491dc05": "Copy note",
+                  "7ca7dc63-c053-4aec-8272-c03aeda4840c": "latest_in",
+                  "97fbb130-beb4-4eec-84a6-c69768ca3eea": "Note",
+                  "f453de0f-8b54-4e99-9180-52932529e3a6": "Access restrictions"
+                }
+              },
+              {
+                "name": "note",
+                "enabled": "true",
+                "path": "holdings.notes[].note",
+                "value": "583$a \";\" 583$b \";\" 583$c \";\" 583$d \";\" 583$e \";\" 583$f \";\" 583$h \";\" 583$i \";\" 583$j \";\" 583$k \";\" 583$l \";\" 583$n \";\" 583$o \";\" 583$u \";\" 583$x \";\" 583$z \";\" 583$2 \";\" 583$3 \";\" 583$5 \";\" 583$8",
+                "subfields": []
+              },
+              {
+                "name": "staffOnly",
+                "enabled": "true",
+                "path": "holdings.notes[].staffOnly",
+                "booleanFieldAction": "ALL_FALSE",
+                "subfields": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "holdingsStatements",
+        "enabled": "true",
+        "path": "holdings.holdingsStatements[]",
+        "value": "",
+        "repeatableFieldAction": "EXTEND_EXISTING",
+        "subfields": [
+          {
+            "order": 0,
+            "path": "holdings.holdingsStatements[]",
+            "fields": [
+              {
+                "name": "statement",
+                "enabled": "true",
+                "path": "holdings.holdingsStatements[].statement",
+                "value": "866$a",
+                "subfields": []
+              },
+              {
+                "name": "note",
+                "enabled": "true",
+                "path": "holdings.holdingsStatements[].note",
+                "value": "866$z",
+                "subfields": []
+              },
+              {
+                "name": "staffNote",
+                "enabled": "true",
+                "path": "holdings.holdingsStatements[].staffNote",
+                "value": "866$x",
+                "subfields": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "holdingsStatementsForSupplements",
+        "enabled": "true",
+        "path": "holdings.holdingsStatementsForSupplements[]",
+        "value": "",
+        "repeatableFieldAction": "EXTEND_EXISTING",
+        "subfields": [
+          {
+            "order": 0,
+            "path": "holdings.holdingsStatementsForSupplements[]",
+            "fields": [
+              {
+                "name": "statement",
+                "enabled": "true",
+                "path": "holdings.holdingsStatementsForSupplements[].statement",
+                "value": "867$a",
+                "subfields": []
+              },
+              {
+                "name": "note",
+                "enabled": "true",
+                "path": "holdings.holdingsStatementsForSupplements[].note",
+                "value": "867$z",
+                "subfields": []
+              },
+              {
+                "name": "staffNote",
+                "enabled": "true",
+                "path": "holdings.holdingsStatementsForSupplements[].staffNote",
+                "value": "867$x",
+                "subfields": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "holdingsStatementsForIndexes",
+        "enabled": "true",
+        "path": "holdings.holdingsStatementsForIndexes[]",
+        "value": "",
+        "repeatableFieldAction": "EXTEND_EXISTING",
+        "subfields": [
+          {
+            "order": 0,
+            "path": "holdings.holdingsStatementsForIndexes[]",
+            "fields": [
+              {
+                "name": "statement",
+                "enabled": "true",
+                "path": "holdings.holdingsStatementsForIndexes[].statement",
+                "value": "868$a",
+                "subfields": []
+              },
+              {
+                "name": "note",
+                "enabled": "true",
+                "path": "holdings.holdingsStatementsForIndexes[].note",
+                "value": "868$z",
+                "subfields": []
+              },
+              {
+                "name": "staffNote",
+                "enabled": "true",
+                "path": "holdings.holdingsStatementsForIndexes[].staffNote",
+                "value": "868$x",
+                "subfields": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "receivingHistory",
+        "path": "holdings.receivingHistory",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "statisticalCodeIds",
+        "path": "holdings.statisticalCodeIds[]",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "holdingsItems",
+        "path": "holdings.holdingsItems[]",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "bareHoldingsItems",
+        "path": "holdings.bareHoldingsItems[]",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "holdingsInstance",
+        "path": "holdings.holdingsInstance",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      },
+      {
+        "name": "sourceId",
+        "path": "holdings.sourceId",
+        "value": "",
+        "enabled": "false",
+        "subfields": []
+      }
+    ],
+    "marcMappingDetails": []
+  },
+  "parentProfiles": [],
+  "existingRecordType": "HOLDINGS",
+  "incomingRecordType": "MARC_HOLDINGS",
+  "marcFieldProtectionSettings": []
+}
