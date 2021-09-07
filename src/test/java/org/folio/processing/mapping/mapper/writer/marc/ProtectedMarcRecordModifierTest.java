@@ -49,11 +49,12 @@ public class ProtectedMarcRecordModifierTest {
       .withField("001")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -70,7 +71,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -91,11 +92,12 @@ public class ProtectedMarcRecordModifierTest {
       .withField("001")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -113,7 +115,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -137,11 +139,12 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("*")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -161,7 +164,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -185,11 +188,12 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("*")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -207,7 +211,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -231,11 +235,12 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("a")
       .withData("electronic");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -253,7 +258,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -277,11 +282,13 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("*")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(mappingParameters));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -299,7 +306,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -323,11 +330,13 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("9")
       .withData("local");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
+    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(mappingParameters));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -345,7 +354,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -369,11 +378,12 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("*")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -391,7 +401,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -416,11 +426,12 @@ public class ProtectedMarcRecordModifierTest {
       .withSubfield("*")
       .withData("*");
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -438,7 +449,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
