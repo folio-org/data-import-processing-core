@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.manager;
 
 import org.folio.DataImportEventPayload;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
@@ -16,7 +17,7 @@ public class TestMarcBibliographicReader implements Reader {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventPayload) {
+  public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) {
     if (eventPayload.getContext().containsKey(MARC_BIBLIOGRAPHIC.value())) {
       this.marcBibliographicRecord = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     } else {

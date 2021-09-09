@@ -78,6 +78,7 @@ public final class MappingManager {
 
   /**
    * Fill Permanent and Temporary Locations in MappingProfile from {@code mappingParameters}
+   *
    * @param mappingProfile - MappingProfile
    * @param mappingParameters - mapping parameters
    */

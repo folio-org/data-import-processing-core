@@ -34,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JUnit4.class)
 public class ProtectedMarcRecordModifierTest {
 
-  public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
   private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test
@@ -45,12 +44,10 @@ public class ProtectedMarcRecordModifierTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
-    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
-      .withField("001")
-      .withData("*");
-
     MappingParameters mappingParameters = new MappingParameters()
-      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
+      .withMarcFieldProtectionSettings(List.of(new MarcFieldProtectionSetting()
+        .withField("001")
+        .withData("*")));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -288,7 +285,6 @@ public class ProtectedMarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(mappingParameters));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -336,7 +332,6 @@ public class ProtectedMarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
-    context.put(MAPPING_PARAMS_KEY, Json.encodePrettily(mappingParameters));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()

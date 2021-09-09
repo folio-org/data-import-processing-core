@@ -1,10 +1,12 @@
 package org.folio.processing.mapping.manager;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.DataImportEventPayload;
+import org.folio.Location;
 import org.folio.MappingProfile;
 import org.folio.processing.mapping.MappingManager;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
@@ -15,6 +17,7 @@ import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 import static java.util.Collections.singletonList;
@@ -26,6 +29,8 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class MappingManagerUnitTest {
+
+  private final MappingContext mappingContext = new MappingContext();
 
   @Before
   public void beforeTest() {
@@ -57,7 +62,7 @@ public class MappingManagerUnitTest {
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventPayload);
+    MappingManager.map(eventPayload, mappingContext);
     // then
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
@@ -81,23 +86,26 @@ public class MappingManagerUnitTest {
 
     String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
 
-    String locationId = UUID.randomUUID().toString();
-    String givenMappingParams = "{ \"locations\": [ { \"id\":\"" + locationId + "\", \"code\": \"CODE\" } ] }";
     String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
     context.put(INSTANCE.value(), givenInstance);
-    context.put("MAPPING_PARAMS", givenMappingParams);
     eventPayload.setContext(context);
     eventPayload.setCurrentNode(mappingProfileWrapper);
+
+    String locationId = UUID.randomUUID().toString();
+    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
+      .withLocations(List.of(new Location()
+        .withId(locationId)
+        .withCode("CODE"))));
 
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventPayload);
-    // then
+    MappingManager.map(eventPayload, mappingContext);
 
+    // then
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
 
@@ -110,7 +118,7 @@ public class MappingManagerUnitTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void shouldThrowException_ifNoReaderEligible() throws JsonProcessingException {
+  public void shouldThrowException_ifNoReaderEligible() {
     // given
     MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
@@ -121,12 +129,12 @@ public class MappingManagerUnitTest {
     eventPayload.setCurrentNode(mappingProfileWrapper);
     // when
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventPayload);
+    MappingManager.map(eventPayload, mappingContext);
     // then expect runtime exception
   }
 
   @Test(expected = RuntimeException.class)
-  public void shouldThrowException_ifNoWriterEligible() throws JsonProcessingException {
+  public void shouldThrowException_ifNoWriterEligible() {
     // given
     MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
@@ -137,7 +145,7 @@ public class MappingManagerUnitTest {
     eventPayload.setCurrentNode(mappingProfileWrapper);
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
-    MappingManager.map(eventPayload);
+    MappingManager.map(eventPayload, mappingContext);
     // then expect runtime exception
   }
 
@@ -164,7 +172,7 @@ public class MappingManagerUnitTest {
     // when
     MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
     MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventPayload);
+    MappingManager.map(eventPayload, mappingContext);
     // then
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
