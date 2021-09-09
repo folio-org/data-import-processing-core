@@ -1,7 +1,6 @@
 package org.folio.processing.mapping;
 
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.Location;
 import org.folio.MappingProfile;
@@ -9,6 +8,7 @@ import org.folio.processing.exceptions.MappingException;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
@@ -35,7 +35,6 @@ import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPP
 public final class MappingManager {
   private static final Logger LOGGER = LogManager.getLogger(MappingManager.class);
   private static final FactoryRegistry FACTORY_REGISTRY = new FactoryRegistry();
-  public static final String MAPPING_PARAMS = "MAPPING_PARAMS";
   public static final String PERMANENT_LOCATION_ID = "permanentLocationId";
   public static final String TEMPORARY_LOCATION_ID = "temporaryLocationId";
 
@@ -50,7 +49,7 @@ public final class MappingManager {
    * @see MappingProfile
    * @see Mapper
    */
-  public static DataImportEventPayload map(DataImportEventPayload eventPayload) {
+  public static DataImportEventPayload map(DataImportEventPayload eventPayload, MappingContext mappingContext) {
     try {
       if (eventPayload.getCurrentNode().getContentType() != MAPPING_PROFILE) {
         LOGGER.info("Current node is not of {} content type", MAPPING_PROFILE);
@@ -66,26 +65,25 @@ public final class MappingManager {
       }
 
       //Fix MODDICORE-128 (The system doesn't update acceptedLocation in mapping profiles after the location list is changed)
-      updateLocationsInMappingProfile(eventPayload, mappingProfile);
+      updateLocationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
 
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
       return new Mapper() {
-      }.map(reader, writer, mappingProfile, eventPayload);
+      }.map(reader, writer, mappingProfile, eventPayload, mappingContext);
     } catch (Exception e) {
       throw new MappingException(e);
     }
   }
 
   /**
-   * Fill Permanent and Temporary Locations in MappingProfile from context MAPPING_PARAMS
-   *
-   * @param eventPayload - DataImportEventPayload
+   * Fill Permanent and Temporary Locations in MappingProfile from {@code mappingParameters}
    * @param mappingProfile - MappingProfile
+   * @param mappingParameters - mapping parameters
    */
-  private static void updateLocationsInMappingProfile(DataImportEventPayload eventPayload, MappingProfile mappingProfile) {
+  private static void updateLocationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
     if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
-      HashMap<String, String> locations = getLocationsFromContextMappingParameters(eventPayload);
+      HashMap<String, String> locations = getLocationsFromMappingParameters(mappingParameters);
       if (!locations.isEmpty()) {
         for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
           if ((mappingRule.getName() != null) && (mappingRule.getName().equals(PERMANENT_LOCATION_ID) || mappingRule.getName().equals(TEMPORARY_LOCATION_ID))) {
@@ -96,19 +94,15 @@ public final class MappingManager {
     }
   }
 
-  private static HashMap<String, String> getLocationsFromContextMappingParameters(DataImportEventPayload eventPayload) {
+  private static HashMap<String, String> getLocationsFromMappingParameters(MappingParameters mappingParameters) {
     HashMap<String, String> locations = new HashMap<>();
-    String mappingParams = eventPayload.getContext().get(MAPPING_PARAMS);
-    if (StringUtils.isNotEmpty(mappingParams)) {
-      MappingParameters mappingParameters = new JsonObject(mappingParams).mapTo(MappingParameters.class);
-      for (Location location : mappingParameters.getLocations()) {
-        StringBuilder locationValue = new StringBuilder()
-          .append(location.getName())
-          .append(" (")
-          .append(location.getCode())
-          .append(")");
-        locations.put(location.getId(), String.valueOf(locationValue));
-      }
+    for (Location location : mappingParameters.getLocations()) {
+      StringBuilder locationValue = new StringBuilder()
+        .append(location.getName())
+        .append(" (")
+        .append(location.getCode())
+        .append(")");
+      locations.put(location.getId(), String.valueOf(locationValue));
     }
     return locations;
   }

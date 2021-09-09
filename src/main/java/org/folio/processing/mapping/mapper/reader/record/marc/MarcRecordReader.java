@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.utils.RequiredFields;
 import org.folio.processing.value.BooleanValue;
@@ -34,7 +35,6 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -84,17 +84,17 @@ public class MarcRecordReader implements Reader {
 
   private EntityType entityType;
   private Record marcRecord;
-  private DataImportEventPayload eventPayload;
+  private MappingParameters mappingParameters;
 
   MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventPayload) {
+  public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) {
     try {
       if (eventPayload.getContext() != null && eventPayload.getContext().containsKey(entityType.value())) {
-        this.eventPayload = eventPayload;
+        this.mappingParameters = mappingContext.getMappingParameters();
         String stringRecord = eventPayload.getContext().get(entityType.value());
         org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
         if (sourceRecord != null
@@ -230,10 +230,7 @@ public class MarcRecordReader implements Reader {
   private void processTodayExpression(StringBuilder sb) {
     try {
       DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
-      String mappingParams = eventPayload.getContext().get(MAPPING_PARAMS);
-      if (StringUtils.isNotEmpty(mappingParams)) {
-        MappingParameters mappingParameters = new JsonObject(mappingParams).mapTo(MappingParameters.class);
-        String tenantConfiguration = mappingParameters.getTenantConfiguration();
+        String tenantConfiguration = this.mappingParameters.getTenantConfiguration();
         String tenantTimezone;
         if (isTimezoneParameterIsEmpty(tenantConfiguration)) {
           tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
@@ -242,9 +239,6 @@ public class MarcRecordReader implements Reader {
         }
         ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
         sb.append(isoFormatter.format(utcZonedDateTime));
-      } else {
-        sb.append(LocalDate.now(ZoneId.of(UTC_TIMEZONE)).format(isoFormatter));
-      }
     } catch (Exception e) {
       LOGGER.error("Can not process ##TODAY## expression", e);
       throw new IllegalArgumentException("Can not process ##TODAY## expression", e);

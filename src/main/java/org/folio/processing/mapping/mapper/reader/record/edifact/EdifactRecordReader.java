@@ -20,6 +20,7 @@ import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.Segment;
 import org.folio.processing.exceptions.ReaderException;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
@@ -128,7 +129,7 @@ public class EdifactRecordReader implements Reader {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventPayload) throws IOException {
+  public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) throws IOException {
     if (eventPayload.getContext() != null && isNotBlank(eventPayload.getContext().get(entityType.value()))) {
       String recordAsString = eventPayload.getContext().get(entityType.value());
       Record sourceRecord = Json.decodeValue(recordAsString, Record.class);
