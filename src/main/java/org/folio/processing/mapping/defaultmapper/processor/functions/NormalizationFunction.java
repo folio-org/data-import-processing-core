@@ -26,6 +26,7 @@ import org.folio.InstanceType;
 import org.folio.IssuanceMode;
 import org.marc4j.marc.DataField;
 
+import org.folio.Location;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
@@ -410,7 +411,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       char sixthChar = subFieldValue.charAt(6);
       List<HoldingsType> holdingsTypes = context.getMappingParameters().getHoldingsTypes();
       if (holdingsTypes == null || holdingsTypes.isEmpty()) {
-        return StringUtils.EMPTY;
+        return STUB_FIELD_TYPE_ID;
       }
       String marcHoldingsType = HoldingsTypeEnum.getNameByCharacter(sixthChar);
       return findHoldingsTypeId(holdingsTypes, marcHoldingsType);
@@ -421,7 +422,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
           .filter(holdingsType -> holdingsType.getName().equalsIgnoreCase(marcHoldingsType))
           .findFirst()
           .map(HoldingsType::getId)
-          .orElse(StringUtils.EMPTY);
+          .orElse(STUB_FIELD_TYPE_ID);
     }
   },
 
@@ -440,6 +441,21 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
           .findFirst()
           .map(CallNumberType::getId)
           .orElse(StringUtils.EMPTY);
+    }
+  },
+
+  SET_PERMANENT_LOCATION_ID() {
+    @Override public String apply(RuleExecutionContext context) {
+      var locations = context.getMappingParameters().getLocations();
+      if (locations == null || context.getDataField() == null) {
+        return STUB_FIELD_TYPE_ID;
+      }
+      var subFieldValue = context.getSubFieldValue();
+      return locations.stream()
+        .filter(location -> location.getCode().equals(subFieldValue))
+        .findFirst()
+        .map(Location::getId)
+        .orElse(STUB_FIELD_TYPE_ID);
     }
   },
 

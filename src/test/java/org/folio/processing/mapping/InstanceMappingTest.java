@@ -5,8 +5,8 @@ import io.vertx.core.json.JsonObject;
 
 import org.folio.Instance;
 import org.folio.processing.TestUtil;
-import org.folio.processing.mapping.defaultmapper.RecordToInstanceMapper;
-import org.folio.processing.mapping.defaultmapper.RecordToInstanceMapperBuilder;
+import org.folio.processing.mapping.defaultmapper.RecordMapper;
+import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,9 +31,9 @@ import java.util.List;
 import java.util.Set;
 
 @RunWith(JUnit4.class)
-public class MappingTest {
+public class InstanceMappingTest {
 
-  private RecordToInstanceMapper mapper = RecordToInstanceMapperBuilder.buildMapper("MARC");
+  private final RecordMapper<Instance> mapper = RecordMapperBuilder.buildMapper("MARC_BIB");
 
   private static final String INSTANCES_PATH = "src/test/resources/org/folio/processing/mapping/instances.json";
   private static final String BIBS_PATH = "src/test/resources/org/folio/processing/mapping/CornellFOLIOExemplars_Bibs.mrc";
@@ -62,7 +62,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -86,7 +86,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -110,7 +110,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -132,7 +132,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -159,7 +159,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -183,7 +183,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -208,7 +208,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
@@ -239,7 +239,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       instance.getElectronicAccess()
         .forEach(electronicAccess ->
@@ -262,7 +262,7 @@ public class MappingTest {
       MarcJsonWriter writer = new MarcJsonWriter(os);
       Record record = reader.next();
       writer.write(record);
-      JsonObject marc = new JsonObject(new String(os.toByteArray()));
+      JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       array.add(JsonObject.mapFrom(instance));
       instance.getSucceedingTitles()
