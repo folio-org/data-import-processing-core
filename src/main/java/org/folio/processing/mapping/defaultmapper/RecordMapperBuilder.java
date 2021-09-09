@@ -6,11 +6,12 @@ import java.util.List;
 /**
  * Builder for creating a mapper object by type of the records
  */
-public final class RecordToInstanceMapperBuilder {
+public final class RecordMapperBuilder {
 
-  private static List<RecordToInstanceMapper> mappers = Collections.singletonList(new MarcToInstanceMapper());
+  @SuppressWarnings("rawtypes")
+  private static final List<RecordMapper> mappers = List.of(new MarcToInstanceMapper(), new MarcToHoldingsMapper());
 
-  private RecordToInstanceMapperBuilder() {
+  private RecordMapperBuilder() {
   }
 
   /**
@@ -19,7 +20,8 @@ public final class RecordToInstanceMapperBuilder {
    * @param format - record format
    * @return - RecordToInstanceMapper for the specified record format
    */
-  public static RecordToInstanceMapper buildMapper(String format) {
+  @SuppressWarnings("unchecked")
+  public static <T> RecordMapper<T> buildMapper(String format) {
     return mappers.stream()
       .filter(mapper -> mapper.getMapperFormat().equals(format))
       .findFirst()

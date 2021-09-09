@@ -21,17 +21,18 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-public class MarcToInstanceMapper implements RecordToInstanceMapper {
+public class MarcToInstanceMapper implements RecordMapper<Instance> {
 
   private static final Pattern UUID_DUPLICATE_PATTERN = Pattern.compile("([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} ){2,}");
   private static final String BLANK_STRING = " ";
-  public static final String MARC = "MARC";
+  private static final String MARC = "MARC";
+  private static final String MARC_FORMAT = "MARC_BIB";
 
   @Override
   public Instance mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules) {
-    Instance instance = new Processor().process(parsedRecord, mappingParameters, mappingRules);
+    Instance instance = new Processor<Instance>().process(parsedRecord, mappingParameters, mappingRules, Instance.class);
     if (instance != null) {
-      instance = fixDuplicatedUUIDs(instance.withSource(getMapperFormat()));
+      instance = fixDuplicatedUUIDs(instance.withSource(MARC));
       instance = fixDuplicatedLanguages(instance);
       instance = removeElectronicAccessEntriesWithNoUri(instance);
       instance = removePrecedingTitlesWithoutTitles(instance);
@@ -44,7 +45,7 @@ public class MarcToInstanceMapper implements RecordToInstanceMapper {
 
   @Override
   public String getMapperFormat() {
-    return MARC;
+    return MARC_FORMAT;
   }
 
   private Instance fixDuplicatedUUIDs(Instance instance) {

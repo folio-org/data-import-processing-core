@@ -1,25 +1,10 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.folio.Instance;
-import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
-import org.marc4j.MarcJsonReader;
-import org.marc4j.marc.ControlField;
-import org.marc4j.marc.DataField;
-import org.marc4j.marc.Leader;
-import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
-import org.marc4j.marc.impl.SubfieldImpl;
-
-import javax.script.ScriptException;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
@@ -37,12 +22,27 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
-import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
+import javax.script.ScriptException;
 
-public class Processor {
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.marc4j.MarcJsonReader;
+import org.marc4j.marc.ControlField;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Leader;
+import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
+import org.marc4j.marc.impl.SubfieldImpl;
+
+import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
+
+public class Processor<T> {
 
   private static final Logger LOGGER = LogManager.getLogger(Processor.class);
   private static final String VALUE = "value";
@@ -55,7 +55,7 @@ public class Processor {
   private Leader leader;
   private String separator; //separator between subfields with different delimiters
   private JsonArray delimiters;
-  private Instance instance;
+  private T entity;
   private JsonArray rules;
   private boolean createNewComplexObj;
   private boolean entityRequested;
@@ -66,28 +66,31 @@ public class Processor {
   private final Set<String> ignoredSubsequentFields = new HashSet<>();
   private final Set<Character> ignoredSubsequentSubfields = new HashSet<>();
 
-  public Instance process(JsonObject record, MappingParameters mappingParameters, JsonObject mappingRules) {
-    instance = null;
+  public T process(JsonObject record, MappingParameters mappingParameters, JsonObject mappingRules, Class<T> entityClass) {
+    entity = null;
     try {
       this.mappingRules = checkNotNull(mappingRules);
       final MarcJsonReader reader = new MarcJsonReader(new ByteArrayInputStream(record.toString().getBytes(UTF_8)));
       if (reader.hasNext()) {
         Record marcRecord = reader.next();
-        instance = processSingleEntry(marcRecord, mappingParameters);
+        entity = processSingleEntry(marcRecord, mappingParameters, entityClass);
       }
     } catch (Exception e) {
       LOGGER.error("Error mapping Marc record " + record.encode(), e.getCause());
     }
-    return instance;
+    return entity;
   }
 
-  private Instance processSingleEntry(Record record, MappingParameters mappingParameters) {
+  private T processSingleEntry(Record record, MappingParameters mappingParameters, Class<T> entityClass) {
     try {
-      instance = new Instance();
+      var entityClassConstructor = entityClass.getConstructor();
+      this.entity = entityClassConstructor.newInstance();
+      var setIdMethod = entityClass.getMethod("setId", String.class);
+      setIdMethod.invoke(entity, UUID.randomUUID().toString());
       leader = record.getLeader();
       processControlFieldSection(record.getControlFields().iterator(), mappingParameters);
       processDataFieldSection(record.getDataFields().iterator(), mappingParameters);
-      return instance;
+      return this.entity;
     } catch (Exception e) {
       LOGGER.error(e.getMessage(), e);
       return null;
@@ -178,7 +181,7 @@ public class Processor {
         ignoredSubsequentSubfields.clear();
         return;
       }
-      handleInstanceFields(fieldRule, arraysOfObjects, rememberComplexObj, ruleExecutionContext);
+      handleFields(fieldRule, arraysOfObjects, rememberComplexObj, ruleExecutionContext);
     }
 
     if (entityRequested) {
@@ -207,10 +210,10 @@ public class Processor {
     return true;
   }
 
-  private void handleInstanceFields(JsonObject jObj,
-                                    List<Object[]> arraysOfObjects,
-                                    Object[] rememberComplexObj,
-                                    RuleExecutionContext ruleExecutionContext)
+  private void handleFields(JsonObject jObj,
+                            List<Object[]> arraysOfObjects,
+                            Object[] rememberComplexObj,
+                            RuleExecutionContext ruleExecutionContext)
     throws ScriptException, IllegalAccessException, InstantiationException {
 
     //push into a set so that we can do a lookup for each subfield in the marc instead
@@ -252,7 +255,7 @@ public class Processor {
     String[] embeddedFields = jObj.getString("target").split("\\.");
 
 
-    if (!isMappingValid(instance, embeddedFields)) {
+    if (!isMappingValid(entity, embeddedFields)) {
       LOGGER.debug("bad mapping {}", jObj.encode());
       return;
     }
@@ -283,7 +286,6 @@ public class Processor {
         createNewComplexObj = false;
       }
     }
-    instance.setId(UUID.randomUUID().toString());
   }
 
   private boolean canHandleSubField(Subfield subfield, JsonObject mappingRuleEntry) {
@@ -429,9 +431,9 @@ public class Processor {
       String target = cfRule.getString("target");
       String[] embeddedFields = target.split("\\.");
 
-      if (isMappingValid(instance, embeddedFields)) {
-        Object val = getValue(instance, embeddedFields, data);
-        buildObject(instance, embeddedFields, createNewComplexObj, val, rememberComplexObj);
+      if (isMappingValid(entity, embeddedFields)) {
+        Object val = getValue(entity, embeddedFields, data);
+        buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
         createNewComplexObj = false;
       } else {
         LOGGER.debug("bad mapping {}", rules.encode());
@@ -589,9 +591,9 @@ public class Processor {
   private boolean createNewObject(String[] embeddedFields, String data, Object[] rememberComplexObj) {
 
     if (data.length() != 0) {
-      Object val = getValue(instance, embeddedFields, data);
+      Object val = getValue(entity, embeddedFields, data);
       try {
-        return buildObject(instance, embeddedFields, createNewComplexObj, val, rememberComplexObj);
+        return buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
       } catch (Exception e) {
         LOGGER.error(e.getMessage(), e);
         return false;
