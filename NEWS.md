@@ -3,6 +3,7 @@
 * [MODDICORE-165](https://issues.folio.org/browse/MODDICORE-165)  Data import matches to first possible location in list  instead of exact location.
 * [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly.
 * [MODDICORE-171](https://issues.folio.org/browse/MODDICORE-171)  Add default mapping profile for MARC holdings
+* [MODSOURCE-340](https://issues.folio.org/browse/MODSOURCE-340)  Lower log level for messages when no handler found
 
 ## 2021-06-11 v3.1.0
 * [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
