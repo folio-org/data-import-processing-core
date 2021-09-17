@@ -3880,9 +3880,9 @@
           "rules": [
             {
               "conditions": [
-              {
-                "type": "set_note_staff_only_via_indicator"
-              }
+                {
+                  "type": "set_note_staff_only_via_indicator"
+                }
               ]
             }
           ]
@@ -4559,30 +4559,30 @@
   ],
   "561": [
     {
-      "target": "notes.instanceNoteTypeId",
-      "description": "Instance note type id",
-      "subfield": [
-        "a",
-        "u",
-        "3",
-        "5"
-      ],
-      "applyRulesOnConcatenatedData": true,
-      "rules": [
+      "entity": [
         {
-          "conditions": [
+          "target": "notes.instanceNoteTypeId",
+          "description": "Instance note type id",
+          "subfield": [
+            "a",
+            "u",
+            "3",
+            "5"
+          ],
+          "applyRulesOnConcatenatedData": true,
+          "rules": [
             {
-              "type": "set_note_type_id",
-              "parameter": {
-                "name": "Ownership and Custodial History note"
-              }
+              "conditions": [
+                {
+                  "type": "set_note_type_id",
+                  "parameter": {
+                    "name": "Ownership and Custodial History note"
+                  }
+                }
+              ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "entity": [
+        },
         {
           "target": "notes.note",
           "description": "Ownership and Custodial History",
@@ -5732,6 +5732,10 @@
       "target": "subjects",
       "description": "Subject Headings",
       "subfield": [
+        "a",
+        "c",
+        "d",
+        "g",
         "x",
         "y",
         "z",
@@ -5751,6 +5755,10 @@
         {
           "value": "--",
           "subfields": [
+            "a",
+            "c",
+            "d",
+            "g",
             "x",
             "y",
             "z",
@@ -6675,8 +6683,8 @@
       "subfield": [
         "6"
       ],
-      "fieldReplacementBy3Digits" : true,
-      "fieldReplacementRule" : [
+      "fieldReplacementBy3Digits": true,
+      "fieldReplacementRule": [
         {
           "sourceDigits": "100",
           "targetField": "700"
