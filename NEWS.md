@@ -1,3 +1,6 @@
+## 2021-XX-XX v3.1.5
+* [MODDICORE-177](https://issues.folio.org/browse/MODDICORE-177)  EDIFACT invoices fail to import properly - Juniper env
+
 ## 2021-0804 v3.1.4
 * [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly
 * Update folio-kafka-wrapper dependency to v2.3.3
