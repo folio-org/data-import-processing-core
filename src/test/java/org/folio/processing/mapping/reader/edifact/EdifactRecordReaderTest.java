@@ -190,6 +190,23 @@ public class EdifactRecordReaderTest {
   }
 
   @Test
+  public void shouldReadAndReturnMissingValueIfMappingExpressionIsEmpty() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    dataImportEventPayload.setContext(context);
+
+    // when
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload, mappingContext);
+    Value value = reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap"));
+
+    // then
+    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+  }
+
+  @Test
   public void shouldReturnListValueWhenMappingRuleHasArrayFieldPath() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();

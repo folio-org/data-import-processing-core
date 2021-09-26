@@ -1,11 +1,28 @@
 package org.folio.processing.mapping.mapper.reader.record.edifact;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Iterables;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.jackson.DatabindCodec;
+import static java.lang.String.format;
+import static java.time.LocalTime.MIDNIGHT;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.folio.processing.value.Value.ValueType.MISSING;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,28 +49,13 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
 
-import static java.lang.String.format;
-import static java.time.LocalTime.MIDNIGHT;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.folio.processing.value.Value.ValueType.MISSING;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.jackson.DatabindCodec;
 
 /**
  * The {@link Reader} implementation for EDIFACT INVOICE.
@@ -96,7 +98,7 @@ public class EdifactRecordReader implements Reader {
    * @param segmentMappingExpression mapping expression with segment to extract data from
    * @return map with segments data and corresponding invoice lines numbers
    * @throws IllegalArgumentException if {@code parsedRecord} has no EDIFACT parsed content
-   *   and when invalid segment mapping expression is specified
+   *                                  and when invalid segment mapping expression is specified
    */
   public static Map<Integer, String> getInvoiceLinesSegmentsValues(ParsedRecord parsedRecord, String segmentMappingExpression) {
     if (parsedRecord == null || parsedRecord.getContent() == null) {
@@ -272,11 +274,12 @@ public class EdifactRecordReader implements Reader {
   private Value readSingleFieldValue(MappingRule mappingRule, List<Segment> invoiceLineSegments) {
     String readValue;
     String mappingExpression = mappingRule.getValue();
-    String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
 
     if (StringUtils.isBlank(mappingExpression)) {
       return MissingValue.getInstance();
     }
+
+    String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
 
     for (String expressionPart : expressionParts) {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {

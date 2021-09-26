@@ -44,7 +44,7 @@ public class EventProcessorImpl implements EventProcessor {
             }
           });
       } else {
-        LOG.warn("No suitable handler found for {} event type and current profile {}", eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType());
+        LOG.info("No suitable handler found for {} event type and current profile {}", eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType());
         future.completeExceptionally(new EventHandlerNotFoundException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
       }
     } catch (Exception e) {
