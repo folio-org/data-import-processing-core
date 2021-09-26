@@ -1,35 +1,14 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
-import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
-
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import javax.script.ScriptException;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.DataField;
@@ -38,9 +17,29 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.impl.SubfieldImpl;
 
-import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
+import javax.script.ScriptException;
+import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
 
 public class Processor<T> {
 
@@ -119,12 +118,28 @@ public class Processor<T> {
     if (mappingEntry == null) {
       return;
     }
+    Map<Integer, JsonObject> fieldMappingIndicatorsSet = getFieldMappingIndicators(mappingEntry);
 
     //there is a mapping associated with this marc field
     for (int i = 0; i < mappingEntry.size(); i++) {
       //there could be multiple mapping entries, specifically different mappings
       //per subfield in the marc field
       JsonObject subFieldMapping = mappingEntry.getJsonObject(i);
+      //check if mapping entry has indicators sets
+      if (Collections.frequency(fieldMappingIndicatorsSet.values(), null) != fieldMappingIndicatorsSet.size()) {
+        JsonObject subFieldMappingEntity = (JsonObject) ((JsonArray) (subFieldMapping.getValue("entity"))).getValue(0);
+        String dataFieldInd1 = String.valueOf(dataField.getIndicator1());
+        String dataFieldInd2 = String.valueOf(dataField.getIndicator2());
+        if (subFieldMappingEntity.containsKey("indicators")) {
+          if (!checkOnIndicatorsCorrespondence(subFieldMappingEntity, dataFieldInd1, dataFieldInd2)) {
+            continue;
+          }
+        } else {
+          if (chekOnIndicatorsAvailability(fieldMappingIndicatorsSet, dataFieldInd1, dataFieldInd2)) {
+            continue;
+          }
+        }
+      }
       if (canProcessSubFieldMapping(subFieldMapping, dataField)) {
         processSubFieldMapping(subFieldMapping, rememberComplexObj, ruleExecutionContext);
       }
@@ -143,6 +158,51 @@ public class Processor<T> {
       }
     }
     return true;
+  }
+
+  private Map<Integer, JsonObject> getFieldMappingIndicators(JsonArray mappingEntry) {
+    Map<Integer, JsonObject> indicatorsMap = new HashMap<>();
+    for (int i = 0; i < mappingEntry.size(); i++) {
+      JsonObject indicatorsSet = null;
+      if(mappingEntry.getJsonObject(i).containsKey("entity")){
+        JsonObject subFieldEntityMapping = (JsonObject) ((JsonArray) (mappingEntry.getJsonObject(i)
+          .getValue("entity"))).getValue(0);
+        if (subFieldEntityMapping.containsKey("indicators")) {
+          indicatorsSet = (JsonObject) subFieldEntityMapping.getValue("indicators");
+        }
+      }
+      indicatorsMap.put(i, indicatorsSet);
+    }
+    return indicatorsMap;
+  }
+
+  private boolean checkOnIndicatorsCorrespondence(JsonObject subFieldMappingEntity, String dataFieldInd1, String dataFieldInd2) {
+    JsonObject subFieldMappingIndicators = (JsonObject) subFieldMappingEntity.getValue("indicators");
+    String subFieldMappingInd1 = subFieldMappingIndicators.getString("ind1");
+    String subFieldMappingInd2 = subFieldMappingIndicators.getString("ind2");
+
+    return (Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
+      && subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals(dataFieldInd2))
+      || (subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals("*"))
+      || (subFieldMappingInd2.equals(dataFieldInd2) && subFieldMappingInd1.equals("*"));
+  }
+
+  private boolean chekOnIndicatorsAvailability(Map<Integer, JsonObject> fieldMappingIndicatorsSet, String dataFieldInd1, String dataFieldInd2) {
+    int isNeededToSkip = 0;
+    for (Map.Entry<Integer, JsonObject> entry : fieldMappingIndicatorsSet.entrySet()) {
+      String subFieldMappingInd1 = Objects.isNull(entry.getValue()) ? null : entry.getValue().getString("ind1");
+      String subFieldMappingInd2 = Objects.isNull(entry.getValue()) ? null : entry.getValue().getString("ind2");
+      if ((Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
+        && subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals(dataFieldInd2))
+        || (Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
+        && subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals("*"))
+        || (Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
+        && subFieldMappingInd2.equals(dataFieldInd2) && subFieldMappingInd1.equals("*"))
+      ) {
+        isNeededToSkip++;
+      }
+    }
+    return isNeededToSkip > 0;
   }
 
   private void processSubFieldMapping(JsonObject subFieldMapping, Object[] rememberComplexObj, RuleExecutionContext ruleExecutionContext)
