@@ -57,13 +57,13 @@ public final class EventManager {
    * @param eventPayload event payload
    * @return future with event payload after handling
    */
-  public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload) {
+  public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot) {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
-      setCurrentNodeIfRoot(eventPayload);
+      setCurrentNodeIfRoot(eventPayload, jobProfileSnapshot);
       eventProcessor.process(eventPayload)
         .whenComplete((processPayload, processThrowable) ->
-          publishEventIfNecessary(eventPayload, processThrowable)
+          publishEventIfNecessary(eventPayload, jobProfileSnapshot, processThrowable)
             .whenComplete((publishPayload, publishThrowable) -> {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
@@ -79,21 +79,21 @@ public final class EventManager {
     return future;
   }
 
-  private static void setCurrentNodeIfRoot(DataImportEventPayload eventPayload) {
+  private static void setCurrentNodeIfRoot(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot) {
     if (eventPayload.getCurrentNode() == null || eventPayload.getCurrentNode().getContentType() == JOB_PROFILE) {
-      List<ProfileSnapshotWrapper> jobProfileChildren = eventPayload.getProfileSnapshot().getChildSnapshotWrappers();
+      List<ProfileSnapshotWrapper> jobProfileChildren = jobProfileSnapshot.getChildSnapshotWrappers();
       if (isNotEmpty(jobProfileChildren)) {
         eventPayload.setCurrentNode(jobProfileChildren.get(0));
       }
-      eventPayload.setCurrentNodePath(new ArrayList<>(Collections.singletonList(eventPayload.getProfileSnapshot().getId())));
+      eventPayload.setCurrentNodePath(new ArrayList<>(Collections.singletonList(jobProfileSnapshot.getId())));
     }
   }
 
-  private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, Throwable processThrowable) {
+  private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot, Throwable processThrowable) {
     if (processThrowable instanceof EventHandlerNotFoundException) {
       return CompletableFuture.completedFuture(false);
     }
-    return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, processThrowable))
+    return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
       .thenApply(sentEvent -> true);
   }
 
@@ -102,7 +102,7 @@ public final class EventManager {
    *
    * @param eventPayload eventPayload
    */
-  private static DataImportEventPayload prepareEventPayload(DataImportEventPayload eventPayload, Throwable throwable) {
+  private static DataImportEventPayload prepareEventPayload(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot, Throwable throwable) {
     if (throwable != null) {
       return prepareErrorEventPayload(eventPayload, throwable);
     }
@@ -115,7 +115,7 @@ public final class EventManager {
     }
 
     eventPayload.getCurrentNodePath().add(eventPayload.getCurrentNode().getId());
-    Optional<ProfileSnapshotWrapper> next = findNext(eventPayload);
+    Optional<ProfileSnapshotWrapper> next = findNext(eventPayload, jobProfileSnapshot);
     if (next.isPresent()) {
       eventPayload.setCurrentNode(next.get());
     } else {
@@ -125,7 +125,7 @@ public final class EventManager {
     return eventPayload;
   }
 
-  private static Optional<ProfileSnapshotWrapper> findNext(DataImportEventPayload eventPayload) {
+  private static Optional<ProfileSnapshotWrapper> findNext(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot) {
     String eventType = eventPayload.getEventType();
     ProfileSnapshotWrapper currentNode = eventPayload.getCurrentNode();
     if (currentNode.getContentType() == MATCH_PROFILE) {
@@ -140,22 +140,22 @@ public final class EventManager {
       if (optionalNext.isPresent()) {
         return optionalNext;
       } else {
-        return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
+        return findParent(currentNode.getId(), jobProfileSnapshot)
           .flatMap(matchParent -> getNextChildProfile(currentNode, matchParent));
       }
     }
     if (currentNode.getContentType() == MAPPING_PROFILE) {
-      return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
-        .flatMap(mappingParent -> findParent(mappingParent.getId(), eventPayload.getProfileSnapshot())
+      return findParent(currentNode.getId(), jobProfileSnapshot)
+        .flatMap(mappingParent -> findParent(mappingParent.getId(), jobProfileSnapshot)
           .flatMap(actionParent -> getNextChildProfile(mappingParent, actionParent)
-            .or(() -> findParent(actionParent.getId(), eventPayload.getProfileSnapshot())
+            .or(() -> findParent(actionParent.getId(), jobProfileSnapshot)
               .flatMap(matchParent -> getNextChildProfile(actionParent, matchParent)))));
     }
     if (currentNode.getContentType() == ACTION_PROFILE) {
       if (isNotEmpty(currentNode.getChildSnapshotWrappers())) {
         return Optional.of(currentNode.getChildSnapshotWrappers().get(0));
       } else {
-        return findParent(currentNode.getId(), eventPayload.getProfileSnapshot())
+        return findParent(currentNode.getId(), jobProfileSnapshot)
           .flatMap(actionParent -> getNextChildProfile(currentNode, actionParent));
       }
     }

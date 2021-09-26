@@ -1,14 +1,13 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.Record;
@@ -30,8 +29,6 @@ import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.Verifier;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -56,7 +53,6 @@ public class MarcRecordModifier {
   private static final String PAYLOAD_HAS_NO_DATA_MSG = "Cannot initialize MarcRecordModifier - event payload context does not contain MARC_BIBLIOGRAPHIC data";
   public static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
 
-  public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
   public static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
   private static final char BLANK_SUBFIELD_CODE = ' ';
@@ -73,18 +69,18 @@ public class MarcRecordModifier {
   private DataField fieldToRemove = null;
   private List<DataField> updatedFields = new ArrayList<>();
 
-  public void initialize(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
+  public void initialize(DataImportEventPayload eventPayload, MappingParameters mappingParameters, MappingProfile mappingProfile) throws IOException {
     marcMappingOption = mappingProfile.getMappingDetails().getMarcMappingOption();
     switch (mappingProfile.getMappingDetails().getMarcMappingOption()) {
       case MODIFY:
-        initializeForModifyOption(eventPayload, mappingProfile);
+        initializeForModifyOption(eventPayload, mappingParameters, mappingProfile);
         break;
       case UPDATE:
-        initializeForUpdateOption(eventPayload, mappingProfile);
+        initializeForUpdateOption(eventPayload, mappingParameters, mappingProfile);
     }
   }
 
-  private void initializeForModifyOption(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
+  private void initializeForModifyOption(DataImportEventPayload eventPayload, MappingParameters mappingParameters, MappingProfile mappingProfile) throws IOException {
     if (isNull(eventPayload.getContext()) || isBlank(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()))) {
       LOGGER.error(PAYLOAD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
@@ -94,11 +90,11 @@ public class MarcRecordModifier {
     recordToChange = new ObjectMapper().readValue(recordAsString, Record.class);
     if (isRecordValid(recordToChange)) {
       this.marcRecordToChange = readParsedContentToObjectRepresentation(recordToChange);
-      initMappingParams(eventPayload, mappingProfile);
+      initMappingParams(mappingParameters, mappingProfile);
     }
   }
 
-  private void initializeForUpdateOption(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws IOException {
+  private void initializeForUpdateOption(DataImportEventPayload eventPayload, MappingParameters mappingParameters, MappingProfile mappingProfile) throws IOException {
     if (isNull(eventPayload.getContext())
       || isBlank(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()))
       || isBlank(eventPayload.getContext().get(MATCHED_MARC_BIB_KEY))) {
@@ -115,17 +111,14 @@ public class MarcRecordModifier {
     if (isRecordValid(incomingRecord) && isRecordValid(recordToChange)) {
       this.incomingMarcRecord = readParsedContentToObjectRepresentation(incomingRecord);
       this.marcRecordToChange = readParsedContentToObjectRepresentation(recordToChange);
-      initMappingParams(eventPayload, mappingProfile);
+      initMappingParams(mappingParameters, mappingProfile);
     }
   }
 
-  private void initMappingParams(DataImportEventPayload eventPayload, MappingProfile mappingProfile) throws JsonProcessingException {
-    if (isNotBlank(eventPayload.getContext().get(MAPPING_PARAMS_KEY))) {
-      MappingParameters mappingParameters = new ObjectMapper().readValue(eventPayload.getContext().get(MAPPING_PARAMS_KEY), MappingParameters.class);
-      List<MarcFieldProtectionSetting> fieldProtectionSettings = mappingParameters.getMarcFieldProtectionSettings();
-      List<MarcFieldProtectionSetting> overriddenProtectionSettings = mappingProfile.getMarcFieldProtectionSettings();
-      applicableProtectionSettings = filterOutOverriddenProtectionSettings(fieldProtectionSettings, overriddenProtectionSettings);
-    }
+  private void initMappingParams(MappingParameters mappingParameters, MappingProfile mappingProfile) {
+    List<MarcFieldProtectionSetting> fieldProtectionSettings = mappingParameters.getMarcFieldProtectionSettings();
+    List<MarcFieldProtectionSetting> overriddenProtectionSettings = mappingProfile.getMarcFieldProtectionSettings();
+    applicableProtectionSettings = filterOutOverriddenProtectionSettings(fieldProtectionSettings, overriddenProtectionSettings);
   }
 
   private boolean isRecordValid(Record record) {
