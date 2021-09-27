@@ -49,6 +49,7 @@ public final class MatchingManager {
       future = new Matcher() {
       }.match(reader, loader, eventPayload);
     } catch (Exception e) {
+      LOGGER.error("Failed to perform matching", e);
       future.completeExceptionally(new MatchingException(e));
     }
     return future;
