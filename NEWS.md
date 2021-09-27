@@ -5,6 +5,7 @@
 * [MODDICORE-171](https://issues.folio.org/browse/MODDICORE-171)  Add default mapping profile for MARC holdings
 * [MODSOURCE-340](https://issues.folio.org/browse/MODSOURCE-340)  Lower log level for messages when no handler found
 * [MODDICORE-177](https://issues.folio.org/browse/MODDICORE-177)  EDIFACT invoices fail to import properly - Juniper env
+* [MODDICORE-172](https://issues.folio.org/browse/MODDICORE-172)  Add MARC-Instance field mapping for New identifier types
 
 
 ## 2021-06-11 v3.1.0
