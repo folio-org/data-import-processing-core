@@ -4,6 +4,7 @@
 * [MODSOURCE-340](https://issues.folio.org/browse/MODSOURCE-340) Lower log level for messages when no handler found
 * [MODDICORE-177](https://issues.folio.org/browse/MODDICORE-177) Fix import of EDIFACT invoices
 * [MODSOURCE-286](https://issues.folio.org/browse/MODSOURCE-286) Remove zipping mechanism for data import event payloads and use cache for mapping params and job profile snapshot
+* [MODDICORE-172](https://issues.folio.org/browse/MODDICORE-172) Add MARC-Instance field mapping for New identifier types
 * Update folio-kafka-wrapper dependency to v2.4.0
 
 ## 2021-0804 v3.1.4
