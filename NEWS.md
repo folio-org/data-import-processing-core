@@ -1,25 +1,48 @@
-## 2021-XX-XX v3.2.0-SNAPSHOT
-* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS.
-* [MODDICORE-165](https://issues.folio.org/browse/MODDICORE-165) Data import matches to first possible location in list  instead of exact location.
-* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166) Near the day boundary data import calculates today incorrectly.
+## 2021-09-29 v3.2.0
 * [MODDICORE-171](https://issues.folio.org/browse/MODDICORE-171) Add default mapping profile for MARC holdings
+* [MODDICORE-175](https://issues.folio.org/browse/MODDICORE-175) Ad Mapper for Holdings
 * [MODSOURCE-340](https://issues.folio.org/browse/MODSOURCE-340) Lower log level for messages when no handler found
-* [MODDICORE-177](https://issues.folio.org/browse/MODDICORE-177) EDIFACT invoices fail to import properly - Juniper env
+* [MODDICORE-186](https://issues.folio.org/browse/MODDICORE-186) Fix import of EDIFACT invoices
 * [MODSOURCE-286](https://issues.folio.org/browse/MODSOURCE-286) Remove zipping mechanism for data import event payloads and use cache for mapping params and job profile snapshot
+* [MODDICORE-172](https://issues.folio.org/browse/MODDICORE-172) Add MARC-Instance field mapping for New identifier types
+* Update folio-kafka-wrapper dependency to v2.4.0
+
+## 2021-0804 v3.1.4
+* [MODDICORE-166](https://issues.folio.org/browse/MODDICORE-166)  Near the day boundary data import calculates today incorrectly
+* Update folio-kafka-wrapper dependency to v2.3.3
+
+## 2021-07-21 v3.1.3
+* [MODDICORE-162](https://issues.folio.org/browse/MODDICORE-162) Mode of issuance not updated when overlaying or updating record with existing SRS
+* [MODDICORE-165](https://issues.folio.org/browse/MODDICORE-165) Data import matches to first possible location in list  instead of exact location.
+* [MODDICORE-164](https://issues.folio.org/browse/MODDICORE-164) Error in marc to instance mapping
+* [MODSOURMAN-527](https://issues.folio.org/browse/MODSOURMAN-527) Cannot import EDIFACT invoices
+
+## 2021-06-25 v3.1.2
+* [MODDICORE-153](https://issues.folio.org/browse/MODDICORE-153) Change dataType to have common type for MARC related subtypes
+
+## 2021-06-17 v3.1.1
+* Update folio-kafka-wrapper dependency to v2.3.1
 
 ## 2021-06-11 v3.1.0
 * [MODSOURCE-279](https://issues.folio.org/browse/MODSOURCE-279) Store MARC Authority record
 * [MODDICORE-150](https://issues.folio.org/browse/MODDICORE-150) Fix util methods to support modules with different rmb versions.
+
+## 2021-07-15 v3.0.4
+* [MODDICORE-159](https://issues.folio.org/browse/MODDICORE-159) Mode of issuance not updated when overlaying or updating record with existing SRS
+* [MODDICORE-163](https://issues.folio.org/browse/MODDICORE-163) Use reliable apache commons fo mapping MARC records to Instance records
+
+## 2021-06-17 v3.0.3
+* Update folio-kafka-wrapper dependency to v2.0.8
 
 ## 2021-05-21 v3.0.2
 * [MODDICORE-136](https://issues.folio.org/browse/MODDICORE-136) OCLC record imported via Inventory and then updated via Inventory does not update properly
 * [MODDICORE-137](https://issues.folio.org/browse/MODDICORE-137) Fixed ###REMOVE### expression logic, added support for fields represented as object in entity schema
 
 ## 2021-04-22 v3.0.1
-* [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems
+* [MODDICORE-127](https://issues.folio.org/browse/MODDICORE-127) Location code-Loan type assignment problems [BUGFIX]
 * [MODSOURMAN-437](https://issues.folio.org/browse/MODSOURMAN-437) Add correlationId header to kafka record on publishing
-* [MODDICORE-128](https://issues.folio.org/browse/MODDICORE-128) Holdings fails to create due to Location code not being recognized
-* [MODDICORE-135](https://issues.folio.org/browse/MODDICORE-135) Fix Holdings ctreation failure due to Location code
+* [MODDICORE-128](https://issues.folio.org/browse/MODDICORE-128) Holdings fails to create due to Location code not being recognized.
+* [MODDICORE-135](https://issues.folio.org/browse/MODDICORE-135) Holdings fails to create due to Location code not being recognized[BUGFIX]
 * [MODDICORE-132](https://issues.folio.org/browse/MODDICORE-132) Holdings and item record are not created due to electronicAccess without uri
 
 ## 2021-03-12 v3.0.0
