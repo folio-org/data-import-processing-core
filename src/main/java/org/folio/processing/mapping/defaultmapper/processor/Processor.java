@@ -49,7 +49,7 @@ public class Processor<T> {
   private static final String INDICATORS = "indicators";
   private static final String IND_1 = "ind1";
   private static final String IND_2 = "ind2";
-  private static final String ASTERISK_SIGN = "*";
+  private static final String WILDCARD_INDICATOR = "*";
 
   private JsonObject mappingRules;
 
@@ -175,8 +175,8 @@ public class Processor<T> {
     String subFieldMappingInd1 = subFieldMapping.getJsonObject(INDICATORS).getString(IND_1);
     String subFieldMappingInd2 = subFieldMapping.getJsonObject(INDICATORS).getString(IND_2);
 
-    return (dataFieldInd1.equals(subFieldMappingInd1) || ASTERISK_SIGN.equals(subFieldMappingInd1))
-      && (dataFieldInd2.equals(subFieldMappingInd2) || ASTERISK_SIGN.equals(subFieldMappingInd2));
+    return (dataFieldInd1.equals(subFieldMappingInd1) || WILDCARD_INDICATOR.equals(subFieldMappingInd1))
+      && (dataFieldInd2.equals(subFieldMappingInd2) || WILDCARD_INDICATOR.equals(subFieldMappingInd2));
   }
 
   private boolean chekOnIndicatorsMatches(JsonArray fieldMappingIndicators, String dataFieldInd1, String dataFieldInd2) {
@@ -184,8 +184,8 @@ public class Processor<T> {
       JsonObject indicatorsObj = fieldMappingIndicators.getJsonObject(i);
       String subFieldMappingInd1 = indicatorsObj.getString(IND_1);
       String subFieldMappingInd2 = indicatorsObj.getString(IND_2);
-      if (dataFieldInd1.equals(subFieldMappingInd1) || ASTERISK_SIGN.equals(subFieldMappingInd1)
-        && (dataFieldInd2.equals(subFieldMappingInd2) || ASTERISK_SIGN.equals(subFieldMappingInd2))) {
+      if (dataFieldInd1.equals(subFieldMappingInd1) || WILDCARD_INDICATOR.equals(subFieldMappingInd1)
+        && (dataFieldInd2.equals(subFieldMappingInd2) || WILDCARD_INDICATOR.equals(subFieldMappingInd2))) {
         return true;
       }
     }
