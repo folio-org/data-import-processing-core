@@ -25,13 +25,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,6 +46,10 @@ public class Processor<T> {
   private static final String CUSTOM = "custom";
   private static final String TYPE = "type";
   private static final String REPEATABLE_SUBFIELD_SEPARATOR = StringUtils.SPACE;
+  private static final String INDICATORS = "indicators";
+  private static final String IND_1 = "ind1";
+  private static final String IND_2 = "ind2";
+  private static final String ASTERISK_SIGN = "*";
 
   private JsonObject mappingRules;
 
@@ -118,7 +120,7 @@ public class Processor<T> {
     if (mappingEntry == null) {
       return;
     }
-    Map<Integer, JsonObject> fieldMappingIndicatorsSet = getFieldMappingIndicators(mappingEntry);
+    JsonArray fieldMappingIndicators = getFieldMappingIndicators(mappingEntry);
 
     //there is a mapping associated with this marc field
     for (int i = 0; i < mappingEntry.size(); i++) {
@@ -126,16 +128,15 @@ public class Processor<T> {
       //per subfield in the marc field
       JsonObject subFieldMapping = mappingEntry.getJsonObject(i);
       //check if mapping entry has indicators sets
-      if (Collections.frequency(fieldMappingIndicatorsSet.values(), null) != fieldMappingIndicatorsSet.size()) {
-        JsonObject subFieldMappingEntity = (JsonObject) ((JsonArray) (subFieldMapping.getValue("entity"))).getValue(0);
+      if (!fieldMappingIndicators.isEmpty()) {
         String dataFieldInd1 = String.valueOf(dataField.getIndicator1());
         String dataFieldInd2 = String.valueOf(dataField.getIndicator2());
-        if (subFieldMappingEntity.containsKey("indicators")) {
-          if (!checkOnIndicatorsCorrespondence(subFieldMappingEntity, dataFieldInd1, dataFieldInd2)) {
+        if (subFieldMapping.containsKey(INDICATORS)) {
+          if (!checkOnIndicatorsCorrespondence(subFieldMapping, dataFieldInd1, dataFieldInd2)) {
             continue;
           }
         } else {
-          if (chekOnIndicatorsAvailability(fieldMappingIndicatorsSet, dataFieldInd1, dataFieldInd2)) {
+          if (chekOnIndicatorsMatches(fieldMappingIndicators, dataFieldInd1, dataFieldInd2)) {
             continue;
           }
         }
@@ -160,49 +161,35 @@ public class Processor<T> {
     return true;
   }
 
-  private Map<Integer, JsonObject> getFieldMappingIndicators(JsonArray mappingEntry) {
-    Map<Integer, JsonObject> indicatorsMap = new HashMap<>();
+  private JsonArray getFieldMappingIndicators(JsonArray mappingEntry) {
+    JsonArray indicatorsArray = new JsonArray();
     for (int i = 0; i < mappingEntry.size(); i++) {
-      JsonObject indicatorsSet = null;
-      if(mappingEntry.getJsonObject(i).containsKey("entity")){
-        JsonObject subFieldEntityMapping = (JsonObject) ((JsonArray) (mappingEntry.getJsonObject(i)
-          .getValue("entity"))).getValue(0);
-        if (subFieldEntityMapping.containsKey("indicators")) {
-          indicatorsSet = (JsonObject) subFieldEntityMapping.getValue("indicators");
-        }
-      }
-      indicatorsMap.put(i, indicatorsSet);
-    }
-    return indicatorsMap;
-  }
-
-  private boolean checkOnIndicatorsCorrespondence(JsonObject subFieldMappingEntity, String dataFieldInd1, String dataFieldInd2) {
-    JsonObject subFieldMappingIndicators = (JsonObject) subFieldMappingEntity.getValue("indicators");
-    String subFieldMappingInd1 = subFieldMappingIndicators.getString("ind1");
-    String subFieldMappingInd2 = subFieldMappingIndicators.getString("ind2");
-
-    return (Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
-      && subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals(dataFieldInd2))
-      || (subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals("*"))
-      || (subFieldMappingInd2.equals(dataFieldInd2) && subFieldMappingInd1.equals("*"));
-  }
-
-  private boolean chekOnIndicatorsAvailability(Map<Integer, JsonObject> fieldMappingIndicatorsSet, String dataFieldInd1, String dataFieldInd2) {
-    int isNeededToSkip = 0;
-    for (Map.Entry<Integer, JsonObject> entry : fieldMappingIndicatorsSet.entrySet()) {
-      String subFieldMappingInd1 = Objects.isNull(entry.getValue()) ? null : entry.getValue().getString("ind1");
-      String subFieldMappingInd2 = Objects.isNull(entry.getValue()) ? null : entry.getValue().getString("ind2");
-      if ((Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
-        && subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals(dataFieldInd2))
-        || (Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
-        && subFieldMappingInd1.equals(dataFieldInd1) && subFieldMappingInd2.equals("*"))
-        || (Objects.nonNull(subFieldMappingInd1) && Objects.nonNull(subFieldMappingInd2)
-        && subFieldMappingInd2.equals(dataFieldInd2) && subFieldMappingInd1.equals("*"))
-      ) {
-        isNeededToSkip++;
+      if (mappingEntry.getJsonObject(i).containsKey(INDICATORS)) {
+        indicatorsArray.add(mappingEntry.getJsonObject(i).getJsonObject(INDICATORS));
       }
     }
-    return isNeededToSkip > 0;
+    return indicatorsArray;
+  }
+
+  private boolean checkOnIndicatorsCorrespondence(JsonObject subFieldMapping, String dataFieldInd1, String dataFieldInd2) {
+    String subFieldMappingInd1 = subFieldMapping.getJsonObject(INDICATORS).getString(IND_1);
+    String subFieldMappingInd2 = subFieldMapping.getJsonObject(INDICATORS).getString(IND_2);
+
+    return (dataFieldInd1.equals(subFieldMappingInd1) || ASTERISK_SIGN.equals(subFieldMappingInd1))
+      && (dataFieldInd2.equals(subFieldMappingInd2) || ASTERISK_SIGN.equals(subFieldMappingInd2));
+  }
+
+  private boolean chekOnIndicatorsMatches(JsonArray fieldMappingIndicators, String dataFieldInd1, String dataFieldInd2) {
+    for (int i=0; i < fieldMappingIndicators.size(); i++) {
+      JsonObject indicatorsObj = fieldMappingIndicators.getJsonObject(i);
+      String subFieldMappingInd1 = indicatorsObj.getString(IND_1);
+      String subFieldMappingInd2 = indicatorsObj.getString(IND_2);
+      if (dataFieldInd1.equals(subFieldMappingInd1) || ASTERISK_SIGN.equals(subFieldMappingInd1)
+        && (dataFieldInd2.equals(subFieldMappingInd2) || ASTERISK_SIGN.equals(subFieldMappingInd2))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void processSubFieldMapping(JsonObject subFieldMapping, Object[] rememberComplexObj, RuleExecutionContext ruleExecutionContext)

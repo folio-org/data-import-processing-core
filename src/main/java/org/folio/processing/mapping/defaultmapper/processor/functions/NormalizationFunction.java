@@ -134,16 +134,22 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
   },
 
   CONCAT_SUBFIELDS_BY_NAME() {
+    private static final String SUBFIELDS_TO_CONCAT = "subfieldsToConcat";
+
     @Override
     public String apply(RuleExecutionContext context) {
       StringBuilder subfieldValue = new StringBuilder(context.getSubFieldValue());
       DataField dataField = context.getDataField();
-      JsonArray subFields = (JsonArray) context.getRuleParameter().getValue("subfieldsToConcat");
+      JsonArray subFields = context.getRuleParameter().getJsonArray(SUBFIELDS_TO_CONCAT);
       int subFieldIndex = IntStream.range(0, dataField.getSubfields().size())
         .filter(i -> dataField.getSubfields().get(i).getData().equals(context.getSubFieldValue()))
         .findFirst()
         .getAsInt();
 
+      return concatSubFields(subFields, dataField, subFieldIndex, subfieldValue);
+    }
+
+    private String concatSubFields(JsonArray subFields, DataField dataField, int subFieldIndex, StringBuilder subfieldValue){
       for (int j = 0; j < subFields.size(); j++) {
         String subfieldToAppend = subFields.getString(j);
         String subFieldValueToAppend = dataField.getSubfields().stream()
