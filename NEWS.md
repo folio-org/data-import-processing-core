@@ -2,7 +2,7 @@
 * [MODDICORE-171](https://issues.folio.org/browse/MODDICORE-171) Add default mapping profile for MARC holdings
 * [MODDICORE-175](https://issues.folio.org/browse/MODDICORE-175) Ad Mapper for Holdings
 * [MODSOURCE-340](https://issues.folio.org/browse/MODSOURCE-340) Lower log level for messages when no handler found
-* [MODDICORE-177](https://issues.folio.org/browse/MODDICORE-177) Fix import of EDIFACT invoices
+* [MODDICORE-186](https://issues.folio.org/browse/MODDICORE-186) Fix import of EDIFACT invoices
 * [MODSOURCE-286](https://issues.folio.org/browse/MODSOURCE-286) Remove zipping mechanism for data import event payloads and use cache for mapping params and job profile snapshot
 * [MODDICORE-172](https://issues.folio.org/browse/MODDICORE-172) Add MARC-Instance field mapping for New identifier types
 * Update folio-kafka-wrapper dependency to v2.4.0
