@@ -1,11 +1,23 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
+import org.marc4j.MarcJsonReader;
+import org.marc4j.marc.ControlField;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Leader;
+import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
+import org.marc4j.marc.impl.SubfieldImpl;
 
-import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
-import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
-
+import javax.script.ScriptException;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -22,25 +34,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.script.ScriptException;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.marc4j.MarcJsonReader;
-import org.marc4j.marc.ControlField;
-import org.marc4j.marc.DataField;
-import org.marc4j.marc.Leader;
-import org.marc4j.marc.Record;
-import org.marc4j.marc.Subfield;
-import org.marc4j.marc.impl.SubfieldImpl;
-
-import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
+import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
 
 public class Processor<T> {
 
@@ -49,6 +46,10 @@ public class Processor<T> {
   private static final String CUSTOM = "custom";
   private static final String TYPE = "type";
   private static final String REPEATABLE_SUBFIELD_SEPARATOR = StringUtils.SPACE;
+  private static final String INDICATORS = "indicators";
+  private static final String IND_1 = "ind1";
+  private static final String IND_2 = "ind2";
+  private static final String WILDCARD_INDICATOR = "*";
 
   private JsonObject mappingRules;
 
@@ -119,12 +120,27 @@ public class Processor<T> {
     if (mappingEntry == null) {
       return;
     }
+    JsonArray fieldMappingIndicators = getFieldMappingIndicators(mappingEntry);
 
     //there is a mapping associated with this marc field
     for (int i = 0; i < mappingEntry.size(); i++) {
       //there could be multiple mapping entries, specifically different mappings
       //per subfield in the marc field
       JsonObject subFieldMapping = mappingEntry.getJsonObject(i);
+      //check if mapping entry has indicators sets
+      if (!fieldMappingIndicators.isEmpty()) {
+        String dataFieldInd1 = String.valueOf(dataField.getIndicator1());
+        String dataFieldInd2 = String.valueOf(dataField.getIndicator2());
+        if (subFieldMapping.containsKey(INDICATORS)) {
+          if (!checkOnIndicatorsCorrespondence(subFieldMapping, dataFieldInd1, dataFieldInd2)) {
+            continue;
+          }
+        } else {
+          if (chekOnIndicatorsMatches(fieldMappingIndicators, dataFieldInd1, dataFieldInd2)) {
+            continue;
+          }
+        }
+      }
       if (canProcessSubFieldMapping(subFieldMapping, dataField)) {
         processSubFieldMapping(subFieldMapping, rememberComplexObj, ruleExecutionContext);
       }
@@ -143,6 +159,37 @@ public class Processor<T> {
       }
     }
     return true;
+  }
+
+  private JsonArray getFieldMappingIndicators(JsonArray mappingEntry) {
+    JsonArray indicatorsArray = new JsonArray();
+    for (int i = 0; i < mappingEntry.size(); i++) {
+      if (mappingEntry.getJsonObject(i).containsKey(INDICATORS)) {
+        indicatorsArray.add(mappingEntry.getJsonObject(i).getJsonObject(INDICATORS));
+      }
+    }
+    return indicatorsArray;
+  }
+
+  private boolean checkOnIndicatorsCorrespondence(JsonObject subFieldMapping, String dataFieldInd1, String dataFieldInd2) {
+    String subFieldMappingInd1 = subFieldMapping.getJsonObject(INDICATORS).getString(IND_1);
+    String subFieldMappingInd2 = subFieldMapping.getJsonObject(INDICATORS).getString(IND_2);
+
+    return (dataFieldInd1.equals(subFieldMappingInd1) || WILDCARD_INDICATOR.equals(subFieldMappingInd1))
+      && (dataFieldInd2.equals(subFieldMappingInd2) || WILDCARD_INDICATOR.equals(subFieldMappingInd2));
+  }
+
+  private boolean chekOnIndicatorsMatches(JsonArray fieldMappingIndicators, String dataFieldInd1, String dataFieldInd2) {
+    for (int i=0; i < fieldMappingIndicators.size(); i++) {
+      JsonObject indicatorsObj = fieldMappingIndicators.getJsonObject(i);
+      String subFieldMappingInd1 = indicatorsObj.getString(IND_1);
+      String subFieldMappingInd2 = indicatorsObj.getString(IND_2);
+      if (dataFieldInd1.equals(subFieldMappingInd1) || WILDCARD_INDICATOR.equals(subFieldMappingInd1)
+        && (dataFieldInd2.equals(subFieldMappingInd2) || WILDCARD_INDICATOR.equals(subFieldMappingInd2))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void processSubFieldMapping(JsonObject subFieldMapping, Object[] rememberComplexObj, RuleExecutionContext ruleExecutionContext)
