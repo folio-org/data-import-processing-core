@@ -221,6 +221,7 @@ public class EdifactRecordReaderTest {
 
     MappingRule mappingRule = new MappingRule().withPath("invoice.acqUnitIds[]")
       .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withAcceptedValues(acqUnitsAcceptedValues)
       .withSubfields(Arrays.asList(
         new RepeatableSubfieldMapping()
           .withOrder(0)
@@ -228,16 +229,14 @@ public class EdifactRecordReaderTest {
           .withFields(singletonList(
             new MappingRule()
               .withPath("invoice.acqUnitIds[]")
-              .withValue("\"ackUnit-1\"")
-              .withAcceptedValues(acqUnitsAcceptedValues))),
+              .withValue("\"ackUnit-1\""))),
         new RepeatableSubfieldMapping()
           .withOrder(1)
           .withPath("invoice.acqUnitIds[]")
           .withFields(singletonList(
             new MappingRule()
               .withPath("invoice.acqUnitIds[]")
-              .withValue("\"ackUnit-2\"")
-              .withAcceptedValues(acqUnitsAcceptedValues)))
+              .withValue("\"ackUnit-2\"")))
       ));
 
     Reader reader = readerFactory.createReader();

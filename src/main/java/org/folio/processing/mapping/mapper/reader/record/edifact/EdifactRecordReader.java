@@ -314,7 +314,7 @@ public class EdifactRecordReader implements Reader {
     for (RepeatableSubfieldMapping elementRule : mappingRule.getSubfields()) {
       for (MappingRule fieldRule : elementRule.getFields()) {
         if (StringUtils.isNotBlank(fieldRule.getValue())) {
-          values.add(readAcceptableValue(fieldRule));
+          values.add(readAcceptableValue(fieldRule, mappingRule.getAcceptedValues()));
         }
       }
     }
@@ -322,9 +322,13 @@ public class EdifactRecordReader implements Reader {
   }
 
   private String readAcceptableValue(MappingRule mappingRule) {
+    return readAcceptableValue(mappingRule, mappingRule.getAcceptedValues());
+  }
+
+  private String readAcceptableValue(MappingRule mappingRule, Map<String, String> acceptableValues) {
     String value = StringUtils.substringBetween(mappingRule.getValue(), QUOTATION_MARK);
-    if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
-      for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
+    if (MapUtils.isNotEmpty(acceptableValues)) {
+      for (Map.Entry<String, String> entry : acceptableValues.entrySet()) {
         if (entry.getValue().equals(value)) {
           value = entry.getKey();
         }
