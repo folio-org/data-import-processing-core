@@ -1,3 +1,6 @@
+## 2021-10-08 v3.1.6
+* [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
+
 ## 2021-10-04 v3.1.5
 * [MODDICORE-177](https://issues.folio.org/browse/MODDICORE-177) Fix import of EDIFACT invoices
 
