@@ -5,6 +5,8 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.record.marc.MarcBibReaderFactory;
 import org.folio.processing.value.BooleanValue;
@@ -54,7 +56,8 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD_WITH_049_WITH_OLI_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_WITH_OLI_ALS_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli,als\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_WITH_OL_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"ol\"},{\"z\":\"Testing data\"}]}}]}";
-  private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
+
+  private MappingContext mappingContext = new MappingContext();
 
   @Test
   public void shouldRead_Strings_FromRules() throws IOException {
@@ -64,7 +67,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("\"test\" \" \" \"value\""));
     // then
@@ -81,7 +84,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("LDR/4"));
     // then
@@ -98,7 +101,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("LDR/04"));
     // then
@@ -115,7 +118,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("LDR/4-5"));
     // then
@@ -132,7 +135,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("LDR/04-05"));
     // then
@@ -149,7 +152,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("001/4"));
     // then
@@ -166,7 +169,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("001/04"));
     // then
@@ -183,7 +186,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("001/4-5"));
     // then
@@ -200,7 +203,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("").withValue("001/04-05"));
     // then
@@ -217,7 +220,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("[]").withValue("\"test\" \" \" \"value\""));
     // then
@@ -234,7 +237,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("[]").withValue("\" \";else \"value\""));
     // then
@@ -251,7 +254,7 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule().withPath("[]").withValue("\" \""));
     // then
@@ -268,7 +271,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("randomUUID", "value");
     acceptedValues.put("randomUUID2", "noValue");
@@ -292,7 +295,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("")
       .withBooleanFieldAction(MappingRule.BooleanFieldAction.ALL_FALSE));
@@ -311,7 +314,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("")
       .withValue("042$a \" \" 042$a"));
@@ -330,7 +333,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("")
       .withValue("042$3 \" \" 042$a"));
@@ -349,7 +352,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("[]")
       .withValue("042$a \" \" 042$a"));
@@ -371,7 +374,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("")
       .withValue("043$a \" \"; else 010; else 042$a \" \" \"data\" \" \" 001; else 042$a"));
@@ -390,7 +393,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("")
       .withValue("asd w3"));
@@ -407,7 +410,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     List<MappingRule> listRules = new ArrayList<>();
     List<MappingRule> listRules2 = new ArrayList<>();
     listRules.add(new MappingRule()
@@ -468,7 +471,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     List<MappingRule> listRules = new ArrayList<>();
 
     listRules.add(new MappingRule()
@@ -522,7 +525,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITHOUT_SUBFIELD_856_U))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     List<MappingRule> listRules = new ArrayList<>();
 
     listRules.add(new MappingRule()
@@ -563,7 +566,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
 
     Value value = reader.read(new MappingRule()
       .withPath("instance")
@@ -586,7 +589,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
 
     Value value = reader.read(new MappingRule()
       .withPath("instance")
@@ -605,7 +608,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
     Value value = reader.read(new MappingRule()
@@ -623,10 +626,13 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
-    context.put(MAPPING_PARAMS, "{\"initialized\":\"true\"}");
     eventPayload.setContext(context);
+
+    MappingContext mappingContext = new MappingContext()
+      .withMappingParameters(new MappingParameters().withInitializedState(true));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
     Value value = reader.read(new MappingRule()
@@ -644,10 +650,15 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
-    context.put(MAPPING_PARAMS, "{\"initialized\":true,\"tenantConfiguration\":\"{\\\"locale\\\":\\\"en-US\\\",\\\"timezone\\\":\\\"Pacific/Kiritimati\\\",\\\"currency\\\":\\\"USD\\\"}\"}");
+
+    MappingContext mappingContext = new MappingContext();
+    mappingContext.setMappingParameters(new MappingParameters()
+      .withInitializedState(true)
+      .withTenantConfiguration("{\"locale\":\"en-US\",\"timezone\":\"Pacific/Kiritimati\",\"currency\":\"USD\"}"));
+
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
     Value value = reader.read(new MappingRule()
@@ -671,10 +682,14 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
-    context.put(MAPPING_PARAMS, "{\"initialized\":true,\"tenantConfiguration\":\"{\\\"locale\\\":\\\"en-US\\\",\\\"timezone\\\":\\\"asdas/sadas\\\",\\\"currency\\\":\\\"USD\\\"}\"}");
     eventPayload.setContext(context);
+
+    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
+      .withTenantConfiguration("{\"locale\":\"en-US\",\"timezone\":\"asdas/sadas\",\"currency\":\"USD\"}")
+      .withInitializedState(true));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
 
     Value value = reader.read(new MappingRule()
       .withPath("")
@@ -694,7 +709,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_DATE_DATA))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule()
       .withPath("[]")
@@ -717,7 +732,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
 
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("UUID1", "website");
@@ -770,7 +785,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
 
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("UUID1", "website");
@@ -821,7 +836,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
       .withPath("catalogedDate")
       .withValue("###REMOVE###"));
@@ -839,7 +854,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
@@ -865,7 +880,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
@@ -891,7 +906,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
     acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
@@ -917,7 +932,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
     acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
@@ -942,7 +957,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_BRACKETS))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
     acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
@@ -967,7 +982,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
@@ -993,7 +1008,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_ALS_LOCATION))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
@@ -1019,7 +1034,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss) (oli) (ollll) (olls)");
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
@@ -1045,7 +1060,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OL_LOCATION))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
@@ -1071,7 +1086,7 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_INVALID_BRACKETS))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload);
+    reader.initialize(eventPayload, mappingContext);
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
     acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");

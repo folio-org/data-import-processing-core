@@ -13,8 +13,8 @@ import io.vertx.core.json.JsonObject;
  */
 public final class MatchIdProcessorUtil {
 
-  private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
-  private static final String RELATIONS = "MATCHING_PARAMETERS_RELATIONS";
+  public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
+  public static final String RELATIONS_KEY = "MATCHING_PARAMETERS_RELATIONS";
   private static final String NAME_PROPERTY = "name";
   private static final String ID_PROPERTY = "id";
   private static final String CODE_PROPERTY = "code";
@@ -24,8 +24,8 @@ public final class MatchIdProcessorUtil {
   }
 
   public static Value retrieveIdFromContext(String field, DataImportEventPayload eventPayload, StringValue value) {
-    JsonObject matchingParams = new JsonObject(eventPayload.getContext().get(MAPPING_PARAMS));
-    JsonObject relations = new JsonObject(eventPayload.getContext().get(RELATIONS));
+    JsonObject matchingParams = new JsonObject(eventPayload.getContext().get(MAPPING_PARAMS_KEY));
+    JsonObject relations = new JsonObject(eventPayload.getContext().get(RELATIONS_KEY));
     String relation = relations.getString(field);
     if (relation == null) {
       return value;

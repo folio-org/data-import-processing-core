@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.reader;
 
 import org.folio.DataImportEventPayload;
+import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 
@@ -18,9 +19,10 @@ public interface Reader {
   /**
    * Performs initialization of the reader using event payload.
    *
-   * @param eventPayload event payload
+   * @param eventPayload   event payload
+   * @param mappingContext mapping context
    */
-  void initialize(DataImportEventPayload eventPayload) throws IOException;
+  void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) throws IOException;
 
   /**
    * Reads value from the underlying entity using mapping rule.

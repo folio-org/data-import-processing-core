@@ -61,7 +61,7 @@ public class KafkaEventPublisher implements EventPublisher {
       Event event = new Event()
         .withId(UUID.randomUUID().toString())
         .withEventType(eventPayload.getEventType())
-        .withEventPayload(ZIPArchiver.zip(JsonObject.mapFrom(eventPayload).encode()))
+        .withEventPayload(Json.encode(eventPayload))
         .withEventMetadata(new EventMetadata()
           .withTenantId(eventPayload.getTenant())
           .withEventTTL(1)

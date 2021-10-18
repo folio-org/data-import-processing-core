@@ -1,35 +1,13 @@
 package org.folio.processing.mapping.mapper.reader.record.edifact;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Iterables;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.jackson.DatabindCodec;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.folio.Component;
-import org.folio.DataElement;
-import org.folio.DataImportEventPayload;
-import org.folio.EdifactParsedContent;
-import org.folio.ParsedRecord;
-import org.folio.Record;
-import org.folio.Segment;
-import org.folio.processing.exceptions.ReaderException;
-import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.value.BooleanValue;
-import org.folio.processing.value.ListValue;
-import org.folio.processing.value.MissingValue;
-import org.folio.processing.value.RepeatableFieldValue;
-import org.folio.processing.value.StringValue;
-import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.EntityType;
-import org.folio.rest.jaxrs.model.MappingRule;
-import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
+import static java.lang.String.format;
+import static java.time.LocalTime.MIDNIGHT;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.folio.processing.value.Value.ValueType.MISSING;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -45,14 +23,39 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
-import static java.time.LocalTime.MIDNIGHT;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.folio.processing.value.Value.ValueType.MISSING;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.Component;
+import org.folio.DataElement;
+import org.folio.DataImportEventPayload;
+import org.folio.EdifactParsedContent;
+import org.folio.ParsedRecord;
+import org.folio.Record;
+import org.folio.Segment;
+import org.folio.processing.exceptions.ReaderException;
+import org.folio.processing.mapping.mapper.MappingContext;
+import org.folio.processing.mapping.mapper.reader.Reader;
+import org.folio.processing.value.BooleanValue;
+import org.folio.processing.value.ListValue;
+import org.folio.processing.value.MissingValue;
+import org.folio.processing.value.RepeatableFieldValue;
+import org.folio.processing.value.StringValue;
+import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.MappingRule;
+import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
+
+import io.vertx.core.json.Json;
+import io.vertx.core.json.jackson.DatabindCodec;
 
 /**
  * The {@link Reader} implementation for EDIFACT INVOICE.
@@ -95,7 +98,7 @@ public class EdifactRecordReader implements Reader {
    * @param segmentMappingExpression mapping expression with segment to extract data from
    * @return map with segments data and corresponding invoice lines numbers
    * @throws IllegalArgumentException if {@code parsedRecord} has no EDIFACT parsed content
-   *   and when invalid segment mapping expression is specified
+   *                                  and when invalid segment mapping expression is specified
    */
   public static Map<Integer, String> getInvoiceLinesSegmentsValues(ParsedRecord parsedRecord, String segmentMappingExpression) {
     if (parsedRecord == null || parsedRecord.getContent() == null) {
@@ -128,7 +131,7 @@ public class EdifactRecordReader implements Reader {
   }
 
   @Override
-  public void initialize(DataImportEventPayload eventPayload) throws IOException {
+  public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) throws IOException {
     if (eventPayload.getContext() != null && isNotBlank(eventPayload.getContext().get(entityType.value()))) {
       String recordAsString = eventPayload.getContext().get(entityType.value());
       Record sourceRecord = Json.decodeValue(recordAsString, Record.class);
@@ -271,11 +274,12 @@ public class EdifactRecordReader implements Reader {
   private Value readSingleFieldValue(MappingRule mappingRule, List<Segment> invoiceLineSegments) {
     String readValue;
     String mappingExpression = mappingRule.getValue();
-    String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
 
     if (StringUtils.isBlank(mappingExpression)) {
       return MissingValue.getInstance();
     }
+
+    String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
 
     for (String expressionPart : expressionParts) {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
@@ -310,7 +314,7 @@ public class EdifactRecordReader implements Reader {
     for (RepeatableSubfieldMapping elementRule : mappingRule.getSubfields()) {
       for (MappingRule fieldRule : elementRule.getFields()) {
         if (StringUtils.isNotBlank(fieldRule.getValue())) {
-          values.add(readAcceptableValue(fieldRule));
+          values.add(readAcceptableValue(fieldRule, mappingRule.getAcceptedValues()));
         }
       }
     }
@@ -318,9 +322,13 @@ public class EdifactRecordReader implements Reader {
   }
 
   private String readAcceptableValue(MappingRule mappingRule) {
+    return readAcceptableValue(mappingRule, mappingRule.getAcceptedValues());
+  }
+
+  private String readAcceptableValue(MappingRule mappingRule, Map<String, String> acceptableValues) {
     String value = StringUtils.substringBetween(mappingRule.getValue(), QUOTATION_MARK);
-    if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
-      for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
+    if (MapUtils.isNotEmpty(acceptableValues)) {
+      for (Map.Entry<String, String> entry : acceptableValues.entrySet()) {
         if (entry.getValue().equals(value)) {
           value = entry.getKey();
         }

@@ -2,9 +2,21 @@ package org.folio.processing.mapping.defaultmapper.processor.functions;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import org.apache.commons.lang.StringUtils;
-import org.folio.*;
+import org.folio.AlternativeTitleType;
+import org.folio.CallNumberType;
+import org.folio.ClassificationType;
+import org.folio.ContributorNameType;
+import org.folio.ContributorType;
+import org.folio.ElectronicAccessRelationship;
+import org.folio.HoldingsNoteType;
+import org.folio.HoldingsType;
+import org.folio.IdentifierType;
+import org.folio.InstanceFormat;
+import org.folio.InstanceNoteType;
+import org.folio.InstanceType;
+import org.folio.IssuanceMode;
+import org.folio.Location;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
@@ -12,11 +24,13 @@ import org.folio.processing.mapping.defaultmapper.processor.functions.enums.Hold
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
 import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
@@ -116,6 +130,37 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       return StringUtils.capitalize(context.getSubFieldValue());
+    }
+  },
+
+  CONCAT_SUBFIELDS_BY_NAME() {
+    private static final String SUBFIELDS_TO_CONCAT = "subfieldsToConcat";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      StringBuilder subfieldValue = new StringBuilder(context.getSubFieldValue());
+      DataField dataField = context.getDataField();
+      JsonArray subFields = context.getRuleParameter().getJsonArray(SUBFIELDS_TO_CONCAT);
+      int subFieldIndex = IntStream.range(0, dataField.getSubfields().size())
+        .filter(i -> dataField.getSubfields().get(i).getData().equals(context.getSubFieldValue()))
+        .findFirst()
+        .getAsInt();
+
+      return concatSubFields(subFields, dataField, subFieldIndex, subfieldValue);
+    }
+
+    private String concatSubFields(JsonArray subFields, DataField dataField, int subFieldIndex, StringBuilder subfieldValue){
+      for (int j = 0; j < subFields.size(); j++) {
+        String subfieldToAppend = subFields.getString(j);
+        String subFieldValueToAppend = dataField.getSubfields().stream()
+          .skip(subFieldIndex)
+          .filter(e -> String.valueOf(e.getCode()).equals(subfieldToAppend))
+          .map(Subfield::getData)
+          .findFirst()
+          .orElse("");
+        subfieldValue.append(" ").append(subFieldValueToAppend);
+      }
+      return subfieldValue.toString();
     }
   },
 
@@ -398,7 +443,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       char sixthChar = subFieldValue.charAt(6);
       List<HoldingsType> holdingsTypes = context.getMappingParameters().getHoldingsTypes();
       if (holdingsTypes == null || holdingsTypes.isEmpty()) {
-        return StringUtils.EMPTY;
+        return STUB_FIELD_TYPE_ID;
       }
       String marcHoldingsType = HoldingsTypeEnum.getNameByCharacter(sixthChar);
       return findHoldingsTypeId(holdingsTypes, marcHoldingsType);
@@ -406,10 +451,10 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
     private String findHoldingsTypeId(List<HoldingsType> holdingsTypes, String marcHoldingsType) {
       return holdingsTypes.stream()
-          .filter(holdingsType -> holdingsType.getName().equalsIgnoreCase(marcHoldingsType))
-          .findFirst()
-          .map(HoldingsType::getId)
-          .orElse(StringUtils.EMPTY);
+        .filter(holdingsType -> holdingsType.getName().equalsIgnoreCase(marcHoldingsType))
+        .findFirst()
+        .map(HoldingsType::getId)
+        .orElse(STUB_FIELD_TYPE_ID);
     }
   },
 
@@ -423,11 +468,27 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       char ind1 = context.getDataField().getIndicator1();
       String name = CallNumberTypesEnum.getNameByIndicator(ind1);
       return callNumberTypes
-          .stream()
-          .filter(callNumberType -> callNumberType.getName().equalsIgnoreCase(name))
-          .findFirst()
-          .map(CallNumberType::getId)
-          .orElse(StringUtils.EMPTY);
+        .stream()
+        .filter(callNumberType -> callNumberType.getName().equalsIgnoreCase(name))
+        .findFirst()
+        .map(CallNumberType::getId)
+        .orElse(StringUtils.EMPTY);
+    }
+  },
+
+  SET_PERMANENT_LOCATION_ID() {
+    @Override
+    public String apply(RuleExecutionContext context) {
+      var locations = context.getMappingParameters().getLocations();
+      if (locations == null || context.getDataField() == null) {
+        return STUB_FIELD_TYPE_ID;
+      }
+      var subFieldValue = context.getSubFieldValue();
+      return locations.stream()
+        .filter(location -> location.getCode().equals(subFieldValue))
+        .findFirst()
+        .map(Location::getId)
+        .orElse(STUB_FIELD_TYPE_ID);
     }
   },
 
@@ -442,9 +503,9 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return STUB_FIELD_TYPE_ID;
       }
       return holdingsNoteTypes
-          .stream()
-          .filter(holdingsNoteType -> holdingsNoteType.getName().equalsIgnoreCase(noteTypeName))
-          .map(HoldingsNoteType::getId).collect(Collectors.joining());
+        .stream()
+        .filter(holdingsNoteType -> holdingsNoteType.getName().equalsIgnoreCase(noteTypeName))
+        .map(HoldingsNoteType::getId).collect(Collectors.joining());
     }
   };
 

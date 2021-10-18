@@ -17,6 +17,9 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.MAPPING_PARAMS_KEY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.RELATIONS_KEY;
+
 public interface Matcher {
 
   default CompletableFuture<Boolean> match(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader, DataImportEventPayload eventPayload) {
@@ -38,7 +41,8 @@ public interface Matcher {
         eventPayload, (StringValue) value);
     }
 
-    eventPayload.getContext().remove("MATCHING_PARAMETERS_RELATIONS");
+    eventPayload.getContext().remove(RELATIONS_KEY);
+    eventPayload.getContext().remove(MAPPING_PARAMS_KEY);
     LoadQuery query = LoadQueryBuilder.build(value, matchDetail);
     matchValueLoader.loadEntity(query, eventPayload)
       .whenComplete((loadResult, throwable) -> {

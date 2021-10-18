@@ -22,14 +22,16 @@ public interface Mapper {
   /**
    * Template method for mapping.
    *
-   * @param reader       Reader to read values from given event payload
-   * @param writer       Writer to write values to given event payload
-   * @param eventPayload event payload
+   * @param reader         Reader to read values from given event payload
+   * @param writer         Writer to write values to given event payload
+   * @param eventPayload   event payload
+   * @param mappingContext mapping context
    * @return event payload
    * @throws IOException if a low-level I/O problem occurs (JSON serialization)
    */
-  default DataImportEventPayload map(Reader reader, Writer writer, MappingProfile profile, DataImportEventPayload eventPayload) throws IOException {
-    reader.initialize(eventPayload);
+  default DataImportEventPayload map(Reader reader, Writer writer, MappingProfile profile, DataImportEventPayload eventPayload,
+                                     MappingContext mappingContext) throws IOException {
+    reader.initialize(eventPayload, mappingContext);
     writer.initialize(eventPayload);
     if (profile.getMappingDetails() == null
       || profile.getMappingDetails().getMappingFields() == null
