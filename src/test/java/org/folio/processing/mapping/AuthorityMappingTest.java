@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import io.vertx.core.json.JsonObject;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,11 +34,11 @@ public class AuthorityMappingTest {
 
   @Test
   public void testMarcToAuthority() throws IOException {
-    JsonObject expectedMappedHoldings = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_PATH));
+    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_PATH));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
-    Authority actualMappedHoldings = mapper.mapRecord(getJsonMarcRecord(), new MappingParameters(), mappingRules);
-    Assert.assertEquals(JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode(), expectedMappedHoldings.encode());
+    Authority actualMappedAuthority = mapper.mapRecord(getJsonMarcRecord(), new MappingParameters(), mappingRules);
+    Assert.assertEquals(JsonObject.mapFrom(actualMappedAuthority).encode(), expectedMappedAuthority.encode());
   }
 
   private JsonObject getJsonMarcRecord() throws IOException {
