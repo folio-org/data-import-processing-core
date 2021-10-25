@@ -1,6 +1,5 @@
 package org.folio.processing.mapping.defaultmapper;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -9,7 +8,7 @@ import java.util.List;
 public final class RecordMapperBuilder {
 
   @SuppressWarnings("rawtypes")
-  private static final List<RecordMapper> mappers = List.of(new MarcToInstanceMapper(), new MarcToHoldingsMapper());
+  private static final List<RecordMapper> mappers = List.of(new MarcToInstanceMapper(), new MarcToHoldingsMapper(), new MarcToAuthorityMapper());
 
   private RecordMapperBuilder() {
   }

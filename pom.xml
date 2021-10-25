@@ -227,6 +227,7 @@
                 <path>${basedir}/ramls/raml-storage/schemas/dto/edifactParsedContent.json</path>
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/holdings.json</path>
+                <path>${basedir}/ramls/authority.json</path>
                 <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
                 <path>${basedir}/ramls/settings/classificationtypes.json</path>
                 <path>${basedir}/ramls/settings/contributornametypes.json</path>
