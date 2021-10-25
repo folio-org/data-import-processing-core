@@ -315,9 +315,13 @@ public class Processor<T> {
     if (splitter != null) {
       expandSubfields(subFields, splitter);
     }
+    if (subFields.stream().noneMatch(sf -> (checkIfSubfieldShouldBeHandled(subFieldsSet, sf)))) {
+      return;
+    }
 
     for (int i = 0; i < subFields.size(); i++) {
-      if (canHandleSubField(subFields.get(i), jObj)) {
+      //check if there are no mapped elements present
+      if (checkIfSubfieldShouldBeHandled(subFieldsSet, subFields.get(i)) && canHandleSubField(subFields.get(i), jObj)) {
         handleSubFields(ruleExecutionContext, subFields, i, subFieldsSet, arraysOfObjects, applyPost, embeddedFields);
       }
     }
@@ -846,5 +850,9 @@ public class Processor<T> {
       }
     }
     return "get" + sb.toString();
+  }
+
+  public boolean checkIfSubfieldShouldBeHandled(Set<String> subFieldsSet, Subfield subfield) {
+    return subFieldsSet.isEmpty() || subFieldsSet.contains(Character.toString(subfield.getCode()));
   }
 }

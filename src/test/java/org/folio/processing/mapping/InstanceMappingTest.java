@@ -44,6 +44,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/880_245_to_246.mrc";
   private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/880_to_830.mrc";
   private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/5xx_staff_only_indicators.mrc";
+  private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/590_subfield_3.mrc";
 
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/rules.json";
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
@@ -144,8 +145,6 @@ public class InstanceMappingTest {
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
     }
-
-
   }
 
   @Test
@@ -285,6 +284,30 @@ public class InstanceMappingTest {
             });
           }
         );
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      Assert.assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstanceNotMappedSubFields() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_NOT_MAPPED_590_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Assert.assertNotNull(instance.getTitle());
+      Assert.assertNotNull(instance.getSource());
+      Assert.assertNotNull(instance.getNotes());
+      Assert.assertEquals(1, instance.getNotes().size());
+      Assert.assertEquals("Adaptation of Xi xiang ji by Wang Shifu", instance.getNotes().get(0).getNote());
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
