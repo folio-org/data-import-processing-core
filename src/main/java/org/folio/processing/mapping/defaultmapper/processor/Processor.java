@@ -317,7 +317,7 @@ public class Processor<T> {
     }
     if (subFields.stream().noneMatch(sf -> (checkIfSubfieldShouldBeHandled(subFieldsSet, sf)))) {
       //skip further processing if there are no subfields to map
-      LOGGER.info("no subfields to map from {} to {}", subFields.stream().map(Subfield::getCode).collect(Collectors.toList()), subFieldsSet);
+      LOGGER.debug("no subfields to map from {} to {}", subFields.stream().map(Subfield::getCode).collect(Collectors.toList()), subFieldsSet);
       return;
     }
 
