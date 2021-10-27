@@ -1,6 +1,7 @@
 ## 2021-09-30 v3.3.0
 * [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
 * [MODDICORE-195](https://issues.folio.org/browse/MODDICORE-195) FOLIO snapshot throw optimistic locking error when updating an instance
+* [MODDICORE-187](https://issues.folio.org/browse/MODDICORE-187) Blank fields generated from MARC mapping create invalid Instance records in Inventory
 
 ## 2021-09-29 v3.2.0
 * [MODDICORE-171](https://issues.folio.org/browse/MODDICORE-171) Add default mapping profile for MARC holdings
