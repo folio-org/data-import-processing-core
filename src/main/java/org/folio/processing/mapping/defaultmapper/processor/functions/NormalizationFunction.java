@@ -269,7 +269,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return STUB_FIELD_TYPE_ID;
       }
       String unspecifiedTypeCode = context.getRuleParameter().getString(NAME_PARAMETER);
-      String instanceTypeCode = context.getDataField() != null ? context.getSubFieldValue() : unspecifiedTypeCode;
+      String instanceTypeCode = context.getDataField() != null ?
+        getParsedSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
 
       return getInstanceTypeByCode(instanceTypeCode, types)
         .map(InstanceType::getId)
@@ -278,11 +279,18 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
           .orElse(STUB_FIELD_TYPE_ID));
     }
 
-    private Optional<InstanceType> getInstanceTypeByCode(String instanceTypeCode, List<InstanceType> instanceTypes) {
+    private Optional<InstanceType> getInstanceTypeByCode(String instanceTypeValue, List<InstanceType> instanceTypes) {
       return instanceTypes
         .stream()
-        .filter(instanceType -> instanceType.getCode().equalsIgnoreCase(instanceTypeCode))
+        .filter(instanceType -> StringUtils.isNotBlank(instanceType.getName()) && StringUtils.isNotBlank(instanceType.getCode()))
+        .filter(instanceType ->
+          instanceType.getName().equalsIgnoreCase(instanceTypeValue) || instanceType.getCode().equalsIgnoreCase(instanceTypeValue))
         .findFirst();
+    }
+
+    private String getParsedSubfieldValue(String subfieldValue) {
+      String[] subfields = subfieldValue.split("~");
+      return subfields[subfields.length - 1];
     }
   },
 
