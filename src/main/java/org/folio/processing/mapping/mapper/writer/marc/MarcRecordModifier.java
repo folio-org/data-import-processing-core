@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -558,6 +559,7 @@ public class MarcRecordModifier {
 
   private void replaceControlField(ControlField fieldReplacement) {
     boolean fieldsUpdated = false;
+    boolean fieldsProtected = false;
     List<ControlField> controlFields = marcRecordToChange.getControlFields();
 
     for (int i = 0; i < controlFields.size(); i++) {
@@ -567,12 +569,13 @@ public class MarcRecordModifier {
           controlFields.set(i, fieldReplacement);
           fieldsUpdated = true;
         } else {
+          fieldsProtected = true;
           LOGGER.info("Field {} was not updated, because it is protected", fieldToReplace);
         }
       }
     }
 
-    if (!fieldsUpdated) {
+    if (!fieldsUpdated && !fieldsProtected) {
       addControlFieldInNumericalOrder(fieldReplacement);
     }
   }
@@ -625,7 +628,8 @@ public class MarcRecordModifier {
 
   private boolean isNotProtected(ControlField field) {
     return applicableProtectionSettings.stream()
-      .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
+      .filter(setting -> (isBlank(setting.getIndicator1()) && isBlank(setting.getIndicator2()) && isBlank(setting.getSubfield()))
+        && setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
       .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getData()));
   }
 
