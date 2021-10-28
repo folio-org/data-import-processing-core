@@ -1701,8 +1701,52 @@ public class MarcRecordModifierTest {
     // given
     // 007 is a repeatable control field
     String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
-    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"123\"},{\"007\":\"456\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00110nam  22000851a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"123\"},{\"007\":\"456\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
+    String expectedParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
+      .withId(UUID.randomUUID().toString())
+      .withField("001")
+      .withSubfield("")
+      .withIndicator1("")
+      .withIndicator2("")
+      .withData("*")
+      .withSource(MarcFieldProtectionSetting.Source.SYSTEM)
+      .withOverride(true);
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    eventPayload.setContext(context);
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldAddRepeatableControlFieldsWhenHaveNoSuchExistingFields() throws IOException {
+    // given
+    // 007 is a repeatable control field
+    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
+    String expectedParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
 
     Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(incomingParsedContent));
