@@ -56,7 +56,7 @@ public class MarcRecordModifier {
 
   public static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
-  private static final Set<String> REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("002", "004", "006", "007", "009");
+  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("001", "003", "005", "008");
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
   private static final String ANY_STRING = "*";
@@ -559,7 +559,6 @@ public class MarcRecordModifier {
   }
 
   private void replaceControlField(ControlField fieldReplacement) {
-    boolean fieldsUpdated = false;
     boolean fieldsProtected = false;
     List<ControlField> controlFields = marcRecordToChange.getControlFields();
 
@@ -567,7 +566,7 @@ public class MarcRecordModifier {
       ControlField fieldToReplace = controlFields.get(i);
       if (fieldToReplace.getTag().equals(fieldReplacement.getTag())) {
         if (isNotProtected(fieldToReplace)) {
-          if (!isRepeatableField(fieldReplacement)) {
+          if (isNonRepeatableField(fieldToReplace)) {
             controlFields.set(i, fieldReplacement);
             return;
           }
@@ -578,13 +577,13 @@ public class MarcRecordModifier {
       }
     }
 
-    if (!fieldsUpdated && !fieldsProtected) {
+    if (!fieldsProtected) {
       addControlFieldInNumericalOrder(fieldReplacement);
     }
   }
 
-  private boolean isRepeatableField(ControlField field) {
-    return REPEATABLE_CONTROL_FIELDS_TAGS.contains(field.getTag());
+  private boolean isNonRepeatableField(ControlField field) {
+    return NON_REPEATABLE_CONTROL_FIELDS_TAGS.contains(field.getTag());
   }
 
   private void replaceDataField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
