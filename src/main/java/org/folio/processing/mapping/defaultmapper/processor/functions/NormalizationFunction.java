@@ -270,7 +270,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       }
       String unspecifiedTypeCode = context.getRuleParameter().getString(NAME_PARAMETER);
       String instanceTypeValue = context.getDataField() != null ?
-        getParsedSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
+        getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
 
       return getInstanceTypeByCode(instanceTypeValue, types)
         .map(InstanceType::getId)
@@ -288,8 +288,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .findFirst();
     }
 
-    private String getParsedSubfieldValue(String subfieldValue) {
-      String[] subfields = subfieldValue.split("~");
+    private String getLastSubfieldValue(String concatenatedSubfieldsData) {
+      String[] subfields = concatenatedSubfieldsData.split("~");
       return subfields[subfields.length - 1];
     }
   },
