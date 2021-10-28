@@ -269,10 +269,10 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return STUB_FIELD_TYPE_ID;
       }
       String unspecifiedTypeCode = context.getRuleParameter().getString(NAME_PARAMETER);
-      String instanceTypeCode = context.getDataField() != null ?
+      String instanceTypeValue = context.getDataField() != null ?
         getParsedSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
 
-      return getInstanceTypeByCode(instanceTypeCode, types)
+      return getInstanceTypeByCode(instanceTypeValue, types)
         .map(InstanceType::getId)
         .orElseGet(() -> getInstanceTypeByCode(unspecifiedTypeCode, types)
           .map(InstanceType::getId)
