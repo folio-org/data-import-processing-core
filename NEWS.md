@@ -1,5 +1,11 @@
+## 2021-10-29 v3.2.2
+* [MODDICORE-187](https://issues.folio.org/browse/MODDICORE-187) Blank fields generated from MARC mapping create invalid Instance records in Inventory
+* [MODDICORE-184](https://issues.folio.org/browse/MODDICORE-184) Update the MARC-Instance field mapping for InstanceType (336$a and $b)
+* [MODDICORE-200](https://issues.folio.org/browse/MODDICORE-200) Overlaying with single record import creates duplicate control fields
+* [MODDICORE-198](https://issues.folio.org/browse/MODDICORE-198) Fix the effect of DI_ERROR messages when trying to duplicate records on the import job progress bar
+
 ## 2021-10-08 v3.2.1
-* [MODDICORE-192](https://issues.folio.org/browse/MODDICORE-192) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
+* [MODDICORE-192](https://issues.folio.org/browse/MODDICORE-192) Fix of Incorrect mapping of acquisition ids that caused validation issues and Invoices creating failures
 
 ## 2021-09-29 v3.2.0
 * [MODDICORE-171](https://issues.folio.org/browse/MODDICORE-171) Add default mapping profile for MARC holdings
