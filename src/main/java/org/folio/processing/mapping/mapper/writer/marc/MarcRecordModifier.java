@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -55,6 +56,7 @@ public class MarcRecordModifier {
 
   public static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
+  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("001", "003", "005", "008");
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
   private static final String ANY_STRING = "*";
@@ -557,24 +559,31 @@ public class MarcRecordModifier {
   }
 
   private void replaceControlField(ControlField fieldReplacement) {
-    boolean fieldsUpdated = false;
+    boolean fieldsProtected = false;
     List<ControlField> controlFields = marcRecordToChange.getControlFields();
 
     for (int i = 0; i < controlFields.size(); i++) {
       ControlField fieldToReplace = controlFields.get(i);
       if (fieldToReplace.getTag().equals(fieldReplacement.getTag())) {
         if (isNotProtected(fieldToReplace)) {
-          controlFields.set(i, fieldReplacement);
-          fieldsUpdated = true;
+          if (isNonRepeatableField(fieldToReplace)) {
+            controlFields.set(i, fieldReplacement);
+            return;
+          }
         } else {
+          fieldsProtected = true;
           LOGGER.info("Field {} was not updated, because it is protected", fieldToReplace);
         }
       }
     }
 
-    if (!fieldsUpdated) {
+    if (!fieldsProtected) {
       addControlFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  private boolean isNonRepeatableField(ControlField field) {
+    return NON_REPEATABLE_CONTROL_FIELDS_TAGS.contains(field.getTag());
   }
 
   private void replaceDataField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
@@ -625,7 +634,8 @@ public class MarcRecordModifier {
 
   private boolean isNotProtected(ControlField field) {
     return applicableProtectionSettings.stream()
-      .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
+      .filter(setting -> (isBlank(setting.getIndicator1()) && isBlank(setting.getIndicator2()) && isBlank(setting.getSubfield()))
+        && setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
       .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getData()));
   }
 

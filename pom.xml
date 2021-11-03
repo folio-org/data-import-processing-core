@@ -116,6 +116,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>net.mguenther.kafka</groupId>
+      <artifactId>kafka-junit</artifactId>
+      <version>2.5.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
       <version>3.8.1</version>
@@ -221,6 +227,7 @@
                 <path>${basedir}/ramls/raml-storage/schemas/dto/edifactParsedContent.json</path>
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/holdings.json</path>
+                <path>${basedir}/ramls/authority.json</path>
                 <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
                 <path>${basedir}/ramls/settings/classificationtypes.json</path>
                 <path>${basedir}/ramls/settings/contributornametypes.json</path>

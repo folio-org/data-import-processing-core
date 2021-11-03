@@ -2,23 +2,17 @@ package org.folio.processing.events.services.publisher;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.vertx.kafka.client.producer.KafkaHeader;
 import io.vertx.kafka.client.producer.KafkaProducer;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.processing.events.utils.PomReaderUtil;
-import org.folio.processing.events.utils.ZIPArchiver;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
-import org.folio.util.pubsub.PubSubClientUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,7 +25,7 @@ import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
-  public static final String CORRELATION_ID_HEADER = "correlationId";
+  public static final String RECORD_ID_HEADER = "recordId";
 
   private static final AtomicLong indexer = new AtomicLong();
 
@@ -54,8 +48,7 @@ public class KafkaEventPublisher implements EventPublisher {
     }
 
     String eventType = eventPayload.getEventType();
-    String correlationId = eventPayload.getContext().get(CORRELATION_ID_HEADER) != null
-      ? eventPayload.getContext().get(CORRELATION_ID_HEADER) : UUID.randomUUID().toString();
+    String recordId = eventPayload.getContext().get(RECORD_ID_HEADER);
 
     try {
       Event event = new Event()
@@ -79,7 +72,7 @@ public class KafkaEventPublisher implements EventPublisher {
         KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()),
         KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()),
         KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()),
-        KafkaHeader.header(CORRELATION_ID_HEADER, correlationId)));
+        KafkaHeader.header(RECORD_ID_HEADER, recordId)));
 
       String producerName = eventType + "_Producer";
       KafkaProducer<String, String> producer =
@@ -88,16 +81,16 @@ public class KafkaEventPublisher implements EventPublisher {
       producer.write(record, war -> {
         producer.end(ear -> producer.close());
         if (war.succeeded()) {
-          LOGGER.info("Event with type: {} and correlationId: {} was sent to the topic {}", eventType, correlationId, topicName);
+          LOGGER.info("Event with type: {} and recordId: {} was sent to the topic {}", eventType, recordId, topicName);
           future.complete(event);
         } else {
           Throwable cause = war.cause();
-          LOGGER.error("{} write error for event: {} with correlationId: {}", producerName, eventType, correlationId, cause);
+          LOGGER.error("{} write error for event: {} with recordId: {}", producerName, eventType, recordId, cause);
           future.completeExceptionally(cause);
         }
       });
     } catch (Exception e) {
-      LOGGER.error("Can not publish event: {} with correlationId: {}", eventType, correlationId, e);
+      LOGGER.error("Can not publish event: {} with recordId: {}", eventType, recordId, e);
       future.completeExceptionally(e);
     }
     return future;

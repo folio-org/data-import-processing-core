@@ -3,7 +3,18 @@ package org.folio.processing.mapping.functions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
-import org.folio.*;
+import org.folio.ClassificationType;
+import org.folio.InstanceType;
+import org.folio.ElectronicAccessRelationship;
+import org.folio.InstanceFormat;
+import org.folio.ContributorType;
+import org.folio.ContributorNameType;
+import org.folio.IdentifierType;
+import org.folio.InstanceNoteType;
+import org.folio.AlternativeTitleType;
+import org.folio.IssuanceMode;
+import org.folio.HoldingsType;
+import org.folio.CallNumberType;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Test;
@@ -12,7 +23,12 @@ import org.junit.runners.JUnit4;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.impl.DataFieldImpl;
 
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.Collections;
+import java.util.List;
+import java.util.Arrays;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner.runFunction;
@@ -284,6 +300,7 @@ public class NormalizationFunctionTest {
     String expectedInstanceTypeId = UUID.randomUUID().toString();
     InstanceType instanceType = new InstanceType()
       .withId(expectedInstanceTypeId)
+      .withName("text")
       .withCode("txt");
     RuleExecutionContext context = new RuleExecutionContext();
     context.setSubFieldValue("txt");
