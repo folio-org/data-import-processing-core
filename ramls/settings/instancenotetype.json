@@ -5,7 +5,7 @@
   "properties": {
     "id": {
       "description": "unique ID of the Instance note type; a UUID",
-      "$ref": "../raml-storage/schemas/common/uuid.json"
+      "$ref": "../raml-storage/raml-util/schemas/uuid.schema"
     },
     "name": {
       "type": "string",

@@ -6,7 +6,7 @@
     "id": {
       "type": "string",
       "description": "Authority UUID",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "_version": {
       "type": "integer",
@@ -161,7 +161,7 @@
           "identifierTypeId": {
             "type": "string",
             "description": "Resource identifier type (e.g. Control number, LCCN, Other standard identifier, System control number)",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           }
         },
         "required": [
@@ -178,7 +178,7 @@
         "properties": {
           "noteTypeId": {
             "description": "ID of the type of note",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "note": {
             "type": "string",
