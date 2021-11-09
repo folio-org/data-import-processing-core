@@ -289,7 +289,7 @@
         "properties": {
           "instanceNoteTypeId": {
             "description": "ID of the type of note",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "note": {
             "type": "string",
@@ -375,7 +375,7 @@
       "items": {
         "type": "string",
         "description": "Single UUID for the Instance nature of content",
-        "$ref": "raml-storage/schemas/common/uuid.json"
+        "$ref": "raml-storage/raml-util/schemas/uuid.schema"
       }
     },
     "precedingTitles": {
@@ -387,12 +387,12 @@
           "id": {
             "description": "Id of the preceding title",
             "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "precedingInstanceId": {
             "description": "Id of the preceding instance id",
             "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "title": {
             "type": "string",
@@ -454,12 +454,12 @@
           "id": {
             "description": "Id of the succeeding title",
             "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "succeedingInstanceId": {
             "description": "Id of the succeeding instance id",
             "type": "string",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "title": {
             "type": "string",

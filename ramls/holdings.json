@@ -6,7 +6,7 @@
     "id": {
       "type": "string",
       "description": "the system assigned unique ID of the holdings record; UUID",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "_version": {
       "type": "integer",
@@ -19,7 +19,7 @@
     "holdingsTypeId": {
       "type": "string",
       "description": "unique ID for the type of this holdings record, a UUID",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "formerIds": {
       "type": "array",
@@ -32,22 +32,22 @@
     "instanceId": {
       "description": "Instance id",
       "type": "string",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "permanentLocationId": {
       "type": "string",
       "description": "The permanent shelving location in which an item resides.",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "temporaryLocationId": {
       "type": "string",
       "description": "Temporary location is the temporary location, shelving location, or holding which is a physical place where items are stored, or an Online location.",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "effectiveLocationId": {
       "type": "string",
       "description": "Effective location is calculated by the system based on the values in the permanent and temporary locationId fields.",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "electronicAccess": {
       "description": "Electronic access",
@@ -60,7 +60,7 @@
     "callNumberTypeId": {
       "type": "string",
       "description": "unique ID for the type of call number on a holdings record, a UUID",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "callNumberPrefix": {
       "type": "string",
@@ -99,7 +99,7 @@
           "holdingsNoteTypeId": {
             "type": "string",
             "description": "ID of the type of note",
-            "$ref": "raml-storage/schemas/common/uuid.json"
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           },
           "note": {
             "type": "string",
@@ -116,7 +116,7 @@
     "illPolicyId": {
       "type": "string",
       "description": "unique ID for an ILL policy, a UUID",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "retentionPolicy": {
       "type": "string",
@@ -237,7 +237,7 @@
       "description": "List of statistical code IDs",
       "items": {
         "type": "string",
-        "$ref": "raml-storage/schemas/common/uuid.json"
+        "$ref": "raml-storage/raml-util/schemas/uuid.schema"
       },
       "uniqueItems": true
     },
@@ -250,7 +250,7 @@
     "sourceId": {
       "description": "UUID of the holdings records source",
       "type": "string",
-      "$ref": "raml-storage/schemas/common/uuid.json"
+      "$ref": "raml-storage/raml-util/schemas/uuid.schema"
     },
     "metadata": {
       "type": "object",
