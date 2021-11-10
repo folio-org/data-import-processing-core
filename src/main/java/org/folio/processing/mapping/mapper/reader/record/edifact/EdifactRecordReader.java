@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -67,6 +68,8 @@ public class EdifactRecordReader implements Reader {
 
   private static final Pattern CONSTANT_EXPRESSION_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private static final Pattern SEGMENT_QUERY_PATTERN = Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
+  private static final Pattern MULTI_SEGMENTS_EXPRESSION_PATTERN =
+    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\".\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\10*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
   private static final Pattern EXTERNAL_DATA_EXPRESSION_PATTERN = Pattern.compile("\\{[\\w]+\\}");
   private static final String ELSE_DELIMITER = "; else ";
   private static final String RANGE_DELIMITER = "-";
@@ -82,6 +85,7 @@ public class EdifactRecordReader implements Reader {
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
   private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
   private static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
+  private static final String MULTI_SEGMENTS_EXPRESSION_DELIMITER = " ";
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
@@ -280,13 +284,14 @@ public class EdifactRecordReader implements Reader {
     }
 
     String[] expressionParts = mappingExpression.split(ELSE_DELIMITER);
-
     for (String expressionPart : expressionParts) {
       if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
         readValue = readAcceptableValue(mappingRule);
       } else if (SEGMENT_QUERY_PATTERN.matcher(expressionPart).matches()) {
         List<String> segmentsData = extractSegmentsDataBySegmentExpression(expressionPart, invoiceLineSegments);
         readValue = String.join(EMPTY, segmentsData);
+      } else if (MULTI_SEGMENTS_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
+        readValue = extractSegmentsDataByMultiSegmentsExpression(expressionPart, invoiceLineSegments);
       } else if (EXTERNAL_DATA_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
         readValue = extractDataByExternalDataExpression(expressionPart);
       } else {
@@ -335,6 +340,21 @@ public class EdifactRecordReader implements Reader {
       }
     }
     return value;
+  }
+
+  private String extractSegmentsDataByMultiSegmentsExpression(String multiSegmentsExpression, List<Segment> segments) {
+    StringBuilder result = new StringBuilder();
+    String[] expressionParts = multiSegmentsExpression.split(MULTI_SEGMENTS_EXPRESSION_DELIMITER);
+
+    for (String expressionPart : expressionParts) {
+      if (SEGMENT_QUERY_PATTERN.matcher(expressionPart).matches()) {
+        List<String> segmentsData = extractSegmentsData(expressionPart, segments);
+        result.append(String.join(EMPTY, segmentsData));
+      } else if (CONSTANT_EXPRESSION_PATTERN.matcher(expressionPart).matches()) {
+        result.append(StringUtils.substringBetween(expressionPart, QUOTATION_MARK));
+      }
+    }
+    return result.toString();
   }
 
   private List<String> extractSegmentsDataBySegmentExpression(String segmentExpression, List<Segment> segments) {
