@@ -781,8 +781,44 @@ public class EdifactRecordReaderTest {
         .withOrder(0)
         .withPath(rootPath)
         .withFields(List.of(new MappingRule()
-            .withPath("invoice.invoiceLines[].comment")
-            .withValue("IMD+L+085+[4-5] \" \" IMD+L+086+[4-5]")
+          .withPath("invoice.invoiceLines[].comment")
+          .withValue("IMD+L+085+[4-5] \"--\" IMD+L+086+[4-5]")
+        ))));
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload, mappingContext);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
+
+    List<Map<String, Value>> expectedInvoiceLines = List.of(
+      Map.of("invoice.invoiceLines[].comment", StringValue.of("01.Jan.2021 iss.1--31.Dec.2021 iss.24")));
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
+    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+  }
+
+  @Test
+  public void shouldReadMappingRuleWhenMultipleSegmentsAreSpecifiedWithSpaceAsSeparator() throws IOException {
+    // given
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_MULTIPLE_IMD_SEGMENTS))));
+    dataImportEventPayload.setContext(context);
+
+    String rootPath = "invoice.invoiceLines[]";
+    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(List.of(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath(rootPath)
+        .withFields(List.of(new MappingRule()
+          .withPath("invoice.invoiceLines[].comment")
+          .withValue("IMD+L+085+[4-5] \" \" IMD+L+086+[4-5]")
         ))));
 
     Reader reader = readerFactory.createReader();

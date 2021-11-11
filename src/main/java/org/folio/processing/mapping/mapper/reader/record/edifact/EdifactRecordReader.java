@@ -69,7 +69,7 @@ public class EdifactRecordReader implements Reader {
   private static final Pattern CONSTANT_EXPRESSION_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private static final Pattern SEGMENT_QUERY_PATTERN = Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
   private static final Pattern MULTI_SEGMENTS_EXPRESSION_PATTERN =
-    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\".\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
+    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\"[^\"]*\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
   private static final Pattern EXTERNAL_DATA_EXPRESSION_PATTERN = Pattern.compile("\\{[\\w]+\\}");
   private static final String ELSE_DELIMITER = "; else ";
   private static final String RANGE_DELIMITER = "-";
