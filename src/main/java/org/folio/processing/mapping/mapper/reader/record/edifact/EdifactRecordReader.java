@@ -69,10 +69,11 @@ public class EdifactRecordReader implements Reader {
   private static final Pattern CONSTANT_EXPRESSION_PATTERN = Pattern.compile("(\"[^\"]+\")");
   private static final Pattern SEGMENT_QUERY_PATTERN = Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
   private static final Pattern MULTI_SEGMENTS_EXPRESSION_PATTERN =
-    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\".\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\10*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
+    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\".\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
   private static final Pattern EXTERNAL_DATA_EXPRESSION_PATTERN = Pattern.compile("\\{[\\w]+\\}");
   private static final String ELSE_DELIMITER = "; else ";
   private static final String RANGE_DELIMITER = "-";
+  private static final String MULTI_SEGMENTS_EXPRESSION_DELIMITER = "\\s(?=([^\"]*\"[^\"]*\")*[^\"]*$)";
   private static final String QUALIFIER_SIGN = "?";
   private static final String QUOTATION_MARK = "\"";
   private static final int SEGMENT_TAG_LENGTH = 3;
@@ -85,7 +86,6 @@ public class EdifactRecordReader implements Reader {
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
   private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
   private static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
-  private static final String MULTI_SEGMENTS_EXPRESSION_DELIMITER = " ";
 
   private EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
