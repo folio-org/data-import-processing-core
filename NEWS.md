@@ -1,3 +1,6 @@
+## 2021-11-xx v3.2.4-SNAPSHOT
+* [MODDICORE-199](https://issues.folio.org/browse/MODDICORE-199) Add EDIFACT mapping syntax for multiple fields mapping into 1 invoice field
+
 ## 2021-11-08 v3.2.3
 * [MODDICORE-209](https://issues.folio.org/browse/MODDICORE-209) Support new property "_version" in the Instance
 
