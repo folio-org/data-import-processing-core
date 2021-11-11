@@ -49,7 +49,7 @@
       }
     },
     "meetingName": {
-      "type": "array",
+      "type": "string",
       "description": "Heading meeting name"
     },
     "sftMeetingName": {
