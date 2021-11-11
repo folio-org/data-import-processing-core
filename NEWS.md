@@ -2,10 +2,17 @@
 * [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
 * [MODDICORE-195](https://issues.folio.org/browse/MODDICORE-195) FOLIO snapshot throw optimistic locking error when updating an instance
 
-## 2021-10-xx v3.2.2-SNAPSHOT
+## 2021-11-xx v3.2.4-SNAPSHOT
+* [MODDICORE-199](https://issues.folio.org/browse/MODDICORE-199) Add EDIFACT mapping syntax for multiple fields mapping into 1 invoice field
+
+## 2021-11-08 v3.2.3
+* [MODDICORE-209](https://issues.folio.org/browse/MODDICORE-209) Support new property "_version" in the Instance
+
+## 2021-10-29 v3.2.2
 * [MODDICORE-187](https://issues.folio.org/browse/MODDICORE-187) Blank fields generated from MARC mapping create invalid Instance records in Inventory
 * [MODDICORE-184](https://issues.folio.org/browse/MODDICORE-184) Update the MARC-Instance field mapping for InstanceType (336$a and $b)
 * [MODDICORE-200](https://issues.folio.org/browse/MODDICORE-200) Overlaying with single record import creates duplicate control fields
+* [MODDICORE-198](https://issues.folio.org/browse/MODDICORE-198) Fix the effect of DI_ERROR messages when trying to duplicate records on the import job progress bar
 
 ## 2021-10-08 v3.2.1
 * [MODDICORE-192](https://issues.folio.org/browse/MODDICORE-192) Fix of Incorrect mapping of acquisition ids that caused validation issues and Invoices creating failures
