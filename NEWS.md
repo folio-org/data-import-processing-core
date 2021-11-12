@@ -1,4 +1,4 @@
-## 2021-11-xx v3.2.4-SNAPSHOT
+## 2021-11-15 v3.2.4
 * [MODDICORE-199](https://issues.folio.org/browse/MODDICORE-199) Add EDIFACT mapping syntax for multiple fields mapping into 1 invoice field
 
 ## 2021-11-08 v3.2.3
