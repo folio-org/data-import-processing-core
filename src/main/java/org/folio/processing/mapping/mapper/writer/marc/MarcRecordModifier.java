@@ -565,14 +565,18 @@ public class MarcRecordModifier {
     for (int i = 0; i < controlFields.size(); i++) {
       ControlField fieldToReplace = controlFields.get(i);
       if (fieldToReplace.getTag().equals(fieldReplacement.getTag())) {
-        if (isNotProtected(fieldToReplace)) {
-          if (isNonRepeatableField(fieldToReplace)) {
+        if (isNonRepeatableField(fieldToReplace)) {
+          if (isNotProtected(fieldToReplace)) {
             controlFields.set(i, fieldReplacement);
-            return;
+          } else {
+            LOGGER.info("Field {} was not updated, because it is protected", fieldToReplace);
           }
+          return;
         } else {
-          fieldsProtected = true;
-          LOGGER.info("Field {} was not updated, because it is protected", fieldToReplace);
+          if (fieldToReplace.getData().equals(fieldReplacement.getData())) {
+            fieldsProtected = true;
+            LOGGER.info("Field {} was not added, because it is repeatable and contains identical data as an existing one", fieldToReplace);
+          }
         }
       }
     }
