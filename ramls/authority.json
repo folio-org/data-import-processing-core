@@ -12,6 +12,12 @@
       "type": "integer",
       "description": "Record version for optimistic locking"
     },
+    "source": {
+      "type": "string",
+      "description": "The metadata source of the underlying record to the authority record. (e.g. FOLIO if it's a record created in Inventory;  MARC if it's a MARC record created in data-import)",
+      "enum": ["MARC", "FOLIO"],
+      "readonly": true
+    },
     "personalName": {
       "type": "string",
       "description": "Heading personal name"
@@ -26,6 +32,24 @@
     "saftPersonalName": {
       "type": "array",
       "description": "See also from tracing personal name",
+      "items": {
+        "type": "string"
+      }
+    },
+    "personalNameTitle": {
+      "type": "string",
+      "description": "Heading personal name title"
+    },
+    "sftPersonalNameTitle": {
+      "type": "array",
+      "description": "See from tracing personal name title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftPersonalNameTitle": {
+      "type": "array",
+      "description": "See also from tracing personal name title",
       "items": {
         "type": "string"
       }
@@ -48,6 +72,24 @@
         "type": "string"
       }
     },
+    "corporateNameTitle": {
+      "type": "string",
+      "description": "Heading corporate name title"
+    },
+    "sftCorporateNameTitle": {
+      "type": "array",
+      "description": "See from tracing corporate name title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftCorporateNameTitle": {
+      "type": "array",
+      "description": "See also from tracing corporate name title",
+      "items": {
+        "type": "string"
+      }
+    },
     "meetingName": {
       "type": "string",
       "description": "Heading meeting name"
@@ -62,6 +104,24 @@
     "saftMeetingName": {
       "type": "array",
       "description": "See also from tracing meeting name",
+      "items": {
+        "type": "string"
+      }
+    },
+    "meetingNameTitle": {
+      "type": "string",
+      "description": "Heading meeting name title"
+    },
+    "sftMeetingNameTitle": {
+      "type": "array",
+      "description": "See from tracing meeting name title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftMeetingNameTitle": {
+      "type": "array",
+      "description": "See also from tracing meeting name title",
       "items": {
         "type": "string"
       }
@@ -124,28 +184,22 @@
         "type": "string"
       }
     },
-    "genre": {
-      "type": "object",
-      "description": "Genre/form term",
-      "properties": {
-        "hGenreTerm": {
-          "type": "string",
-          "description": "Heading genre/form term"
-        },
-        "sftGenreTerm": {
-          "type": "array",
-          "description": "See from tracing genre/form term",
-          "items": {
-            "type": "string"
-          }
-        },
-        "saftGenreTerm": {
-          "type": "array",
-          "description": "See also from tracing genre/form term",
-          "items": {
-            "type": "string"
-          }
-        }
+    "genreTerm": {
+      "type": "string",
+      "description": "Heading genre/form term"
+    },
+    "sftGenreTerm": {
+      "type": "array",
+      "description": "See from tracing genre/form term",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftGenreTerm": {
+      "type": "array",
+      "description": "See also from tracing genre/form term",
+      "items": {
+        "type": "string"
       }
     },
     "identifiers": {
