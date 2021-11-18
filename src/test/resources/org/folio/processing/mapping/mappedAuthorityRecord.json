@@ -7,6 +7,8 @@
   "saftPersonalName": [
     "Editor:   C. W. Dugmore."
   ],
+  "sftPersonalNameTitle": [],
+  "saftPersonalNameTitle": [],
   "corporateName": "BR140 .J6",
   "sftCorporateName": [
     "Quarterly, 1970-"
@@ -14,6 +16,8 @@
   "saftCorporateName": [
     "Church history Periodicals."
   ],
+  "sftCorporateNameTitle": [],
+  "saftCorporateNameTitle": [],
   "meetingName": "270.05",
   "sftMeetingName": [
     "Semiannual,"
@@ -21,6 +25,8 @@
   "saftMeetingName": [
     "Church history (OCoLC)fst00860740"
   ],
+  "sftMeetingNameTitle": [],
+  "saftMeetingNameTitle": [],
   "uniformTitle": "The Journal of ecclesiastical history",
   "sftUniformTitle": [
     "v. 1-   Apr. 1950-"
@@ -39,6 +45,13 @@
   "geographicName": "London,",
   "sftGeographicTerm": [],
   "saftGeographicTerm": [],
+  "genreTerm": "32 East 57th St., New York, 10022",
+  "sftGenreTerm": [
+    "note$a note$i note$x note$z note$5"
+  ],
+  "saftGenreTerm": [
+    "linkText publicNote"
+  ],
   "identifiers": [
     {
       "value": "1000649",
