@@ -1,3 +1,6 @@
+## 2021-11-19 v3.2.5
+* [MODDICORE-200](https://issues.folio.org/browse/MODDICORE-200) Fix duplicating values of repeatable control fields on MARC bib update
+
 ## 2021-11-15 v3.2.4
 * [MODDICORE-199](https://issues.folio.org/browse/MODDICORE-199) Add EDIFACT mapping syntax for multiple fields mapping into 1 invoice field
 
