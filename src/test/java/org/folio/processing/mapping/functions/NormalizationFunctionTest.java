@@ -763,7 +763,7 @@ public class NormalizationFunctionTest {
   }
 
   @Test
-  public void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfMappingParametersEmpty() {
+  public void SET_HOLDINGS_TYPE_ID_shouldReturnNullStringIfMappingParametersEmpty() {
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
     context.setSubFieldValue("00379cy  a22001334  4500");
