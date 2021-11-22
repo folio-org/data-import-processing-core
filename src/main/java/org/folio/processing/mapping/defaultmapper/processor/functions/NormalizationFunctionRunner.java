@@ -40,7 +40,7 @@ public class NormalizationFunctionRunner {
   public static String runFunction(String functionName, RuleExecutionContext ruleExecutionContext) {
     try {
       String result = NormalizationFunction.valueOf(functionName.trim().toUpperCase()).apply(ruleExecutionContext);
-      if(result.equals(StringUtils.EMPTY)){
+      if(result != null && result.equals(StringUtils.EMPTY)){
         LOGGER.debug("Result of {} function is empty", functionName);
       }
       return result;

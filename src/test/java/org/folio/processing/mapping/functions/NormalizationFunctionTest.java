@@ -33,6 +33,7 @@ import java.util.Arrays;
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner.runFunction;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(JUnit4.class)
 public class NormalizationFunctionTest {
@@ -769,7 +770,7 @@ public class NormalizationFunctionTest {
     // when
     String holdingsTypeId = runFunction("set_holdings_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, holdingsTypeId);
+    assertNull(holdingsTypeId);
   }
 
   @Test
