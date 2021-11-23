@@ -451,7 +451,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       char sixthChar = subFieldValue.charAt(6);
       List<HoldingsType> holdingsTypes = context.getMappingParameters().getHoldingsTypes();
       if (holdingsTypes == null || holdingsTypes.isEmpty()) {
-        return STUB_FIELD_TYPE_ID;
+        return null;
       }
       String marcHoldingsType = HoldingsTypeEnum.getNameByCharacter(sixthChar);
       return findHoldingsTypeId(holdingsTypes, marcHoldingsType);

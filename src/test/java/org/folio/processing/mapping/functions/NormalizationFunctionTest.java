@@ -33,6 +33,7 @@ import java.util.Arrays;
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner.runFunction;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 @RunWith(JUnit4.class)
 public class NormalizationFunctionTest {
@@ -762,14 +763,14 @@ public class NormalizationFunctionTest {
   }
 
   @Test
-  public void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfMappingParametersEmpty() {
+  public void SET_HOLDINGS_TYPE_ID_shouldReturnNullStringIfMappingParametersEmpty() {
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
     context.setSubFieldValue("00379cy  a22001334  4500");
     // when
     String holdingsTypeId = runFunction("set_holdings_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, holdingsTypeId);
+    assertNull(holdingsTypeId);
   }
 
   @Test
