@@ -1,7 +1,31 @@
 package org.folio.processing.mapping.defaultmapper.processor.parameters;
 
 import org.apache.commons.collections4.list.UnmodifiableList;
-import org.folio.*;
+import org.folio.AlternativeTitleType;
+import org.folio.AuthorityNoteType;
+import org.folio.CallNumberType;
+import org.folio.ClassificationType;
+import org.folio.ContributorNameType;
+import org.folio.ContributorType;
+import org.folio.ElectronicAccessRelationship;
+import org.folio.HoldingsNoteType;
+import org.folio.HoldingsType;
+import org.folio.IdentifierType;
+import org.folio.IllPolicy;
+import org.folio.InstanceFormat;
+import org.folio.InstanceNoteType;
+import org.folio.InstanceRelationshipType;
+import org.folio.InstanceStatus;
+import org.folio.InstanceType;
+import org.folio.IssuanceMode;
+import org.folio.ItemDamageStatus;
+import org.folio.ItemNoteType;
+import org.folio.Loantype;
+import org.folio.Location;
+import org.folio.Mtype;
+import org.folio.NatureOfContentTerm;
+import org.folio.StatisticalCode;
+import org.folio.StatisticalCodeType;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 
 import java.util.ArrayList;
