@@ -3,20 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor.functions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
-import org.folio.AlternativeTitleType;
-import org.folio.CallNumberType;
-import org.folio.ClassificationType;
-import org.folio.ContributorNameType;
-import org.folio.ContributorType;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.HoldingsNoteType;
-import org.folio.HoldingsType;
-import org.folio.IdentifierType;
-import org.folio.InstanceFormat;
-import org.folio.InstanceNoteType;
-import org.folio.InstanceType;
-import org.folio.IssuanceMode;
-import org.folio.Location;
+import org.folio.*;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
@@ -514,6 +501,26 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .stream()
         .filter(holdingsNoteType -> holdingsNoteType.getName().equalsIgnoreCase(noteTypeName))
         .map(HoldingsNoteType::getId).collect(Collectors.joining());
+    }
+  },
+
+  SET_AUTHORITY_NOTE_TYPE_ID() {
+    private static final String NAME_PARAMETER = "name";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      var noteTypeName = context.getRuleParameter().getString(NAME_PARAMETER);
+      var authorityNoteTypes = context.getMappingParameters().getAuthorityNoteTypes();
+
+      if (authorityNoteTypes == null || noteTypeName == null) {
+        return STUB_FIELD_TYPE_ID;
+      }
+
+      return authorityNoteTypes.stream()
+        .filter(authorityNoteType -> authorityNoteType.getName().equalsIgnoreCase(noteTypeName))
+        .map(AuthorityNoteType::getId)
+        .findFirst()
+        .orElse(STUB_FIELD_TYPE_ID);
     }
   };
 

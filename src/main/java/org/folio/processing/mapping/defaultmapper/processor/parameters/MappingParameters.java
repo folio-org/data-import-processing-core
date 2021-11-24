@@ -1,33 +1,11 @@
 package org.folio.processing.mapping.defaultmapper.processor.parameters;
 
 import org.apache.commons.collections4.list.UnmodifiableList;
-import org.folio.AlternativeTitleType;
-import org.folio.CallNumberType;
-import org.folio.ClassificationType;
-import org.folio.ContributorNameType;
-import org.folio.ContributorType;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.HoldingsNoteType;
-import org.folio.HoldingsType;
-import org.folio.IdentifierType;
-import org.folio.IllPolicy;
-import org.folio.InstanceFormat;
-import org.folio.InstanceNoteType;
-import org.folio.InstanceRelationshipType;
-import org.folio.InstanceStatus;
-import org.folio.InstanceType;
-import org.folio.IssuanceMode;
-import org.folio.ItemDamageStatus;
-import org.folio.ItemNoteType;
-import org.folio.Loantype;
-import org.folio.Location;
-import org.folio.Mtype;
-import org.folio.NatureOfContentTerm;
-import org.folio.StatisticalCode;
-import org.folio.StatisticalCodeType;
+import org.folio.*;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,6 +40,7 @@ public class MappingParameters {
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
   private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
   private String tenantConfiguration;
+  private List<AuthorityNoteType> authorityNoteTypes;
 
 
   public MappingParameters withInitializedState(boolean initialized) {
@@ -345,6 +324,14 @@ public class MappingParameters {
     this.marcFieldProtectionSettings = marcFieldProtectionSettings;
   }
 
+  public List<AuthorityNoteType> getAuthorityNoteTypes() {
+    return authorityNoteTypes;
+  }
+
+  public void setAuthorityNoteTypes(List<AuthorityNoteType> authorityNoteTypes) {
+    this.authorityNoteTypes = authorityNoteTypes;
+  }
+
   public MappingParameters withInstanceRelationshipTypes(List<InstanceRelationshipType> instanceRelationshipTypes) {
     this.instanceRelationshipTypes = new UnmodifiableList<>(instanceRelationshipTypes);
     return this;
@@ -412,6 +399,11 @@ public class MappingParameters {
 
   public MappingParameters withMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
     this.marcFieldProtectionSettings = new UnmodifiableList<>(marcFieldProtectionSettings);
+    return this;
+  }
+
+  public MappingParameters withAuthorityNoteTypes(List<AuthorityNoteType> authorityNoteTypes) {
+    this.authorityNoteTypes = Collections.unmodifiableList(authorityNoteTypes);
     return this;
   }
 }
