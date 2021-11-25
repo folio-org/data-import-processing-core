@@ -3,6 +3,7 @@ package org.folio.processing.mapping.functions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
+import org.folio.AuthorityNoteType;
 import org.folio.ClassificationType;
 import org.folio.InstanceType;
 import org.folio.ElectronicAccessRelationship;
@@ -795,6 +796,65 @@ public class NormalizationFunctionTest {
     String callNumberTypeId = runFunction("set_call_number_type_id", context);
     // then
     assertEquals(StringUtils.EMPTY, callNumberTypeId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnExpectedResult() {
+    // given
+    var expectedAuthorityNoteTypeId = UUID.randomUUID().toString();
+    var authorityNoteType = new AuthorityNoteType()
+      .withId(expectedAuthorityNoteTypeId)
+      .withName("Summary");
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthorityNoteTypes(Collections.singletonList(authorityNoteType)));
+    context.setRuleParameter(new JsonObject().put("name", "Summary"));
+    // when
+    var actualInstanceNoteTypeId = runFunction("set_authority_note_type_id", context);
+    // then
+    assertEquals(expectedAuthorityNoteTypeId, actualInstanceNoteTypeId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnStubIfNoMappingsSpecified() {
+    // given
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    context.setRuleParameter(new JsonObject().put("name", "Summary"));
+    // when
+    var actualAuthorityNoteTypeId = runFunction("set_authority_note_type_id", context);
+    // then
+    assertEquals(STUB_FIELD_TYPE_ID, actualAuthorityNoteTypeId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnStubIfNoNameSpecified() {
+    // given
+    var expectedAuthorityNoteTypeId = UUID.randomUUID().toString();
+    var authorityNoteType = new AuthorityNoteType()
+      .withId(expectedAuthorityNoteTypeId)
+      .withName("Summary");
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthorityNoteTypes(Collections.singletonList(authorityNoteType)));
+    context.setRuleParameter(new JsonObject());
+    // when
+    var actualInstanceNoteTypeId = runFunction("set_authority_note_type_id", context);
+    // then
+    assertEquals(STUB_FIELD_TYPE_ID, actualInstanceNoteTypeId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnStubIfNoMatchingMappingSpecified() {
+    // given
+    var authorityNoteType = new AuthorityNoteType()
+      .withId(UUID.randomUUID().toString())
+      .withName("Summary");
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthorityNoteTypes(Collections.singletonList(authorityNoteType)));
+    context.setRuleParameter(new JsonObject().put("name", "General"));
+    // when
+    var actualInstanceNoteTypeId = runFunction("set_authority_note_type_id", context);
+    // then
+    assertEquals(STUB_FIELD_TYPE_ID, actualInstanceNoteTypeId);
   }
 
   private List<HoldingsType> getHoldingsMappingParameter() {

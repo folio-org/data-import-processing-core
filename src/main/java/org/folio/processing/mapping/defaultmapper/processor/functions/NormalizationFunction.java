@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang.StringUtils;
 import org.folio.AlternativeTitleType;
+import org.folio.AuthorityNoteType;
 import org.folio.CallNumberType;
 import org.folio.ClassificationType;
 import org.folio.ContributorNameType;
@@ -514,6 +515,26 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .stream()
         .filter(holdingsNoteType -> holdingsNoteType.getName().equalsIgnoreCase(noteTypeName))
         .map(HoldingsNoteType::getId).collect(Collectors.joining());
+    }
+  },
+
+  SET_AUTHORITY_NOTE_TYPE_ID() {
+    private static final String NAME_PARAMETER = "name";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      var noteTypeName = context.getRuleParameter().getString(NAME_PARAMETER);
+      var authorityNoteTypes = context.getMappingParameters().getAuthorityNoteTypes();
+
+      if (authorityNoteTypes == null || noteTypeName == null) {
+        return STUB_FIELD_TYPE_ID;
+      }
+
+      return authorityNoteTypes.stream()
+        .filter(authorityNoteType -> authorityNoteType.getName().equalsIgnoreCase(noteTypeName))
+        .map(AuthorityNoteType::getId)
+        .findFirst()
+        .orElse(STUB_FIELD_TYPE_ID);
     }
   };
 
