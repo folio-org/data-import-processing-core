@@ -47,6 +47,18 @@ public class HoldingsMappingTest {
     Assert.assertEquals(JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode(), expectedMappedHoldings.encode());
   }
 
+  @Test
+  public void testMarcToHoldingsWhenHoldingsIdIsUnknown() throws IOException {
+    JsonObject expectedMappedHoldings = new JsonObject(TestUtil.readFileFromPath(MAPPED_HOLDINGS_PATH));
+    expectedMappedHoldings.remove("holdingsTypeId");
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    var jsonMarcRecord = getJsonMarcRecord();
+    jsonMarcRecord.put("leader", "00379cu  a22001334  4500");
+    Holdings actualMappedHoldings = mapper.mapRecord(jsonMarcRecord, getMappingParameters(), mappingRules);
+    Assert.assertEquals(JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode(), expectedMappedHoldings.encode());
+  }
+
   private JsonObject getJsonMarcRecord() throws IOException {
     MarcJsonReader reader = new MarcJsonReader(
       new ByteArrayInputStream(TestUtil.readFileFromPath(PARSED_HOLDINGS_PATH).getBytes(StandardCharsets.UTF_8)));

@@ -746,7 +746,7 @@ public class NormalizationFunctionTest {
     // when
     String holdingsTypeId = runFunction("set_holdings_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, holdingsTypeId);
+    assertEquals(StringUtils.EMPTY, holdingsTypeId);
   }
 
   @Test
@@ -759,7 +759,7 @@ public class NormalizationFunctionTest {
     // when
     String holdingsTypeId = runFunction("set_holdings_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, holdingsTypeId);
+    assertEquals(StringUtils.EMPTY, holdingsTypeId);
 
   }
 
@@ -771,7 +771,7 @@ public class NormalizationFunctionTest {
     // when
     String holdingsTypeId = runFunction("set_holdings_type_id", context);
     // then
-    assertNull(holdingsTypeId);
+    assertEquals(StringUtils.EMPTY, holdingsTypeId);
   }
 
   @Test

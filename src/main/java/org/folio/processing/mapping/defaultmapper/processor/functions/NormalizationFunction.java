@@ -452,7 +452,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       char sixthChar = subFieldValue.charAt(6);
       List<HoldingsType> holdingsTypes = context.getMappingParameters().getHoldingsTypes();
       if (holdingsTypes == null || holdingsTypes.isEmpty()) {
-        return null;
+        return StringUtils.EMPTY;
       }
       String marcHoldingsType = HoldingsTypeEnum.getNameByCharacter(sixthChar);
       return findHoldingsTypeId(holdingsTypes, marcHoldingsType);
@@ -463,7 +463,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .filter(holdingsType -> holdingsType.getName().equalsIgnoreCase(marcHoldingsType))
         .findFirst()
         .map(HoldingsType::getId)
-        .orElse(STUB_FIELD_TYPE_ID);
+        .orElse(StringUtils.EMPTY);
     }
   },
 
