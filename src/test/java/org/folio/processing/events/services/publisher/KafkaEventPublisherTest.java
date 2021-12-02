@@ -62,6 +62,7 @@ public class KafkaEventPublisherTest {
       .withToken(TOKEN)
       .withContext(new HashMap<>() {{
         put("recordId", UUID.randomUUID().toString());
+        put("chunkId", UUID.randomUUID().toString());
       }});
 
     CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
