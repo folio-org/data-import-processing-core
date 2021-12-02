@@ -26,6 +26,8 @@ import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 public class KafkaEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
   public static final String RECORD_ID_HEADER = "recordId";
+  public static final String CHUNK_ID_HEADER = "chunkId";
+
 
   private static final AtomicLong indexer = new AtomicLong();
 
@@ -49,6 +51,8 @@ public class KafkaEventPublisher implements EventPublisher {
 
     String eventType = eventPayload.getEventType();
     String recordId = eventPayload.getContext().get(RECORD_ID_HEADER);
+    String chunkId = eventPayload.getContext().get(CHUNK_ID_HEADER);
+    String jobExecutionId = eventPayload.getJobExecutionId();
 
     try {
       Event event = new Event()
@@ -72,7 +76,8 @@ public class KafkaEventPublisher implements EventPublisher {
         KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()),
         KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()),
         KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()),
-        KafkaHeader.header(RECORD_ID_HEADER, recordId)));
+        KafkaHeader.header(RECORD_ID_HEADER, recordId),
+        KafkaHeader.header(CHUNK_ID_HEADER, chunkId)));
 
       String producerName = eventType + "_Producer";
       KafkaProducer<String, String> producer =
@@ -81,11 +86,11 @@ public class KafkaEventPublisher implements EventPublisher {
       producer.write(record, war -> {
         producer.end(ear -> producer.close());
         if (war.succeeded()) {
-          LOGGER.info("Event with type: {} and recordId: {} was sent to the topic {}", eventType, recordId, topicName);
+          LOGGER.info("Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ", eventType, jobExecutionId, recordId, chunkId, topicName);
           future.complete(event);
         } else {
           Throwable cause = war.cause();
-          LOGGER.error("{} write error for event: {} with recordId: {}", producerName, eventType, recordId, cause);
+          LOGGER.error("{} write error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' and with chunkId: '{}' ", producerName, jobExecutionId, eventType, recordId, chunkId, cause);
           future.completeExceptionally(cause);
         }
       });
