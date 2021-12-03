@@ -111,7 +111,7 @@ public class KafkaEventPublisher implements EventPublisher {
       headers.add(KafkaHeader.header(RECORD_ID_HEADER, recordId));
     }
     if (chunkId == null) {
-      LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", chunkId);
+      LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", jobExecutionId);
     } else {
       headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
     }
