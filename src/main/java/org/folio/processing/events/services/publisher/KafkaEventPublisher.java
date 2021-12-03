@@ -6,6 +6,7 @@ import io.vertx.kafka.client.producer.KafkaHeader;
 import io.vertx.kafka.client.producer.KafkaProducer;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -105,12 +106,12 @@ public class KafkaEventPublisher implements EventPublisher {
   }
 
   private void checkAndAddHeaders(String recordId, String chunkId, String jobExecutionId, List<KafkaHeader> headers) {
-    if (recordId == null) {
+    if (StringUtils.isBlank(recordId)) {
       LOGGER.warn("RecordId is empty for jobExecutionId: '{}' ", jobExecutionId);
     } else {
       headers.add(KafkaHeader.header(RECORD_ID_HEADER, recordId));
     }
-    if (chunkId == null) {
+    if (StringUtils.isBlank(chunkId)) {
       LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", jobExecutionId);
     } else {
       headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
