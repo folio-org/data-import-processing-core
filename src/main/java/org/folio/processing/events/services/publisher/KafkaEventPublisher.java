@@ -78,14 +78,8 @@ public class KafkaEventPublisher implements EventPublisher {
       headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
       headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
       headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()));
-      if (recordId != null) {
-        LOGGER.warn("RecordId is empty for jobExecutionId: '{}' ", jobExecutionId);
-        headers.add(KafkaHeader.header(RECORD_ID_HEADER, recordId));
-      }
-      if (chunkId != null) {
-        LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", chunkId);
-        headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
-      }
+      checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
+
       record.addHeaders(headers);
 
       String producerName = eventType + "_Producer";
@@ -108,5 +102,18 @@ public class KafkaEventPublisher implements EventPublisher {
       future.completeExceptionally(e);
     }
     return future;
+  }
+
+  private void checkAndAddHeaders(String recordId, String chunkId, String jobExecutionId, List<KafkaHeader> headers) {
+    if (recordId == null) {
+      LOGGER.warn("RecordId is empty for jobExecutionId: '{}' ", jobExecutionId);
+    } else {
+      headers.add(KafkaHeader.header(RECORD_ID_HEADER, recordId));
+    }
+    if (chunkId == null) {
+      LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", chunkId);
+    } else {
+      headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
+    }
   }
 }
