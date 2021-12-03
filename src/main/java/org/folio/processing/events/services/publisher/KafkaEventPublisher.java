@@ -5,6 +5,8 @@ import io.vertx.core.json.Json;
 import io.vertx.kafka.client.producer.KafkaHeader;
 import io.vertx.kafka.client.producer.KafkaProducer;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -14,6 +16,7 @@ import org.folio.processing.events.utils.PomReaderUtil;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -72,12 +75,13 @@ public class KafkaEventPublisher implements EventPublisher {
       KafkaProducerRecord<String, String> record =
         KafkaProducerRecord.create(topicName, key, Json.encode(event));
 
-      record.addHeaders(List.of(
-        KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()),
-        KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()),
-        KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()),
-        KafkaHeader.header(RECORD_ID_HEADER, recordId),
-        KafkaHeader.header(CHUNK_ID_HEADER, chunkId)));
+      List<KafkaHeader> headers = new ArrayList<>();
+      headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
+      headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
+      headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()));
+      checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
+
+      record.addHeaders(headers);
 
       String producerName = eventType + "_Producer";
       KafkaProducer<String, String> producer =
@@ -99,5 +103,18 @@ public class KafkaEventPublisher implements EventPublisher {
       future.completeExceptionally(e);
     }
     return future;
+  }
+
+  private void checkAndAddHeaders(String recordId, String chunkId, String jobExecutionId, List<KafkaHeader> headers) {
+    if (StringUtils.isBlank(recordId)) {
+      LOGGER.warn("RecordId is empty for jobExecutionId: '{}' ", jobExecutionId);
+    } else {
+      headers.add(KafkaHeader.header(RECORD_ID_HEADER, recordId));
+    }
+    if (StringUtils.isBlank(chunkId)) {
+      LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", jobExecutionId);
+    } else {
+      headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
+    }
   }
 }
