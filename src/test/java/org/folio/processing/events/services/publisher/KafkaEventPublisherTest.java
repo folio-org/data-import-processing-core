@@ -102,4 +102,35 @@ public class KafkaEventPublisherTest {
     future.get();
   }
 
+  @Test
+  public void shouldReturnFailedFutureWhenRecordIdIsNull() throws ExecutionException, InterruptedException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_COMPLETED.value())
+      .withOkapiUrl(OKAPI_URL)
+      .withTenant(TENANT_ID)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>() {{
+        put("chunkId", UUID.randomUUID().toString());
+      }});
+
+    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+    assertFalse(future.isCompletedExceptionally());
+    future.get();
+  }
+
+  @Test
+  public void shouldReturnFailedFutureWhenChunkIdIsNull() throws ExecutionException, InterruptedException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_COMPLETED.value())
+      .withOkapiUrl(OKAPI_URL)
+      .withTenant(TENANT_ID)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>() {{
+        put("recordId", UUID.randomUUID().toString());
+      }});
+
+    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+    assertFalse(future.isCompletedExceptionally());
+    future.get();
+  }
 }
