@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.apache.maven.model.Dependency;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.folio.rest.tools.PomReader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +40,7 @@ class PomReaderUtilTest {
 
   @Test
   void testGetDependencies() {
-    List<Dependency> dependencies = PomReader.INSTANCE.getDependencies();
+    List<Dependency> dependencies = PomReaderUtil.INSTANCE.getDependencies();
     assertFalse(dependencies.isEmpty());
   }
 
