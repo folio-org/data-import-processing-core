@@ -1,6 +1,7 @@
 ## 2021-xx-xx v3.3.0-SNAPSHOT
 * [MODDICORE-222](https://issues.folio.org/browse/MODDICORE-222) Authority: Add normalisation function to set note types
 * [MODDATAIMP-491](https://issues.folio.org/browse/MODDATAIMP-491) Improve logging to be able to trace the path of each record and file_chunks
+* [MODDICORE-225](https://issues.folio.org/browse/MODDICORE-225) When EDIFACT record is imported intermittently currency is not mapped when it comes from record field
 
 ## 2021-09-30 v3.3.0
 * [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
