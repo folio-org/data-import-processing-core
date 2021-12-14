@@ -157,14 +157,14 @@ public class EdifactRecordReader implements Reader {
 
     for (int i = 0; i < segments.size(); i++) {
       Segment segment = segments.get(i);
-      if (INVOICE_LINE_ITEM_TAG.equals(segment.getTag())) {
+      if (invoiceHeaderSegmentsEnd == 0 && INVOICE_LINE_ITEM_TAG.equals(segment.getTag())) {
         invoiceHeaderSegmentsEnd = i - 1;
       } else if (INVOICE_SUMMARY_TAG.equals(segment.getTag())) {
         invoiceSummarySegmentsStart = i;
         break;
       }
     }
-    ArrayList<Segment> invoiceSegments = new ArrayList<>(segments.subList(0, invoiceHeaderSegmentsEnd));
+    ArrayList<Segment> invoiceSegments = new ArrayList<>(segments.subList(0, invoiceHeaderSegmentsEnd + 1));
     invoiceSegments.addAll(segments.subList(invoiceSummarySegmentsStart, segments.size()));
     return invoiceSegments;
   }
