@@ -1,5 +1,6 @@
 package org.folio.processing.matching.loader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.folio.MatchDetail;
 import org.folio.processing.matching.loader.query.DefaultLoadQuery;
 import org.folio.processing.matching.loader.query.LoadQuery;
@@ -10,9 +11,11 @@ import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.Field;
-import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.Qualifier;
+import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -32,10 +35,7 @@ import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXIST
 import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(JUnit4.class)
 public class LoadQueryBuilderTest {
@@ -652,4 +652,48 @@ public class LoadQueryBuilderTest {
     assertEquals(expectedCqlQuery, result.getCql());
   }
 
+  @Test
+  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValueWithNewCQLQuery() {
+    // given
+    StringValue value = StringValue.of("ybp7406411");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+
+    MatchDetail matchDetailWithWrongSecondField = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeIdr").withValue(identifierTypeFieldValue))
+        ));
+
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    LoadQuery wrongResult = LoadQueryBuilder.build(value, matchDetailWithWrongSecondField);
+    //then
+    assertNotNull(result);
+    assertNotNull(wrongResult);
+    assertNotNull(result.getSql());
+    assertNotNull(wrongResult.getSql());
+    String expectedSQLQuery = StringUtils.EMPTY;
+    assertEquals(expectedSQLQuery, result.getSql());
+    assertNotEquals(expectedSQLQuery, wrongResult.getSql());
+    assertNotNull(result.getCql());
+    assertNotNull(wrongResult.getCql());
+    String expectedCQLQuery = format("(identifiers= /@value/@identifierTypeId=%s (%s))",identifierTypeFieldValue, value.getValue());
+    assertEquals(expectedCQLQuery, result.getCql());
+    assertNotEquals(expectedCQLQuery, wrongResult.getCql());
+  }
 }
