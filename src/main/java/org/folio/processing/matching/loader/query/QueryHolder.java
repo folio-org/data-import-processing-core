@@ -207,4 +207,12 @@ public class QueryHolder {
     sqlQuery = sqlQuery + AND_CONDITION + additionalQuery.getSqlQuery().split(WHERE_CLAUSE)[1];
     return this;
   }
+
+  public void setSqlQuery(String sqlQuery) {
+    this.sqlQuery = sqlQuery;
+  }
+
+  public void setCqlQuery(String cqlQuery) {
+    this.cqlQuery = cqlQuery;
+  }
 }

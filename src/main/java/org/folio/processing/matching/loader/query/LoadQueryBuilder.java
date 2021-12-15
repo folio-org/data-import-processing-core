@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.MatchDetail;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
 
@@ -23,6 +24,9 @@ public class LoadQueryBuilder {
   }
 
   private static final String JSON_PATH_SEPARATOR = ".";
+  private static final String IDENTIFIER_TYPE_ID = "identifierTypeId";
+  private static final String IDENTIFIER_TYPE_VALUE = "instance.identifiers[].value";
+  private static final String IDENTIFIER_CQL_QUERY = "(identifiers= /@value/@identifierTypeId=%s (%s))";
 
   /**
    * Builds LoadQuery,
@@ -54,12 +58,23 @@ public class LoadQueryBuilder {
             QueryHolder additionalQuery = new QueryHolder(StringValue.of(additionalField.getValue()), matchDetail.getMatchCriterion())
               .replaceFieldReference(additionalFieldName, true);
             mainQuery.applyAdditionalCondition(additionalQuery);
+            // TODO provide all the requirements for MODDATAIMP-592 and refactor code block below
+            if(checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
+              mainQuery.setCqlQuery(String.format(IDENTIFIER_CQL_QUERY, additionalField.getValue(), value.getValue().toString()));
+              mainQuery.setSqlQuery(StringUtils.EMPTY);
+            }
           }
           return new DefaultJsonLoadQuery(tableName, mainQuery.getSqlQuery(), mainQuery.getCqlQuery());
         }
       }
     }
     return null;
+  }
+
+  private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath, String additionalFieldPath) {
+    return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
+      matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES && fieldPath.equals(IDENTIFIER_TYPE_VALUE) &&
+      additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
   }
 
 }
