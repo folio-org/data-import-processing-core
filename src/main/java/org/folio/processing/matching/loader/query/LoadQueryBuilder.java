@@ -59,9 +59,7 @@ public class LoadQueryBuilder {
               .replaceFieldReference(additionalFieldName, true);
             mainQuery.applyAdditionalCondition(additionalQuery);
             // TODO provide all the requirements for MODDATAIMP-592 and refactor code block below
-            if(matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
-                matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES && fieldPath.equals(IDENTIFIER_TYPE_VALUE) &&
-                additionalField.getLabel().equals(IDENTIFIER_TYPE_ID)) {
+            if(checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
               mainQuery.setCqlQuery(String.format(IDENTIFIER_CQL_QUERY, additionalField.getValue(), value.getValue().toString()));
               mainQuery.setSqlQuery(StringUtils.EMPTY);
             }
@@ -71,6 +69,12 @@ public class LoadQueryBuilder {
       }
     }
     return null;
+  }
+
+  private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath, String additionalFieldPath) {
+    return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
+      matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES && fieldPath.equals(IDENTIFIER_TYPE_VALUE) &&
+      additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
   }
 
 }
