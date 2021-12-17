@@ -1,0 +1,73 @@
+name: build dependants
+# mod-inventory master and mod-source-record-manager master depend on the
+# latest -SNAPSHOT of data-import-processing-core master.
+# Try to build them with the current master of data-import-processing-core.
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+jobs:
+  data-import-processing-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            !~/.m2/repository/org/folio/data-import-processing-core
+          key: data-import-processing-core-${{ hashFiles('**/pom.xml') }}
+          restore-keys: data-import-processing-core-
+      - run: mvn -B clean install -DskipTests
+      - uses: actions/upload-artifact@v2
+        with:
+          name: data-import-processing-core
+          path: ~/.m2/repository/org/folio/data-import-processing-core
+          if-no-files-found: error
+          retention-days: 1
+  mod-inventory:
+    needs: data-import-processing-core
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    timeout-minutes: 5
+    steps:
+      - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-inventory
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            !~/.m2/repository/org/folio/data-import-processing-core
+          key: mod-inventory-${{ hashFiles('**/pom.xml') }}
+          restore-keys: mod-inventory-
+      - uses: actions/download-artifact@v2
+        with:
+          name: data-import-processing-core
+          path: ~/.m2/repository/org/folio/data-import-processing-core
+      - run: cd mod-inventory; mvn -B clean verify
+  mod-source-record-manager:
+    needs: data-import-processing-core
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    timeout-minutes: 20
+    steps:
+      - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-source-record-manager
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            !~/.m2/repository/org/folio/data-import-processing-core
+          key: mod-source-record-manager-${{ hashFiles('**/pom.xml') }}
+          restore-keys: mod-source-record-manager-
+      - uses: actions/download-artifact@v2
+        with:
+          name: data-import-processing-core
+          path: ~/.m2/repository/org/folio/data-import-processing-core
+      - run: cd mod-source-record-manager; mvn -B clean verify
+
