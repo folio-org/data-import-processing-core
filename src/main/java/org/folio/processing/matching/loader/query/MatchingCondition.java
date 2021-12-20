@@ -35,7 +35,8 @@ public enum MatchingCondition {
   EXISTING_VALUE_BEGINS_WITH_INCOMING_VALUE("FIELD_NAME LIKE '%s%%'",
     "FIELD_NAME == \"%s*\""),
   INCOMING_VALUE_BEGINS_WITH_EXISTING_VALUE("'%s' LIKE CONCAT(FIELD_NAME, '%%')",
-    EMPTY);
+    EMPTY),
+  WHERE_CLAUSE_CONSTRUCTOR("\"%s\"", "\"%s\"");
 
   private String sqlCondition;
   private String cqlQuery;
