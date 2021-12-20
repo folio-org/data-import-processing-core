@@ -26,7 +26,8 @@ public class LoadQueryBuilder {
   private static final String JSON_PATH_SEPARATOR = ".";
   private static final String IDENTIFIER_TYPE_ID = "identifierTypeId";
   private static final String IDENTIFIER_TYPE_VALUE = "instance.identifiers[].value";
-  private static final String IDENTIFIER_CQL_QUERY = "(identifiers= /@value/@identifierTypeId=%s (%s))";
+  private static final String IDENTIFIER_CQL_QUERY = "identifiers =/@value/@identifierTypeId=\"%s\" %s";
+  private static final String WHERE_CLAUSE_CONSTRUCTOR_MATCH_CRITERION = "WHERE_CLAUSE_CONSTRUCTOR";
 
   /**
    * Builds LoadQuery,
@@ -60,7 +61,10 @@ public class LoadQueryBuilder {
             mainQuery.applyAdditionalCondition(additionalQuery);
             // TODO provide all the requirements for MODDATAIMP-592 and refactor code block below
             if(checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
-              mainQuery.setCqlQuery(String.format(IDENTIFIER_CQL_QUERY, additionalField.getValue(), value.getValue().toString()));
+              MatchingCondition matchingCondition =
+                MatchingCondition.valueOf(WHERE_CLAUSE_CONSTRUCTOR_MATCH_CRITERION);
+              String condition = matchingCondition.constructCqlQuery(value);
+              mainQuery.setCqlQuery(String.format(IDENTIFIER_CQL_QUERY, additionalField.getValue(), condition));
               mainQuery.setSqlQuery(StringUtils.EMPTY);
             }
           }
