@@ -15,7 +15,6 @@ import org.folio.rest.jaxrs.model.Qualifier;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -692,7 +691,7 @@ public class LoadQueryBuilderTest {
     assertNotEquals(expectedSQLQuery, wrongResult.getSql());
     assertNotNull(result.getCql());
     assertNotNull(wrongResult.getCql());
-    String expectedCQLQuery = format("(identifiers= /@value/@identifierTypeId=%s (%s))",identifierTypeFieldValue, value.getValue());
+    String expectedCQLQuery = format("identifiers =/@value/@identifierTypeId=\"%s\" \"%s\"",identifierTypeFieldValue, value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
     assertNotEquals(expectedCQLQuery, wrongResult.getCql());
   }
