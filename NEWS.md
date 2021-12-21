@@ -1,3 +1,6 @@
+## 2021-12-21 v3.2.7
+* Fix log4j vulnerability (upgrade to folio-kafka-wrapper v2.4.2)
+
 ## 2021-12-21 v3.2.6
 * [MODDICORE-230](https://issues.folio.org/browse/MODDICORE-230) Fix log4j vulnerability (upgrade to folio-kafka-wrapper v2.4.1)
 * [MODDICORE-231](https://issues.folio.org/browse/MODDICORE-231) Fix matching on identifier type and identifier value
