@@ -8,8 +8,8 @@ import org.folio.processing.events.utils.OkapiConnectionParams;
 import org.folio.processing.events.utils.PomReaderUtil;
 import org.folio.processing.events.utils.RestUtil;
 import org.folio.processing.events.utils.ZIPArchiver;
-import org.folio.Event;
-import org.folio.EventMetadata;
+import org.folio.rest.jaxrs.model.Event;
+import org.folio.rest.jaxrs.model.EventMetadata;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

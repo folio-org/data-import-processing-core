@@ -1,7 +1,7 @@
 package org.folio.processing.events.services.publisher;
 
 import org.folio.DataImportEventPayload;
-import org.folio.Event;
+import org.folio.rest.jaxrs.model.Event;
 
 import java.util.concurrent.CompletableFuture;
 
