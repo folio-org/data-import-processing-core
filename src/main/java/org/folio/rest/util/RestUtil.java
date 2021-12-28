@@ -1,10 +1,9 @@
-package org.folio.processing.events.utils;
+package org.folio.rest.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Handler;
-import io.vertx.core.MultiMap;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
@@ -85,15 +84,15 @@ public final class RestUtil {
                                                       HttpMethod method, T payload) {
     Promise<WrappedResponse> promise = Promise.promise();
     try {
-      MultiMap headers = params.getHeaders();
+      Map<String, String> headers = params.getHeaders();
       String requestUrl = params.getOkapiUrl() + url;
       WebClient client = WebClient.wrap(getHttpClient(params));
 
       HttpRequest<Buffer> request = client.requestAbs(method, requestUrl);
       if (headers != null) {
-        headers.add("Content-type", "application/json")
-          .add("Accept", "application/json, text/plain");
-        for (Map.Entry<String, String> entry : headers.entries()) {
+        headers.put("Content-type", "application/json");
+        headers.put("Accept", "application/json, text/plain");
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
           request.putHeader(entry.getKey(), entry.getValue());
         }
       }

@@ -4,22 +4,24 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
-import org.folio.processing.events.utils.OkapiConnectionParams;
 import org.folio.processing.events.utils.PomReaderUtil;
-import org.folio.processing.events.utils.RestUtil;
+import org.folio.rest.util.RestUtil;
 import org.folio.processing.events.utils.ZIPArchiver;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.rest.tools.utils.VertxUtils;
+import org.folio.rest.util.OkapiConnectionParams;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import static org.folio.processing.events.utils.OkapiConnectionParams.OKAPI_URL_HEADER;
-import static org.folio.processing.events.utils.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
-import static org.folio.processing.events.utils.OkapiConnectionParams.OKAPI_TENANT_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 
 @Deprecated
 public class RestEventPublisher implements EventPublisher {
@@ -30,11 +32,7 @@ public class RestEventPublisher implements EventPublisher {
   public CompletableFuture<Event> publish(DataImportEventPayload eventPayload) {
     Promise<Event> promise = Promise.promise();
     try {
-      OkapiConnectionParams params = new OkapiConnectionParams(Map.of(
-        OKAPI_URL_HEADER, eventPayload.getOkapiUrl(),
-        OKAPI_TENANT_HEADER, eventPayload.getTenant(),
-        OKAPI_TOKEN_HEADER, eventPayload.getToken()
-      ));
+      OkapiConnectionParams params = new OkapiConnectionParams(getOkapiHeaders(eventPayload), VertxUtils.getVertxFromContextOrNew());
       Event event = new Event()
         .withId(UUID.randomUUID().toString())
         .withEventType(eventPayload.getEventType())
@@ -58,5 +56,13 @@ public class RestEventPublisher implements EventPublisher {
       promise.fail(e);
     }
     return promise.future().toCompletionStage().toCompletableFuture();
+  }
+
+  private Map<String, String> getOkapiHeaders(DataImportEventPayload eventPayload) {
+    Map<String, String> okapiHeaders = new HashMap<>();
+    okapiHeaders.put(OKAPI_URL_HEADER, eventPayload.getOkapiUrl());
+    okapiHeaders.put(OKAPI_TENANT_HEADER, eventPayload.getTenant());
+    okapiHeaders.put(OKAPI_TOKEN_HEADER, eventPayload.getToken());
+    return okapiHeaders;
   }
 }
