@@ -8,7 +8,7 @@ import net.mguenther.kafka.junit.ObserveKeyValues;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
-import org.folio.rest.jaxrs.model.Event;
+import org.folio.Event;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;

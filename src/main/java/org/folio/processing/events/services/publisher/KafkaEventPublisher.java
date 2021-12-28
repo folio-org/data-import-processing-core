@@ -13,8 +13,8 @@ import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.processing.events.utils.PomReaderUtil;
-import org.folio.rest.jaxrs.model.Event;
-import org.folio.rest.jaxrs.model.EventMetadata;
+import org.folio.Event;
+import org.folio.EventMetadata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +22,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
+import static org.folio.processing.events.utils.OkapiConnectionParams.OKAPI_URL_HEADER;
+import static org.folio.processing.events.utils.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
+import static org.folio.processing.events.utils.OkapiConnectionParams.OKAPI_TENANT_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);

@@ -20,13 +20,13 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <pubsub.client.version>2.4.0</pubsub.client.version>
     <commons.lang.version>2.6</commons.lang.version>
     <logger.version>1.7.25</logger.version>
     <jackson.version>2.10.5.1</jackson.version>
     <junit.version>4.13.1</junit.version>
-    <vertx-unit.version>4.0.0</vertx-unit.version>
+    <vertx.version>4.0.0</vertx.version>
     <wiremock.version>2.27.2</wiremock.version>
+    <raml-module-builder.version>33.2.2</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
@@ -59,19 +59,13 @@
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
-      <artifactId>mod-pubsub-client</artifactId>
-      <version>${pubsub.client.version}</version>
-      <type>jar</type>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.logging.log4j</groupId>
-          <artifactId>log4j-slf4j-impl</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
+      <artifactId>domain-models-api-interfaces</artifactId>
+      <version>${raml-module-builder.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>domain-models-runtime</artifactId>
+      <version>${raml-module-builder.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -92,7 +86,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
-      <version>${vertx-unit.version}</version>
+      <version>${vertx.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -148,7 +142,6 @@
       <artifactId>collections-generic</artifactId>
       <version>4.01</version>
     </dependency>
-
   </dependencies>
 
   <scm>
@@ -231,6 +224,7 @@
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/marc-field-protection/marcFieldProtectionSettingsCollection.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/dto/record.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/dto/edifactParsedContent.json</path>
+                <path>${basedir}/ramls/event.json</path>
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/holdings.json</path>
                 <path>${basedir}/ramls/authority.json</path>
