@@ -28,6 +28,7 @@
     <wiremock.version>2.27.2</wiremock.version>
     <raml-module-builder.version>33.2.2</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
+    <sonar.exclusions>**/OkapiConnectionParams.java</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
     <sonar.exclusions>**/schemas/*</sonar.exclusions>

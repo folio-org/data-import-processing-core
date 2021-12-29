@@ -41,7 +41,7 @@ public class KafkaEventPublisherTest {
 
   private static KafkaConfig kafkaConfig;
   private Vertx vertx = Vertx.vertx();
-  private KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100);;
+  private KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100);
 
   @BeforeClass
   public static void setUpClass() {
