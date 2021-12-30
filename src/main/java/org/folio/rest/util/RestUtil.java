@@ -15,19 +15,18 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.HttpStatus;
-import org.folio.rest.tools.utils.VertxUtils;
+import org.folio.processing.events.utils.VertxUtils;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import java.util.Map;
 
-import static org.folio.HttpStatus.HTTP_OK;
-import static org.folio.HttpStatus.HTTP_CREATED;
-import static org.folio.HttpStatus.HTTP_NOT_FOUND;
-import static org.folio.HttpStatus.HTTP_NO_CONTENT;
-import static org.folio.HttpStatus.HTTP_INTERNAL_SERVER_ERROR;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static java.net.HttpURLConnection.HTTP_CREATED;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
 
 public final class RestUtil {
 
@@ -153,7 +152,7 @@ public final class RestUtil {
     } else if (isCode(asyncResult, HTTP_NOT_FOUND)) {
       LOGGER.error(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
       promise.fail(new NotFoundException());
-    } else if (isCode(asyncResult, HTTP_INTERNAL_SERVER_ERROR)) {
+    } else if (isCode(asyncResult, HTTP_INTERNAL_ERROR)) {
       LOGGER.error(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
       promise.fail(new InternalServerErrorException());
     } else if (isSuccess(asyncResult)) {
@@ -175,7 +174,7 @@ public final class RestUtil {
       || isCode(asyncResult, HTTP_NO_CONTENT);
   }
 
-  private static boolean isCode(AsyncResult<WrappedResponse> asyncResult, HttpStatus status) {
-    return getCode(asyncResult) == status.toInt();
+  private static boolean isCode(AsyncResult<WrappedResponse> asyncResult, int status) {
+    return getCode(asyncResult) == status;
   }
 }

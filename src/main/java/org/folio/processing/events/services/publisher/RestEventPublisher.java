@@ -5,13 +5,13 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.utils.PomReaderUtil;
+import org.folio.processing.events.utils.VertxUtils;
 import org.folio.rest.util.RestUtil;
 import org.folio.processing.events.utils.ZIPArchiver;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.rest.tools.utils.VertxUtils;
 import org.folio.rest.util.OkapiConnectionParams;
 
 import java.util.HashMap;
