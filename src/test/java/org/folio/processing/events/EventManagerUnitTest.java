@@ -1,5 +1,6 @@
 package org.folio.processing.events;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -49,10 +50,12 @@ import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(VertxUnitRunner.class)
 public class EventManagerUnitTest extends AbstractRestTest {
+  private final String PUBLISH_SERVICE_URL = "/pubsub/publish";
 
   @Before
   public void beforeTest() {
     EventManager.clearEventHandlers();
+    WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.noContent()));
   }
 
   @Test
