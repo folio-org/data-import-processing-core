@@ -48,6 +48,7 @@ public final class RestUtil {
       try {
         json = new JsonObject(body);
       } catch (Exception e) {
+        LOGGER.info("Error converting response body to json, body: {}", body, e);
         json = null;
       }
     }
@@ -103,6 +104,7 @@ public final class RestUtil {
       }
       return promise.future();
     } catch (Exception e) {
+      LOGGER.error("Error during request sending to {} with {} method", url, method, e);
       promise.fail(e);
       return promise.future();
     }
