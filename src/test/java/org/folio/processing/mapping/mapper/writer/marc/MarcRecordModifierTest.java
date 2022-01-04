@@ -13,7 +13,6 @@ import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MarcMappingDetail;
 import org.folio.rest.jaxrs.model.MarcSubfield;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static io.vertx.core.json.jackson.DatabindCodec.mapper;
-import static org.folio.processing.mapping.mapper.writer.marc.MarcRecordModifier.MATCHED_MARC_BIB_KEY;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.UPDATE;
@@ -42,6 +40,7 @@ import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
 @RunWith(JUnit4.class)
 public class MarcRecordModifierTest {
 
+  private static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
   private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test(expected = IllegalArgumentException.class)
@@ -49,7 +48,7 @@ public class MarcRecordModifierTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(new HashMap<>());
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail().withMarcMappingOption(MODIFY));
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
   }
 
   @Test
@@ -80,7 +79,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -118,7 +117,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -153,7 +152,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -186,7 +185,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -222,7 +221,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -258,7 +257,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -294,7 +293,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -330,7 +329,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -375,7 +374,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -419,7 +418,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -464,7 +463,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -507,7 +506,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -552,7 +551,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -597,7 +596,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -642,7 +641,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -688,7 +687,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -731,7 +730,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -774,7 +773,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -814,7 +813,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -854,7 +853,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -894,7 +893,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -934,7 +933,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -975,7 +974,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1016,7 +1015,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1054,7 +1053,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1091,7 +1090,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1129,7 +1128,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1165,7 +1164,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1205,7 +1204,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
 
@@ -1241,7 +1240,7 @@ public class MarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Arrays.asList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1277,7 +1276,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1318,7 +1317,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1359,7 +1358,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1386,7 +1385,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withRecordType(MARC_BIBLIOGRAPHIC));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1427,7 +1426,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1457,7 +1456,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1484,7 +1483,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withRecordType(MARC_BIBLIOGRAPHIC));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1541,7 +1540,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingDetails(Arrays.asList(mappingRule1, mappingRule2)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Arrays.asList(mappingRule1, mappingRule2));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1603,7 +1602,7 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Arrays.asList(mappingRule1, mappingRule2)));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Arrays.asList(mappingRule1, mappingRule2));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1657,7 +1656,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1688,7 +1687,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile);
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1732,7 +1731,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1776,7 +1775,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1819,7 +1818,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -1872,7 +1871,7 @@ public class MarcRecordModifierTest {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
     marcRecordModifier.getResult(eventPayload);
     //then
