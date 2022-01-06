@@ -68,7 +68,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingOption(MODIFY)
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -112,7 +112,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -161,7 +161,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -208,7 +208,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -255,7 +255,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -302,7 +302,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -349,7 +349,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -396,7 +396,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
@@ -444,7 +444,7 @@ public class ProtectedMarcRecordModifierTest {
       .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
-    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC);
     marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
