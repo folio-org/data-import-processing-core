@@ -1,3 +1,6 @@
+## 2022-01-12 v3.1.7
+* [MODDICORE-238](https://issues.folio.org/browse/MODDICORE-238) Fix matching on identifier type and identifier value
+
 ## 2021-10-08 v3.1.6
 * [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
 
