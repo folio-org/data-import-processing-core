@@ -380,7 +380,7 @@ public class EdifactRecordReader implements Reader {
       qualifierValue = StringUtils.substringBetween(segmentQuery, QUALIFIER_SIGN, "[");
       dataElementsFilterValues = Arrays.asList(StringUtils.split(segmentQuery.substring(4, segmentQuery.indexOf(QUALIFIER_SIGN)), dataElementSeparator));
     } else {
-      dataElementsFilterValues = Arrays.asList(StringUtils.split(segmentQuery.substring(4, segmentQuery.indexOf('[')), dataElementSeparator));
+      dataElementsFilterValues = Arrays.asList(segmentQuery.substring(4, segmentQuery.indexOf('[')).split(String.format("\\%s", dataElementSeparator)));
     }
 
     for (Segment segment : segments) {
