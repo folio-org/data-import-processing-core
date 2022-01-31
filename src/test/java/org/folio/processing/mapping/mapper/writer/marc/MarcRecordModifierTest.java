@@ -1295,12 +1295,9 @@ public class MarcRecordModifierTest {
   @Test
   public void shouldReplaceEntireExistingFieldWhenWildcardSubfield() throws IOException {
     // given
-    String incomingParsedContent =
-      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String existingParsedContent =
-      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent =
-      "{\"leader\":\"00140nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00140nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -1337,12 +1334,9 @@ public class MarcRecordModifierTest {
   @Test
   public void shouldAddIncomingFieldToExistingRecordWhenNoCorrespondingExistingField() throws IOException {
     // given
-    String incomingParsedContent =
-      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent =
-      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent =
-      "{\"leader\":\"00130nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00130nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -1474,8 +1468,7 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldNotApplyProtectionAndReplaceControlField008WhenProtectionHasConfigurationRelatedToNonControlField()
-    throws IOException {
+  public void shouldNotApplyProtectionAndReplaceControlField008WhenProtectionHasConfigurationRelatedToNonControlField() throws IOException {
     // given
     String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"008\":\"sd 13245\"}]}";
     String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd abcde\"}]}";
