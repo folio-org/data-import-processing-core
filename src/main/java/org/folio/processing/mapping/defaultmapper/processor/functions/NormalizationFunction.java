@@ -28,6 +28,7 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -136,25 +137,34 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
   CONCAT_SUBFIELDS_BY_NAME() {
     private static final String SUBFIELDS_TO_CONCAT = "subfieldsToConcat";
+    private static final String SUBFIELDS_TO_STOP = "subfieldsToStopConcat";
 
     @Override
     public String apply(RuleExecutionContext context) {
       StringBuilder subfieldValue = new StringBuilder(context.getSubFieldValue());
-      DataField dataField = context.getDataField();
-      JsonArray subFields = context.getRuleParameter().getJsonArray(SUBFIELDS_TO_CONCAT);
-      int subFieldIndex = IntStream.range(0, dataField.getSubfields().size())
-        .filter(i -> dataField.getSubfields().get(i).getData().equals(context.getSubFieldValue()))
+      List<Subfield> subfields = context.getDataField().getSubfields();
+      JsonObject ruleParameter = context.getRuleParameter();
+      JsonArray subfieldToConcat = ruleParameter.getJsonArray(SUBFIELDS_TO_CONCAT);
+      List<String> subfieldsToStop = Objects.requireNonNullElse(ruleParameter.getJsonArray(SUBFIELDS_TO_STOP), new JsonArray())
+        .stream().map(Object::toString).collect(Collectors.toList());
+      int subFieldIndex = IntStream.range(0, subfields.size())
+        .filter(i -> subfields.get(i).getData().equals(context.getSubFieldValue()))
         .findFirst()
         .getAsInt();
+      int subfieldsLimit = IntStream.range(subFieldIndex, subfields.size())
+        .filter(index -> subfieldsToStop.contains(String.valueOf(subfields.get(index).getCode())))
+        .map(result -> result - subFieldIndex)
+        .min().orElse(Integer.MAX_VALUE);
 
-      return concatSubFields(subFields, dataField, subFieldIndex, subfieldValue);
+      return concatSubFields(subfieldToConcat, subfields, subFieldIndex, subfieldsLimit, subfieldValue);
     }
 
-    private String concatSubFields(JsonArray subFields, DataField dataField, int subFieldIndex, StringBuilder subfieldValue){
+    private String concatSubFields(JsonArray subFields, List<Subfield> subfields, int subFieldIndex, int limit, StringBuilder subfieldValue){
       for (int j = 0; j < subFields.size(); j++) {
         String subfieldToAppend = subFields.getString(j);
-        String subFieldValueToAppend = dataField.getSubfields().stream()
+        String subFieldValueToAppend = subfields.stream()
           .skip(subFieldIndex)
+          .limit(limit)
           .filter(e -> String.valueOf(e.getCode()).equals(subfieldToAppend))
           .map(Subfield::getData)
           .findFirst()
