@@ -1790,7 +1790,7 @@ public class MarcRecordModifierTest {
     // given
     String incomingParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"}]}";
     String existingParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"123\"}]}";
-    String expectedParsedContent = existingParsedContent;
+    String expectedParsedContent = "{\"leader\":\"00062nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"}]}";
 
     Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(incomingParsedContent));
@@ -1874,6 +1874,51 @@ public class MarcRecordModifierTest {
     //when
     marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
     marcRecordModifier.processUpdateMappingOption(Collections.emptyList());
+    marcRecordModifier.getResult(eventPayload);
+    //then
+    String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  public void shouldRemoveNotUpdatedFieldToAllRepeatableControlFieldAndChangeLeader() throws IOException {
+    // given
+    // 002, 007 are repeatable control fields
+    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"002\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String expectedParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
+
+    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
+      .withId(UUID.randomUUID().toString())
+      .withField("001")
+      .withSubfield("")
+      .withIndicator1("")
+      .withIndicator2("")
+      .withData("*")
+      .withSource(MarcFieldProtectionSetting.Source.SYSTEM)
+      .withOverride(true);
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
+
+    Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(existingParsedContent));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(incomingRecord));
+    context.put(MATCHED_MARC_BIB_KEY, Json.encodePrettily(existingRecord));
+    eventPayload.setContext(context);
+
+    //when
+    marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile);
+    marcRecordModifier.processUpdateMappingOption(mappingProfile.getMappingDetails().getMarcMappingDetails());
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
