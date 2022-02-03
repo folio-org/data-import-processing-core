@@ -555,6 +555,7 @@ public class MarcRecordModifier {
         replaceDataField(dataField, dataField.getTag(), dataField.getIndicator1(), dataField.getIndicator2(), "*");
       }
     }
+    clearUnUpdatedControlFields();
     clearUnUpdatedDataFields();
   }
 
@@ -625,6 +626,18 @@ public class MarcRecordModifier {
     }
   }
 
+  private void clearUnUpdatedControlFields() {
+    List<ControlField> tmpFields = new ArrayList<>();
+    for (ControlField controlField : marcRecordToChange.getControlFields()) {
+      if (!isControlFieldsContains(incomingMarcRecord.getControlFields(), controlField)
+        && !isNonRepeatableField(controlField)
+        && isNotProtected(controlField)) {
+        tmpFields.add(controlField);
+      }
+    }
+    marcRecordToChange.getControlFields().removeAll(tmpFields);
+  }
+
   private void clearUnUpdatedDataFields() {
     List<DataField> tmpFields = new ArrayList<>();
     for (DataField dataField : marcRecordToChange.getDataFields()) {
@@ -667,4 +680,9 @@ public class MarcRecordModifier {
       .collect(Collectors.toList());
   }
 
+  private boolean isControlFieldsContains(List<ControlField> controlFields, ControlField controlField) {
+    return controlFields.stream().anyMatch(field ->
+      field.getTag().equals(controlField.getTag())
+        && field.getData().equals(controlField.getData()));
+  }
 }

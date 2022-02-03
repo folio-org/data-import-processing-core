@@ -1,3 +1,6 @@
+## 2022-xx-xx
+* [MODDICORE-242](https://issues.folio.org/browse/MODDICORE-242) MARC 007 is retained although overlay does not contain MARC 007 field
+
 ## 2021-12-21 v3.2.7
 * Fix log4j vulnerability (upgrade to folio-kafka-wrapper v2.4.2)
 
