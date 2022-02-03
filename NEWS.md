@@ -5,6 +5,7 @@
 * [MODDATAIMP-592](https://issues.folio.org/browse/MODDATAIMP-592) Data Import matches on identifier type and identifier value separately, resulting in incorrect matches
 * [MODDICORE-188](https://issues.folio.org/browse/MODDICORE-188) Remove pubsub client dependency
 * [MODDICORE-240](https://issues.folio.org/browse/MODDICORE-240) EDIFACT Inv: Empty Invoice line Description in field mapping profile fails Data Import job
+* [MODSOURMAN-675](https://issues.folio.org/browse/MODSOURMAN-675) Data Import handles repeated 020 $a:s in an unexpected manner when creating Instance Identifiers
 
 ## 2021-09-30 v3.3.0
 * [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures

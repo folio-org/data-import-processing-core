@@ -2,6 +2,7 @@ package org.folio.processing.mapping.defaultmapper.processor.functions;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
@@ -28,7 +29,9 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -136,32 +139,36 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
   CONCAT_SUBFIELDS_BY_NAME() {
     private static final String SUBFIELDS_TO_CONCAT = "subfieldsToConcat";
+    private static final String SUBFIELDS_TO_STOP = "subfieldsToStopConcat";
 
     @Override
     public String apply(RuleExecutionContext context) {
-      StringBuilder subfieldValue = new StringBuilder(context.getSubFieldValue());
-      DataField dataField = context.getDataField();
-      JsonArray subFields = context.getRuleParameter().getJsonArray(SUBFIELDS_TO_CONCAT);
-      int subFieldIndex = IntStream.range(0, dataField.getSubfields().size())
-        .filter(i -> dataField.getSubfields().get(i).getData().equals(context.getSubFieldValue()))
-        .findFirst()
-        .getAsInt();
+      List<Subfield> subfields = context.getDataField().getSubfields();
+      JsonObject ruleParameter = context.getRuleParameter();
+      String subFieldValue = context.getSubFieldValue();
+      int subFieldIndex = IntStream.range(0, subfields.size())
+        .filter(i -> subfields.get(i).getData().equals(subFieldValue))
+        .findFirst().orElse(0);
 
-      return concatSubFields(subFields, dataField, subFieldIndex, subfieldValue);
+      List<String> subfieldsToStop = ListUtils.union(Collections.singletonList(String.valueOf(subfields.get(subFieldIndex).getCode())),
+        Objects.requireNonNullElse(ruleParameter.getJsonArray(SUBFIELDS_TO_STOP), new JsonArray()).stream().map(Object::toString).collect(Collectors.toList()));
+      int subfieldsLimit = IntStream.range(subFieldIndex + 1, subfields.size())
+        .filter(index -> subfieldsToStop.contains(String.valueOf(subfields.get(index).getCode())))
+        .min().orElse(subfields.size());
+
+      return concatSubFields(ruleParameter, subfields.subList(subFieldIndex, subfieldsLimit), subFieldValue);
     }
 
-    private String concatSubFields(JsonArray subFields, DataField dataField, int subFieldIndex, StringBuilder subfieldValue){
-      for (int j = 0; j < subFields.size(); j++) {
-        String subfieldToAppend = subFields.getString(j);
-        String subFieldValueToAppend = dataField.getSubfields().stream()
-          .skip(subFieldIndex)
+    private String concatSubFields(JsonObject ruleParameter, List<Subfield> subfields, String subfieldValue){
+      StringBuilder concatenationResult = new StringBuilder(subfieldValue);
+      JsonArray subfieldToConcat = ruleParameter.getJsonArray(SUBFIELDS_TO_CONCAT);
+      for (int j = 0; j < subfieldToConcat.size(); j++) {
+        String subfieldToAppend = subfieldToConcat.getString(j);
+        subfields.stream()
           .filter(e -> String.valueOf(e.getCode()).equals(subfieldToAppend))
-          .map(Subfield::getData)
-          .findFirst()
-          .orElse("");
-        subfieldValue.append(" ").append(subFieldValueToAppend);
+          .forEach(result -> concatenationResult.append(" ").append(result.getData()));
       }
-      return subfieldValue.toString();
+      return concatenationResult.toString();
     }
   },
 

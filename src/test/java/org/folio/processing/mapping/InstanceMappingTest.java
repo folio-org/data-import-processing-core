@@ -5,7 +5,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import org.folio.Instance;
+import org.folio.Identifier;
 import org.folio.InstanceType;
+import org.folio.IdentifierType;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
@@ -28,9 +30,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 @RunWith(JUnit4.class)
 public class InstanceMappingTest {
@@ -47,10 +51,12 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/880_to_830.mrc";
   private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/5xx_staff_only_indicators.mrc";
   private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/590_subfield_3.mrc";
+  private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/ISBN.mrc";
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/336_subfields_mapping.mrc";
 
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/rules.json";
   private static final String DEFAULT_INSTANCE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instanceTypes.json";
+  private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/resourceIdentifiers.json";
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
   private static final String TXT_INSTANCE_TYPE_ID = "6312d172-f0cf-40f6-b27d-9fa8feaf332f";
   private static final String UNSPECIFIED_INSTANCE_TYPE_ID = "30fffe0e-e985-4144-b2e2-1e8179bdb41f";
@@ -347,6 +353,49 @@ public class InstanceMappingTest {
     Assert.assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(1).getInstanceTypeId());
     Assert.assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(2).getInstanceTypeId());
     Assert.assertEquals(UNSPECIFIED_INSTANCE_TYPE_ID, mappedInstances.get(3).getInstanceTypeId());
+  }
+
+  @Test
+  public void testMarcToInstanceWithRepeatableISBN() throws IOException {
+    final String ISBN_IDENTIFIER_ID = "8261054f-be78-422d-bd51-4ed9f33c3422";
+    final String INVALID_ISBN_IDENTIFIER_ID = "fcca2643-406a-482a-b760-7a7f8aec640e";
+    final List<Map.Entry<String, String>> expectedResults = List.of(
+      Map.entry("9780471622673 (acid-free paper)", ISBN_IDENTIFIER_ID),
+      Map.entry("0471725331 (electronic bk.)", ISBN_IDENTIFIER_ID),
+      Map.entry("9780471725336 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID),
+      Map.entry("0471725323 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID ),
+      Map.entry("9780471725329 (electronic bk.)", ISBN_IDENTIFIER_ID ),
+      Map.entry("0471622672 (acid-free paper)", INVALID_ISBN_IDENTIFIER_ID));
+
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_020_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    String rawResourceIdentifierTypes = TestUtil.readFileFromPath(DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH);
+    List<IdentifierType> instanceTypes = List.of(new ObjectMapper().readValue(rawResourceIdentifierTypes, IdentifierType[].class));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    List<Instance> mappedInstances = new ArrayList<>();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withIdentifierTypes(instanceTypes), mappingRules);
+      mappedInstances.add(instance);
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      Assert.assertTrue(violations.isEmpty());
+    }
+    Assert.assertFalse(mappedInstances.isEmpty());
+    Assert.assertEquals(1, mappedInstances.size());
+    List<Identifier> identifierTypes = mappedInstances.get(0).getIdentifiers();
+    Assert.assertEquals(6, identifierTypes.size());
+    IntStream.range(0, expectedResults.size()).forEach(index -> {
+        Map.Entry<String, String> expected = expectedResults.get(index);
+        Identifier actual = identifierTypes.get(index);
+        Assert.assertEquals(expected.getValue(), actual.getIdentifierTypeId());
+        Assert.assertEquals(expected.getKey(), actual.getValue());
+    });
   }
 
 }
