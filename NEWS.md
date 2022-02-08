@@ -1,4 +1,4 @@
-## 2022-xx-xx
+## 2022-02-08 v3.2.8
 * [MODDICORE-242](https://issues.folio.org/browse/MODDICORE-242) MARC 007 is retained although overlay does not contain MARC 007 field
 
 ## 2021-12-21 v3.2.7
