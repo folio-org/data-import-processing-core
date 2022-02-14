@@ -35,8 +35,8 @@
             {
               "type": "char_select",
               "parameter": {
-                "from": 10,
-                "to": 11
+                "from": 11,
+                "to": 12
               }
             }
           ]
@@ -76,7 +76,15 @@
             "a",
             "z"
           ],
-          "rules": []
+          "rules": [
+            {
+              "conditions": [
+                {
+                  "type": "trim"
+                }
+              ]
+            }
+          ]
         }
       ]
     }
@@ -176,11 +184,21 @@
         "b",
         "c",
         "d",
-        "e",
-        "f",
         "g",
-        "h",
-        "j",
+        "q"
+      ],
+      "applyRulesOnConcatenatedData": true,
+      "rules": []
+    },
+    {
+      "target": "personalNameTitle",
+      "description": "Heading personal name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "f",
         "k",
         "l",
         "m",
@@ -190,11 +208,7 @@
         "q",
         "r",
         "s",
-        "t",
-        "v",
-        "x",
-        "y",
-        "z"
+        "t"
       ],
       "applyRulesOnConcatenatedData": true,
       "rules": []
@@ -209,23 +223,30 @@
         "b",
         "c",
         "d",
-        "e",
-        "f",
         "g",
-        "h",
+        "n"
+      ],
+      "rules": []
+    },
+    {
+      "target": "corporateNameTitle",
+      "description": "Heading corporate name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "f",
         "k",
         "l",
         "m",
         "n",
         "o",
         "p",
+        "q",
         "r",
         "s",
-        "t",
-        "v",
-        "x",
-        "y",
-        "z"
+        "t"
       ],
       "rules": []
     }
@@ -238,21 +259,31 @@
         "a",
         "c",
         "d",
-        "e",
+        "n",
+        "q",
+        "g"
+      ],
+      "rules": []
+    },
+    {
+      "target": "meetingNameTitle",
+      "description": "Heading meeting name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
         "f",
-        "g",
-        "h",
-        "j",
         "k",
         "l",
+        "m",
         "n",
+        "o",
         "p",
+        "q",
+        "r",
         "s",
-        "t",
-        "v",
-        "x",
-        "y",
-        "z"
+        "t"
       ],
       "rules": []
     }
@@ -337,12 +368,21 @@
         "b",
         "c",
         "d",
-        "e",
-        "f",
         "g",
-        "h",
+        "q"
+      ],
+      "rules": []
+    },
+    {
+      "target": "sftPersonalNameTitle",
+      "description": "See from tracing personal name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "f",
         "i",
-        "j",
         "k",
         "l",
         "m",
@@ -353,13 +393,7 @@
         "r",
         "s",
         "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "4",
-        "5"
+        "w"
       ],
       "rules": []
     }
@@ -373,10 +407,20 @@
         "b",
         "c",
         "d",
-        "e",
-        "f",
         "g",
-        "h",
+        "n"
+      ],
+      "rules": []
+    },
+    {
+      "target": "sftCorporateNameTitle",
+      "description": "See from tracing personal name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "f",
         "i",
         "k",
         "l",
@@ -384,16 +428,11 @@
         "n",
         "o",
         "p",
+        "q",
         "r",
         "s",
         "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "4",
-        "5"
+        "w"
       ],
       "rules": []
     }
@@ -406,26 +445,33 @@
         "a",
         "c",
         "d",
-        "e",
+        "n",
+        "q",
+        "g"
+      ],
+      "rules": []
+    },
+    {
+      "target": "sftMeetingNameTitle",
+      "description": "See from tracing meeting name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
         "f",
-        "g",
-        "h",
         "i",
-        "j",
         "k",
         "l",
+        "m",
         "n",
+        "o",
         "p",
         "q",
+        "r",
         "s",
         "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "4",
-        "5"
+        "w"
       ],
       "rules": []
     }
@@ -524,12 +570,21 @@
         "b",
         "c",
         "d",
-        "e",
-        "f",
         "g",
-        "h",
+        "q"
+      ],
+      "rules": []
+    },
+    {
+      "target": "saftPersonalNameTitle",
+      "description": "See also from tracing personal name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "f",
         "i",
-        "j",
         "k",
         "l",
         "m",
@@ -539,16 +594,7 @@
         "q",
         "r",
         "s",
-        "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "0",
-        "1",
-        "4",
-        "5"
+        "t"
       ],
       "rules": []
     }
@@ -562,12 +608,21 @@
         "b",
         "c",
         "d",
-        "e",
-        "f",
         "g",
-        "h",
+        "n"
+      ],
+      "rules": []
+    },
+    {
+      "target": "saftCorporateNameTitle",
+      "description": "See also from tracing corporate name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "f",
         "i",
-        "j",
         "k",
         "l",
         "m",
@@ -577,16 +632,7 @@
         "q",
         "r",
         "s",
-        "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "0",
-        "1",
-        "4",
-        "5"
+        "t"
       ],
       "rules": []
     }
@@ -599,28 +645,32 @@
         "a",
         "c",
         "d",
-        "e",
+        "n",
+        "q",
+        "g"
+      ],
+      "rules": []
+    },
+    {
+      "target": "saftMeetingNameTitle",
+      "description": "See also from tracing meeting name title",
+      "subfield": [
+        "a",
+        "b",
+        "c",
+        "d",
         "f",
-        "g",
-        "h",
         "i",
-        "j",
         "k",
         "l",
+        "m",
         "n",
+        "o",
         "p",
         "q",
+        "r",
         "s",
-        "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-        "0",
-        "1",
-        "4",
-        "5"
+        "t"
       ],
       "rules": []
     }
@@ -646,12 +696,9 @@
         "s",
         "t",
         "v",
-        "w",
         "x",
         "y",
         "z",
-        "0",
-        "1",
         "4"
       ],
       "rules": []
@@ -667,12 +714,9 @@
         "g",
         "i",
         "v",
-        "w",
         "x",
         "y",
         "z",
-        "0",
-        "1",
         "4",
         "5"
       ],
@@ -688,12 +732,9 @@
         "g",
         "i",
         "v",
-        "w",
         "x",
         "y",
         "z",
-        "0",
-        "1",
         "4",
         "5"
       ],
@@ -708,17 +749,55 @@
         "a",
         "i",
         "v",
-        "w",
         "x",
         "y",
         "z",
         "x",
-        "0",
-        "1",
         "4",
         "5"
       ],
       "rules": []
+    }
+  ],
+  "667": [
+    {
+      "entity": [
+        {
+          "target": "notes.noteTypeId",
+          "description": "Authority note type id",
+          "subfield": [
+            "a"
+          ],
+          "rules": [
+            {
+              "conditions": [
+                {
+                  "type": "set_authority_note_type_id",
+                  "parameter": {
+                    "name": "Nonpublic general note"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "target": "notes.note",
+          "description": "Authority note",
+          "subfield": [
+            "a"
+          ],
+          "rules": [
+            {
+              "conditions": [
+                {
+                  "type": "trim"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "999": [
@@ -726,7 +805,7 @@
       "target": "id",
       "description": "Authority id",
       "subfield": [
-        "s"
+        "i"
       ],
       "rules": []
     }

@@ -164,20 +164,20 @@
     },
     "subjectHeadings": {
       "type": "string",
-      "description": "Children's subject headings"
+      "description": "Subject heading system/thesaurus code"
     },
     "geographicName": {
       "type": "string",
       "description": "Heading geographic name"
     },
-    "sftGeographicTerm": {
+    "sftGeographicName": {
       "type": "array",
       "description": "See from tracing geographic name",
       "items": {
         "type": "string"
       }
     },
-    "saftGeographicTerm": {
+    "saftGeographicName": {
       "type": "array",
       "description": "See also from tracing geographic name",
       "items": {
