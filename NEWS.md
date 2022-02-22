@@ -1,4 +1,4 @@
-## 2021-xx-xx v3.3.0-SNAPSHOT
+## 2021-02-22 v3.3.0
 * [MODDICORE-222](https://issues.folio.org/browse/MODDICORE-222) Authority: Add normalisation function to set note types
 * [MODDATAIMP-491](https://issues.folio.org/browse/MODDATAIMP-491) Improve logging to be able to trace the path of each record and file_chunks
 * [MODDICORE-225](https://issues.folio.org/browse/MODDICORE-225) When EDIFACT record is imported intermittently currency is not mapped when it comes from record field
@@ -6,12 +6,31 @@
 * [MODDICORE-188](https://issues.folio.org/browse/MODDICORE-188) Remove pubsub client dependency
 * [MODDICORE-240](https://issues.folio.org/browse/MODDICORE-240) EDIFACT Inv: Empty Invoice line Description in field mapping profile fails Data Import job
 * [MODSOURMAN-675](https://issues.folio.org/browse/MODSOURMAN-675) Data Import handles repeated 020 $a:s in an unexpected manner when creating Instance Identifiers
-
-## 2021-09-30 v3.3.0
-* [MODDICORE-190](https://issues.folio.org/browse/MODDICORE-190) Incorrect mapping of acquisition ids causes validation issues and Invoices creating failures
+* [MODDICORE-204](https://issues.folio.org/browse/MODDICORE-204) Overlaying with single record import creates duplicate control fields
+* [MODDICORE-205](https://issues.folio.org/browse/MODDICORE-205) Update the MARC-Instance field mapping for InstanceType (336$a and $b)
+* [MODDICORE-206](https://issues.folio.org/browse/MODDICORE-206) Blank fields generated from MARC mapping create invalid Instance records in Inventory
+* [MODDICORE-241](https://issues.folio.org/browse/MODDICORE-241) MARC 007 is retained although overlay does not contain MARC 007 field
 * [MODDICORE-195](https://issues.folio.org/browse/MODDICORE-195) FOLIO snapshot throw optimistic locking error when updating an instance
+* [MODDICORE-244](https://issues.folio.org/browse/MODDICORE-244) Rename fields in Authority schema
+* [MODDICORE-237](https://issues.folio.org/browse/MODDICORE-237) Authority update: Make MarcRecordModifier support MARC Authority
+* [MODDICORE-235](https://issues.folio.org/browse/MODDICORE-235) Authority update: Add new event types
+* [MODDICORE-216](https://issues.folio.org/browse/MODDICORE-216) Cannot edit a MARC Holdings record created with Add MARC Holdings record
+* upgrade dependency on folio-kafka-wrapper to v2.5.0
 
-## 2021-11-xx v3.2.4-SNAPSHOT
+## 2022-02-08 v3.2.8
+* [MODDICORE-242](https://issues.folio.org/browse/MODDICORE-242) MARC 007 is retained although overlay does not contain MARC 007 field
+
+## 2021-12-21 v3.2.7
+* Fix log4j vulnerability (upgrade to folio-kafka-wrapper v2.4.2)
+
+## 2021-12-21 v3.2.6
+* [MODDICORE-230](https://issues.folio.org/browse/MODDICORE-230) Fix log4j vulnerability (upgrade to folio-kafka-wrapper v2.4.1)
+* [MODDICORE-231](https://issues.folio.org/browse/MODDICORE-231) Fix matching on identifier type and identifier value
+
+## 2021-11-19 v3.2.5
+* [MODDICORE-200](https://issues.folio.org/browse/MODDICORE-200) Fix duplicating values of repeatable control fields on MARC bib update
+
+## 2021-11-15 v3.2.4
 * [MODDICORE-199](https://issues.folio.org/browse/MODDICORE-199) Add EDIFACT mapping syntax for multiple fields mapping into 1 invoice field
 
 ## 2021-11-08 v3.2.3
