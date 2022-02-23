@@ -1,10 +1,12 @@
 package org.folio.processing.events;
 
 import io.vertx.core.Vertx;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
+import org.folio.kafka.exception.DuplicateEventException;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.EventProcessorImpl;
@@ -90,7 +92,7 @@ public final class EventManager {
   }
 
   private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot, Throwable processThrowable) {
-    if (processThrowable instanceof EventHandlerNotFoundException) {
+    if (processThrowable instanceof EventHandlerNotFoundException || processThrowable instanceof DuplicateEventException) {
       return CompletableFuture.completedFuture(false);
     }
     return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
