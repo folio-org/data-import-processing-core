@@ -20,8 +20,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
@@ -676,7 +678,7 @@ public class MarcRecordModifier {
       dataFields.removeAll(tmpFields);
     }
 
-    if (ifNewDataShouldBeAdded) {
+    if (ifNewDataShouldBeAdded && isNotProtected(fieldReplacement)) {
       updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
