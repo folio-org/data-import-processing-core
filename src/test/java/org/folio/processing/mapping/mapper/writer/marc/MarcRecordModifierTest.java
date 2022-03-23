@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
 import io.vertx.core.json.Json;
+
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +38,9 @@ import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.CREATE_NEW_FIELD
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.INSERT;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REMOVE;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
+import static org.junit.Assert.assertEquals;
+
+import com.google.common.collect.Lists;
 
 @RunWith(JUnit4.class)
 public class MarcRecordModifierTest {
@@ -1423,6 +1428,73 @@ public class MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldProtectDataFieldIfTheyAreDuplicated() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic!!!\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00223nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"First 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"Second 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"901\":{\"subfields\":[{\"a\":\"First 901 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
+          .withField("999")
+          .withSubfield("f")
+          .withIndicator1("f")
+          .withIndicator2("*")
+          .withData("*"),
+        new MarcFieldProtectionSetting()
+          .withField("900")
+          .withSubfield("*")
+          .withIndicator1("*")
+          .withIndicator2("*")
+          .withData("*"),
+        new MarcFieldProtectionSetting()
+          .withField("901")
+          .withSubfield("*")
+          .withIndicator1("*")
+          .withIndicator2("*")
+          .withData("*")));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(new ArrayList<>()));
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+  }
+
+
+  @Test
+  public void shouldProtectDataFieldIfTheyAreDuplicatedAndNotAllFieldsAreProtected() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic!!!\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00223nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"First 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"Second 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"901\":{\"subfields\":[{\"a\":\"First 901 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
+          .withField("999")
+          .withSubfield("f")
+          .withIndicator1("f")
+          .withIndicator2("*")
+          .withData("*"),
+        new MarcFieldProtectionSetting()
+          .withField("901")
+          .withSubfield("*")
+          .withIndicator1("*")
+          .withIndicator2("*")
+          .withData("*")));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(new ArrayList<>()));
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+  }
+
+
+
+  @Test
   public void shouldReplaceOverriddenProtectedExistingField() throws IOException {
     // given
     String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
@@ -1642,8 +1714,7 @@ public class MarcRecordModifierTest {
 
   private void testMarcUpdating(String incomingParsedContent,
                                 String existingParsedContent,
-                                String expectedParsedContent) throws IOException
-  {
+                                String expectedParsedContent) throws IOException {
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
