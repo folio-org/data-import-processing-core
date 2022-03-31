@@ -92,7 +92,7 @@ public final class EventManager {
   }
 
   private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot, Throwable processThrowable) {
-    if (processThrowable instanceof EventHandlerNotFoundException || processThrowable instanceof DuplicateEventException) {
+    if (processThrowable instanceof EventHandlerNotFoundException || processThrowable.getCause() instanceof DuplicateEventException) {
       return CompletableFuture.completedFuture(false);
     }
     return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
