@@ -2,6 +2,10 @@
 * [MODDICORE-253](https://issues.folio.org/browse/MODDICORE-253) Add logic to skip sending DI_ERROR from mod-inventory in case for duplicates
 
 ## 2022-02-22 v3.3.0
+## 2022-xx-xx v3.4.0-SNAPSHOT
+* [MODINV-671](https://issues.folio.org/browse/MODINV-671) Check and fix the sending of DI_ERROR after DuplicateEventException appears
+
+## 2021-02-22 v3.3.0
 * [MODDICORE-222](https://issues.folio.org/browse/MODDICORE-222) Authority: Add normalisation function to set note types
 * [MODDATAIMP-491](https://issues.folio.org/browse/MODDATAIMP-491) Improve logging to be able to trace the path of each record and file_chunks
 * [MODDICORE-225](https://issues.folio.org/browse/MODDICORE-225) When EDIFACT record is imported intermittently currency is not mapped when it comes from record field
