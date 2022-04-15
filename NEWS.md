@@ -1,3 +1,6 @@
+## 2022-04-15 v3.3.3
+* [MODINV-679](https://issues.folio.org/browse/MODINV-679) Updating an instance with data import erases administrative note
+
 ## 2022-04-03 v3.3.2
 * [MODINV-671](https://issues.folio.org/browse/MODINV-671) Check and fix the sending of DI_ERROR after DuplicateEventException appears
 
