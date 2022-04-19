@@ -85,6 +85,33 @@ public class KafkaEventPublisherTest {
   }
 
   @Test
+  public void shouldPublishPayloadWithoutCorrelationId() throws InterruptedException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_COMPLETED.value())
+      .withOkapiUrl(OKAPI_URL)
+      .withTenant(TENANT_ID)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>() {{
+        put("recordId", UUID.randomUUID().toString());
+        put("chunkId", UUID.randomUUID().toString());
+      }});
+
+    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+
+    String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), TENANT_ID, DI_COMPLETED.value());
+    List<String> observedValues = kafkaCluster.observeValues(ObserveKeyValues.on(topicToObserve, 1)
+      .filterOnHeaders(headers -> headers.lastHeader("correlationId") == null)
+      .observeFor(30, TimeUnit.SECONDS)
+      .build());
+
+    Event obtainedEvent = Json.decodeValue(observedValues.get(0), Event.class);
+    DataImportEventPayload actualPayload = Json.decodeValue(obtainedEvent.getEventPayload(), DataImportEventPayload.class);
+    assertEquals(eventPayload, actualPayload);
+
+    assertFalse(future.isCompletedExceptionally());
+  }
+
+  @Test
   public void shouldReturnFailedFutureWhenPayloadIsNull() {
     CompletableFuture<Event> future = eventPublisher.publish(null);
     assertTrue(future.isCompletedExceptionally());
@@ -99,22 +126,6 @@ public class KafkaEventPublisherTest {
       .withTenant(TENANT_ID)
       .withToken(null)
       .withCorrelationId(CORRELATION_ID)
-      .withContext(new HashMap<>() {{
-        put("recordId", UUID.randomUUID().toString());
-      }});
-
-    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
-    assertTrue(future.isCompletedExceptionally());
-    assertThrows(ExecutionException.class, future::get);
-  }
-
-  @Test
-  public void shouldReturnFailedFutureWhenCorrelationIdIsNull() {
-    DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_COMPLETED.value())
-      .withOkapiUrl(OKAPI_URL)
-      .withTenant(TENANT_ID)
-      .withToken(TOKEN)
       .withContext(new HashMap<>() {{
         put("recordId", UUID.randomUUID().toString());
       }});
