@@ -1,19 +1,13 @@
 package org.folio.processing.events.services.publisher;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import net.mguenther.kafka.junit.EmbeddedKafkaCluster;
-import net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig;
-import net.mguenther.kafka.junit.ObserveKeyValues;
-import org.folio.DataImportEventPayload;
-import org.folio.kafka.KafkaConfig;
-import org.folio.kafka.KafkaTopicNameHelper;
-import org.folio.rest.jaxrs.model.Event;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import static net.mguenther.kafka.junit.EmbeddedKafkaCluster.provisionWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
+import static org.folio.DataImportEventTypes.DI_COMPLETED;
+import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,12 +16,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static net.mguenther.kafka.junit.EmbeddedKafkaCluster.provisionWith;
-import static org.folio.DataImportEventTypes.DI_COMPLETED;
-import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+import net.mguenther.kafka.junit.EmbeddedKafkaCluster;
+import net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig;
+import net.mguenther.kafka.junit.ObserveKeyValues;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import org.folio.DataImportEventPayload;
+import org.folio.kafka.KafkaConfig;
+import org.folio.kafka.KafkaTopicNameHelper;
+import org.folio.rest.jaxrs.model.Event;
 
 @RunWith(JUnit4.class)
 public class KafkaEventPublisherTest {
@@ -35,13 +38,14 @@ public class KafkaEventPublisherTest {
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
+  private static final String CORRELATION_ID = "stub-correlation-id";
 
   @ClassRule
   public static EmbeddedKafkaCluster kafkaCluster = provisionWith(EmbeddedKafkaClusterConfig.useDefaults());
 
   private static KafkaConfig kafkaConfig;
-  private Vertx vertx = Vertx.vertx();
-  private KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100);
+  private final Vertx vertx = Vertx.vertx();
+  private final KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100);
 
   @BeforeClass
   public static void setUpClass() {
@@ -60,6 +64,7 @@ public class KafkaEventPublisherTest {
       .withOkapiUrl(OKAPI_URL)
       .withTenant(TENANT_ID)
       .withToken(TOKEN)
+      .withCorrelationId(CORRELATION_ID)
       .withContext(new HashMap<>() {{
         put("recordId", UUID.randomUUID().toString());
         put("chunkId", UUID.randomUUID().toString());
@@ -79,27 +84,44 @@ public class KafkaEventPublisherTest {
     assertFalse(future.isCompletedExceptionally());
   }
 
-  @Test(expected = ExecutionException.class)
-  public void shouldReturnFailedFutureWhenPayloadIsNull() throws ExecutionException, InterruptedException {
+  @Test
+  public void shouldReturnFailedFutureWhenPayloadIsNull() {
     CompletableFuture<Event> future = eventPublisher.publish(null);
     assertTrue(future.isCompletedExceptionally());
-    future.get();
+    assertThrows(ExecutionException.class, future::get);
   }
 
-  @Test(expected = ExecutionException.class)
-  public void shouldReturnFailedFutureWhenPayloadParameterIsNull() throws ExecutionException, InterruptedException {
+  @Test
+  public void shouldReturnFailedFutureWhenPayloadParameterIsNull() {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_COMPLETED.value())
       .withOkapiUrl(OKAPI_URL)
       .withTenant(TENANT_ID)
       .withToken(null)
+      .withCorrelationId(CORRELATION_ID)
       .withContext(new HashMap<>() {{
         put("recordId", UUID.randomUUID().toString());
       }});
 
     CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
     assertTrue(future.isCompletedExceptionally());
-    future.get();
+    assertThrows(ExecutionException.class, future::get);
+  }
+
+  @Test
+  public void shouldReturnFailedFutureWhenCorrelationIdIsNull() {
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_COMPLETED.value())
+      .withOkapiUrl(OKAPI_URL)
+      .withTenant(TENANT_ID)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>() {{
+        put("recordId", UUID.randomUUID().toString());
+      }});
+
+    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+    assertTrue(future.isCompletedExceptionally());
+    assertThrows(ExecutionException.class, future::get);
   }
 
   @Test
@@ -109,6 +131,7 @@ public class KafkaEventPublisherTest {
       .withOkapiUrl(OKAPI_URL)
       .withTenant(TENANT_ID)
       .withToken(TOKEN)
+      .withCorrelationId(CORRELATION_ID)
       .withContext(new HashMap<>() {{
         put("chunkId", UUID.randomUUID().toString());
       }});
@@ -125,6 +148,7 @@ public class KafkaEventPublisherTest {
       .withOkapiUrl(OKAPI_URL)
       .withTenant(TENANT_ID)
       .withToken(TOKEN)
+      .withCorrelationId(CORRELATION_ID)
       .withContext(new HashMap<>() {{
         put("recordId", UUID.randomUUID().toString());
       }});
