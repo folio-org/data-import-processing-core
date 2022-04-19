@@ -1,5 +1,7 @@
 package org.folio.processing.events.services.publisher;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
@@ -83,7 +85,9 @@ public class KafkaEventPublisher implements EventPublisher {
       headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
       headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
       headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()));
-      headers.add(KafkaHeader.header(CORRELATION_ID_HEADER, correlationId));
+      if (isNotBlank(correlationId)) {
+        headers.add(KafkaHeader.header(CORRELATION_ID_HEADER, correlationId));
+      }
       checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
 
       kafkaRecord.addHeaders(headers);
