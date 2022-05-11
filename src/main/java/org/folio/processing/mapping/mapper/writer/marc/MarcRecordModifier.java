@@ -102,18 +102,9 @@ public class MarcRecordModifier {
   }
 
   public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
-    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-      MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
-      MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
-      streamWriter.write(marcRecordToChange);
-      jsonWriter.write(marcRecordToChange);
-      recordToChange.getParsedRecord().setContent(new JsonObject(new String(os.toByteArray())).encode());
-      String resultKey = marcMappingOption == MODIFY ? marcType.value() : getMatchedMarcKey();
-      eventPayload.getContext().put(resultKey, Json.encode(recordToChange));
-    } catch (Exception e) {
-      LOGGER.error("Can not put the modified record to the event payload", e);
-      throw new IllegalStateException(e);
-    }
+    recordToChange.getParsedRecord().setContent(mapRecordRepresentationToJsonString(marcRecordToChange));
+    String resultKey = marcMappingOption == MODIFY ? marcType.value() : getMatchedMarcKey();
+    eventPayload.getContext().put(resultKey, Json.encode(recordToChange));
     return eventPayload;
   }
 
@@ -143,6 +134,28 @@ public class MarcRecordModifier {
           .ifPresent(
             field -> replaceDataField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode));
       }
+    }
+  }
+
+  public String updateRecord(Record srcRecord, Record recordToUpdate, List<MarcFieldProtectionSetting> protectionSettings) {
+    incomingMarcRecord = readParsedContentToObjectRepresentation(srcRecord);
+    marcRecordToChange = readParsedContentToObjectRepresentation(recordToUpdate);
+    applicableProtectionSettings = protectionSettings;
+
+    replaceAllFields(incomingMarcRecord.getVariableFields());
+    return mapRecordRepresentationToJsonString(marcRecordToChange);
+  }
+
+  private String mapRecordRepresentationToJsonString(org.marc4j.marc.Record marcRecord) {
+    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+      MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
+      MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
+      streamWriter.write(marcRecord);
+      jsonWriter.write(marcRecord);
+      return os.toString().trim();
+    } catch (Exception e) {
+      LOGGER.error("Can not put the modified record to the event payload", e);
+      throw new IllegalStateException(e);
     }
   }
 
@@ -417,8 +430,8 @@ public class MarcRecordModifier {
 
       Leader leader = marcRecordToChange.getLeader();
       String leaderAsString = leader.marshal();
-      boolean dataToReplaceExists = dataToReplace.equals(ANY_STRING) ||
-        leaderAsString.substring(positions.getMinimum(), positions.getMaximum() + 1).equals(dataToReplace);
+      boolean dataToReplaceExists = dataToReplace.equals(ANY_STRING)
+        || leaderAsString.substring(positions.getMinimum(), positions.getMaximum() + 1).equals(dataToReplace);
       if (dataToReplaceExists) {
         StringBuilder newData =
           new StringBuilder(leaderAsString).replace(positions.getMinimum(), positions.getMaximum() + 1, replacementData);
