@@ -682,7 +682,9 @@ public class MarcRecordModifier {
               ifNewDataShouldBeAdded = false;
             }
           } else {
-            ifNewDataShouldBeAdded = false;
+            if (isNonRepeatableField(fieldToUpdate)) {
+              ifNewDataShouldBeAdded = false;
+            }
             LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
           }
         }
@@ -695,6 +697,22 @@ public class MarcRecordModifier {
       updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  private boolean isNonRepeatableField(DataField field) {
+    Set<String> nonRepeatableFields = Set.of("001", "002", "003", "004", "005", "008", "009", "010", "018", "036", "038",
+      "040", "042", "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384",
+      "507", "514", "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
+
+    // any of 1xx fields
+    if (field.getTag().compareTo("100") > -1 && field.getTag().compareTo("199") < 1) {
+      return true;
+    }
+    if (field.getTag().equals("999")) {
+      return field.getIndicator1() == 'f' && field.getIndicator2() == 'f';
+    }
+
+    return nonRepeatableFields.contains(field.getTag());
   }
 
   private void clearUnUpdatedControlFields() {
