@@ -1395,9 +1395,9 @@ public class MarcRecordModifierTest {
   @Test
   public void shouldNotReplaceProtectedExistingField() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
