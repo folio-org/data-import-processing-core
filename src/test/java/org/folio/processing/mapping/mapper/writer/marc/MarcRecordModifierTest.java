@@ -17,6 +17,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.marc4j.marc.impl.DataFieldImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1394,16 +1395,16 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
-        .withField("650")
-        .withSubfield("a")
+        .withField("010")
         .withIndicator1(" ")
         .withIndicator2("*")
+        .withSubfield("a")
         .withData("pictures")));
 
     MarcMappingDetail mappingRule1 = new MarcMappingDetail()
       .withOrder(0)
       .withField(new MarcField()
-        .withField("650")
+        .withField("010")
         .withIndicator1(" ")
         .withIndicator2("*")
         .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
@@ -1936,18 +1937,6 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
-  }
-
-  // todo:
-  //
-  @Test
-  public void shouldReplaceExistingRepeatableFieldWithIncomingWhenExistingIsNotProtectedAndIncomingFieldHasNotSameSubfields() {
-    // 950 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"},{\"b\":\"new data\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00111nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"subfields\":[{\"a\":\"new data\"},{\"b\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-
-    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   private void testMarcUpdating(String incomingParsedContent,
