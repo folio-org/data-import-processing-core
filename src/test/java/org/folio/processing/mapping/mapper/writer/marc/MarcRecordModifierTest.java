@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static io.vertx.core.json.jackson.DatabindCodec.mapper;
+import static java.lang.String.format;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.UPDATE;
@@ -1937,6 +1939,19 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
+  public void shouldReturnTrueWhenFieldTagAnyOf1xxFields() {
+    for (int i = 100; i < 200; i++) {
+      boolean isNonRepeatable = marcRecordModifier.isNonRepeatableField(new DataFieldImpl(String.valueOf(i), ' ', ' '));
+      Assert.assertTrue(format("%s field is not non-repeatable field", i), isNonRepeatable);
+    }
+  }
+
+  @Test
+  public void shouldReturnTrueWhenFieldHas999TagAndIndicatorsFF() {
+    Assert.assertTrue(marcRecordModifier.isNonRepeatableField(new DataFieldImpl("999", 'f', 'f')));
   }
 
   private void testMarcUpdating(String incomingParsedContent,

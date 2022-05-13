@@ -13,7 +13,6 @@ import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -700,7 +699,7 @@ public class MarcRecordModifier {
     }
   }
 
-  private boolean isNonRepeatableField(DataField field) {
+  boolean isNonRepeatableField(DataField field) {
     // is any of 1xx fields
     if (field.getTag().compareTo("100") > -1 && field.getTag().compareTo("199") < 1) {
       return true;
