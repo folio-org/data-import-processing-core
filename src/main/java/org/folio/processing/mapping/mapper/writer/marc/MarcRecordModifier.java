@@ -62,7 +62,8 @@ public class MarcRecordModifier {
   private static final String PAYLOAD_HAS_NO_DATA_MSG =
     "Cannot initialize MarcRecordModifier - event payload context does not contain required data";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[] {'0', '1', '2', '3', '9'};
-  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("001", "003", "005", "008");
+  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
+    Set.of("001", "002", "003", "004", "005", "008", "009");
   public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
     "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
     "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");

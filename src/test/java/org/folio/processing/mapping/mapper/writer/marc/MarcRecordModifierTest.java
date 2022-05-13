@@ -2,7 +2,6 @@ package org.folio.processing.mapping.mapper.writer.marc;
 
 import io.vertx.core.json.Json;
 
-import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
@@ -14,7 +13,6 @@ import org.folio.rest.jaxrs.model.MarcField;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MarcMappingDetail;
 import org.folio.rest.jaxrs.model.MarcSubfield;
-import org.folio.util.MarcRecordUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +38,6 @@ import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.CREATE_NEW_FIELD
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.INSERT;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REMOVE;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
-import static org.junit.Assert.assertEquals;
-
-import com.google.common.collect.Lists;
 
 @RunWith(JUnit4.class)
 public class MarcRecordModifierTest {
@@ -1695,9 +1690,9 @@ public class MarcRecordModifierTest {
   @Test
   public void shouldRemoveNotUpdatedFieldToAllRepeatableControlFieldAndChangeLeader() throws IOException {
     // given
-    // 002, 007 are repeatable control fields
+    // 006, 007 are repeatable control fields
     String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
-    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"002\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"006\":\"abc\"},{\"007\":\"xyz\"}]}";
     String expectedParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
@@ -1923,6 +1918,18 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  // todo:
+  //
+  @Test
+  public void shouldReplaceExistingRepeatableFieldWithIncomingWhenExistingIsNotProtectedAndIncomingFieldHasNotSameSubfields() { //1.3
+    // 950 is repeatable field
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"},{\"b\":\"new data\"}]}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00111nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"subfields\":[{\"a\":\"new data\"},{\"b\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   private void testMarcUpdating(String incomingParsedContent,
