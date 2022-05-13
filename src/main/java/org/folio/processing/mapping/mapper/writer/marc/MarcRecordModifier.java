@@ -13,6 +13,7 @@ import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,10 +59,13 @@ public class MarcRecordModifier {
   private static final Logger LOGGER = LogManager.getLogger(MarcRecordModifier.class);
 
   private static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
-  private static final String PAYLOAD_HAS_NO_DATA_MSG = "Cannot initialize MarcRecordModifier - "
-    + "event payload context does not contain required data";
+  private static final String PAYLOAD_HAS_NO_DATA_MSG =
+    "Cannot initialize MarcRecordModifier - event payload context does not contain required data";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[] {'0', '1', '2', '3', '9'};
   private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("001", "003", "005", "008");
+  public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
+    "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
+    "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
   private static final String ANY_STRING = "*";
@@ -147,16 +151,12 @@ public class MarcRecordModifier {
   }
 
   private String mapRecordRepresentationToJsonString(org.marc4j.marc.Record marcRecord) {
-    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-      MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
-      MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
-      streamWriter.write(marcRecord);
-      jsonWriter.write(marcRecord);
-      return os.toString().trim();
-    } catch (Exception e) {
-      LOGGER.error("Can not put the modified record to the event payload", e);
-      throw new IllegalStateException(e);
-    }
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
+    MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
+    streamWriter.write(marcRecord);
+    jsonWriter.write(marcRecord);
+    return os.toString().trim();
   }
 
   protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings
@@ -700,11 +700,7 @@ public class MarcRecordModifier {
   }
 
   private boolean isNonRepeatableField(DataField field) {
-    Set<String> nonRepeatableFields = Set.of("001", "002", "003", "004", "005", "008", "009", "010", "018", "036", "038",
-      "040", "042", "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384",
-      "507", "514", "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
-
-    // any of 1xx fields
+    // is any of 1xx fields
     if (field.getTag().compareTo("100") > -1 && field.getTag().compareTo("199") < 1) {
       return true;
     }
@@ -712,7 +708,7 @@ public class MarcRecordModifier {
       return field.getIndicator1() == 'f' && field.getIndicator2() == 'f';
     }
 
-    return nonRepeatableFields.contains(field.getTag());
+    return NON_REPEATABLE_DATA_FIELDS_TAGS.contains(field.getTag());
   }
 
   private void clearUnUpdatedControlFields() {
