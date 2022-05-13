@@ -716,7 +716,6 @@ public class MarcRecordModifier {
     List<ControlField> tmpFields = new ArrayList<>();
     for (ControlField controlField : marcRecordToChange.getControlFields()) {
       if (!isControlFieldsContains(incomingMarcRecord.getControlFields(), controlField)
-        && !isNonRepeatableField(controlField)
         && isNotProtected(controlField)) {
         tmpFields.add(controlField);
       }
