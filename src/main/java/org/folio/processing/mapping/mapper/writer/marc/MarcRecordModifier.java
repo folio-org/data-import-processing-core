@@ -106,7 +106,7 @@ public class MarcRecordModifier {
   }
 
   public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
-    recordToChange.getParsedRecord().setContent(mapRecordRepresentationToJsonString(marcRecordToChange));
+    this.recordToChange.getParsedRecord().setContent(mapRecordRepresentationToJsonString(marcRecordToChange));
     String resultKey = marcMappingOption == MODIFY ? marcType.value() : getMatchedMarcKey();
     eventPayload.getContext().put(resultKey, Json.encode(recordToChange));
     return eventPayload;
@@ -141,6 +141,35 @@ public class MarcRecordModifier {
     }
   }
 
+  /**
+   * Performs update of {@code recordToUpdate} record content with data from {@code srcRecord},
+   * applying {@code protectionSettings} to the {@code recordToUpdate} record.
+   * It does not change the {@code recordToUpdate} content itself, but returns the updated record content
+   * as a new {@code String}.
+   * Logic of record update recognizes MARC record fields as repeatable and non-repeatable.
+   * Non-repeatable fields: 001, 002, 003, 004, 005, 008, 009, 010, 018, 036, 038, 040, 042, 044, 045, 066, 073,
+   * all 1xx fields, 240, 243, 245, 254, 256, 263, 306, 357, 378, 384, 507, 514, 663, 664, 665, 666, 675, 682, 788,
+   * 841, 842, 844, 882, and 999 with indicators = ff. Repeatable fields: all other MARC fields.
+   *
+   * Record update logic is described by following conditions:
+   * if field of {@code recordToUpdate} is not protected and there is incoming field with same tag, then delete
+   * field from target record and add incoming field with from the {@code srcRecord};
+   * if field of {@code recordToUpdate} is not protected and there are no fields with same tag in {@code srcRecord},
+   * then delete existing field from target record;
+   * if field of {@code recordToUpdate} is protected and there are no fields with same tag in {@code srcRecord},
+   * retain existing field;
+   * if field of {@code recordToUpdate} is protected and non-repeatable, retain existing field and discard
+   * incoming field with same tag from {@code srcRecord};
+   * if existing field of {@code recordToUpdate} is protected and repeatable, and incoming field is exactly same
+   * as the existing field, then retain existing field and discard incoming field with same tag from {@code srcRecord};
+   * if existing field of {@code recordToUpdate} is protected and repeatable, and incoming field is not exactly same
+   * as the existing field, then retain existing field and add incoming field with same tag from {@code srcRecord};
+   *
+   * @param srcRecord          source of data for updating {@code recordToUpdate} content
+   * @param recordToUpdate     record whose content should be updated
+   * @param protectionSettings marc fields protection settings
+   * @return updated content of the {@code recordToUpdate} record as a new {@code String}
+   */
   public String updateRecord(Record srcRecord, Record recordToUpdate, List<MarcFieldProtectionSetting> protectionSettings) {
     incomingMarcRecord = readParsedContentToObjectRepresentation(srcRecord);
     marcRecordToChange = readParsedContentToObjectRepresentation(recordToUpdate);
