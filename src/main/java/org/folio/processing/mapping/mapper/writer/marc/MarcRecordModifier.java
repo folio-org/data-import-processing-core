@@ -68,6 +68,10 @@ public class MarcRecordModifier {
     "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
+  private static final String TAG_100 = "100";
+  private static final String TAG_199 = "199";
+  private static final String TAG_999 = "999";
+  private static final char INDICATOR_F = 'f';
   private static final String ANY_STRING = "*";
   private static final char ANY_CHAR = '*';
 
@@ -730,11 +734,11 @@ public class MarcRecordModifier {
 
   boolean isNonRepeatableField(DataField field) {
     // is any of 1xx fields
-    if (field.getTag().compareTo("100") > -1 && field.getTag().compareTo("199") < 1) {
+    if (field.getTag().compareTo(TAG_100) > -1 && field.getTag().compareTo(TAG_199) < 1) {
       return true;
     }
-    if (field.getTag().equals("999")) {
-      return field.getIndicator1() == 'f' && field.getIndicator2() == 'f';
+    if (field.getTag().equals(TAG_999)) {
+      return field.getIndicator1() == INDICATOR_F && field.getIndicator2() == INDICATOR_F;
     }
 
     return NON_REPEATABLE_DATA_FIELDS_TAGS.contains(field.getTag());
