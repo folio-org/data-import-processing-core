@@ -58,12 +58,20 @@ public class MarcRecordModifier {
   private static final Logger LOGGER = LogManager.getLogger(MarcRecordModifier.class);
 
   private static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
-  private static final String PAYLOAD_HAS_NO_DATA_MSG = "Cannot initialize MarcRecordModifier - "
-    + "event payload context does not contain required data";
+  private static final String PAYLOAD_HAS_NO_DATA_MSG =
+    "Cannot initialize MarcRecordModifier - event payload context does not contain required data";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[] {'0', '1', '2', '3', '9'};
-  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("001", "003", "005", "008");
+  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
+    Set.of("001", "002", "003", "004", "005", "008", "009");
+  public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
+    "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
+    "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
+  private static final String TAG_100 = "100";
+  private static final String TAG_199 = "199";
+  private static final String TAG_999 = "999";
+  private static final char INDICATOR_F = 'f';
   private static final String ANY_STRING = "*";
   private static final char ANY_CHAR = '*';
 
@@ -102,18 +110,9 @@ public class MarcRecordModifier {
   }
 
   public DataImportEventPayload getResult(DataImportEventPayload eventPayload) {
-    try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-      MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
-      MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
-      streamWriter.write(marcRecordToChange);
-      jsonWriter.write(marcRecordToChange);
-      recordToChange.getParsedRecord().setContent(new JsonObject(new String(os.toByteArray())).encode());
-      String resultKey = marcMappingOption == MODIFY ? marcType.value() : getMatchedMarcKey();
-      eventPayload.getContext().put(resultKey, Json.encode(recordToChange));
-    } catch (Exception e) {
-      LOGGER.error("Can not put the modified record to the event payload", e);
-      throw new IllegalStateException(e);
-    }
+    this.recordToChange.getParsedRecord().setContent(mapRecordRepresentationToJsonString(marcRecordToChange));
+    String resultKey = marcMappingOption == MODIFY ? marcType.value() : getMatchedMarcKey();
+    eventPayload.getContext().put(resultKey, Json.encode(recordToChange));
     return eventPayload;
   }
 
@@ -144,6 +143,53 @@ public class MarcRecordModifier {
             field -> replaceDataField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode));
       }
     }
+  }
+
+  /**
+   * Performs update of {@code recordToUpdate} record content with data from {@code srcRecord},
+   * applying {@code protectionSettings} to the {@code recordToUpdate} record.
+   * It does not change the {@code recordToUpdate} content itself, but returns the updated record content
+   * as a new {@code String}.
+   * Logic of record update recognizes MARC record fields as repeatable and non-repeatable.
+   * Non-repeatable fields: 001, 002, 003, 004, 005, 008, 009, 010, 018, 036, 038, 040, 042, 044, 045, 066, 073,
+   * all 1xx fields, 240, 243, 245, 254, 256, 263, 306, 357, 378, 384, 507, 514, 663, 664, 665, 666, 675, 682, 788,
+   * 841, 842, 844, 882, and 999 with indicators = ff. Repeatable fields: all other MARC fields.
+   *
+   * Record update logic is described by following conditions:
+   * if field of {@code recordToUpdate} is not protected and there is incoming field with same tag, then delete
+   * field from target record and add incoming field with from the {@code srcRecord};
+   * if field of {@code recordToUpdate} is not protected and there are no fields with same tag in {@code srcRecord},
+   * then delete existing field from target record;
+   * if field of {@code recordToUpdate} is protected and there are no fields with same tag in {@code srcRecord},
+   * retain existing field;
+   * if field of {@code recordToUpdate} is protected and non-repeatable, retain existing field and discard
+   * incoming field with same tag from {@code srcRecord};
+   * if existing field of {@code recordToUpdate} is protected and repeatable, and incoming field is exactly same
+   * as the existing field, then retain existing field and discard incoming field with same tag from {@code srcRecord};
+   * if existing field of {@code recordToUpdate} is protected and repeatable, and incoming field is not exactly same
+   * as the existing field, then retain existing field and add incoming field with same tag from {@code srcRecord};
+   *
+   * @param srcRecord          source of data for updating {@code recordToUpdate} content
+   * @param recordToUpdate     record whose content should be updated
+   * @param protectionSettings marc fields protection settings
+   * @return updated content of the {@code recordToUpdate} record as a new {@code String}
+   */
+  public String updateRecord(Record srcRecord, Record recordToUpdate, List<MarcFieldProtectionSetting> protectionSettings) {
+    incomingMarcRecord = readParsedContentToObjectRepresentation(srcRecord);
+    marcRecordToChange = readParsedContentToObjectRepresentation(recordToUpdate);
+    applicableProtectionSettings = protectionSettings;
+
+    replaceAllFields(incomingMarcRecord.getVariableFields());
+    return mapRecordRepresentationToJsonString(marcRecordToChange);
+  }
+
+  private String mapRecordRepresentationToJsonString(org.marc4j.marc.Record marcRecord) {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    MarcWriter streamWriter = new MarcStreamWriter(new ByteArrayOutputStream());
+    MarcJsonWriter jsonWriter = new MarcJsonWriter(os);
+    streamWriter.write(marcRecord);
+    jsonWriter.write(marcRecord);
+    return os.toString().trim();
   }
 
   protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings
@@ -417,8 +463,8 @@ public class MarcRecordModifier {
 
       Leader leader = marcRecordToChange.getLeader();
       String leaderAsString = leader.marshal();
-      boolean dataToReplaceExists = dataToReplace.equals(ANY_STRING) ||
-        leaderAsString.substring(positions.getMinimum(), positions.getMaximum() + 1).equals(dataToReplace);
+      boolean dataToReplaceExists = dataToReplace.equals(ANY_STRING)
+        || leaderAsString.substring(positions.getMinimum(), positions.getMaximum() + 1).equals(dataToReplace);
       if (dataToReplaceExists) {
         StringBuilder newData =
           new StringBuilder(leaderAsString).replace(positions.getMinimum(), positions.getMaximum() + 1, replacementData);
@@ -669,7 +715,9 @@ public class MarcRecordModifier {
               ifNewDataShouldBeAdded = false;
             }
           } else {
-            ifNewDataShouldBeAdded = false;
+            if (isNonRepeatableField(fieldToUpdate)) {
+              ifNewDataShouldBeAdded = false;
+            }
             LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
           }
         }
@@ -684,11 +732,22 @@ public class MarcRecordModifier {
     }
   }
 
+  boolean isNonRepeatableField(DataField field) {
+    // is any of 1xx fields
+    if (field.getTag().compareTo(TAG_100) > -1 && field.getTag().compareTo(TAG_199) < 1) {
+      return true;
+    }
+    if (field.getTag().equals(TAG_999)) {
+      return field.getIndicator1() == INDICATOR_F && field.getIndicator2() == INDICATOR_F;
+    }
+
+    return NON_REPEATABLE_DATA_FIELDS_TAGS.contains(field.getTag());
+  }
+
   private void clearUnUpdatedControlFields() {
     List<ControlField> tmpFields = new ArrayList<>();
     for (ControlField controlField : marcRecordToChange.getControlFields()) {
       if (!isControlFieldsContains(incomingMarcRecord.getControlFields(), controlField)
-        && !isNonRepeatableField(controlField)
         && isNotProtected(controlField)) {
         tmpFields.add(controlField);
       }
