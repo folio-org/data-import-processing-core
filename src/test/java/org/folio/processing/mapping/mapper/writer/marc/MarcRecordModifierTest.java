@@ -1921,6 +1921,27 @@ public class MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSameAndMatchesProtectionSettings() {
+    // 035 is repeatable field
+    // incoming 035 field also matches protection settings
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{\"subfields\":[{\"a\":\"new data\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{\"subfields\":[{\"a\":\"123\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00112nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{\"subfields\":[{\"a\":\"123\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"035\":{\"subfields\":[{\"a\":\"new data\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("035")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("b")
+        .withData("MiAaHDL"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
   public void shouldRetainExistingRepeatableFieldWhenExistingIsProtectedAndHasNoIncomingFieldWithSameTag() {
     // 950 is repeatable field
     String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
