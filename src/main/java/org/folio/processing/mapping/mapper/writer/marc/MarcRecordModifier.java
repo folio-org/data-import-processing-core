@@ -796,30 +796,7 @@ public class MarcRecordModifier {
   }
 
   private boolean dataFieldsContain(List<DataField> dataFields, DataField dataField) {
-    return dataFields.stream().anyMatch(field -> fieldsEqual(field, dataField));
+    return dataFields.stream().anyMatch(field -> field.compareTo(dataField) == 0);
   }
 
-  private boolean fieldsEqual(DataField field1, DataField field2) {
-    return field1.getTag().equals(field2.getTag())
-      && field1.getIndicator1() == field2.getIndicator1()
-      && field1.getIndicator2() == field2.getIndicator2()
-      && subfieldsEqual(field1.getSubfields(), field2.getSubfields());
-  }
-
-  private boolean subfieldsEqual(List<Subfield> subfields1, List<Subfield> subfields2) {
-    if (subfields1.size() != subfields2.size()) {
-      return false;
-    }
-
-    for (int i = 0; i < subfields1.size(); i++) {
-      if (!subfieldsEqual(subfields1.get(i), subfields2.get(i))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean subfieldsEqual(Subfield subfield1, Subfield subfield2) {
-    return subfield1.getCode() == subfield2.getCode() && subfield1.getData().equals(subfield2.getData());
-  }
 }
