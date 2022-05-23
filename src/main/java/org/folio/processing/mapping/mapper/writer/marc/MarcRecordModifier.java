@@ -726,7 +726,7 @@ public class MarcRecordModifier {
       dataFields.removeAll(tmpFields);
     }
 
-    if (ifNewDataShouldBeAdded && isNotProtected(fieldReplacement)) {
+    if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
       updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
@@ -794,4 +794,9 @@ public class MarcRecordModifier {
         field.getTag().equals(controlField.getTag())
         && field.getData().equals(controlField.getData()));
   }
+
+  private boolean dataFieldsContain(List<DataField> dataFields, DataField dataField) {
+    return dataFields.stream().anyMatch(field -> field.compareTo(dataField) == 0);
+  }
+
 }
