@@ -24,11 +24,11 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 public class AuthorityMappingTest {
 
   private static final String PARSED_AUTHORITY_PATH =
-    "src/test/resources/org/folio/processing/mapping/parsedAuthorityRecord.json";
+    "src/test/resources/org/folio/processing/mapping/holdings/parsedAuthorityRecord.json";
   private static final String MAPPED_AUTHORITY_PATH =
-    "src/test/resources/org/folio/processing/mapping/mappedAuthorityRecord.json";
+    "src/test/resources/org/folio/processing/mapping/holdings/mappedAuthorityRecord.json";
   private static final String DEFAULT_MAPPING_RULES_PATH =
-    "src/test/resources/org/folio/processing/mapping/authorityRules.json";
+    "src/test/resources/org/folio/processing/mapping/holdings/authorityRules.json";
 
   private final RecordMapper<Authority> mapper = RecordMapperBuilder.buildMapper("MARC_AUTHORITY");
 

@@ -41,26 +41,26 @@ public class InstanceMappingTest {
 
   private final RecordMapper<Instance> mapper = RecordMapperBuilder.buildMapper("MARC_BIB");
 
-  private static final String INSTANCES_PATH = "src/test/resources/org/folio/processing/mapping/instances.json";
-  private static final String BIBS_PATH = "src/test/resources/org/folio/processing/mapping/CornellFOLIOExemplars_Bibs.mrc";
-  private static final String PRECEDING_FILE_PATH = "src/test/resources/org/folio/processing/mapping/780_785_examples.mrc";
-  private static final String BIBS_ERRORS_PATH = "src/test/resources/org/folio/processing/mapping/test1_err.mrc";
-  private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH = "src/test/resources/org/folio/processing/mapping/336_repeated_subfields.mrc";
-  private static final String BIB_WITH_880_WITH_111_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/880_111_to_711.mrc";
-  private static final String BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/880_245_to_246.mrc";
-  private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/880_to_830.mrc";
-  private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/5xx_staff_only_indicators.mrc";
-  private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/590_subfield_3.mrc";
-  private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/ISBN.mrc";
-  private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/336_subfields_mapping.mrc";
+  private static final String INSTANCES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instances.json";
+  private static final String BIBS_PATH = "src/test/resources/org/folio/processing/mapping/instance/CornellFOLIOExemplars_Bibs.mrc";
+  private static final String PRECEDING_FILE_PATH = "src/test/resources/org/folio/processing/mapping/instance/780_785_examples.mrc";
+  private static final String BIBS_ERRORS_PATH = "src/test/resources/org/folio/processing/mapping/instance/test1_err.mrc";
+  private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH = "src/test/resources/org/folio/processing/mapping/instance/336_repeated_subfields.mrc";
+  private static final String BIB_WITH_880_WITH_111_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/880_111_to_711.mrc";
+  private static final String BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/880_245_to_246.mrc";
+  private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/880_to_830.mrc";
+  private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
+  private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
+  private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
+  private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
 
-  private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/rules.json";
-  private static final String DEFAULT_INSTANCE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instanceTypes.json";
-  private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/resourceIdentifiers.json";
+  private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
+  private static final String DEFAULT_INSTANCE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instanceTypes.json";
+  private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/resourceIdentifiers.json";
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
   private static final String TXT_INSTANCE_TYPE_ID = "6312d172-f0cf-40f6-b27d-9fa8feaf332f";
   private static final String UNSPECIFIED_INSTANCE_TYPE_ID = "30fffe0e-e985-4144-b2e2-1e8179bdb41f";
-  private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/856_missing_uri.mrc";
+  private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/instance/856_missing_uri.mrc";
 
   @Test
   public void testMarcToInstance() throws IOException {
