@@ -38,7 +38,7 @@ public class AuthorityMappingTest {
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper.mapRecord(getJsonMarcRecord(), new MappingParameters(), mappingRules);
-    Assert.assertEquals(JsonObject.mapFrom(actualMappedAuthority).encode(), expectedMappedAuthority.encode());
+    Assert.assertEquals(expectedMappedAuthority.encode(), JsonObject.mapFrom(actualMappedAuthority).encode());
   }
 
   private JsonObject getJsonMarcRecord() throws IOException {
