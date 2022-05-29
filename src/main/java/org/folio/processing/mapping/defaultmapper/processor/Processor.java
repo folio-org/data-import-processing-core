@@ -223,8 +223,10 @@ public class Processor<T> {
 
     List<Object[]> arraysOfObjects = new ArrayList<>();
     for (int i = 0; i < mappingRuleEntry.size(); i++) {
+      DataField dataField = ruleExecutionContext.getDataField();
       JsonObject fieldRule = mappingRuleEntry.getJsonObject(i);
-      if (!recordHasAllRequiredSubfields(ruleExecutionContext.getDataField(), fieldRule)) {
+      if (!recordHasAllRequiredSubfields(dataField, fieldRule)
+        || recordHasExclusiveSubfields(dataField, fieldRule)) {
         ignoredSubsequentSubfields.clear();
         return;
       }
@@ -255,6 +257,26 @@ public class Processor<T> {
       return subFieldsFromRecord.containsAll(requiredSubFieldsFromMapping);
     }
     return true;
+  }
+
+  /**
+   * Method checks if record field contains any exclusive sub-field (that come from mapping rules).
+   *
+   * @param recordDataField data field from record
+   * @param fieldRule       mapping configuration rule for specific field
+   * @return If there is exclusive sub-fields in mapping rules, then method checks if record field contains any of them.
+   * If there is no exclusive sub-fields in mapping rules, method just returns false
+   */
+  private boolean recordHasExclusiveSubfields(DataField recordDataField, JsonObject fieldRule) {
+    if (fieldRule.containsKey("exclusiveSubfield")) {
+      List<String> exclusiveSubfieldsFromMapping = fieldRule.getJsonArray("exclusiveSubfield").getList();
+      Set<String> subFieldsFromRecord = recordDataField.getSubfields()
+        .stream()
+        .map(subField -> String.valueOf(subField.getCode()))
+        .collect(Collectors.toSet());
+      return subFieldsFromRecord.stream().anyMatch(exclusiveSubfieldsFromMapping::contains);
+    }
+    return false;
   }
 
   private void handleFields(JsonObject jObj,
