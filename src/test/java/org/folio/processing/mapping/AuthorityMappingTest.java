@@ -23,27 +23,42 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 @RunWith(JUnit4.class)
 public class AuthorityMappingTest {
 
-  private static final String PARSED_AUTHORITY_PATH =
-    "src/test/resources/org/folio/processing/mapping/parsedAuthorityRecord.json";
-  private static final String MAPPED_AUTHORITY_PATH =
-    "src/test/resources/org/folio/processing/mapping/mappedAuthorityRecord.json";
+  private static final String PARSED_AUTHORITY_WITH_TITLES_PATH =
+    "src/test/resources/org/folio/processing/mapping/authority/parsedRecordWithTitles.json";
+  private static final String PARSED_AUTHORITY_WITHOUT_TITLES_PATH =
+    "src/test/resources/org/folio/processing/mapping/authority/parsedRecordWithoutTitles.json";
+  private static final String MAPPED_AUTHORITY_WITH_TITLES_PATH =
+    "src/test/resources/org/folio/processing/mapping/authority/mappedRecordWithTitles.json";
+  private static final String MAPPED_AUTHORITY_WITHOUT_TITLES_PATH =
+    "src/test/resources/org/folio/processing/mapping/authority/mappedRecordWithoutTitles.json";
   private static final String DEFAULT_MAPPING_RULES_PATH =
-    "src/test/resources/org/folio/processing/mapping/authorityRules.json";
+    "src/test/resources/org/folio/processing/mapping/authority/authorityRules.json";
 
   private final RecordMapper<Authority> mapper = RecordMapperBuilder.buildMapper("MARC_AUTHORITY");
 
   @Test
-  public void testMarcToAuthority() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_PATH));
+  public void testMarcToAuthorityWithTitles() throws IOException {
+    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_TITLES_PATH));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
-    Authority actualMappedAuthority = mapper.mapRecord(getJsonMarcRecord(), new MappingParameters(), mappingRules);
-    Assert.assertEquals(JsonObject.mapFrom(actualMappedAuthority).encode(), expectedMappedAuthority.encode());
+    Authority actualMappedAuthority = mapper
+      .mapRecord(getJsonMarcRecord(PARSED_AUTHORITY_WITH_TITLES_PATH), new MappingParameters(), mappingRules);
+    Assert.assertEquals(expectedMappedAuthority.encode(), JsonObject.mapFrom(actualMappedAuthority).encode());
   }
 
-  private JsonObject getJsonMarcRecord() throws IOException {
+  @Test
+  public void testMarcToAuthorityWithoutTitles() throws IOException {
+    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITHOUT_TITLES_PATH));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    Authority actualMappedAuthority = mapper
+      .mapRecord(getJsonMarcRecord(PARSED_AUTHORITY_WITHOUT_TITLES_PATH), new MappingParameters(), mappingRules);
+    Assert.assertEquals(expectedMappedAuthority.encode(), JsonObject.mapFrom(actualMappedAuthority).encode());
+  }
+
+  private JsonObject getJsonMarcRecord(String path) throws IOException {
     MarcJsonReader reader = new MarcJsonReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(PARSED_AUTHORITY_PATH).getBytes(StandardCharsets.UTF_8)));
+      new ByteArrayInputStream(TestUtil.readFileFromPath(path).getBytes(StandardCharsets.UTF_8)));
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     MarcJsonWriter writer = new MarcJsonWriter(os);
     Record record = reader.next();

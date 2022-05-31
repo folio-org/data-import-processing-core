@@ -30,11 +30,11 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 public class HoldingsMappingTest {
 
   private static final String PARSED_HOLDINGS_PATH =
-    "src/test/resources/org/folio/processing/mapping/parsedHoldingsRecord.json";
+    "src/test/resources/org/folio/processing/mapping/holdings/parsedHoldingsRecord.json";
   private static final String MAPPED_HOLDINGS_PATH =
-    "src/test/resources/org/folio/processing/mapping/mappedHoldingsRecord.json";
+    "src/test/resources/org/folio/processing/mapping/holdings/mappedHoldingsRecord.json";
   private static final String DEFAULT_MAPPING_RULES_PATH =
-    "src/test/resources/org/folio/processing/mapping/holdingsRules.json";
+    "src/test/resources/org/folio/processing/mapping/holdings/holdingsRules.json";
 
   private final RecordMapper<Holdings> mapper = RecordMapperBuilder.buildMapper("MARC_HOLDINGS");
 
@@ -44,7 +44,7 @@ public class HoldingsMappingTest {
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Holdings actualMappedHoldings = mapper.mapRecord(getJsonMarcRecord(), getMappingParameters(), mappingRules);
-    Assert.assertEquals(JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode(), expectedMappedHoldings.encode());
+    Assert.assertEquals(expectedMappedHoldings.encode(), JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode());
   }
 
   @Test
@@ -56,7 +56,7 @@ public class HoldingsMappingTest {
     var jsonMarcRecord = getJsonMarcRecord();
     jsonMarcRecord.put("leader", "00379cu  a22001334  4500");
     Holdings actualMappedHoldings = mapper.mapRecord(jsonMarcRecord, getMappingParameters(), mappingRules);
-    Assert.assertEquals(JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode(), expectedMappedHoldings.encode());
+    Assert.assertEquals(expectedMappedHoldings.encode(), JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode());
   }
 
   private JsonObject getJsonMarcRecord() throws IOException {
