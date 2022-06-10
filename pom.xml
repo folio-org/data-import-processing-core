@@ -22,11 +22,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <commons.lang.version>2.6</commons.lang.version>
     <logger.version>1.7.25</logger.version>
-    <jackson.version>2.10.5.1</jackson.version>
+    <jackson.version>2.13.3</jackson.version>
     <junit.version>4.13.1</junit.version>
-    <vertx.version>4.2.2</vertx.version>
+    <vertx.version>4.3.1</vertx.version>
     <wiremock.version>2.27.2</wiremock.version>
-    <raml-module-builder.version>33.2.3</raml-module-builder.version>
+    <raml-module-builder.version>34.0.0</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
     <sonar.exclusions>**/OkapiConnectionParams.java</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
