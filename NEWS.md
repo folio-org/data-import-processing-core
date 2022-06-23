@@ -1,6 +1,7 @@
-## 2022-xx-xx v3.4.0-SNAPSHOT
+## 2022-06-23 v3.4.0
 * [MODINV-671](https://issues.folio.org/browse/MODINV-671) Check and fix the sending of DI_ERROR after DuplicateEventException appears
 * [MODDICORE-265](https://issues.folio.org/browse/MODDICORE-265) Implement method to update record fields according to field protections
+* [MODDICORE-269](https://issues.folio.org/browse/MODDICORE-269) Add support of exclusiveSubfield option
 
 ## 2021-02-22 v3.3.0
 * [MODDICORE-222](https://issues.folio.org/browse/MODDICORE-222) Authority: Add normalisation function to set note types
