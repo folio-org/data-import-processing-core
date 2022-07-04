@@ -1493,7 +1493,7 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldProtectDataFieldEvenThisFieldNotExist() throws IOException {
+  public void protectedFieldShouldRevealEvenIfItNotExistsInExistingRecord() throws IOException {
     // given
     String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Test tag.\"}]}}]}";
     String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
