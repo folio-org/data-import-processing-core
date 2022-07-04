@@ -1,10 +1,17 @@
-## 2022-XX-XX v3.3.2-SNAPSHOT
+## 2022-XX-XX v3.3.4-SNAPSHOT
 * [MODDICORE-272](https://issues.folio.org/browse/MODDICORE-272) Protected fields are being removed from the incoming record on import.
+
+## 2022-04-15 v3.3.3
+* [MODINV-679](https://issues.folio.org/browse/MODINV-679) Updating an instance with data import erases administrative note
+
+## 2022-04-03 v3.3.2
+* [MODINV-671](https://issues.folio.org/browse/MODINV-671) Check and fix the sending of DI_ERROR after DuplicateEventException appears
 
 ## 2022-03-23 v3.3.1
 * [MODDICORE-253](https://issues.folio.org/browse/MODDICORE-253) Add logic to skip sending DI_ERROR from mod-inventory in case for duplicates
+* [MODDICORE-252](https://issues.folio.org/browse/MODDICORE-252) Data Import Update SRS duplicates protected fields on update when there is more than one of any given field
 
-## 2022-02-22 v3.3.0
+## 2021-02-22 v3.3.0
 * [MODDICORE-222](https://issues.folio.org/browse/MODDICORE-222) Authority: Add normalisation function to set note types
 * [MODDATAIMP-491](https://issues.folio.org/browse/MODDATAIMP-491) Improve logging to be able to trace the path of each record and file_chunks
 * [MODDICORE-225](https://issues.folio.org/browse/MODDICORE-225) When EDIFACT record is imported intermittently currency is not mapped when it comes from record field
