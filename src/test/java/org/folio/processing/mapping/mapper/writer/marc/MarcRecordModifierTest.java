@@ -1391,22 +1391,22 @@ public class MarcRecordModifierTest {
   @Test
   public void shouldNotReplaceProtectedExistingField() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
-        .withField("650")
-        .withSubfield("a")
+        .withField("010")
         .withIndicator1(" ")
         .withIndicator2("*")
+        .withSubfield("a")
         .withData("pictures")));
 
     MarcMappingDetail mappingRule1 = new MarcMappingDetail()
       .withOrder(0)
       .withField(new MarcField()
-        .withField("650")
+        .withField("010")
         .withIndicator1(" ")
         .withIndicator2("*")
         .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
@@ -1734,10 +1734,9 @@ public class MarcRecordModifierTest {
 
   @Test
   public void shouldRemoveNotUpdatedFieldToAllRepeatableControlFieldAndChangeLeader() throws IOException {
-    // given
-    // 002, 007 are repeatable control fields
+    // 006, 007 are repeatable control fields
     String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
-    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"002\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"006\":\"abc\"},{\"007\":\"xyz\"}]}";
     String expectedParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
