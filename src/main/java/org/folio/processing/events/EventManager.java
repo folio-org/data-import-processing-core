@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -92,7 +93,8 @@ public final class EventManager {
   }
 
   private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot, Throwable processThrowable) {
-    if (processThrowable instanceof EventHandlerNotFoundException || processThrowable instanceof DuplicateEventException) {
+    if (processThrowable instanceof EventHandlerNotFoundException ||
+      (Objects.nonNull(processThrowable) && processThrowable.getCause() instanceof DuplicateEventException)) {
       return CompletableFuture.completedFuture(false);
     }
     return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
