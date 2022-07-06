@@ -1,3 +1,6 @@
+## 2022-XX-XX v3.3.4-SNAPSHOT
+* [MODDICORE-272](https://issues.folio.org/browse/MODDICORE-272) Protected fields are being removed from the incoming record on import.
+
 ## 2022-04-15 v3.3.3
 * [MODINV-679](https://issues.folio.org/browse/MODINV-679) Updating an instance with data import erases administrative note
 

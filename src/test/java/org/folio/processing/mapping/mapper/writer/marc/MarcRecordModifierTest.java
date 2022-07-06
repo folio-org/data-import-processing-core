@@ -1492,7 +1492,28 @@ public class MarcRecordModifierTest {
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
   }
 
+  @Test
+  public void shouldAddIncomingFieldIftNotExistsInExistingRecordAndMatchesProtectionSetting() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Test tag.\"}]}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00102nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"a\":\"Test tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(new MarcFieldProtectionSetting()
+        .withField("856")
+        .withSubfield("*")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withData("*")));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(new ArrayList<>()));
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+  }
 
   @Test
   public void shouldReplaceOverriddenProtectedExistingField() throws IOException {
