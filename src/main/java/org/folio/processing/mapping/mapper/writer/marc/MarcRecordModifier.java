@@ -58,12 +58,20 @@ public class MarcRecordModifier {
   private static final Logger LOGGER = LogManager.getLogger(MarcRecordModifier.class);
 
   private static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
-  private static final String PAYLOAD_HAS_NO_DATA_MSG = "Cannot initialize MarcRecordModifier - "
-    + "event payload context does not contain required data";
+  private static final String PAYLOAD_HAS_NO_DATA_MSG =
+    "Cannot initialize MarcRecordModifier - event payload context does not contain required data";
   private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[] {'0', '1', '2', '3', '9'};
-  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS = Set.of("001", "003", "005", "008");
+  private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
+    Set.of("001", "002", "003", "004", "005", "008", "009");
+  public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
+    "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
+    "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
+  private static final String TAG_100 = "100";
+  private static final String TAG_199 = "199";
+  private static final String TAG_999 = "999";
+  private static final char INDICATOR_F = 'f';
   private static final String ANY_STRING = "*";
   private static final char ANY_CHAR = '*';
 
@@ -669,7 +677,9 @@ public class MarcRecordModifier {
               ifNewDataShouldBeAdded = false;
             }
           } else {
-            ifNewDataShouldBeAdded = false;
+            if (isNonRepeatableField(fieldToUpdate)) {
+              ifNewDataShouldBeAdded = false;
+            }
             LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
           }
         }
@@ -678,10 +688,22 @@ public class MarcRecordModifier {
       dataFields.removeAll(tmpFields);
     }
 
-    if (ifNewDataShouldBeAdded && isNotProtected(fieldReplacement)) {
+    if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
       updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  boolean isNonRepeatableField(DataField field) {
+    // is any of 1xx fields
+    if (field.getTag().compareTo(TAG_100) > -1 && field.getTag().compareTo(TAG_199) < 1) {
+      return true;
+    }
+    if (field.getTag().equals(TAG_999)) {
+      return field.getIndicator1() == INDICATOR_F && field.getIndicator2() == INDICATOR_F;
+    }
+
+    return NON_REPEATABLE_DATA_FIELDS_TAGS.contains(field.getTag());
   }
 
   private void clearUnUpdatedControlFields() {
@@ -735,4 +757,9 @@ public class MarcRecordModifier {
         field.getTag().equals(controlField.getTag())
         && field.getData().equals(controlField.getData()));
   }
+
+  private boolean dataFieldsContain(List<DataField> dataFields, DataField dataField) {
+    return dataFields.stream().anyMatch(field -> field.compareTo(dataField) == 0);
+  }
+
 }

@@ -1492,6 +1492,28 @@ public class MarcRecordModifierTest {
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
   }
 
+  @Test
+  public void shouldAddIncomingFieldIftNotExistsInExistingRecordAndMatchesProtectionSetting() throws IOException {
+    // given
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"785\":{\"subfields\":[{\"a\":\"electronic1\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic2\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic3\"}],\"ind1\":\"1\",\"ind2\":\"7\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"785\":{\"subfields\":[{\"a\":\"electronic1\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic2\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic3\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00235nam  22001091a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"785\":{\"subfields\":[{\"a\":\"electronic1\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic2\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic3\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic1\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic2\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic3\"}],\"ind1\":\"1\",\"ind2\":\"7\"}}]}";
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(Collections.singletonList(new MarcFieldProtectionSetting()
+        .withField("*")
+        .withSubfield("5")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withData("test")));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(new ArrayList<>()));
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+  }
 
 
   @Test
