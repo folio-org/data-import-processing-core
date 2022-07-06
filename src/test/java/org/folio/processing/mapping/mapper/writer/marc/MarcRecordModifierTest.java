@@ -1493,7 +1493,7 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldAddIncomingFieldIftNotExistsInExistingRecordAndMatchesProtectionSetting() throws IOException {
+  public void shouldAddIncomingFieldIfItNotExistsInExistingRecordAndMatchesProtectionSetting() throws IOException {
     // given
     String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Test tag.\"}]}}]}";
     String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
@@ -1516,7 +1516,7 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldAddIncomingFieldIftNotExistsInExistingRecordAndMatchesProtectionSetting() throws IOException {
+  public void shouldAdd3IncomingFieldsIf3AlreadyProtectedAndRemainAlreadyExisted3ProtectedFields() throws IOException {
     // given
     String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"785\":{\"subfields\":[{\"a\":\"electronic1\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic2\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic3\"}],\"ind1\":\"1\",\"ind2\":\"7\"}}]}";
     String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"785\":{\"subfields\":[{\"a\":\"electronic1\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic2\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}},{\"785\":{\"subfields\":[{\"a\":\"electronic3\"},{\"5\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"7\"}}]}";
