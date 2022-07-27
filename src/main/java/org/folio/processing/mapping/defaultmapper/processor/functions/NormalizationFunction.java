@@ -6,6 +6,7 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
+import org.folio.AuthoritySourceFile;
 import org.folio.CallNumberType;
 import org.folio.ClassificationType;
 import org.folio.ContributorNameType;
@@ -33,6 +34,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Collections;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -159,7 +162,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       return concatSubFields(ruleParameter, subfields.subList(subFieldIndex, subfieldsLimit), subFieldValue);
     }
 
-    private String concatSubFields(JsonObject ruleParameter, List<Subfield> subfields, String subfieldValue){
+    private String concatSubFields(JsonObject ruleParameter, List<Subfield> subfields, String subfieldValue) {
       StringBuilder concatenationResult = new StringBuilder(subfieldValue);
       JsonArray subfieldToConcat = ruleParameter.getJsonArray(SUBFIELDS_TO_CONCAT);
       for (int j = 0; j < subfieldToConcat.size(); j++) {
@@ -543,7 +546,35 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .findFirst()
         .orElse(STUB_FIELD_TYPE_ID);
     }
+  },
+
+  SET_AUTHORITY_SOURCE_FILE_ID() {
+    private static final String CODE_PARAMETER = "code";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      var value = context.getRuleParameter().getString(CODE_PARAMETER);
+      var prefix = getPrefix(value);
+      var authoritySourceFiles = context.getMappingParameters().getAuthoritySourceFiles();
+
+      if (authoritySourceFiles == null || prefix == null) {
+        return null;
+      }
+
+      return authoritySourceFiles.stream()
+        .filter(authoritySourceFile -> authoritySourceFile.getCodes().stream()
+          .anyMatch(code -> code.equalsIgnoreCase(prefix)))
+        .map(AuthoritySourceFile::getId)
+        .findFirst()
+        .orElse(null);
+    }
   };
+
+  private static String getPrefix(String value) {
+    Pattern p = Pattern.compile("[a-zA-Z]+");
+    Matcher m = p.matcher(value);
+    return m.find() ? m.group() : null;
+  }
 
   public IssuanceModeEnum matchSymbolToIssuanceMode(char symbol) {
     for (IssuanceModeEnum issuanceMode : IssuanceModeEnum.values()) {

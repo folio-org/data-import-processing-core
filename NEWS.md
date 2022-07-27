@@ -2,6 +2,7 @@
 * [MODINV-671](https://issues.folio.org/browse/MODINV-671) Check and fix the sending of DI_ERROR after DuplicateEventException appears
 * [MODDICORE-265](https://issues.folio.org/browse/MODDICORE-265) Implement method to update record fields according to field protections
 * [MODDICORE-269](https://issues.folio.org/browse/MODDICORE-269) Add support of exclusiveSubfield option
+* [MODDICORE-276](https://issues.folio.org/browse/MODDICORE-276) Create function to populate an Authority Source file ID
 
 ## 2021-02-22 v3.3.0
 * [MODDICORE-222](https://issues.folio.org/browse/MODDICORE-222) Authority: Add normalisation function to set note types
