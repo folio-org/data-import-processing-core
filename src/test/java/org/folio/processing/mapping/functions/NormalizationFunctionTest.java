@@ -882,11 +882,11 @@ public class NormalizationFunctionTest {
     var authoritySourceFileId1 = UUID.randomUUID().toString();
     var authoritySourceFile1 = new AuthoritySourceFile()
       .withId(authoritySourceFileId1)
-      .withCodes(List.of("n"));
+      .withCodes(List.of("n", "nbs"));
     var authoritySourceFileId2 = UUID.randomUUID().toString();
     var authoritySourceFile2 = new AuthoritySourceFile()
       .withId(authoritySourceFileId2)
-      .withCodes(List.of("nbsp"));
+      .withCodes(List.of("nb", "nbsp"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(List.of(authoritySourceFile1, authoritySourceFile2)));
     context.setRuleParameter(new JsonObject().put("code", "nbsp12345"));

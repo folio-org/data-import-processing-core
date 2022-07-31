@@ -6,7 +6,6 @@ import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
-import org.folio.AuthoritySourceFile;
 import org.folio.CallNumberType;
 import org.folio.ClassificationType;
 import org.folio.ContributorNameType;
@@ -29,13 +28,14 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Collections;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -554,27 +554,28 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       var value = context.getRuleParameter().getString(CODE_PARAMETER);
-      var prefix = getPrefix(value);
       var authoritySourceFiles = context.getMappingParameters().getAuthoritySourceFiles();
 
-      if (authoritySourceFiles == null || prefix == null) {
+      if (authoritySourceFiles == null || value == null) {
         return null;
       }
 
-      return authoritySourceFiles.stream()
-        .filter(authoritySourceFile -> authoritySourceFile.getCodes().stream()
-          .anyMatch(code -> code.equalsIgnoreCase(prefix)))
-        .map(AuthoritySourceFile::getId)
+      var codeIdsMap = authoritySourceFiles.stream().map(file -> {
+          var id = file.getId();
+          return file.getCodes().stream().collect(Collectors.toMap(code -> code, code -> id));
+        }).flatMap(map -> map.entrySet().stream())
+        .sorted(Comparator.comparing(codeIdEntry -> -codeIdEntry.getKey().length()))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+          (v1, v2) -> v2,
+          LinkedHashMap::new));
+
+      return codeIdsMap.entrySet().stream()
+        .filter(codeIdEntry -> value.startsWith(codeIdEntry.getKey()))
+        .map(Map.Entry::getValue)
         .findFirst()
         .orElse(null);
     }
   };
-
-  private static String getPrefix(String value) {
-    Pattern p = Pattern.compile("[a-zA-Z]+");
-    Matcher m = p.matcher(value);
-    return m.find() ? m.group() : null;
-  }
 
   public IssuanceModeEnum matchSymbolToIssuanceMode(char symbol) {
     for (IssuanceModeEnum issuanceMode : IssuanceModeEnum.values()) {
