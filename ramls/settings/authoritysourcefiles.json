@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "A collection of authority source files",
+  "type": "object",
+  "properties": {
+    "authoritySourceFiles": {
+      "description": "List of authority source files",
+      "id": "authoritySourceFile",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "$ref": "authoritysourcefile.json"
+      }
+    },
+    "totalRecords": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "authoritySourceFiles",
+    "totalRecords"
+  ]
+}

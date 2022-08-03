@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.AuthorityNoteType;
+import org.folio.AuthoritySourceFile;
 import org.folio.ClassificationType;
 import org.folio.InstanceType;
 import org.folio.ElectronicAccessRelationship;
@@ -855,6 +856,110 @@ public class NormalizationFunctionTest {
     var actualInstanceNoteTypeId = runFunction("set_authority_note_type_id", context);
     // then
     assertEquals(STUB_FIELD_TYPE_ID, actualInstanceNoteTypeId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnExpectedResult() {
+    // given
+    var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
+    var authoritySourceFile = new AuthoritySourceFile()
+      .withId(expectedAuthoritySourceFileId)
+      .withName("LC Name Authority file (LCNAF)")
+      .withType("Names")
+      .withCodes(List.of("n", "nb", "nr", "no"));
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
+    context.setRuleParameter(new JsonObject().put("code", "n12345"));
+    // when
+    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
+    // then
+    assertEquals(expectedAuthoritySourceFileId, actualAuthoritySourceFileId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnExpectedResultWhenMultipleMatches() {
+    // given
+    var authoritySourceFileId1 = UUID.randomUUID().toString();
+    var authoritySourceFile1 = new AuthoritySourceFile()
+      .withId(authoritySourceFileId1)
+      .withCodes(List.of("n", "nbs"));
+    var authoritySourceFileId2 = UUID.randomUUID().toString();
+    var authoritySourceFile2 = new AuthoritySourceFile()
+      .withId(authoritySourceFileId2)
+      .withCodes(List.of("nb", "nbsp"));
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(List.of(authoritySourceFile1, authoritySourceFile2)));
+    context.setRuleParameter(new JsonObject().put("code", "nbsp12345"));
+    // when
+    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
+    // then
+    assertEquals(authoritySourceFileId2, actualAuthoritySourceFileId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullIfNoMappingsSpecified() {
+    // given
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    context.setRuleParameter(new JsonObject().put("code", "n12345"));
+    // when
+    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
+    // then
+    assertNull(actualAuthoritySourceFileId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoCodeSpecified() {
+    // given
+    var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
+    var authoritySourceFile = new AuthoritySourceFile()
+      .withId(expectedAuthoritySourceFileId)
+      .withName("LC Name Authority file (LCNAF)")
+      .withType("Names")
+      .withCodes(List.of("n", "nb", "nr", "no"));
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
+    context.setRuleParameter(new JsonObject());
+    // when
+    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
+    // then
+    assertNull(actualAuthoritySourceFileId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoMatchingFound() {
+    // given
+    var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
+    var authoritySourceFile = new AuthoritySourceFile()
+      .withId(expectedAuthoritySourceFileId)
+      .withName("LC Name Authority file (LCNAF)")
+      .withType("Names")
+      .withCodes(List.of("n", "nb", "nr", "no"));
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
+    context.setRuleParameter(new JsonObject().put("code", "fst12345"));
+    // when
+    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
+    // then
+    assertNull(actualAuthoritySourceFileId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoPrefixSpecified() {
+    // given
+    var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
+    var authoritySourceFile = new AuthoritySourceFile()
+      .withId(expectedAuthoritySourceFileId)
+      .withName("LC Name Authority file (LCNAF)")
+      .withType("Names")
+      .withCodes(List.of("n", "nb", "nr", "no"));
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
+    context.setRuleParameter(new JsonObject().put("code", "12345"));
+    // when
+    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
+    // then
+    assertNull(actualAuthoritySourceFileId);
   }
 
   private List<HoldingsType> getHoldingsMappingParameter() {

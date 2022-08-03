@@ -3,6 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor.parameters;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
+import org.folio.AuthoritySourceFile;
 import org.folio.CallNumberType;
 import org.folio.ClassificationType;
 import org.folio.ContributorNameType;
@@ -65,7 +66,7 @@ public class MappingParameters {
   private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
   private String tenantConfiguration;
   private List<AuthorityNoteType> authorityNoteTypes;
-
+  private List<AuthoritySourceFile> authoritySourceFiles;
 
   public MappingParameters withInitializedState(boolean initialized) {
     this.initialized = initialized;
@@ -356,6 +357,14 @@ public class MappingParameters {
     this.authorityNoteTypes = authorityNoteTypes;
   }
 
+  public List<AuthoritySourceFile> getAuthoritySourceFiles() {
+    return authoritySourceFiles;
+  }
+
+  public void setAuthoritySourceFiles(List<AuthoritySourceFile> authoritySourceFiles) {
+    this.authoritySourceFiles = authoritySourceFiles;
+  }
+
   public MappingParameters withInstanceRelationshipTypes(List<InstanceRelationshipType> instanceRelationshipTypes) {
     this.instanceRelationshipTypes = new UnmodifiableList<>(instanceRelationshipTypes);
     return this;
@@ -428,6 +437,11 @@ public class MappingParameters {
 
   public MappingParameters withAuthorityNoteTypes(List<AuthorityNoteType> authorityNoteTypes) {
     this.authorityNoteTypes = Collections.unmodifiableList(authorityNoteTypes);
+    return this;
+  }
+
+  public MappingParameters withAuthoritySourceFiles(List<AuthoritySourceFile> authoritySourceFiles) {
+    this.authoritySourceFiles = Collections.unmodifiableList(authoritySourceFiles);
     return this;
   }
 }
