@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.defaultmapper.processor.parameters;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
@@ -36,6 +37,7 @@ import java.util.List;
 /**
  * Class to store parameters needed for mapping functions
  */
+@JsonIgnoreProperties("authoritySourceFiles")
 public class MappingParameters {
 
   private boolean initialized = false;
