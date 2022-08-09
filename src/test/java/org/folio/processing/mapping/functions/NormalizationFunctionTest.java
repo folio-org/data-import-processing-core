@@ -869,7 +869,7 @@ public class NormalizationFunctionTest {
       .withCodes(List.of("n", "nb", "nr", "no"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setRuleParameter(new JsonObject().put("code", "n12345"));
+    context.setSubFieldValue("n12345");
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then
@@ -889,7 +889,7 @@ public class NormalizationFunctionTest {
       .withCodes(List.of("nb", "nbsp"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(List.of(authoritySourceFile1, authoritySourceFile2)));
-    context.setRuleParameter(new JsonObject().put("code", "nbsp12345"));
+    context.setSubFieldValue("nbsp12345");
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then
@@ -901,7 +901,7 @@ public class NormalizationFunctionTest {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
-    context.setRuleParameter(new JsonObject().put("code", "n12345"));
+    context.setSubFieldValue("n12345");
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then
@@ -919,7 +919,7 @@ public class NormalizationFunctionTest {
       .withCodes(List.of("n", "nb", "nr", "no"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setRuleParameter(new JsonObject());
+    context.setSubFieldValue("");
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then
@@ -937,7 +937,7 @@ public class NormalizationFunctionTest {
       .withCodes(List.of("n", "nb", "nr", "no"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setRuleParameter(new JsonObject().put("code", "fst12345"));
+    context.setSubFieldValue("fst12345");
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then
@@ -955,7 +955,7 @@ public class NormalizationFunctionTest {
       .withCodes(List.of("n", "nb", "nr", "no"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setRuleParameter(new JsonObject().put("code", "12345"));
+    context.setSubFieldValue("12345");
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then

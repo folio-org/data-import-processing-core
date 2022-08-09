@@ -62,6 +62,7 @@ public class Processor<T> {
   private boolean entityRequested;
   private boolean entityRequestedPerRepeatedSubfield;
   private boolean keepTrailingBackslash;
+  private boolean valueIsAssigned;
   private final List<StringBuilder> buffers2concat = new ArrayList<>();
   private final Map<String, StringBuilder> subField2Data = new HashMap<>();
   private final Map<String, String> subField2Delimiter = new HashMap<>();
@@ -128,6 +129,11 @@ public class Processor<T> {
       //there could be multiple mapping entries, specifically different mappings
       //per subfield in the marc field
       JsonObject subFieldMapping = mappingEntry.getJsonObject(i);
+
+      if (shouldSkipRuleWhenTargetIsAssigned(subFieldMapping)){
+        return;
+      }
+
       //check if mapping entry has indicators sets
       if (!fieldMappingIndicators.isEmpty()) {
         String dataFieldInd1 = String.valueOf(dataField.getIndicator1());
@@ -215,6 +221,8 @@ public class Processor<T> {
 
     //for subfields there could be the case when you need to keep trailing backslash instead of removing it
     keepTrailingBackslash = BooleanUtils.isTrue(subFieldMapping.getBoolean("keepTrailingBackslash"));
+
+    valueIsAssigned = false;
 
     //if no "entity" is defined , then all rules contents of the field getting mapped to the same type
     //will be placed in a single instance of that type.
@@ -349,7 +357,8 @@ public class Processor<T> {
 
     for (int i = 0; i < subFields.size(); i++) {
       //check if there are no mapped elements present
-      if (checkIfSubfieldShouldBeHandled(subFieldsSet, subFields.get(i)) && canHandleSubField(subFields.get(i), jObj)) {
+      if (checkIfSubfieldShouldBeHandled(subFieldsSet, subFields.get(i)) && canHandleSubField(subFields.get(i), jObj)
+      && !shouldSkipSubfieldWhenTargetIsAssigned(jObj)) {
         handleSubFields(ruleExecutionContext, subFields, i, subFieldsSet, arraysOfObjects, applyPost, embeddedFields);
       }
     }
@@ -404,6 +413,9 @@ public class Processor<T> {
       //which has the full set of subfield data
       ruleExecutionContext.setSubFieldValue(data);
       data = processRules(ruleExecutionContext);
+      if (data.length() > 0){
+        valueIsAssigned = true;
+      }
     }
 
     if (delimiters != null && subField2Data.get(String.valueOf(subfield)) != null) {
@@ -491,6 +503,10 @@ public class Processor<T> {
 
     for (int i = 0; i < controlFieldRules.size(); i++) {
       JsonObject cfRule = controlFieldRules.getJsonObject(i);
+
+      if (shouldSkipRuleWhenTargetIsAssigned(cfRule)){
+        return;
+      }
 
       //get rules - each rule can contain multiple conditions that need to be met and a
       //value to inject in case all the conditions are met
@@ -882,5 +898,35 @@ public class Processor<T> {
 
   public boolean checkIfSubfieldShouldBeHandled(Set<String> subFieldsSet, Subfield subfield) {
     return subFieldsSet.isEmpty() || subFieldsSet.contains(Character.toString(subfield.getCode()));
+  }
+
+  private boolean shouldSkipRuleWhenTargetIsAssigned(JsonObject subFieldMapping){
+    if (subFieldMapping.containsKey("skipIfTargetIsAssigned") &&
+      subFieldMapping.getBoolean("skipIfTargetIsAssigned")) {
+      String[] embeddedFields = subFieldMapping.getString("target").split("\\.");
+      Object target = entity;
+      Class<?> type = entity.getClass();
+      for (String pathSegment : embeddedFields) {
+        try {
+          var getValueMethod = type.getMethod
+            ("get" + Character.toUpperCase(pathSegment.charAt(0)) + pathSegment.substring(1));
+          target = getValueMethod.invoke(target);
+          if (target == null) {
+            return false;
+          }
+          type = target.getClass();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+          return true;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  private boolean shouldSkipSubfieldWhenTargetIsAssigned(JsonObject subFieldMapping){
+    return subFieldMapping.containsKey("skipIfTargetIsAssigned") &&
+      subFieldMapping.getBoolean("skipIfTargetIsAssigned") && valueIsAssigned;
   }
 }

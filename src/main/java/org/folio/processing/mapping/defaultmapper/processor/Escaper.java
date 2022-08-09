@@ -60,12 +60,13 @@ public class Escaper {
    * @return
    */
   public static String escape(String data){
+    if (data == null) return "";
     return escape(data, false);
   }
-
-  public static String escape(String data, boolean keepTrailingBackslash){
-    // remove \ char if it is the last char of the text
-    if (!keepTrailingBackslash && data.endsWith("\\")) {
+    public static String escape(String data, boolean keepTrailingBackslash){
+      if (data == null) return "";
+      // remove \ char if it is the last char of the text
+      if (!keepTrailingBackslash && data.endsWith("\\")) {
       data = data.substring(0, data.length() - 1);
     }
     data = removeEscapedChars(data).replaceAll("\\\"", "\\\\\"");
