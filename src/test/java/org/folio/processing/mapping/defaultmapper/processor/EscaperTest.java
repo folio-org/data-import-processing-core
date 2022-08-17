@@ -19,4 +19,10 @@ class EscaperTest {
     var result = Escaper.escape(WITH_TRAILING_BACKSLASH, true);
     assertEquals(WITH_TRAILING_BACKSLASH, result);
   }
+
+  @Test
+  void shouldRemoveTrailingBackslash() {
+    var result = Escaper.escape(WITH_TRAILING_BACKSLASH, false);
+    assertEquals(WITHOUT_TRAILING_BACKSLASH, result);
+  }
 }

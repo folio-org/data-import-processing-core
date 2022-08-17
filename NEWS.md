@@ -1,3 +1,6 @@
+## xxxx-xx-xx v3.5.0
+* [MODSOURMAN-838](https://issues.folio.org/browse/MODSOURMAN-838) Search by LCCN "010 $a" subfield value with "\" at the end don't retrieve results
+
 ## 2022-06-23 v3.4.0
 * [MODINV-671](https://issues.folio.org/browse/MODINV-671) Check and fix the sending of DI_ERROR after DuplicateEventException appears
 * [MODDICORE-265](https://issues.folio.org/browse/MODDICORE-265) Implement method to update record fields according to field protections
