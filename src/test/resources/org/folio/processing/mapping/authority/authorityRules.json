@@ -46,6 +46,7 @@
   ],
   "010": [
     {
+      "keepTrailingBackslash": true,
       "entity": [
         {
           "target": "identifiers.identifierTypeId",

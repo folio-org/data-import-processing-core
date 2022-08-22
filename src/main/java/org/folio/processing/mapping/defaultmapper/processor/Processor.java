@@ -61,6 +61,7 @@ public class Processor<T> {
   private boolean createNewComplexObj;
   private boolean entityRequested;
   private boolean entityRequestedPerRepeatedSubfield;
+  private boolean keepTrailingBackslash;
   private final List<StringBuilder> buffers2concat = new ArrayList<>();
   private final Map<String, StringBuilder> subField2Data = new HashMap<>();
   private final Map<String, String> subField2Delimiter = new HashMap<>();
@@ -211,6 +212,9 @@ public class Processor<T> {
     //each one will create its own instance
     entityRequestedPerRepeatedSubfield = BooleanUtils.isTrue(subFieldMapping.getBoolean(
       "entityPerRepeatedSubfield"));
+
+    //for subfields there could be the case when you need to keep trailing backslash instead of removing it
+    keepTrailingBackslash = BooleanUtils.isTrue(subFieldMapping.getBoolean("keepTrailingBackslash"));
 
     //if no "entity" is defined , then all rules contents of the field getting mapped to the same type
     //will be placed in a single instance of that type.
@@ -518,7 +522,7 @@ public class Processor<T> {
 
   private String processRules(RuleExecutionContext ruleExecutionContext) {
     if (rules == null) {
-      return Escaper.escape(ruleExecutionContext.getSubFieldValue())
+      return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
         .replaceAll("\\\\\"", "\\\"");
     }
 
@@ -531,7 +535,7 @@ public class Processor<T> {
         break;
       }
     }
-    return Escaper.escape(ruleExecutionContext.getSubFieldValue())
+    return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
       .replaceAll("\\\\\"", "\\\"");
   }
 
