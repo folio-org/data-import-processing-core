@@ -1,4 +1,5 @@
-## xxxx-xx-xx v3.5.0
+## 2022-xx-xx v3.5.0-SNAPSHOT
+* [MODDICORE-281](https://issues.folio.org/browse/MODDICORE-281) Extend instance contributors schema with Authority ID
 * [MODSOURMAN-838](https://issues.folio.org/browse/MODSOURMAN-838) Search by LCCN "010 $a" subfield value with "\" at the end don't retrieve results
 
 ## 2022-06-23 v3.4.0
