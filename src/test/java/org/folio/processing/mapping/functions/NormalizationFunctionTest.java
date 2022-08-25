@@ -20,6 +20,8 @@ import org.folio.CallNumberType;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.marc4j.marc.DataField;
@@ -908,8 +910,9 @@ public class NormalizationFunctionTest {
     assertNull(actualAuthoritySourceFileId);
   }
 
-  @Test
-  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoCodeSpecified() {
+  @ParameterizedTest
+  @ValueSource(strings = {"", "fst12345", "12345"})
+  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoCodeSpecified(String subFieldValue) {
     // given
     var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
     var authoritySourceFile = new AuthoritySourceFile()
@@ -919,43 +922,7 @@ public class NormalizationFunctionTest {
       .withCodes(List.of("n", "nb", "nr", "no"));
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setSubFieldValue("");
-    // when
-    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
-    // then
-    assertNull(actualAuthoritySourceFileId);
-  }
-
-  @Test
-  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoMatchingFound() {
-    // given
-    var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
-    var authoritySourceFile = new AuthoritySourceFile()
-      .withId(expectedAuthoritySourceFileId)
-      .withName("LC Name Authority file (LCNAF)")
-      .withType("Names")
-      .withCodes(List.of("n", "nb", "nr", "no"));
-    var context = new RuleExecutionContext();
-    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setSubFieldValue("fst12345");
-    // when
-    var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
-    // then
-    assertNull(actualAuthoritySourceFileId);
-  }
-
-  @Test
-  public void SET_AUTHORITY_SOURCE_FILE_ID_shouldReturnNullWhenNoPrefixSpecified() {
-    // given
-    var expectedAuthoritySourceFileId = UUID.randomUUID().toString();
-    var authoritySourceFile = new AuthoritySourceFile()
-      .withId(expectedAuthoritySourceFileId)
-      .withName("LC Name Authority file (LCNAF)")
-      .withType("Names")
-      .withCodes(List.of("n", "nb", "nr", "no"));
-    var context = new RuleExecutionContext();
-    context.setMappingParameters(new MappingParameters().withAuthoritySourceFiles(Collections.singletonList(authoritySourceFile)));
-    context.setSubFieldValue("12345");
+    context.setSubFieldValue(subFieldValue);
     // when
     var actualAuthoritySourceFileId = runFunction("set_authority_source_file_id", context);
     // then

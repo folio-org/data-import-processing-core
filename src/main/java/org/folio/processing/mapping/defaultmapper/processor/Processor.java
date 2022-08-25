@@ -50,6 +50,8 @@ public class Processor<T> {
   private static final String IND_1 = "ind1";
   private static final String IND_2 = "ind2";
   private static final String WILDCARD_INDICATOR = "*";
+  private static final String TARGET = "target";
+  private static final String SKIP_IF_TARGET_IS_ASSIGNED = "skipIfTargetIsAssigned";
 
   private JsonObject mappingRules;
 
@@ -333,7 +335,7 @@ public class Processor<T> {
 
     handleDelimiters();
 
-    String[] embeddedFields = jObj.getString("target").split("\\.");
+    String[] embeddedFields = jObj.getString(TARGET).split("\\.");
 
 
     if (!isMappingValid(entity, embeddedFields)) {
@@ -523,7 +525,7 @@ public class Processor<T> {
 
       //if conditionsMet = true, then all conditions of a specific rule were met
       //and we can set the target to the rule's value
-      String target = cfRule.getString("target");
+      String target = cfRule.getString(TARGET);
       String[] embeddedFields = target.split("\\.");
 
       if (isMappingValid(entity, embeddedFields)) {
@@ -901,32 +903,34 @@ public class Processor<T> {
   }
 
   private boolean shouldSkipRuleWhenTargetIsAssigned(JsonObject subFieldMapping){
-    if (subFieldMapping.containsKey("skipIfTargetIsAssigned") &&
-      subFieldMapping.getBoolean("skipIfTargetIsAssigned")) {
-      String[] embeddedFields = subFieldMapping.getString("target").split("\\.");
-      Object target = entity;
-      Class<?> type = entity.getClass();
-      for (String pathSegment : embeddedFields) {
-        try {
-          var getValueMethod = type.getMethod
-            ("get" + Character.toUpperCase(pathSegment.charAt(0)) + pathSegment.substring(1));
-          target = getValueMethod.invoke(target);
-          if (target == null) {
-            return false;
+    if (subFieldMapping.containsKey(SKIP_IF_TARGET_IS_ASSIGNED)) {
+      boolean isAssigned = subFieldMapping.getBoolean(SKIP_IF_TARGET_IS_ASSIGNED);
+      if (isAssigned) {
+        String[] embeddedFields = subFieldMapping.getString(TARGET).split("\\.");
+        Object target = entity;
+        Class<?> type = entity.getClass();
+        for (String pathSegment : embeddedFields) {
+          try {
+            var getValueMethod = type.getMethod
+              ("get" + Character.toUpperCase(pathSegment.charAt(0)) + pathSegment.substring(1));
+            target = getValueMethod.invoke(target);
+            if (target == null) {
+              return false;
+            }
+            type = target.getClass();
+          } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            return true;
           }
-          type = target.getClass();
-        } catch (Exception e) {
-          LOGGER.error(e.getMessage(), e);
-          return true;
         }
+        return true;
       }
-      return true;
     }
     return false;
   }
 
   private boolean shouldSkipSubfieldWhenTargetIsAssigned(JsonObject subFieldMapping){
-    return subFieldMapping.containsKey("skipIfTargetIsAssigned") &&
-      subFieldMapping.getBoolean("skipIfTargetIsAssigned") && valueIsAssigned;
+    return subFieldMapping.containsKey(SKIP_IF_TARGET_IS_ASSIGNED) &&
+      subFieldMapping.getBoolean(SKIP_IF_TARGET_IS_ASSIGNED) && valueIsAssigned;
   }
 }
