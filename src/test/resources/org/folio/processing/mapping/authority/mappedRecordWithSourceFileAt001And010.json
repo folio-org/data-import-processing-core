@@ -1,20 +1,20 @@
 {
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
-  "personalName": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
-  "sftPersonalName": [ "v. 25 cm." ],
-  "saftPersonalName": [ "Editor:   C. W. Dugmore." ],
-  "sftPersonalNameTitle": [ ],
-  "saftPersonalNameTitle": [ ],
-  "corporateName": "BR140 .J6",
-  "sftCorporateName": [ "Quarterly, 1970-" ],
-  "saftCorporateName": [ "Church history" ],
-  "sftCorporateNameTitle": [ ],
-  "saftCorporateNameTitle": [ ],
-  "meetingName": "270.05",
-  "sftMeetingName": [ "Semiannual," ],
-  "saftMeetingName": [ "Church history" ],
-  "sftMeetingNameTitle": [ ],
-  "saftMeetingNameTitle": [ ],
+  "sftPersonalName": [ ],
+  "saftPersonalName": [ ],
+  "personalNameTitle": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
+  "sftPersonalNameTitle": [ "v. 25 cm." ],
+  "saftPersonalNameTitle": [ "Editor:   C. W. Dugmore." ],
+  "sftCorporateName": [],
+  "saftCorporateName": [ ],
+  "corporateNameTitle": "BR140 .J6",
+  "sftCorporateNameTitle": [ "Quarterly, 1970-" ],
+  "saftCorporateNameTitle": [ "Church history" ],
+  "sftMeetingName": [ ],
+  "saftMeetingName": [ ],
+  "meetingNameTitle": "270.05",
+  "sftMeetingNameTitle": [ "Semiannual, 1950-69" ],
+  "saftMeetingNameTitle": [ "Church history" ],
   "uniformTitle": "The Journal of ecclesiastical history",
   "sftUniformTitle": [ "v. 1-   Apr. 1950-" ],
   "saftUniformTitle": [ "Periodicals" ],
@@ -30,11 +30,11 @@
   "saftGenreTerm": [ "linkText publicNote" ],
   "identifiers": [
     {
-      "value": "1000649",
+      "value": "fst1000649",
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     },
     {
-      "value": "bslw85033892\\",
+      "value": "n   58020553",
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     },
     {
@@ -46,5 +46,6 @@
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     }
   ],
-  "notes": [ ]
+  "notes": [ ],
+  "sourceFileId" : "ce023941-e28d-40c1-910b-02e42d6ea2eb"
 }
