@@ -63,7 +63,10 @@ public class Escaper {
     return escape(data, false);
   }
 
-  public static String escape(String data, boolean keepTrailingBackslash){
+  public static String escape(String data, boolean keepTrailingBackslash) {
+    if (data == null) {
+      return "";
+    }
     // remove \ char if it is the last char of the text
     if (!keepTrailingBackslash && data.endsWith("\\")) {
       data = data.substring(0, data.length() - 1);

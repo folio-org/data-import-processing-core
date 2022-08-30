@@ -549,11 +549,10 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
   },
 
   SET_AUTHORITY_SOURCE_FILE_ID() {
-    private static final String CODE_PARAMETER = "code";
 
     @Override
     public String apply(RuleExecutionContext context) {
-      var value = context.getRuleParameter().getString(CODE_PARAMETER);
+      var value = context.getSubFieldValue();
       var authoritySourceFiles = context.getMappingParameters().getAuthoritySourceFiles();
 
       if (authoritySourceFiles == null || value == null) {
