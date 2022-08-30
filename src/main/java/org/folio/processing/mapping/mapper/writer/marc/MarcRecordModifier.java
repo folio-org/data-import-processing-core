@@ -305,12 +305,11 @@ public class MarcRecordModifier {
       char ind2 =
         isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
       DataField dataField = marcFactory.newDataField(fieldTag, ind1, ind2);
-      if (isNotProtected(dataField)) {
-        for (MarcSubfield subfield : detail.getField().getSubfields()) {
-          dataField.addSubfield(marcFactory.newSubfield(subfield.getSubfield().charAt(0), subfield.getData().getText()));
-        }
-        addDataFieldInNumericalOrder(dataField);
+
+      for (MarcSubfield subfield : detail.getField().getSubfields()) {
+        dataField.addSubfield(marcFactory.newSubfield(subfield.getSubfield().charAt(0), subfield.getData().getText()));
       }
+      addDataFieldInNumericalOrder(dataField);
     }
   }
 
@@ -371,19 +370,17 @@ public class MarcRecordModifier {
 
     if (Verifier.isControlField(fieldTag)) {
       for (VariableField field : marcRecordToChange.getVariableFields(fieldTag)) {
-        if (isNotProtected((ControlField) field)) {
-          marcRecordToChange.removeVariableField(field);
-        }
+        marcRecordToChange.removeVariableField(field);
       }
     } else if (detail.getField().getSubfields().get(0).getSubfield().charAt(0) == ANY_CHAR) {
       marcRecordToChange.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2) && isNotProtected(field))
+        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
         .collect(Collectors.toList())
         .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
       char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2) && isNotProtected(field))
+        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
         .peek(targetField -> targetField.removeSubfield(targetField.getSubfield(subfieldCode)))
         .filter(field -> field.getSubfields().isEmpty())
         .collect(Collectors.toList())
@@ -429,7 +426,7 @@ public class MarcRecordModifier {
     MarcSubfield.Position dataPosition = mappingRule.getField().getSubfields().get(0).getPosition();
 
     List<DataField> fieldsToEdit = marcRecordToChange.getDataFields().stream()
-      .filter(field -> fieldMatches(field, tag, ind1, ind2) && isNotProtected(field))
+      .filter(field -> fieldMatches(field, tag, ind1, ind2))
       .collect(Collectors.toList());
 
     char subfieldCode = ruleSubfield.getSubfield().charAt(0);
@@ -478,7 +475,6 @@ public class MarcRecordModifier {
       marcRecordToChange.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && dataToReplace.equals(ANY_STRING) ||
           controlFieldContainsDataAtPositions(field, dataToReplace, positions))
-        .filter(this::isNotProtected)
         .forEach(fieldToEdit -> {
           StringBuilder newData =
             new StringBuilder(fieldToEdit.getData()).replace(startPosition, endPosition + 1, replacementData);
@@ -497,7 +493,6 @@ public class MarcRecordModifier {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
       marcRecordToChange.getControlFields().stream()
         .filter(field -> field.getTag().equals(tag) && controlFieldContainsDataAtPositions(field, dataToRemove, positions))
-        .filter(this::isNotProtected)
         .forEach(fieldToEdit -> fieldToEdit.setData(
           new StringBuilder(fieldToEdit.getData()).delete(positions.getMinimum(), positions.getMaximum() + 1).toString()));
     } else {
@@ -542,7 +537,7 @@ public class MarcRecordModifier {
     char subfieldCode = mappingRule.getField().getSubfields().get(0).getSubfield().charAt(0);
 
     marcRecordToChange.getDataFields().stream()
-      .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode) && isNotProtected(field))
+      .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode))
       .flatMap(fieldToEdit -> findSubfields(fieldToEdit, subfieldCode, dataToReplace).stream())
       .forEach(sf -> sf.setData(
         dataToReplace.equals(ANY_STRING) ? replacementData : sf.getData().replace(dataToReplace, replacementData)));
@@ -569,7 +564,7 @@ public class MarcRecordModifier {
       isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
 
     List<DataField> sourceFields = marcRecordToChange.getDataFields().stream()
-      .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2) && isNotProtected(field))
+      .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2))
       .collect(Collectors.toList());
 
     for (MarcSubfield subfieldRule : detail.getField().getSubfields()) {
