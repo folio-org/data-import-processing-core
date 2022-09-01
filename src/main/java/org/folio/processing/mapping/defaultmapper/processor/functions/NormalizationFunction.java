@@ -28,10 +28,7 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Collections;
