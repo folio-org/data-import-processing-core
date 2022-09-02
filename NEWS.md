@@ -1,4 +1,4 @@
-## 2022-09-xx v3.4.1-SNAPSHOT
+## 2022-09-02 v3.4.1
 * [MODDICORE-248](https://issues.folio.org/browse/MODDICORE-248) MARC field protections apply to MARC modifications of incoming records when they should not
 
 ## 2022-06-23 v3.4.0
