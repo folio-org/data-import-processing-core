@@ -30,11 +30,11 @@
   "saftGenreTerm": [ "linkText publicNote" ],
   "identifiers": [
     {
-      "value": "1000649",
+      "value": "xyz1000649",
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     },
     {
-      "value": "n   58020553",
+      "value": "abc   38420221",
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     },
     {
@@ -47,6 +47,5 @@
     }
   ],
   "notes": [ ],
-  "sourceFileId": "e2efd148-8c17-41c2-9a4b-3d490db9b158",
-  "naturalId": "n58020553"
+  "naturalId": "xyz1000649"
 }

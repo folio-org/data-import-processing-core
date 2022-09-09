@@ -28,10 +28,7 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Collections;
@@ -545,34 +542,6 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .map(AuthorityNoteType::getId)
         .findFirst()
         .orElse(STUB_FIELD_TYPE_ID);
-    }
-  },
-
-  SET_AUTHORITY_SOURCE_FILE_ID() {
-
-    @Override
-    public String apply(RuleExecutionContext context) {
-      var value = context.getSubFieldValue();
-      var authoritySourceFiles = context.getMappingParameters().getAuthoritySourceFiles();
-
-      if (authoritySourceFiles == null || value == null) {
-        return null;
-      }
-
-      var codeIdsMap = authoritySourceFiles.stream().map(file -> {
-          var id = file.getId();
-          return file.getCodes().stream().collect(Collectors.toMap(code -> code, code -> id));
-        }).flatMap(map -> map.entrySet().stream())
-        .sorted(Comparator.comparing(codeIdEntry -> -codeIdEntry.getKey().length()))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-          (v1, v2) -> v2,
-          LinkedHashMap::new));
-
-      return codeIdsMap.entrySet().stream()
-        .filter(codeIdEntry -> value.startsWith(codeIdEntry.getKey()))
-        .map(Map.Entry::getValue)
-        .findFirst()
-        .orElse(null);
     }
   };
 

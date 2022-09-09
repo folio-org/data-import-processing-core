@@ -22,21 +22,6 @@
           ]
         }
       ]
-    },
-    {
-      "skipIfTargetIsAssigned" : true,
-      "target": "sourceFileId",
-      "description": "Authority source file id",
-      "subfield": [],
-      "rules": [
-        {
-          "conditions": [
-            {
-              "type": "set_authority_source_file_id"
-            }
-          ]
-        }
-      ]
     }
   ],
   "008": [
@@ -99,21 +84,6 @@
                   "type": "trim"
                 }
               ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "skipIfTargetIsAssigned" : true,
-      "target": "sourceFileId",
-      "description": "Authority source file id",
-      "subfield": ["a"],
-      "rules": [
-        {
-          "conditions": [
-            {
-              "type": "set_authority_source_file_id"
             }
           ]
         }
