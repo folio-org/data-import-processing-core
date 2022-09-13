@@ -68,7 +68,7 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     }
 
     authority.setSourceFileId(sourceFileId);
-    authority.setNaturalId(removeWhitespaces(naturalId));
+    authority.setNaturalId(cleanupNaturalId(naturalId));
   }
 
   private List<String> getTag010ASubfieldValues(Record marcRecord) {
@@ -107,8 +107,8 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
       .orElse(null);
   }
 
-  private static String removeWhitespaces(String str) {
-    return str == null ? null : str.replaceAll("\\s+", "");
+  private static String cleanupNaturalId(String str) {
+    return str == null ? null : str.replaceAll("[^0-9a-zA-Z]", "");
   }
 
 }
