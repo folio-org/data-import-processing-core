@@ -22,6 +22,18 @@
       "type": "string",
       "description": "type of authority records stored in source file"
     },
+    "baseUrl": {
+      "type": "string",
+      "description": "Base URL of the source file origin"
+    },
+    "source": {
+      "type": "string",
+      "description": "label indicating where the authority source file entry originates from, i.e. 'folio' or 'local'",
+      "enum": [
+        "folio",
+        "local"
+      ]
+    },
     "metadata": {
       "type": "object",
       "$ref": "../raml-storage/raml-util/schemas/metadata.schema",
@@ -32,7 +44,8 @@
   "required": [
     "name",
     "code",
-    "type"
+    "type",
+    "source"
   ]
 }
 
