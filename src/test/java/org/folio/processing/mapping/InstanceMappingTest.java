@@ -224,13 +224,13 @@ public class InstanceMappingTest {
       Assert.assertNotNull(instance.getNotes());
       Assert.assertEquals(7, instance.getNotes().size());
       Assert.assertEquals("Rare copy: Gift of David Pescovitz and Timothy Daly. 12345", instance.getNotes().get(1).getNote());
-      Assert.assertTrue( instance.getNotes().get(1).getStaffOnly());
+      Assert.assertTrue(instance.getNotes().get(1).getStaffOnly());
       Assert.assertEquals("Testing Rare copy: Gift of David Pescovitz and Timothy Daly", instance.getNotes().get(2).getNote());
-      Assert.assertTrue( instance.getNotes().get(2).getStaffOnly());
+      Assert.assertTrue(instance.getNotes().get(2).getStaffOnly());
       Assert.assertEquals("Testing Rare copy 3: Gift of David Pescovitz and Timothy Daly. 123", instance.getNotes().get(3).getNote());
-      Assert.assertFalse( instance.getNotes().get(3).getStaffOnly());
+      Assert.assertFalse(instance.getNotes().get(3).getStaffOnly());
       Assert.assertEquals("Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\\\6\\\\1973", instance.getNotes().get(4).getNote());
-      Assert.assertFalse( instance.getNotes().get(4).getStaffOnly());
+      Assert.assertFalse(instance.getNotes().get(4).getStaffOnly());
       Assert.assertEquals("The note should be marked as stuffOnly", instance.getNotes().get(5).getNote());
       Assert.assertTrue(instance.getNotes().get(5).getStaffOnly());
       Assert.assertEquals("The note should not be marked as stuffOnly", instance.getNotes().get(6).getNote());
@@ -264,7 +264,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstancePrecidingTitles() throws IOException {
+  public void testMarcToInstancePrecedingTitles() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(PRECEDING_FILE_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
