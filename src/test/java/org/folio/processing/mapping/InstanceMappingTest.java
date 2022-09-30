@@ -3,11 +3,10 @@ package org.folio.processing.mapping;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import org.folio.Instance;
 import org.folio.Identifier;
-import org.folio.InstanceType;
 import org.folio.IdentifierType;
+import org.folio.Instance;
+import org.folio.InstanceType;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
@@ -25,15 +24,14 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
-import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @RunWith(JUnit4.class)
@@ -224,7 +222,7 @@ public class InstanceMappingTest {
       Assert.assertNotNull(instance.getTitle());
       Assert.assertNotNull(instance.getSource());
       Assert.assertNotNull(instance.getNotes());
-      Assert.assertEquals(5, instance.getNotes().size());
+      Assert.assertEquals(7, instance.getNotes().size());
       Assert.assertEquals("Rare copy: Gift of David Pescovitz and Timothy Daly. 12345", instance.getNotes().get(1).getNote());
       Assert.assertTrue( instance.getNotes().get(1).getStaffOnly());
       Assert.assertEquals("Testing Rare copy: Gift of David Pescovitz and Timothy Daly", instance.getNotes().get(2).getNote());
@@ -233,6 +231,10 @@ public class InstanceMappingTest {
       Assert.assertFalse( instance.getNotes().get(3).getStaffOnly());
       Assert.assertEquals("Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\\\6\\\\1973", instance.getNotes().get(4).getNote());
       Assert.assertFalse( instance.getNotes().get(4).getStaffOnly());
+      Assert.assertEquals("The note should be marked as stuffOnly", instance.getNotes().get(5).getNote());
+      Assert.assertTrue(instance.getNotes().get(5).getStaffOnly());
+      Assert.assertEquals("The note should not be marked as stuffOnly", instance.getNotes().get(6).getNote());
+      Assert.assertFalse(instance.getNotes().get(6).getStaffOnly());
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       Assert.assertTrue(violations.isEmpty());
