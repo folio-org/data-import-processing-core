@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
 import org.folio.CallNumberType;
@@ -264,6 +265,28 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .findFirst()
         .map(ContributorNameType::getId)
         .orElse(STUB_FIELD_TYPE_ID);
+    }
+  },
+
+  SET_CONTRIBUTOR_TYPE_ID_BY_CODE_OR_NAME() {
+    @Override
+    public String apply(RuleExecutionContext context) {
+      List<ContributorType> types = context.getMappingParameters().getContributorTypes();
+      String contributorCodeSubfield = context.getRuleParameter().getString("contributorCodeSubfield");
+      String contributorNameSubfield = context.getRuleParameter().getString("contributorNameSubfield");
+
+      String contributorTypeCode = context.getDataField().getSubfield(contributorCodeSubfield.charAt(0)).getData();
+      String contributorTypeName = context.getDataField().getSubfield(contributorNameSubfield.charAt(0)).getData();
+
+      return types.stream()
+        .filter(type -> type.getCode().equalsIgnoreCase(contributorTypeCode))
+        .findFirst()
+        .map(ContributorType::getId)
+        .orElseGet(() -> types.stream()
+          .filter(type -> type.getName().equalsIgnoreCase(contributorTypeName))
+          .findFirst()
+          .map(ContributorType::getId)
+          .orElse(StringUtils.EMPTY));
     }
   },
 

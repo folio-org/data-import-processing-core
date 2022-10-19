@@ -6488,6 +6488,83 @@
       ]
     }
   ],
+  "720": [
+    {
+      "entity": [
+        {
+          "target": "contributors.contributorNameTypeId",
+          "description": "Type for Personal Name",
+          "applyRulesOnConcatenatedData": true,
+          "subfield": [
+          ],
+          "rules": [
+            {
+              "conditions": [
+                {
+                  "type": "set_contributor_name_type_id",
+                  "parameter": {
+                    "name": "Personal name"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "target": "contributors.contributorTypeId",
+          "description": "Type of contributor",
+          "applyRulesOnConcatenatedData": true,
+          "subfield": [
+            "4",
+            "e"
+          ],
+          "rules": [
+            {
+              "conditions": [
+                {
+                  "type": "set_contributor_type_id_by_code_or_name",
+                  "parameter": {
+                    "contributorCodeSubfield": "4",
+                    "contributorNameSubfield": "e"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "target": "contributors.primary",
+          "description": "Primary contributor",
+          "applyRulesOnConcatenatedData": true,
+          "subfield": [
+          ],
+          "rules": [
+            {
+              "conditions": [],
+              "value": "false"
+            }
+          ]
+        },
+        {
+          "target": "contributors.name",
+          "description": "Personal Name",
+          "subfield": [
+            "a"
+          ],
+          "applyRulesOnConcatenatedData": true,
+          "rules": [
+            {
+              "conditions": [
+                {
+                  "type": "trim_period, trim"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "780": [
     {
       "entity": [
