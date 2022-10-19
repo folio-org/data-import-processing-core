@@ -3,7 +3,7 @@
 
   <groupId>org.folio</groupId>
   <artifactId>data-import-processing-core</artifactId>
-  <version>3.5.1</version>
+  <version>3.6.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>data-import-processing-core</name>
   <organization>
@@ -184,7 +184,7 @@
     <url>https://github.com/folio-org/data-import-processing-core</url>
     <connection>scm:git:git@github.com:folio-org/data-import-processing-core.git</connection>
     <developerConnection>scm:git:git@github.com:folio-org/data-import-processing-core.git</developerConnection>
-    <tag>v3.5.1</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <build>
