@@ -6530,7 +6530,14 @@
                 }
               ]
             }
-          ]
+          ],
+          "alternativeRule": {
+            "target": "contributors.contributorTypeText",
+            "ignoreSubsequentSubfields": true,
+            "subfield": [
+              "e"
+            ]
+          }
         },
         {
           "target": "contributors.primary",

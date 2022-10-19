@@ -365,6 +365,10 @@ public class Processor<T> {
       if (createNewObject(embeddedFields, completeData, rememberComplexObj)) {
         createNewComplexObj = false;
       }
+
+      if (StringUtils.isEmpty(completeData) && jObj.containsKey("alternativeRule")) {
+        handleFields(jObj.getJsonObject("alternativeRule"), arraysOfObjects, rememberComplexObj, ruleExecutionContext);
+      }
     }
   }
 
