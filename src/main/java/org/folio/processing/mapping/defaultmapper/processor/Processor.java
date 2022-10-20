@@ -368,6 +368,7 @@ public class Processor<T> {
       }
 
       if (StringUtils.isEmpty(completeData) && jObj.containsKey(ALTERNATIVE_MAPPING)) {
+        ignoredSubsequentSubfields.clear();
         handleFields(jObj.getJsonObject(ALTERNATIVE_MAPPING), arraysOfObjects, rememberComplexObj, ruleExecutionContext);
       }
     }
