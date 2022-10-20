@@ -51,6 +51,7 @@ public class Processor<T> {
   private static final String IND_2 = "ind2";
   private static final String WILDCARD_INDICATOR = "*";
   private static final String TARGET = "target";
+  public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
 
   private JsonObject mappingRules;
 
@@ -366,8 +367,8 @@ public class Processor<T> {
         createNewComplexObj = false;
       }
 
-      if (StringUtils.isEmpty(completeData) && jObj.containsKey("alternativeRule")) {
-        handleFields(jObj.getJsonObject("alternativeRule"), arraysOfObjects, rememberComplexObj, ruleExecutionContext);
+      if (StringUtils.isEmpty(completeData) && jObj.containsKey(ALTERNATIVE_MAPPING)) {
+        handleFields(jObj.getJsonObject(ALTERNATIVE_MAPPING), arraysOfObjects, rememberComplexObj, ruleExecutionContext);
       }
     }
   }

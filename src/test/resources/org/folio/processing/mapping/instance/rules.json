@@ -6514,6 +6514,7 @@
           "target": "contributors.contributorTypeId",
           "description": "Type of contributor",
           "applyRulesOnConcatenatedData": true,
+          "ignoreSubsequentSubfields": true,
           "subfield": [
             "4",
             "e"
@@ -6531,7 +6532,7 @@
               ]
             }
           ],
-          "alternativeRule": {
+          "alternativeMapping": {
             "target": "contributors.contributorTypeText",
             "ignoreSubsequentSubfields": true,
             "subfield": [
