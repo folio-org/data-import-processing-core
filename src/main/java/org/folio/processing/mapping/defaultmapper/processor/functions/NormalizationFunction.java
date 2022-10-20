@@ -4,7 +4,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
 import org.folio.CallNumberType;
@@ -29,10 +28,10 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Collections;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -269,23 +268,34 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
   },
 
   SET_CONTRIBUTOR_TYPE_ID_BY_CODE_OR_NAME() {
+    private static final String CONTRIBUTOR_CODE_SUBFIELD_PARAM = "contributorCodeSubfield";
+    private static final String CONTRIBUTOR_NAME_SUBFIELD_PARAM = "contributorNameSubfield";
+
     @Override
     public String apply(RuleExecutionContext context) {
       List<ContributorType> types = context.getMappingParameters().getContributorTypes();
-      String contributorCodeSubfield = context.getRuleParameter().getString("contributorCodeSubfield");
-      String contributorNameSubfield = context.getRuleParameter().getString("contributorNameSubfield");
+      String contributorCodeSubfield = context.getRuleParameter().getString(CONTRIBUTOR_CODE_SUBFIELD_PARAM);
+      String contributorNameSubfield = context.getRuleParameter().getString(CONTRIBUTOR_NAME_SUBFIELD_PARAM);
 
-      String contributorTypeCode = context.getDataField().getSubfield(contributorCodeSubfield.charAt(0)).getData();
-      String contributorTypeName = context.getDataField().getSubfield(contributorNameSubfield.charAt(0)).getData();
+      if (types == null || StringUtils.isEmpty(contributorCodeSubfield) || StringUtils.isEmpty(contributorNameSubfield)) {
+        return null;
+      }
 
-      return types.stream()
-        .filter(type -> type.getCode().equalsIgnoreCase(contributorTypeCode))
-        .findFirst()
-        .map(ContributorType::getId)
-        .orElseGet(() -> types.stream()
-          .filter(type -> type.getName().equalsIgnoreCase(contributorTypeName))
+//      String contributorTypeCode = context.getDataField().getSubfield(contributorCodeSubfield.charAt(0)).getData();
+//      String contributorTypeName = context.getDataField().getSubfield(contributorNameSubfield.charAt(0)).getData();
+
+      return Optional.ofNullable(context.getDataField().getSubfield(contributorCodeSubfield.charAt(0)))
+        .map(Subfield::getData)
+        .flatMap(contributorCode -> types.stream()
+          .filter(type -> type.getCode().equalsIgnoreCase(contributorCode))
           .findFirst()
-          .map(ContributorType::getId)
+          .map(ContributorType::getId))
+        .orElseGet(() -> Optional.ofNullable(context.getDataField().getSubfield(contributorNameSubfield.charAt(0)))
+          .map(subfield -> subfield.getData().trim())
+          .flatMap(contributorName -> types.stream()
+            .filter(type -> type.getName().equalsIgnoreCase(contributorName))
+            .findFirst()
+            .map(ContributorType::getId))
           .orElse(StringUtils.EMPTY));
     }
   },
