@@ -6564,7 +6564,7 @@
             {
               "conditions": [
                 {
-                  "type": "trim_period, trim"
+                  "type": "trim"
                 }
               ]
             }
