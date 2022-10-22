@@ -3,7 +3,7 @@
 
   <groupId>org.folio</groupId>
   <artifactId>data-import-processing-core</artifactId>
-  <version>3.5.0-SNAPSHOT</version>
+  <version>3.6.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>data-import-processing-core</name>
   <organization>
@@ -22,11 +22,11 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <commons.lang.version>2.6</commons.lang.version>
     <logger.version>1.7.25</logger.version>
-    <jackson.version>2.13.3</jackson.version>
+    <jackson.version>2.13.4.1</jackson.version>
     <junit.version>4.13.1</junit.version>
-    <vertx.version>4.3.1</vertx.version>
+    <vertx.version>4.3.4</vertx.version>
     <wiremock.version>2.27.2</wiremock.version>
-    <raml-module-builder.version>34.1.0</raml-module-builder.version>
+    <raml-module-builder.version>35.0.1</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
     <sonar.exclusions>**/OkapiConnectionParams.java</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
@@ -42,6 +42,18 @@
     </repository>
   </repositories>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-stack-depchain</artifactId>
+        <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>commons-lang</groupId>
@@ -51,7 +63,7 @@
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-kafka-wrapper</artifactId>
-      <version>2.6.0</version>
+      <version>2.6.1</version>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
@@ -161,6 +173,10 @@
       <artifactId>junit-jupiter-params</artifactId>
       <version>5.9.0</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-kafka-client</artifactId>
     </dependency>
   </dependencies>
 

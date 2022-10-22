@@ -1,8 +1,13 @@
-## 2022-xx-xx v3.5.0-SNAPSHOT
+## 2022-10-19 v3.5.1
 * [MODDICORE-281](https://issues.folio.org/browse/MODDICORE-281) Extend instance contributors schema with Authority ID
 * [MODSOURMAN-838](https://issues.folio.org/browse/MODSOURMAN-838) Search by LCCN "010 $a" subfield value with "\" at the end don't retrieve results
+* [MODDICORE-285](https://issues.folio.org/browse/MODDICORE-285) Assign each authority record to an Authority Source file list
+* [MODDICORE-283](https://issues.folio.org/browse/MODDICORE-283) Change logic of sourceFileId populating by adding Authority Natural ID
+* [MODDICORE-276](https://issues.folio.org/browse/MODDICORE-276) Create function to populate an Authority Source file ID
+* [MODDICORE-271](https://issues.folio.org/browse/MODDICORE-271) Support MARC-MARC Holdings update action
+* [MODDICORE-280](https://issues.folio.org/browse/MODDICORE-280) Import is failing due to authoritySourceFiles
 
-## 2022-09-xx v3.4.1-SNAPSHOT
+## 2022-09-02 v3.4.1
 * [MODDICORE-248](https://issues.folio.org/browse/MODDICORE-248) MARC field protections apply to MARC modifications of incoming records when they should not
 
 ## 2022-06-23 v3.4.0
