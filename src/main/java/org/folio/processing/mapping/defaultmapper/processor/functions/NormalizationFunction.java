@@ -33,10 +33,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 /**
@@ -68,7 +71,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldValue = context.getSubFieldValue();
-      if (!StringUtils.isEmpty(subFieldValue)) {
+      if (!isEmpty(subFieldValue)) {
         int lastPosition = subFieldValue.length() - 1;
         if (PUNCT_2_REMOVE.contains(String.valueOf(subFieldValue.charAt(lastPosition)))) {
           return subFieldValue.substring(INTEGER_ZERO, lastPosition);
@@ -274,30 +277,37 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       List<ContributorType> types = context.getMappingParameters().getContributorTypes();
-      String contributorCodeSubfield = context.getRuleParameter().getString(CONTRIBUTOR_CODE_SUBFIELD_PARAM);
-      String contributorNameSubfield = context.getRuleParameter().getString(CONTRIBUTOR_NAME_SUBFIELD_PARAM);
+      String contributorCodeSfName = context.getRuleParameter().getString(CONTRIBUTOR_CODE_SUBFIELD_PARAM);
+      String contributorNameSfName = context.getRuleParameter().getString(CONTRIBUTOR_NAME_SUBFIELD_PARAM);
 
-      if (types == null || StringUtils.isEmpty(contributorCodeSubfield) || StringUtils.isEmpty(contributorNameSubfield)) {
-        return null;
+      if (isEmpty(types) || isEmpty(contributorCodeSfName) || isEmpty(contributorNameSfName)) {
+        return StringUtils.EMPTY;
       }
 
-//      String contributorTypeCode = context.getDataField().getSubfield(contributorCodeSubfield.charAt(0)).getData();
-//      String contributorTypeName = context.getDataField().getSubfield(contributorNameSubfield.charAt(0)).getData();
+      Subfield contributorCodeSubfield = context.getDataField().getSubfield(contributorCodeSfName.charAt(0));
+      Subfield contributorNameSubfield = context.getDataField().getSubfield(contributorNameSfName.charAt(0));
 
-      return Optional.ofNullable(context.getDataField().getSubfield(contributorCodeSubfield.charAt(0)))
-        .map(Subfield::getData)
-        .flatMap(contributorCode -> types.stream()
-          .filter(type -> type.getCode().equalsIgnoreCase(contributorCode))
-          .findFirst()
-          .map(ContributorType::getId))
-        .orElseGet(() -> Optional.ofNullable(context.getDataField().getSubfield(contributorNameSubfield.charAt(0)))
-          .map(subfield -> subfield.getData().trim())
-          .flatMap(contributorName -> types.stream()
-            .filter(type -> type.getName().equalsIgnoreCase(contributorName))
-            .findFirst()
-            .map(ContributorType::getId))
-          .orElse(StringUtils.EMPTY));
+      if (contributorCodeSubfield != null) {
+        String contributorTypeId =
+          getContributorTypeIdBy(types, type -> type.getCode().equals(contributorCodeSubfield.getData()));
+        if (!contributorTypeId.isEmpty()) {
+          return contributorTypeId;
+        }
+      }
+
+      return contributorNameSubfield != null
+        ? getContributorTypeIdBy(types, type -> type.getName().equalsIgnoreCase(contributorNameSubfield.getData().trim()))
+        : StringUtils.EMPTY;
     }
+
+    private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {
+      return types.stream()
+        .filter(criteria)
+        .map(ContributorType::getId)
+        .findFirst()
+        .orElse(StringUtils.EMPTY);
+    }
+
   },
 
   SET_INSTANCE_TYPE_ID() {
@@ -310,8 +320,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return STUB_FIELD_TYPE_ID;
       }
       String unspecifiedTypeCode = context.getRuleParameter().getString(NAME_PARAMETER);
-      String instanceTypeValue = context.getDataField() != null ?
-        getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
+      String instanceTypeValue = context.getDataField() != null
+        ? getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
 
       return getInstanceTypeByCode(instanceTypeValue, types)
         .map(InstanceType::getId)
