@@ -80,7 +80,7 @@ public class Processor<T> {
         entity = processSingleEntry(marcRecord, mappingParameters, entityClass);
       }
     } catch (Exception e) {
-      LOGGER.error("Error mapping Marc record " + record.encode(), e.getCause());
+      LOGGER.error("Error mapping Marc record: {}", record.encode(), e);
     }
     return entity;
   }
@@ -139,7 +139,7 @@ public class Processor<T> {
             continue;
           }
         } else {
-          if (chekOnIndicatorsMatches(fieldMappingIndicators, dataFieldInd1, dataFieldInd2)) {
+          if (checkOnIndicatorsMatches(fieldMappingIndicators, dataFieldInd1, dataFieldInd2)) {
             continue;
           }
         }
@@ -182,7 +182,7 @@ public class Processor<T> {
       && (dataFieldInd2.equals(subFieldMappingInd2) || WILDCARD_INDICATOR.equals(subFieldMappingInd2));
   }
 
-  private boolean chekOnIndicatorsMatches(JsonArray fieldMappingIndicators, String dataFieldInd1, String dataFieldInd2) {
+  private boolean checkOnIndicatorsMatches(JsonArray fieldMappingIndicators, String dataFieldInd1, String dataFieldInd2) {
     for (int i=0; i < fieldMappingIndicators.size(); i++) {
       JsonObject indicatorsObj = fieldMappingIndicators.getJsonObject(i);
       String subFieldMappingInd1 = indicatorsObj.getString(IND_1);
@@ -331,7 +331,7 @@ public class Processor<T> {
 
 
     if (!isMappingValid(entity, embeddedFields)) {
-      LOGGER.debug("bad mapping {}", jObj.encode());
+      LOGGER.debug("bad mapping {}", jObj::encode);
       return;
     }
 
