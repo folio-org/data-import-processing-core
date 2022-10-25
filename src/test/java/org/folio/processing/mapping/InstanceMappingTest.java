@@ -428,36 +428,42 @@ public class InstanceMappingTest {
       JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
       Assert.assertNotNull(instance.getSource());
-      Assert.assertEquals(5, instance.getContributors().size());
+      Assert.assertEquals(6, instance.getContributors().size());
       // 720 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
       Assert.assertEquals("Boguslawski, Pawel", instance.getContributors().get(0).getName());
       Assert.assertEquals("1", instance.getContributors().get(0).getContributorTypeId());
       Assert.assertNull(instance.getContributors().get(0).getContributorTypeText());
       Assert.assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
 
-      // 720 \\$aAbdul Rahman, Alias$eeditor$4edt should match and set contributorTypeId by $e if first $4 doesn't match
-      Assert.assertEquals("Abdul Rahman, Alias", instance.getContributors().get(1).getName());
+      // 720  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
+      Assert.assertEquals("CHUJO, T", instance.getContributors().get(1).getName());
       Assert.assertEquals("2", instance.getContributors().get(1).getContributorTypeId());
       Assert.assertNull(instance.getContributors().get(1).getContributorTypeText());
       Assert.assertEquals("1", instance.getContributors().get(1).getContributorNameTypeId());
 
-      // 720 \\$aGold, Christopher$eeditor$eauthor should match by $e case insensitively and set contributorTypeId
-      Assert.assertEquals("Gold, Christopher", instance.getContributors().get(2).getName());
+      // 720 \\$aAbdul Rahman, Alias$eeditor$4edt$4prf should match and set contributorTypeId by $e if all $4 don't match
+      Assert.assertEquals("Abdul Rahman, Alias", instance.getContributors().get(2).getName());
       Assert.assertEquals("2", instance.getContributors().get(2).getContributorTypeId());
       Assert.assertNull(instance.getContributors().get(2).getContributorTypeText());
       Assert.assertEquals("1", instance.getContributors().get(2).getContributorNameTypeId());
 
-      // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if first $e doesn't match
-      Assert.assertEquals("KURIHARA, N", instance.getContributors().get(3).getName());
-      Assert.assertNull(instance.getContributors().get(3).getContributorTypeId());
-      Assert.assertEquals("data contact", instance.getContributors().get(3).getContributorTypeText());
+      // 720 \\$aGold, Christopher$eeditor$eauthor should match by $e case insensitively and set contributorTypeId
+      Assert.assertEquals("Gold, Christopher", instance.getContributors().get(3).getName());
+      Assert.assertEquals("2", instance.getContributors().get(3).getContributorTypeId());
+      Assert.assertNull(instance.getContributors().get(3).getContributorTypeText());
       Assert.assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
 
+      // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if all $e don't match
+      Assert.assertEquals("KURIHARA, N", instance.getContributors().get(4).getName());
+      Assert.assertNull(instance.getContributors().get(4).getContributorTypeId());
+      Assert.assertEquals("data contact", instance.getContributors().get(4).getContributorTypeText());
+      Assert.assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
+
       // 720 2\$aLondon Symphony Orchestra.$eoth$4aut should set "getContributorNameTypeId" as Corporate name if ind1 == 2
-      Assert.assertEquals("London Symphony Orchestra", instance.getContributors().get(4).getName());
-      Assert.assertEquals("1", instance.getContributors().get(4).getContributorTypeId());
-      Assert.assertNull(instance.getContributors().get(4).getContributorTypeText());
-      Assert.assertEquals("2", instance.getContributors().get(4).getContributorNameTypeId());
+      Assert.assertEquals("London Symphony Orchestra", instance.getContributors().get(5).getName());
+      Assert.assertEquals("1", instance.getContributors().get(5).getContributorTypeId());
+      Assert.assertNull(instance.getContributors().get(5).getContributorTypeText());
+      Assert.assertEquals("2", instance.getContributors().get(5).getContributorNameTypeId());
 
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);

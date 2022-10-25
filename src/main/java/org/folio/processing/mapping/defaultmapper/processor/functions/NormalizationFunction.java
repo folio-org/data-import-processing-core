@@ -284,20 +284,27 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return StringUtils.EMPTY;
       }
 
-      Subfield contributorCodeSubfield = context.getDataField().getSubfield(contributorCodeSfName.charAt(0));
-      Subfield contributorNameSubfield = context.getDataField().getSubfield(contributorNameSfName.charAt(0));
-
-      if (contributorCodeSubfield != null) {
-        String contributorTypeId =
-          getContributorTypeIdBy(types, type -> type.getCode().equals(contributorCodeSubfield.getData()));
-        if (!contributorTypeId.isEmpty()) {
-          return contributorTypeId;
+      for (Subfield contributorCodeSubfield : context.getDataField().getSubfields(contributorCodeSfName.charAt(0))) {
+        if (contributorCodeSubfield != null) {
+          String contributorTypeId =
+            getContributorTypeIdBy(types, type -> type.getCode().equals(contributorCodeSubfield.getData()));
+          if (!contributorTypeId.isEmpty()) {
+            return contributorTypeId;
+          }
         }
       }
 
-      return contributorNameSubfield != null
-        ? getContributorTypeIdBy(types, type -> type.getName().equalsIgnoreCase(contributorNameSubfield.getData().trim()))
-        : StringUtils.EMPTY;
+      for (Subfield contributorNameSubfield : context.getDataField().getSubfields(contributorNameSfName.charAt(0))) {
+        if (contributorNameSubfield != null) {
+          String contributorTypeId =
+            getContributorTypeIdBy(types, type -> type.getName().equalsIgnoreCase(contributorNameSubfield.getData().trim()));
+          if (!contributorTypeId.isEmpty()) {
+            return contributorTypeId;
+          }
+        }
+      }
+
+      return StringUtils.EMPTY;
     }
 
     private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {
