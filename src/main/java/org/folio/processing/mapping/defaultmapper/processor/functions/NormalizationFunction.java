@@ -28,15 +28,18 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Collections;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 /**
@@ -68,7 +71,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldValue = context.getSubFieldValue();
-      if (!StringUtils.isEmpty(subFieldValue)) {
+      if (!isEmpty(subFieldValue)) {
         int lastPosition = subFieldValue.length() - 1;
         if (PUNCT_2_REMOVE.contains(String.valueOf(subFieldValue.charAt(lastPosition)))) {
           return subFieldValue.substring(INTEGER_ZERO, lastPosition);
@@ -267,6 +270,53 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     }
   },
 
+  SET_CONTRIBUTOR_TYPE_ID_BY_CODE_OR_NAME() {
+    private static final String CONTRIBUTOR_CODE_SUBFIELD_PARAM = "contributorCodeSubfield";
+    private static final String CONTRIBUTOR_NAME_SUBFIELD_PARAM = "contributorNameSubfield";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      List<ContributorType> types = context.getMappingParameters().getContributorTypes();
+      String contributorCodeSfName = context.getRuleParameter().getString(CONTRIBUTOR_CODE_SUBFIELD_PARAM);
+      String contributorNameSfName = context.getRuleParameter().getString(CONTRIBUTOR_NAME_SUBFIELD_PARAM);
+
+      if (isEmpty(types) || isEmpty(contributorCodeSfName) || isEmpty(contributorNameSfName)) {
+        return StringUtils.EMPTY;
+      }
+
+      for (Subfield contributorCodeSubfield : context.getDataField().getSubfields(contributorCodeSfName.charAt(0))) {
+        if (contributorCodeSubfield != null) {
+          String contributorTypeId =
+            getContributorTypeIdBy(types, type -> type.getCode().equals(contributorCodeSubfield.getData()));
+          if (!contributorTypeId.isEmpty()) {
+            return contributorTypeId;
+          }
+        }
+      }
+
+      for (Subfield contributorNameSubfield : context.getDataField().getSubfields(contributorNameSfName.charAt(0))) {
+        if (contributorNameSubfield != null) {
+          String contributorTypeId =
+            getContributorTypeIdBy(types, type -> type.getName().equalsIgnoreCase(contributorNameSubfield.getData().trim()));
+          if (!contributorTypeId.isEmpty()) {
+            return contributorTypeId;
+          }
+        }
+      }
+
+      return StringUtils.EMPTY;
+    }
+
+    private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {
+      return types.stream()
+        .filter(criteria)
+        .map(ContributorType::getId)
+        .findFirst()
+        .orElse(StringUtils.EMPTY);
+    }
+
+  },
+
   SET_INSTANCE_TYPE_ID() {
     private static final String NAME_PARAMETER = "unspecifiedInstanceTypeCode";
 
@@ -277,8 +327,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return STUB_FIELD_TYPE_ID;
       }
       String unspecifiedTypeCode = context.getRuleParameter().getString(NAME_PARAMETER);
-      String instanceTypeValue = context.getDataField() != null ?
-        getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
+      String instanceTypeValue = context.getDataField() != null
+        ? getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
 
       return getInstanceTypeByCode(instanceTypeValue, types)
         .map(InstanceType::getId)
