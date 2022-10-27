@@ -484,7 +484,7 @@ public class InstanceMappingTest {
     List<ContributorNameType> contributorNameTypes = List.of(
       new ContributorNameType().withName("Personal name").withId("1"),
       new ContributorNameType().withName("Corporate name").withId("2"),
-    new ContributorNameType().withName("Meeting name").withId("3"));
+      new ContributorNameType().withName("Meeting name").withId("3"));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
@@ -504,7 +504,7 @@ public class InstanceMappingTest {
       Assert.assertNull(instance.getContributors().get(0).getContributorTypeText());
       Assert.assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
 
-     // 110 1\$aOklahoma.$bDept. of Highways.$4cou should match by $e subfield and set contributorTypeId
+      // 110 1\$aOklahoma.$bDept. of Highways.$4cou should match by $e subfield and set contributorTypeId
       Assert.assertEquals("Oklahoma. Dept. of Highways", instance.getContributors().get(1).getName());
       Assert.assertEquals("1", instance.getContributors().get(1).getContributorTypeId());
       Assert.assertNull(instance.getContributors().get(1).getContributorTypeText());
