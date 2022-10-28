@@ -77,6 +77,68 @@ If entity with specified conditions is found, MATCH is considered successful, ma
 and actions for MATCH branch of the JobProfile are applied to that entity. If not - actions for NON_MATCH branch of the JobProfile are executed.
 Multiple matches are not supported, in case multiple Records satisfy query conditions, an error is emitted and no action is performed.
 
+## Mapping Engine
+
+**Mapping Engine** is an abstract name for the functionality allowing for processing of the MappingProfile logic of the data-import . MappingEngine process incoming file (MarcBib, Marc Authority, etc) and maps them in FOLIO record type(Instance, Holdings, Item, etc)
+Basically, mapping is used for updating, creating or modifying a record. UI provides functionality for defining [mapping rules](https://github.com/folio-org/data-import-raml-storage/blob/master/schemas/mod-data-import-converter-storage/mapping-profile-detail/mappingRule.json) for fields of selected record type.
+
+![](images/mapping.png)
+
+Mapping Engine consists of a number of components. The actual process of mapping is invoked by calling map() method of the MappingManager:
+
+`MappingManager.map(dataImportEventPayload)`
+
+MappingManager accepts [DataImportEventPayload](https://github.com/folio-org/data-import-raml-storage/blob/master/examples/mod-data-import/dataImportEventPayload.sample), from which it extracts MappingProfile and all the necessary information to perform mapping.
+
+
+### Reader
+To read value from incoming record by mapping rule is used **Reader**. The purpose of Reader is to read Value by rule from underlying entity.
+Reader has to be initialized before read. Interface Reader has 2 methods:
+
+`void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) throws IOException;`
+
+`Value read(MappingRule ruleExpression);`
+
+data-import-processing-core contains default realizations of reader for common incoming MARC and Edifact file: **MarcRecordReader**, **EdifactRecordReader**.
+
+To define your own reader you need to implement the interface Reader and realize methods **initialize()** and **read()**.
+
+In order to allow MappingManager to build Reader (based on incoming record types) one should register the appropriate implementations in ReaderFactory respectively:
+
+`MappingManager.registerReaderFactory(new MarcBibReaderFactory());`
+
+data-import-processing-core contains default realizations of reader factory for common incoming record types:
+*  Marc bib => **MarcBibReaderFactory**
+*  Marc authority => **MarcAuthorityReaderFactory**
+*  Marc holdings => **MarcHoldingsReaderFactory**
+*  Edifact record => **EdifactReaderFactory**
+
+### Writer
+To write the value to FOLIO record is used **Writer**. The purpose of Writer is to write a given Value to an underlying entity by the given fieldPath
+Writer has to be initialized before writing. Interface Writer has 3 methods:
+
+`void initialize(DataImportEventPayload eventPayload) throws IOException;`
+
+`void write(String fieldPath, Value value);`
+
+`DataImportEventPayload getResult(DataImportEventPayload eventPayload) throws JsonProcessingException;`
+
+Method **write(String fieldPath, Value value)** accepts **fieldPath** which defines the place where the **value** should be located.
+
+Result of writing could be received by calling **getResult(DataImportEventPayload eventPayload) throws JsonProcessingException;**, which defines result in **eventPayload**.
+
+data-import-processing-core contains default realizations of writer for json: **JsonBasedWriter**.
+
+In order to allow MappingManager to build Writer (based on existing record types) one should register the appropriate implementations in WriterFactory respectively:
+
+`MappingManager.registerWriterFactory(new ItemWriterFactory());`
+
+### Mapping flow
+MappingManager calls Mapper to perform the mapping itself. Steps:
+* Mapper goes through every [mapping rule](https://github.com/folio-org/data-import-raml-storage/blob/master/schemas/mod-data-import-converter-storage/mapping-profile-detail/mappingRule.json).
+* Retrieve value via **Reader** by the rule
+* Write values using **Writer** by fields path in [DataImportEventPayload](https://github.com/folio-org/data-import-raml-storage/blob/master/examples/mod-data-import/dataImportEventPayload.sample)
+
 ## Additional information
 
 * See project [MODDICORE](https://issues.folio.org/browse/MODDICORE)
