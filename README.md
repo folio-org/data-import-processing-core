@@ -88,7 +88,7 @@ Mapping Engine consists of a number of components. The actual process of mapping
 
 `MappingManager.map(dataImportEventPayload)`
 
-MappingManager accepts [DataImportEventPayload](https://github.com/folio-org/data-import-raml-storage/blob/master/examples/mod-data-import/dataImportEventPayload.sample), from which it extracts MappingProfile and all the necessary information to perform matching.
+MappingManager accepts [DataImportEventPayload](https://github.com/folio-org/data-import-raml-storage/blob/master/examples/mod-data-import/dataImportEventPayload.sample), from which it extracts MappingProfile and all the necessary information to perform mapping.
 
 
 ### Reader
