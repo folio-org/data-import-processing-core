@@ -80,7 +80,7 @@ public class Processor<T> {
         entity = processSingleEntry(marcRecord, mappingParameters, entityClass);
       }
     } catch (Exception e) {
-      LOGGER.error("Error mapping Marc record: {}", record.encode(), e);
+      LOGGER.warn("process:: Error mapping Marc record: {}", record.encode(), e);
     }
     return entity;
   }
@@ -96,7 +96,7 @@ public class Processor<T> {
       processDataFieldSection(record.getDataFields().iterator(), mappingParameters);
       return this.entity;
     } catch (Exception e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.warn(e.getMessage(), e);
       return null;
     }
   }
@@ -331,7 +331,7 @@ public class Processor<T> {
 
 
     if (!isMappingValid(entity, embeddedFields)) {
-      LOGGER.debug("bad mapping {}", jObj::encode);
+      LOGGER.debug("handleFields:: bad mapping {}", jObj::encode);
       return;
     }
 
@@ -345,7 +345,7 @@ public class Processor<T> {
     }
     if (subFields.stream().noneMatch(sf -> (checkIfSubfieldShouldBeHandled(subFieldsSet, sf)))) {
       //skip further processing if there are no subfields to map
-      LOGGER.debug("no subfields to map from {} to {}", subFields.stream().map(Subfield::getCode).collect(Collectors.toList()), subFieldsSet);
+      LOGGER.debug("handleFields:: no subfields to map from {} to {}", subFields.stream().map(Subfield::getCode).collect(Collectors.toList()), subFieldsSet);
       return;
     }
 
@@ -522,7 +522,7 @@ public class Processor<T> {
         buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
         createNewComplexObj = false;
       } else {
-        LOGGER.debug("bad mapping {}", rules.encode());
+        LOGGER.debug("handleControlFieldRules:: bad mapping {}", rules.encode());
       }
     }
   }
@@ -630,7 +630,7 @@ public class Processor<T> {
         //the function has thrown an exception meaning this condition has failed,
         //hence this specific rule has failed
         conditionsMet = false;
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.warn(e.getMessage(), e);
       }
     } else {
       String c = NormalizationFunctionRunner.runFunction(function, ruleExecutionContext);
@@ -681,7 +681,7 @@ public class Processor<T> {
       try {
         return buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
       } catch (Exception e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.warn(e.getMessage(), e);
         return false;
       }
     }
@@ -743,7 +743,7 @@ public class Processor<T> {
             .iterator();
 
         } catch (Exception e) {
-          LOGGER.error("Expanding a field via subFieldSplit must return an array of results. ");
+          LOGGER.warn("expandSubfields:: Expanding a field via subFieldSplit must return an array of results. ");
           throw e;
         }
       } else {
@@ -773,7 +773,7 @@ public class Processor<T> {
           object = type.newInstance();
         }
       } catch (Exception e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.warn(e.getMessage(), e);
       }
     }
     return getValue(type, value);
@@ -835,7 +835,7 @@ public class Processor<T> {
             val.getClass()).invoke(object, val);
         }
       } catch (Exception e) {
-        LOGGER.error(e.getMessage(), e);
+        LOGGER.warn(e.getMessage(), e);
         return false;
       }
     }

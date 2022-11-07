@@ -310,7 +310,7 @@ public class JsonBasedWriter extends AbstractWriter {
       String jsonEntity = objectMapper.writeValueAsString(this.entityNode);
       eventPayload.getContext().put(entityType, jsonEntity);
     } catch (JsonProcessingException e) {
-      LOGGER.error("Can not write entity node to json string", e);
+      LOGGER.warn("getResult:: Can not write entity node to json string", e);
       throw new IllegalStateException(e);
     }
     return eventPayload;

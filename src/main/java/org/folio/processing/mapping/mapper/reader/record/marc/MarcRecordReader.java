@@ -111,7 +111,7 @@ public class MarcRecordReader implements Reader {
         throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in event payload");
       }
     } catch (Exception e) {
-      LOGGER.error("Can not read marc record from context", e);
+      LOGGER.warn("initialize:: Can not read marc record from context", e);
       throw e;
     }
   }
@@ -129,7 +129,7 @@ public class MarcRecordReader implements Reader {
         return RepeatableFieldValue.of(Collections.emptyList(), ruleExpression.getRepeatableFieldAction(), ruleExpression.getPath());
       }
     } catch (Exception e) {
-      LOGGER.error("Error during reading MappingRule expressions ", e);
+      LOGGER.warn("read:: Error during reading MappingRule expressions ", e);
     }
     return MissingValue.getInstance();
   }
@@ -240,7 +240,7 @@ public class MarcRecordReader implements Reader {
         ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
         sb.append(isoFormatter.format(utcZonedDateTime));
     } catch (Exception e) {
-      LOGGER.error("Can not process ##TODAY## expression", e);
+      LOGGER.warn("processTodayExpression:: Can not process ##TODAY## expression", e);
       throw new IllegalArgumentException("Can not process ##TODAY## expression", e);
     }
   }

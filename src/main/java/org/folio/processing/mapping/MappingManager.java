@@ -52,7 +52,7 @@ public final class MappingManager {
   public static DataImportEventPayload map(DataImportEventPayload eventPayload, MappingContext mappingContext) {
     try {
       if (eventPayload.getCurrentNode().getContentType() != MAPPING_PROFILE) {
-        LOGGER.info("Current node is not of {} content type", MAPPING_PROFILE);
+        LOGGER.info("map:: Current node is not of {} content type", MAPPING_PROFILE);
         return eventPayload;
       }
       ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
@@ -72,6 +72,7 @@ public final class MappingManager {
       return new Mapper() {
       }.map(reader, writer, mappingProfile, eventPayload, mappingContext);
     } catch (Exception e) {
+      LOGGER.warn("map:: Failed to perform mapping", e);
       throw new MappingException(e);
     }
   }

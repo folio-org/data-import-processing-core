@@ -33,7 +33,7 @@ public class VertxUtils {
    */
   public static Vertx getVertxWithExceptionHandler() {
     Vertx vertx = Vertx.vertx();
-    vertx.exceptionHandler(ex -> log.error("Unhandled exception caught by vertx", ex));
+    vertx.exceptionHandler(ex -> log.warn("getVertxWithExceptionHandler:: Unhandled exception caught by vertx", ex));
     return vertx;
   }
 }

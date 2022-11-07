@@ -33,7 +33,7 @@ public final class MatchingManager {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
     try {
       if (eventPayload.getCurrentNode().getContentType() != MATCH_PROFILE) {
-        LOGGER.info("Current node is not of {} content type", MATCH_PROFILE);
+        LOGGER.info("match:: Current node is not of {} content type", MATCH_PROFILE);
         future.complete(false);
         return future;
       }
@@ -49,7 +49,7 @@ public final class MatchingManager {
       future = new Matcher() {
       }.match(reader, loader, eventPayload);
     } catch (Exception e) {
-      LOGGER.error("Failed to perform matching", e);
+      LOGGER.warn("match:: Failed to perform matching", e);
       future.completeExceptionally(new MatchingException(e));
     }
     return future;
