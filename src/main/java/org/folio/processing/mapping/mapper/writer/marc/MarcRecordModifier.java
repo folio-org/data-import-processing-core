@@ -210,7 +210,7 @@ public class MarcRecordModifier {
   private void initializeForModifyOption(DataImportEventPayload eventPayload, MappingParameters mappingParameters,
                                          MappingProfile mappingProfile) throws IOException {
     if (isNull(eventPayload.getContext()) || isBlank(eventPayload.getContext().get(marcType.value()))) {
-      LOGGER.error(PAYLOAD_HAS_NO_DATA_MSG);
+      LOGGER.warn(PAYLOAD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
     }
 
@@ -227,7 +227,7 @@ public class MarcRecordModifier {
     if (isNull(eventPayload.getContext())
       || isBlank(eventPayload.getContext().get(marcType.value()))
       || isBlank(eventPayload.getContext().get(getMatchedMarcKey()))) {
-      LOGGER.error(PAYLOAD_HAS_NO_DATA_MSG);
+      LOGGER.warn(PAYLOAD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
     }
 
@@ -260,7 +260,7 @@ public class MarcRecordModifier {
     if (existingRecordReader.hasNext()) {
       return existingRecordReader.next();
     } else {
-      LOGGER.error(ERROR_RECORD_PARSING_MSG);
+      LOGGER.warn(ERROR_RECORD_PARSING_MSG);
       throw new IllegalArgumentException(ERROR_RECORD_PARSING_MSG);
     }
   }
@@ -453,7 +453,7 @@ public class MarcRecordModifier {
     if (LDR_TAG.equals(tag)) {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
       if (positions.isOverlappedBy(Range.between(0, 4)) || positions.isOverlappedBy(Range.between(12, 16))) {
-        LOGGER.warn("Specified LEADER positions are not mappable LDR/{}-{}, REPLACE sub-action was skipped",
+        LOGGER.warn("processReplace:: Specified LEADER positions are not mappable LDR/{}-{}, REPLACE sub-action was skipped",
           positions.getMinimum(), positions.getMaximum());
         return;
       }
@@ -669,13 +669,13 @@ public class MarcRecordModifier {
           if (isNotProtected(fieldToReplace)) {
             controlFields.set(i, fieldReplacement);
           } else {
-            LOGGER.info("Field {} was not updated, because it is protected", fieldToReplace);
+            LOGGER.info("replaceControlField:: Field {} was not updated, because it is protected", fieldToReplace);
           }
           return;
         } else {
           if (fieldToReplace.getData().equals(fieldReplacement.getData())) {
             fieldsProtected = true;
-            LOGGER.info("Field {} was not added, because it is repeatable and contains identical data as an existing one",
+            LOGGER.info("replaceControlField:: Field {} was not added, because it is repeatable and contains identical data as an existing one",
               fieldToReplace);
           }
         }
@@ -713,7 +713,7 @@ public class MarcRecordModifier {
             if (isNonRepeatableField(fieldToUpdate)) {
               ifNewDataShouldBeAdded = false;
             }
-            LOGGER.info("Field {} was not updated, because it is protected", fieldToUpdate);
+            LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
           }
         }
       }

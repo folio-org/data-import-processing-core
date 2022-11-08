@@ -106,11 +106,11 @@ public class EdifactRecordReader implements Reader {
    */
   public static Map<Integer, String> getInvoiceLinesSegmentsValues(ParsedRecord parsedRecord, String segmentMappingExpression) {
     if (parsedRecord == null || parsedRecord.getContent() == null) {
-      LOGGER.error(PARSED_RECORD_HAS_NO_DATA_MSG);
+      LOGGER.warn(PARSED_RECORD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PARSED_RECORD_HAS_NO_DATA_MSG);
     } else if (!SEGMENT_QUERY_PATTERN.matcher(segmentMappingExpression).matches()) {
       String msg = format(INVALID_MAPPING_EXPRESSION_MSG, segmentMappingExpression);
-      LOGGER.error(msg);
+      LOGGER.warn(msg);
       throw new IllegalArgumentException(msg);
     }
 
@@ -296,7 +296,7 @@ public class EdifactRecordReader implements Reader {
         readValue = extractDataByExternalDataExpression(expressionPart);
       } else {
         String msg = format(INVALID_MAPPING_EXPRESSION_MSG, expressionPart);
-        LOGGER.error(msg);
+        LOGGER.warn(msg);
         throw new IllegalArgumentException(msg);
       }
 
@@ -462,7 +462,7 @@ public class EdifactRecordReader implements Reader {
     String externalData = extractDataByExternalDataExpression(externalDataExpression);
     try {
       if (isEmpty(externalData)) {
-        LOGGER.info("Payload context has no data by external data expression: '{}'", externalDataExpression);
+        LOGGER.info("readValueByExternalDataExpression:: Payload context has no data by external data expression: '{}'", externalDataExpression);
         return MissingValue.getInstance();
       } else {
         JsonNode jsonNode = new ObjectMapper().readTree(externalData);

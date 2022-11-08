@@ -71,12 +71,12 @@ public final class EventManager {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
               } else {
-                LOGGER.error("Can`t publish event", publishThrowable);
+                LOGGER.warn("handleEvent:: Can`t publish event", publishThrowable);
                 future.completeExceptionally(publishThrowable);
               }
             }));
     } catch (Exception e) {
-      LOGGER.error("Can`t handle event", e);
+      LOGGER.warn("handleEvent:: Can`t handle event", e);
       future.completeExceptionally(e);
     }
     return future;

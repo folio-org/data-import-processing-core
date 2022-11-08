@@ -41,11 +41,11 @@ public class NormalizationFunctionRunner {
     try {
       String result = NormalizationFunction.valueOf(functionName.trim().toUpperCase()).apply(ruleExecutionContext);
       if(result != null && result.equals(StringUtils.EMPTY)){
-        LOGGER.debug("Result of {} function is empty", functionName);
+        LOGGER.debug("runFunction:: Result of {} function is empty", functionName);
       }
       return result;
     } catch (RuntimeException e) {
-      LOGGER.error("Error while running normalization functions", e);
+      LOGGER.warn("runFunction:: Error while running normalization functions", e);
       return ruleExecutionContext.getSubFieldValue();
     }
   }

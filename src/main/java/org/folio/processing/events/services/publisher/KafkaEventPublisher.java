@@ -90,16 +90,16 @@ public class KafkaEventPublisher implements EventPublisher {
       producer.write(record, war -> {
         producer.end(ear -> producer.close());
         if (war.succeeded()) {
-          LOGGER.info("Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ", eventType, jobExecutionId, recordId, chunkId, topicName);
+          LOGGER.info("publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ", eventType, jobExecutionId, recordId, chunkId, topicName);
           future.complete(event);
         } else {
           Throwable cause = war.cause();
-          LOGGER.error("{} write error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' and with chunkId: '{}' ", producerName, jobExecutionId, eventType, recordId, chunkId, cause);
+          LOGGER.warn("publish:: {} write error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' and with chunkId: '{}' ", producerName, jobExecutionId, eventType, recordId, chunkId, cause);
           future.completeExceptionally(cause);
         }
       });
     } catch (Exception e) {
-      LOGGER.error("Can not publish event: {} with recordId: {}", eventType, recordId, e);
+      LOGGER.warn("publish:: Can not publish event: {} with recordId: {}", eventType, recordId, e);
       future.completeExceptionally(e);
     }
     return future;
@@ -107,12 +107,12 @@ public class KafkaEventPublisher implements EventPublisher {
 
   private void checkAndAddHeaders(String recordId, String chunkId, String jobExecutionId, List<KafkaHeader> headers) {
     if (StringUtils.isBlank(recordId)) {
-      LOGGER.warn("RecordId is empty for jobExecutionId: '{}' ", jobExecutionId);
+      LOGGER.warn("checkAndAddHeaders:: RecordId is empty for jobExecutionId: '{}' ", jobExecutionId);
     } else {
       headers.add(KafkaHeader.header(RECORD_ID_HEADER, recordId));
     }
     if (StringUtils.isBlank(chunkId)) {
-      LOGGER.warn("ChunkId is empty for jobExecutionId: '{}' ", jobExecutionId);
+      LOGGER.warn("checkAndAddHeaders:: ChunkId is empty for jobExecutionId: '{}' ", jobExecutionId);
     } else {
       headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
     }

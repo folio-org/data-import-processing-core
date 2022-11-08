@@ -45,14 +45,14 @@ public class RestEventPublisher implements EventPublisher {
       RestUtil.doRequest(params, "/pubsub/publish", HttpMethod.POST, event)
         .onComplete(postPublishResult -> {
           if(RestUtil.validateAsyncResult(postPublishResult, promise)) {
-            LOGGER.info("{} event has been published", event.getEventType());
+            LOGGER.info("publish:: {} event has been published", event.getEventType());
             promise.complete(event);
           } else {
-            LOGGER.error("Error publishing {} event", event.getEventType());
+            LOGGER.warn("publish:: Error publishing {} event", event.getEventType());
           }
         });
     } catch (Exception e) {
-      LOGGER.error("Can not publish event", e);
+      LOGGER.warn("publish:: Can not publish event", e);
       promise.fail(e);
     }
     return promise.future().toCompletionStage().toCompletableFuture();
