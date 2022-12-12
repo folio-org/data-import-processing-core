@@ -168,7 +168,7 @@ public class MarcRecordReader implements Reader {
   private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
-      resultList.addAll(marcValues);
+      resultList.addAll(marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList()));
     } else {
       marcValues.forEach(v -> {
         if (isNotEmpty(v)) {

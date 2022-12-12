@@ -1,6 +1,7 @@
 ## 2022-xx-xx v3.6.0-SNAPSHOT
 * [MODSOURMAN-873](https://issues.folio.org/browse/MODSOURMAN-873) Add MARC 720 field to default MARC Bib-Instance mapping and adjust relator term mapping. Expanded default mapper with alternative mapping logic
 * [MODSOURMAN-837](https://issues.folio.org/browse/MODSOURMAN-837) MARC bib - FOLIO instance mapping | Update default mapping to change how Relator term is populated on instance record
+* [MODDICORE-294](https://issues.folio.org/browse/MODDICORE-294) Add handling accepted values for repeatable fields
 * [MODDICORE-290](https://issues.folio.org/browse/MODDICORE-290) Extend Mapper for Order/OrderLines.
 
 ## 2022-10-19 v3.5.1
