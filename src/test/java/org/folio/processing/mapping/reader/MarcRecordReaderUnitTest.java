@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.reader;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonObject;
 
 import org.folio.DataImportEventPayload;
@@ -1101,5 +1102,81 @@ public class MarcRecordReaderUnitTest {
 
     assertEquals(ValueType.STRING, value.getType());
     assertEquals("K)U/CC(/D)I/M)", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_OrderComplexField() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc084", "suf");
+    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", "pref");
+
+    Value value = reader.read(new MappingRule()
+      .withName("prefix")
+      .withPath("order.po.poNumberPrefix")
+      .withEnabled("true")
+      .withValue("\"pref\"")
+      .withAcceptedValues(acceptedValues));
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_OrderArrayNonRepeatableField() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("0ebb1f7d-983f-3026-8a4c-5318e0ebc042", "online");
+    acceptedValues.put("0ebb1f7d-983f-3026-8a4c-5318e0ebc041", "main");
+
+    Value value = reader.read(new MappingRule()
+      .withName("acqUnitIds")
+      .withPath("order.po.acqUnitIds[]")
+      .withEnabled("true")
+      .withValue("\"main\"")
+      .withAcceptedValues(acceptedValues));
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals("[0ebb1f7d-983f-3026-8a4c-5318e0ebc041]", Lists.newArrayList(value.getValue()).get(0).toString());
+  }
+
+  @Test
+  public void shouldRead_OrderLineComplexField() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    Value value = reader.read(new MappingRule()
+      .withName("currency")
+      .withPath("order.poLine.cost.currency")
+      .withEnabled("true")
+      .withValue("\"UAH\""));
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("UAH", value.getValue());
   }
 }
