@@ -36,6 +36,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(JUnit4.class)
 public class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
+  private static final JsonBasedWriter ORDER_WRITER = new JsonBasedWriter(EntityType.ORDER);
 
   @Test
   public void shouldWrite_Values() throws IOException {
@@ -734,4 +735,29 @@ public class JsonBasedWriterUnitTest {
     assertEquals(new JsonObject(expectedInvoiceAsString), new JsonObject(resultInvoice));
   }
 
+  @Test
+  public void shouldWrite_ValuesIntoOrderEntity() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.ORDER.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    ORDER_WRITER.initialize(eventContext);
+    ORDER_WRITER.write("order.po.workflowStatus", StringValue.of("Pending"));
+    ORDER_WRITER.write("order.po.vendor", StringValue.of("11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1"));
+    ORDER_WRITER.write("order.po.orderType", StringValue.of("One-Time"));
+    ORDER_WRITER.write("order.po.poNumberPrefix", StringValue.of("db9f5d17-0ca3-4d14-ae49-16b63c8fc083"));
+    ORDER_WRITER.write("order.po.acqUnitIds[]", ListValue.of(asList("0ebb1f7d-983f-3026-8a4c-5318e0ebc041")));
+    ORDER_WRITER.write("order.poLine.titleOrPackage", StringValue.of("TestingTitle"));
+    ORDER_WRITER.write("order.poLine.acquisitionMethod", StringValue.of("796596c4-62b5-4b64-a2ce-524c747afaa2"));
+    ORDER_WRITER.write("order.poLine.orderFormat", StringValue.of("P/E Mix"));
+    ORDER_WRITER.write("order.poLine.source", StringValue.of("MARC"));
+    ORDER_WRITER.write("order.poLine.cost.currency", StringValue.of("UAH"));
+    ORDER_WRITER.getResult(eventContext);
+    // then
+    String expectedOrder = "{\"order\":{\"po\":{\"workflowStatus\":\"Pending\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
+    String resultOrder = eventContext.getContext().get(EntityType.ORDER.value());
+    assertEquals(expectedOrder, resultOrder);
+  }
 }
