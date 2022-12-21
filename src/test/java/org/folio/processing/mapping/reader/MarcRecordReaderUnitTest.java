@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.reader;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonObject;
 
 import org.folio.DataImportEventPayload;
@@ -49,6 +50,7 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"3\": \"test\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
   private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
   private final String RECORD_WITH_MULTIPLE_856 = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"856\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"u\": \"https://fod.infobase.com\" }, { \"z\": \"image\" } ] }}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"u\": \"https://cfvod.kaltura.com\" }, { \"z\": \"films collection\" }]} }]}";
+  private final String RECORD_WITH_MULTIPLE_876 = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"876\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"n\": \"This is a binding note\" }, { \"t\": \"Binding\" } ] }}, {\"876\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"n\": \"This is an electronic bookplate note\" }, { \"t\": \"Electronic bookplate\" }]} }]}";
   private final String RECORD_WITHOUT_SUBFIELD_856_U = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [{\"z\": \"image\"}]}}]}";
   private final String RECORD_WITH_049 = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"KU/CC/DI/M\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_AND_BRACKETS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"(KU/CC/DI/M)\"},{\"z\":\"Testing data\"}]}}]}";
@@ -515,6 +517,66 @@ public class MarcRecordReaderUnitTest {
     object2.put("holdings.electronicAccess[].linkText", StringValue.of("films collection"));
 
     assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "holdings")), JsonObject.mapFrom(value));
+  }
+
+  @Test
+  public void shouldReadRepeatableFieldWithAcceptedValues() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_876))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("UUID1", "Binding");
+    acceptedValues.put("UUID2", "Electronic bookplate");
+
+    List<MappingRule> listRules = new ArrayList<>();
+
+    listRules.add(new MappingRule()
+      .withName("itemNoteTypeId")
+      .withPath("item.notes[].itemNoteTypeId")
+      .withEnabled("true")
+      .withValue("876$t")
+      .withAcceptedValues(acceptedValues));
+    listRules.add(new MappingRule()
+      .withName("note")
+      .withPath("item.notes[].note")
+      .withEnabled("true")
+      .withValue("876$n"));
+    listRules.add(new MappingRule()
+      .withName("staffOnly")
+      .withPath("item.notes[].staffOnly")
+      .withEnabled("true")
+      .withBooleanFieldAction(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    Value value = reader.read(new MappingRule()
+      .withName("notes")
+      .withPath("item.notes[]")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(singletonList(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath("item.notes[]")
+        .withFields(listRules))));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("item.notes[]", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("item.notes[].itemNoteTypeId", StringValue.of("UUID1"));
+    object1.put("item.notes[].note", StringValue.of("This is a binding note"));
+    object1.put("item.notes[].staffOnly", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("item.notes[].itemNoteTypeId", StringValue.of("UUID2"));
+    object2.put("item.notes[].note", StringValue.of("This is an electronic bookplate note"));
+    object2.put("item.notes[].staffOnly", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_TRUE));
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "item.notes[]")), JsonObject.mapFrom(value));
   }
 
   @Test
@@ -1101,5 +1163,81 @@ public class MarcRecordReaderUnitTest {
 
     assertEquals(ValueType.STRING, value.getType());
     assertEquals("K)U/CC(/D)I/M)", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_OrderComplexField() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc084", "suf");
+    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", "pref");
+
+    Value value = reader.read(new MappingRule()
+      .withName("prefix")
+      .withPath("order.po.poNumberPrefix")
+      .withEnabled("true")
+      .withValue("\"pref\"")
+      .withAcceptedValues(acceptedValues));
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", value.getValue());
+  }
+
+  @Test
+  public void shouldRead_OrderArrayNonRepeatableField() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("0ebb1f7d-983f-3026-8a4c-5318e0ebc042", "online");
+    acceptedValues.put("0ebb1f7d-983f-3026-8a4c-5318e0ebc041", "main");
+
+    Value value = reader.read(new MappingRule()
+      .withName("acqUnitIds")
+      .withPath("order.po.acqUnitIds[]")
+      .withEnabled("true")
+      .withValue("\"main\"")
+      .withAcceptedValues(acceptedValues));
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertEquals("[0ebb1f7d-983f-3026-8a4c-5318e0ebc041]", Lists.newArrayList(value.getValue()).get(0).toString());
+  }
+
+  @Test
+  public void shouldRead_OrderLineComplexField() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    Value value = reader.read(new MappingRule()
+      .withName("currency")
+      .withPath("order.poLine.cost.currency")
+      .withEnabled("true")
+      .withValue("\"UAH\""));
+
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("UAH", value.getValue());
   }
 }

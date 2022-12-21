@@ -27,7 +27,7 @@ public class JSManager {
   public static Object runJScript(String jscript, String data) throws ScriptException {
     CompiledScript script = preCompiledJS.get(jscript.hashCode());
     if(script == null){
-      LOGGER.debug("compiling JS function: {}", jscript);
+      LOGGER.debug("runJScript:: compiling JS function: {}", jscript);
       script = ((Compilable) engine).compile(jscript);
       preCompiledJS.put(jscript.hashCode(), script);
     }

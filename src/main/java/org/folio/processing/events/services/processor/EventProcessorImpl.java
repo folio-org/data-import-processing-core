@@ -44,7 +44,7 @@ public class EventProcessorImpl implements EventProcessor {
             }
           });
       } else {
-        LOG.info("No suitable handler found for {} event type and current profile {}", eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType());
+        LOG.info("process:: No suitable handler found for {} event type and current profile {}", eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType());
         future.completeExceptionally(new EventHandlerNotFoundException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
       }
     } catch (Exception e) {
@@ -70,14 +70,14 @@ public class EventProcessorImpl implements EventProcessor {
       var endTime = System.nanoTime();
       final String lastEvent = getLastEvent(eventPayload);
       if (DI_SRS_MARC_AUTHORITY_RECORD_CREATED.value().equals(lastEvent)) {
-        LOG.debug("Event '{}' has been processed for {} ms", lastEvent, (endTime - startTime) / 1000000L);
+        LOG.debug("logEventProcessingTime:: Event '{}' has been processed for {} ms", lastEvent, (endTime - startTime) / 1000000L);
       } else {
         String profileType = eventPayload.getCurrentNode().getContentType().toString();
         String profileId = eventPayload.getCurrentNode().getProfileId();
-        LOG.debug("Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
+        LOG.debug("logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
       }
     } catch (Exception e) {
-      LOG.error("An Exception occurred {}", e.getMessage());
+      LOG.warn("logEventProcessingTime:: An Exception occurred {}", e.getMessage());
     }
   }
 

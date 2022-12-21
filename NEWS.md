@@ -1,8 +1,19 @@
-## 2022-xx-xx v3.5.0-SNAPSHOT
+## 2022-xx-xx v3.6.0-SNAPSHOT
+* [MODSOURMAN-873](https://issues.folio.org/browse/MODSOURMAN-873) Add MARC 720 field to default MARC Bib-Instance mapping and adjust relator term mapping. Expanded default mapper with alternative mapping logic
+* [MODSOURMAN-837](https://issues.folio.org/browse/MODSOURMAN-837) MARC bib - FOLIO instance mapping | Update default mapping to change how Relator term is populated on instance record
+* [MODDICORE-294](https://issues.folio.org/browse/MODDICORE-294) Add handling accepted values for repeatable fields
+* [MODDICORE-290](https://issues.folio.org/browse/MODDICORE-290) Extend Mapper for Order/OrderLines.
+
+## 2022-10-19 v3.5.1
 * [MODDICORE-281](https://issues.folio.org/browse/MODDICORE-281) Extend instance contributors schema with Authority ID
 * [MODSOURMAN-838](https://issues.folio.org/browse/MODSOURMAN-838) Search by LCCN "010 $a" subfield value with "\" at the end don't retrieve results
+* [MODDICORE-285](https://issues.folio.org/browse/MODDICORE-285) Assign each authority record to an Authority Source file list
+* [MODDICORE-283](https://issues.folio.org/browse/MODDICORE-283) Change logic of sourceFileId populating by adding Authority Natural ID
+* [MODDICORE-276](https://issues.folio.org/browse/MODDICORE-276) Create function to populate an Authority Source file ID
+* [MODDICORE-271](https://issues.folio.org/browse/MODDICORE-271) Support MARC-MARC Holdings update action
+* [MODDICORE-280](https://issues.folio.org/browse/MODDICORE-280) Import is failing due to authoritySourceFiles
 
-## 2022-09-xx v3.4.1-SNAPSHOT
+## 2022-09-02 v3.4.1
 * [MODDICORE-248](https://issues.folio.org/browse/MODDICORE-248) MARC field protections apply to MARC modifications of incoming records when they should not
 
 ## 2022-06-23 v3.4.0

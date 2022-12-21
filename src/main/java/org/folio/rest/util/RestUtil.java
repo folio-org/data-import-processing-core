@@ -103,7 +103,7 @@ public final class RestUtil {
       }
       return promise.future();
     } catch (Exception e) {
-      LOGGER.error("Error during request sending to {} with {} method", url, method, e);
+      LOGGER.warn("doRequest:: Error during request sending to {} with {} method", url, method, e);
       promise.fail(e);
       return promise.future();
     }
@@ -144,21 +144,21 @@ public final class RestUtil {
   public static boolean validateAsyncResult(AsyncResult<WrappedResponse> asyncResult, Promise<?> promise) {
     boolean result = false;
     if (asyncResult.failed()) {
-      LOGGER.error("Error during HTTP request: {}", asyncResult.cause(), asyncResult.cause());
+      LOGGER.warn("validateAsyncResult:: Error during HTTP request: {}", asyncResult.cause(), asyncResult.cause());
       promise.fail(asyncResult.cause());
     } else if (asyncResult.result() == null) {
-      LOGGER.error("Error during get response", asyncResult.cause());
+      LOGGER.warn("validateAsyncResult:: Error during get response", asyncResult.cause());
       promise.fail(new BadRequestException());
     } else if (isCode(asyncResult, HTTP_NOT_FOUND)) {
-      LOGGER.error(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
+      LOGGER.warn(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
       promise.fail(new NotFoundException());
     } else if (isCode(asyncResult, HTTP_INTERNAL_ERROR)) {
-      LOGGER.error(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
+      LOGGER.warn(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
       promise.fail(new InternalServerErrorException());
     } else if (isSuccess(asyncResult)) {
       result = true;
     } else {
-      LOGGER.error(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
+      LOGGER.warn(STATUS_CODE_IS_NOT_SUCCESS_MSG, getCode(asyncResult), asyncResult.cause());
       promise.fail(new BadRequestException());
     }
     return result;
