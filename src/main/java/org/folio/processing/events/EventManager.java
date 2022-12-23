@@ -64,6 +64,7 @@ public final class EventManager {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       setCurrentNodeIfRoot(eventPayload, jobProfileSnapshot);
+      eventPayload.setProfileSnapshot(jobProfileSnapshot);
       eventProcessor.process(eventPayload)
         .whenComplete((processPayload, processThrowable) ->
           publishEventIfNecessary(eventPayload, jobProfileSnapshot, processThrowable)
