@@ -66,13 +66,13 @@ public class MarcRecordModifier {
   public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
     "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
     "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
+  protected static final String ANY_STRING = "*";
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
   private static final String TAG_100 = "100";
   private static final String TAG_199 = "199";
   private static final String TAG_999 = "999";
   private static final char INDICATOR_F = 'f';
-  private static final String ANY_STRING = "*";
   private static final char ANY_CHAR = '*';
 
   private final MarcFactory marcFactory = MarcFactory.newInstance();
@@ -702,13 +702,7 @@ public class MarcRecordModifier {
       for (DataField fieldToUpdate : dataFields) {
         if (fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
           if (isNotProtected(fieldToUpdate)) {
-            if (subfieldCode.equals(ANY_STRING)) {
-              tmpFields.add(fieldToUpdate);
-            } else {
-              String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
-              fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
-              ifNewDataShouldBeAdded = false;
-            }
+            ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
           } else {
             if (isNonRepeatableField(fieldToUpdate)) {
               ifNewDataShouldBeAdded = false;
@@ -725,6 +719,20 @@ public class MarcRecordModifier {
       updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
+                                 DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
+    if (subfieldCode.equals(ANY_STRING)) {
+      tmpFields.add(fieldToUpdate);
+    } else {
+      String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
+      fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
+      ifNewDataShouldBeAdded = false;
+      updatedFields.add(fieldToUpdate);
+    }
+
+    return ifNewDataShouldBeAdded;
   }
 
   boolean isNonRepeatableField(DataField field) {
@@ -753,12 +761,16 @@ public class MarcRecordModifier {
   private void clearUnUpdatedDataFields() {
     List<DataField> tmpFields = new ArrayList<>();
     for (DataField dataField : marcRecordToChange.getDataFields()) {
-      if (!updatedFields.contains(dataField) && isNotProtected(dataField)) {
+      if (unUpdatedFieldShouldBeRemoved(dataField)) {
         tmpFields.add(dataField);
       }
     }
     updatedFields = new ArrayList<>();
     marcRecordToChange.getDataFields().removeAll(tmpFields);
+  }
+
+  protected boolean unUpdatedFieldShouldBeRemoved(DataField dataField) {
+    return !updatedFields.contains(dataField) && isNotProtected(dataField);
   }
 
   private boolean isNotProtected(ControlField field) {
