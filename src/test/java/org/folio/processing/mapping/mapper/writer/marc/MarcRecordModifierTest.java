@@ -44,8 +44,8 @@ import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
 @RunWith(JUnit4.class)
 public class MarcRecordModifierTest {
 
-  private static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
-  private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
+  protected static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
+  protected MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldThrowExceptionWhenHasNoMarcRecord() throws IOException {
