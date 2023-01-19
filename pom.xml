@@ -252,6 +252,8 @@
               <sourcePaths>
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventPayload.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventTypes.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-source-record-storage/marcBibUpdate.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-source-record-storage/linkUpdateReport.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/profileSnapshotWrapper.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/jobProfile.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-data-import-converter-storage/mappingProfile.json</path>
