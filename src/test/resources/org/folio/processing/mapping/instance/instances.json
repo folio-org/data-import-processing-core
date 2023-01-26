@@ -45,9 +45,15 @@
       }
     ],
     "subjects": [
-      "Church history--Periodicals",
-      "Church history",
-      "Periodicals"
+      {
+        "value": "Church history--Periodicals"
+      },
+      {
+        "value": "Church history"
+      },
+      {
+        "value": "Periodicals"
+      }
     ],
     "classifications": [
       {
@@ -130,8 +136,18 @@
       }
     ],
     "subjects": [
-      "Vocal music",
-      "Instrumental music"
+      {
+        "value": "Vocal music"
+      },
+      {
+        "value": "Instrumental music"
+      },
+      {
+        "value": "Instrumental music"
+      },
+      {
+        "value": "Vocal music"
+      }
     ],
     "classifications": [
       {
@@ -260,15 +276,42 @@
       }
     ],
     "subjects": [
-      "Great Britain--Civilization--18th century",
-      "Great Britain--History--18th century",
-      "English literature--18th century",
-      "Eighteenth century",
-      "Great Britain",
-      "Civilization",
-      "1700 - 1799",
-      "History",
-      "English literature"
+      {
+        "value": "Great Britain--Civilization--18th century"
+      },
+      {
+        "value": "Great Britain--History--18th century"
+      },
+      {
+        "value": "English literature--18th century"
+      },
+      {
+        "value": "Eighteenth century"
+      },
+      {
+        "value": "Great Britain"
+      },
+      {
+        "value": "Civilization"
+      },
+      {
+        "value": "1700 - 1799"
+      },
+      {
+        "value": "History"
+      },
+      {
+        "value": "English literature"
+      },
+      {
+        "value": "Eighteenth century"
+      },
+      {
+        "value": "English literature"
+      },
+      {
+        "value": "Eighteenth century"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -374,9 +417,15 @@
       }
     ],
     "subjects": [
-      "Income tax--Law and legislation--United States",
-      "Income tax--Law and legislation",
-      "United States"
+      {
+        "value": "Income tax--Law and legislation--United States"
+      },
+      {
+        "value": "Income tax--Law and legislation"
+      },
+      {
+        "value": "United States"
+      }
     ],
     "classifications": [
       {
@@ -516,9 +565,15 @@
       }
     ],
     "subjects": [
-      "Law--Pennsylvania",
-      "Law",
-      "Pennsylvania"
+      {
+        "value": "Law--Pennsylvania"
+      },
+      {
+        "value": "Law"
+      },
+      {
+        "value": "Pennsylvania"
+      }
     ],
     "classifications": [
       {
@@ -604,9 +659,15 @@
       }
     ],
     "subjects": [
-      "Cambodia--Description and travel",
-      "Travel",
-      "Cambodia"
+      {
+        "value": "Cambodia--Description and travel"
+      },
+      {
+        "value": "Travel"
+      },
+      {
+        "value": "Cambodia"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -695,12 +756,30 @@
       }
     ],
     "subjects": [
-      "García Lorca, Federico, 1898-1936--Musical settings",
-      "Song cycles",
-      "Songs (High voice) with instrumental ensemble--Scores",
-      "Vocal duets with instrumental ensemble--Scores",
-      "García Lorca, Federico, 1898-1936",
-      "Musical settings"
+      {
+        "value": "García Lorca, Federico, 1898-1936--Musical settings"
+      },
+      {
+        "value": "Song cycles"
+      },
+      {
+        "value": "Songs (High voice) with instrumental ensemble--Scores"
+      },
+      {
+        "value": "Vocal duets with instrumental ensemble--Scores"
+      },
+      {
+        "value": "García Lorca, Federico, 1898-1936"
+      },
+      {
+        "value": "Song cycles"
+      },
+      {
+        "value": "Vocal duets with instrumental ensemble--Scores"
+      },
+      {
+        "value": "Musical settings"
+      }
     ],
     "classifications": [
       {
@@ -787,9 +866,15 @@
       }
     ],
     "subjects": [
-      "Cornell University--Administration",
-      "Cornell University",
-      "Management"
+      {
+        "value": "Cornell University--Administration"
+      },
+      {
+        "value": "Cornell University"
+      },
+      {
+        "value": "Management"
+      }
     ],
     "classifications": [],
     "publication": [],
@@ -879,17 +964,60 @@
       }
     ],
     "subjects": [
-      "Manuscripts, Balinese",
-      "Balinese literature",
-      "Ethics, Balinese",
-      "Mythology, Balinese",
-      "Hinduism--Bali Island (Indonesia)",
-      "Hindu legends",
-      "Hindu literature",
-      "Hindu law",
-      "Bali Island (Indonesia)--Religious life and customs",
-      "Hinduism",
-      "Indonesia--Bali Island"
+      {
+        "value": "Manuscripts, Balinese"
+      },
+      {
+        "value": "Balinese literature"
+      },
+      {
+        "value": "Ethics, Balinese"
+      },
+      {
+        "value": "Mythology, Balinese"
+      },
+      {
+        "value": "Hinduism--Bali Island (Indonesia)"
+      },
+      {
+        "value": "Hindu legends"
+      },
+      {
+        "value": "Hindu literature"
+      },
+      {
+        "value": "Hindu law"
+      },
+      {
+        "value": "Bali Island (Indonesia)--Religious life and customs"
+      },
+      {
+        "value": "Balinese literature"
+      },
+      {
+        "value": "Ethics, Balinese"
+      },
+      {
+        "value": "Hindu law"
+      },
+      {
+        "value": "Hindu legends"
+      },
+      {
+        "value": "Hindu literature"
+      },
+      {
+        "value": "Hinduism"
+      },
+      {
+        "value": "Manuscripts, Balinese"
+      },
+      {
+        "value": "Mythology, Balinese"
+      },
+      {
+        "value": "Indonesia--Bali Island"
+      }
     ],
     "classifications": [],
     "publication": [],
@@ -1024,162 +1152,711 @@
       }
     ],
     "subjects": [
-      "Adams, Thomas, 1871-1940",
-      "Alexander, S. B",
-      "Allen, Philip R",
-      "Ball, Charles B",
-      "Bassett, Edward M. (Edward Murray), 1863-1948",
-      "Beer, G. Frank",
-      "Bellamy, George Albert, 1872-1960",
-      "Black, Russell Van Nest, 1893-1969",
-      "Brooks, Joshua L",
-      "Chase, Helen E",
-      "Cheney, Charles E",
-      "Childs, Richard S. (Richard Spencer), 1882-1978",
-      "Chivers, Herbert C",
-      "Contreras, Carlos",
-      "Coyle, David Cushman, 1887-1969",
-      "Crane, Jacob L. (Jacob Leslie), 1892-1988",
-      "Dimmick, J. Benjamin",
-      "Draper, E. S. (Earle Sumner), 1893-1994",
-      "Ely, Richard T. (Richard Theodore), 1854-1943",
-      "Ely, Robert Erskine, 1861-",
-      "Feidler, F. F",
-      "Filene, Edward A",
-      "Ford, Henry, 1863-1947",
-      "Ford, James, 1884-1944",
-      "Foster, Philip W",
-      "Franzheim, Kenneth, 1890-1959",
-      "Gallup, George B",
-      "Geddes, Patrick, Sir, 1854-1932",
-      "Griggs, Edward Howard",
-      "Highland, Harry",
-      "Hoggson, N. J",
-      "Huebsch, B. W. (Benjamin W.), 1876-1964",
-      "Ihlder, John, 1876-1958",
-      "Latham, J. E",
-      "Lewis, Nelson Peter, 1856-1924",
-      "MacArthur, Arthur",
-      "Maxwell, George H",
-      "Meinig, Richard",
-      "Nolen, John, 1898-1986",
-      "Root, Irving C",
-      "Stein, Clarence S",
-      "Unwin, Raymond, Sir, 1863-1940",
-      "Varn, Claude G",
-      "Walker, Hale J",
-      "Williams, Frank B. (Frank Backus), 1864-1954",
-      "Zug, George R., 1938-",
-      "American Civic Association",
-      "American Institute of Architects",
-      "American Institute of Planners",
-      "American Society of Landscape Architects",
-      "American Society of Planning Officials",
-      "Babson Institute",
-      "Boston (Mass.). Advisory Committee on Housing",
-      "Boston Metropolitan Planning Commission",
-      "City Housing Corporation",
-      "Cleveland (Ohio). City Plan Commission",
-      "Forest Park and Planning Association",
-      "General Federation of Women's Clubs",
-      "Harvard University--Students",
-      "International Federation for Housing and Planning",
-      "International Garden Cities and Town-Planning Federation",
-      "Massachusetts Civic League",
-      "Massachusetts. Department of Public Welfare",
-      "Massachusetts Federation of Planning Boards",
-      "National Conference on City Planning",
-      "National Park Service",
-      "New England Council",
-      "New England Regional Planning Commission",
-      "Philadelphia Regional Planning Federation",
-      "Regional Plan Association (New York, N.Y.)",
-      "Russell Sage Foundation",
-      "Tennessee Valley Authority",
-      "Town Planning Institute (London, England)",
-      "United States Housing Corporation",
-      "United States. Department of the Interior",
-      "United States. Division of Subsistence Homesteads",
-      "United States. Federal Emergency Relief Administration of Public Works",
-      "United States. National Resources Committee",
-      "United States. National Resources Planning Board",
-      "United States. Resettlement Administration",
-      "University of Pennsylvania--Students",
-      "City planning",
-      "Community development, Urban",
-      "Highway planning",
-      "Housing",
-      "Inland water transportation",
-      "Landscape architecture",
-      "Parks",
-      "Railroads",
-      "Regional planning",
-      "Zoning",
-      "Bridgeport (Conn.)--City planning",
-      "Charlotte (N.C.)--City planning",
-      "Clearwater (Fla.)--City planning",
-      "Clewiston (Fla.)--City planning",
-      "Sarasota (Fla.)--City planning",
-      "Venice (Fla.)--City planning",
-      "Columbus (Ga.)--City planning",
-      "Johnson City (Tenn.)--City planning",
-      "Kingsport (Tenn.)--City planning",
-      "La Crosse (Wis.)--City planning",
-      "Madison (Wis.)--City planning",
-      "Lancaster (Pa.)--City planning",
-      "Reading (Pa.)--City planning",
-      "Little Rock (Ark.)--City planning",
-      "Mariemont (Ohio)--City planning",
-      "Niagara Falls (N.Y.)--City planning",
-      "Riverton (N.J.)--City planning",
-      "Roanoke (Va.)--City planning",
-      "Sacramento (Calif.)--City planning",
-      "San Diego (Calif.)--City planning",
-      "Boston (Mass.)--City planning",
-      "Spartanburg (S.C.)--City planning",
-      "Dubuque (Iowa)--City planning",
-      "City planners--United States",
-      "Landscape architects--United States",
-      "John Nolen Research Fund",
-      "La Monte, C. B., Mrs",
-      "Seymour, Robert M., Mrs",
-      "Blueprints",
-      "Lecture notes",
-      "Maps",
-      "Photographs",
-      "Negatives (photographic)",
-      "Scrapbooks",
-      "Architectural drawings (visual works)",
-      "Harvard University",
-      "University of Pennsylvania",
-      "City planners",
-      "Landscape architects",
-      "Students",
-      "Arkansas--Little Rock",
-      "California--Sacramento",
-      "California--San Diego",
-      "Connecticut--Bridgeport",
-      "Florida--Clearwater",
-      "Florida--Clewiston",
-      "Florida--Sarasota",
-      "Florida--Venice",
-      "Georgia--Columbus",
-      "Iowa--Dubuque",
-      "Massachusetts--Boston",
-      "New Jersey--Riverton",
-      "New York (State)--Niagara Falls",
-      "North Carolina--Charlotte",
-      "Ohio--Mariemont",
-      "Pennsylvania--Lancaster",
-      "Pennsylvania--Reading",
-      "South Carolina--Spartanburg",
-      "Tennessee--Johnson City",
-      "Tennessee--Kingsport",
-      "United States",
-      "Virginia--Roanoke",
-      "Wisconsin--La Crosse",
-      "Wisconsin--Madison",
-      "Diaries--United States--20th century"
+      {
+        "value": "Adams, Thomas, 1871-1940"
+      },
+      {
+        "value": "Alexander, S. B"
+      },
+      {
+        "value": "Allen, Philip R"
+      },
+      {
+        "value": "Ball, Charles B"
+      },
+      {
+        "value": "Bassett, Edward M. (Edward Murray), 1863-1948"
+      },
+      {
+        "value": "Beer, G. Frank"
+      },
+      {
+        "value": "Bellamy, George Albert, 1872-1960"
+      },
+      {
+        "value": "Black, Russell Van Nest, 1893-1969"
+      },
+      {
+        "value": "Brooks, Joshua L"
+      },
+      {
+        "value": "Chase, Helen E"
+      },
+      {
+        "value": "Cheney, Charles E"
+      },
+      {
+        "value": "Childs, Richard S. (Richard Spencer), 1882-1978"
+      },
+      {
+        "value": "Chivers, Herbert C"
+      },
+      {
+        "value": "Contreras, Carlos"
+      },
+      {
+        "value": "Coyle, David Cushman, 1887-1969"
+      },
+      {
+        "value": "Crane, Jacob L. (Jacob Leslie), 1892-1988"
+      },
+      {
+        "value": "Dimmick, J. Benjamin"
+      },
+      {
+        "value": "Draper, E. S. (Earle Sumner), 1893-1994"
+      },
+      {
+        "value": "Ely, Richard T. (Richard Theodore), 1854-1943"
+      },
+      {
+        "value": "Ely, Robert Erskine, 1861-"
+      },
+      {
+        "value": "Feidler, F. F"
+      },
+      {
+        "value": "Filene, Edward A"
+      },
+      {
+        "value": "Ford, Henry, 1863-1947"
+      },
+      {
+        "value": "Ford, James, 1884-1944"
+      },
+      {
+        "value": "Foster, Philip W"
+      },
+      {
+        "value": "Franzheim, Kenneth, 1890-1959"
+      },
+      {
+        "value": "Gallup, George B"
+      },
+      {
+        "value": "Geddes, Patrick, Sir, 1854-1932"
+      },
+      {
+        "value": "Griggs, Edward Howard"
+      },
+      {
+        "value": "Highland, Harry"
+      },
+      {
+        "value": "Hoggson, N. J"
+      },
+      {
+        "value": "Huebsch, B. W. (Benjamin W.), 1876-1964"
+      },
+      {
+        "value": "Ihlder, John, 1876-1958"
+      },
+      {
+        "value": "Latham, J. E"
+      },
+      {
+        "value": "Lewis, Nelson Peter, 1856-1924"
+      },
+      {
+        "value": "MacArthur, Arthur"
+      },
+      {
+        "value": "Maxwell, George H"
+      },
+      {
+        "value": "Meinig, Richard"
+      },
+      {
+        "value": "Nolen, John, 1898-1986"
+      },
+      {
+        "value": "Root, Irving C"
+      },
+      {
+        "value": "Stein, Clarence S"
+      },
+      {
+        "value": "Unwin, Raymond, Sir, 1863-1940"
+      },
+      {
+        "value": "Varn, Claude G"
+      },
+      {
+        "value": "Walker, Hale J"
+      },
+      {
+        "value": "Williams, Frank B. (Frank Backus), 1864-1954"
+      },
+      {
+        "value": "Zug, George R., 1938-"
+      },
+      {
+        "value": "American Civic Association"
+      },
+      {
+        "value": "American Institute of Architects"
+      },
+      {
+        "value": "American Institute of Planners"
+      },
+      {
+        "value": "American Society of Landscape Architects"
+      },
+      {
+        "value": "American Society of Planning Officials"
+      },
+      {
+        "value": "Babson Institute"
+      },
+      {
+        "value": "Boston (Mass.). Advisory Committee on Housing"
+      },
+      {
+        "value": "Boston Metropolitan Planning Commission"
+      },
+      {
+        "value": "City Housing Corporation"
+      },
+      {
+        "value": "Cleveland (Ohio). City Plan Commission"
+      },
+      {
+        "value": "Forest Park and Planning Association"
+      },
+      {
+        "value": "General Federation of Women's Clubs"
+      },
+      {
+        "value": "Harvard University--Students"
+      },
+      {
+        "value": "International Federation for Housing and Planning"
+      },
+      {
+        "value": "International Garden Cities and Town-Planning Federation"
+      },
+      {
+        "value": "Massachusetts Civic League"
+      },
+      {
+        "value": "Massachusetts. Department of Public Welfare"
+      },
+      {
+        "value": "Massachusetts Federation of Planning Boards"
+      },
+      {
+        "value": "National Conference on City Planning"
+      },
+      {
+        "value": "National Park Service"
+      },
+      {
+        "value": "New England Council"
+      },
+      {
+        "value": "New England Regional Planning Commission"
+      },
+      {
+        "value": "Philadelphia Regional Planning Federation"
+      },
+      {
+        "value": "Regional Plan Association (New York, N.Y.)"
+      },
+      {
+        "value": "Russell Sage Foundation"
+      },
+      {
+        "value": "Tennessee Valley Authority"
+      },
+      {
+        "value": "Town Planning Institute (London, England)"
+      },
+      {
+        "value": "United States Housing Corporation"
+      },
+      {
+        "value": "United States. Department of the Interior"
+      },
+      {
+        "value": "United States. Division of Subsistence Homesteads"
+      },
+      {
+        "value": "United States. Federal Emergency Relief Administration of Public Works"
+      },
+      {
+        "value": "United States. National Resources Committee"
+      },
+      {
+        "value": "United States. National Resources Planning Board"
+      },
+      {
+        "value": "United States. Resettlement Administration"
+      },
+      {
+        "value": "University of Pennsylvania--Students"
+      },
+      {
+        "value": "City planning"
+      },
+      {
+        "value": "Community development, Urban"
+      },
+      {
+        "value": "Highway planning"
+      },
+      {
+        "value": "Housing"
+      },
+      {
+        "value": "Inland water transportation"
+      },
+      {
+        "value": "Landscape architecture"
+      },
+      {
+        "value": "Parks"
+      },
+      {
+        "value": "Railroads"
+      },
+      {
+        "value": "Regional planning"
+      },
+      {
+        "value": "Zoning"
+      },
+      {
+        "value": "Bridgeport (Conn.)--City planning"
+      },
+      {
+        "value": "Charlotte (N.C.)--City planning"
+      },
+      {
+        "value": "Clearwater (Fla.)--City planning"
+      },
+      {
+        "value": "Clewiston (Fla.)--City planning"
+      },
+      {
+        "value": "Sarasota (Fla.)--City planning"
+      },
+      {
+        "value": "Venice (Fla.)--City planning"
+      },
+      {
+        "value": "Columbus (Ga.)--City planning"
+      },
+      {
+        "value": "Johnson City (Tenn.)--City planning"
+      },
+      {
+        "value": "Kingsport (Tenn.)--City planning"
+      },
+      {
+        "value": "La Crosse (Wis.)--City planning"
+      },
+      {
+        "value": "Madison (Wis.)--City planning"
+      },
+      {
+        "value": "Lancaster (Pa.)--City planning"
+      },
+      {
+        "value": "Reading (Pa.)--City planning"
+      },
+      {
+        "value": "Little Rock (Ark.)--City planning"
+      },
+      {
+        "value": "Mariemont (Ohio)--City planning"
+      },
+      {
+        "value": "Niagara Falls (N.Y.)--City planning"
+      },
+      {
+        "value": "Riverton (N.J.)--City planning"
+      },
+      {
+        "value": "Roanoke (Va.)--City planning"
+      },
+      {
+        "value": "Sacramento (Calif.)--City planning"
+      },
+      {
+        "value": "San Diego (Calif.)--City planning"
+      },
+      {
+        "value": "Boston (Mass.)--City planning"
+      },
+      {
+        "value": "Spartanburg (S.C.)--City planning"
+      },
+      {
+        "value": "Dubuque (Iowa)--City planning"
+      },
+      {
+        "value": "City planners--United States"
+      },
+      {
+        "value": "Landscape architects--United States"
+      },
+      {
+        "value": "John Nolen Research Fund"
+      },
+      {
+        "value": "La Monte, C. B., Mrs"
+      },
+      {
+        "value": "Seymour, Robert M., Mrs"
+      },
+      {
+        "value": "Blueprints"
+      },
+      {
+        "value": "Lecture notes"
+      },
+      {
+        "value": "Maps"
+      },
+      {
+        "value": "Photographs"
+      },
+      {
+        "value": "Negatives (photographic)"
+      },
+      {
+        "value": "Scrapbooks"
+      },
+      {
+        "value": "Architectural drawings (visual works)"
+      },
+      {
+        "value": "Adams, Thomas, 1871-1940"
+      },
+      {
+        "value": "Bassett, Edward M. (Edward Murray), 1863-1948"
+      },
+      {
+        "value": "Bellamy, George Albert, 1872-1960"
+      },
+      {
+        "value": "Black, Russell Van Nest, 1893-1969"
+      },
+      {
+        "value": "Childs, Richard S. (Richard Spencer), 1882-1978"
+      },
+      {
+        "value": "Contreras, Carlos"
+      },
+      {
+        "value": "Coyle, David Cushman, 1887-1969"
+      },
+      {
+        "value": "Crane, Jacob L. (Jacob Leslie), 1892-1988"
+      },
+      {
+        "value": "Draper, E. S. (Earle Sumner), 1893-1994"
+      },
+      {
+        "value": "Ely, Richard T. (Richard Theodore), 1854-1943"
+      },
+      {
+        "value": "Ely, Robert Erskine, 1861-"
+      },
+      {
+        "value": "Ford, Henry, 1863-1947"
+      },
+      {
+        "value": "Ford, James, 1884-1944"
+      },
+      {
+        "value": "Franzheim, Kenneth, 1890-1959"
+      },
+      {
+        "value": "Geddes, Patrick, Sir, 1854-1932"
+      },
+      {
+        "value": "Huebsch, B. W. (Benjamin W.), 1876-1964"
+      },
+      {
+        "value": "Ihlder, John, 1876-1958"
+      },
+      {
+        "value": "Lewis, Nelson Peter, 1856-1924"
+      },
+      {
+        "value": "Nolen, John, 1898-1986"
+      },
+      {
+        "value": "Root, Irving C"
+      },
+      {
+        "value": "Stein, Clarence S"
+      },
+      {
+        "value": "Unwin, Raymond, Sir, 1863-1940"
+      },
+      {
+        "value": "Zug, George R., 1938-"
+      },
+      {
+        "value": "American Civic Association"
+      },
+      {
+        "value": "American Institute of Architects"
+      },
+      {
+        "value": "American Institute of Planners"
+      },
+      {
+        "value": "American Society of Landscape Architects"
+      },
+      {
+        "value": "American Society of Planning Officials"
+      },
+      {
+        "value": "Babson Institute"
+      },
+      {
+        "value": "General Federation of Women's Clubs"
+      },
+      {
+        "value": "Harvard University"
+      },
+      {
+        "value": "International Federation for Housing and Planning"
+      },
+      {
+        "value": "International Garden Cities and Town-Planning Federation"
+      },
+      {
+        "value": "Massachusetts Civic League"
+      },
+      {
+        "value": "Massachusetts. Department of Public Welfare"
+      },
+      {
+        "value": "Massachusetts Federation of Planning Boards"
+      },
+      {
+        "value": "New England Council"
+      },
+      {
+        "value": "Regional Plan Association (New York, N.Y.)"
+      },
+      {
+        "value": "Russell Sage Foundation"
+      },
+      {
+        "value": "Tennessee Valley Authority"
+      },
+      {
+        "value": "Town Planning Institute (London, England)"
+      },
+      {
+        "value": "United States. Department of the Interior"
+      },
+      {
+        "value": "United States. Division of Subsistence Homesteads"
+      },
+      {
+        "value": "United States Housing Corporation"
+      },
+      {
+        "value": "United States. National Resources Committee"
+      },
+      {
+        "value": "United States. National Resources Planning Board"
+      },
+      {
+        "value": "United States. Resettlement Administration"
+      },
+      {
+        "value": "University of Pennsylvania"
+      },
+      {
+        "value": "City planners"
+      },
+      {
+        "value": "City planning"
+      },
+      {
+        "value": "Community development, Urban"
+      },
+      {
+        "value": "Highway planning"
+      },
+      {
+        "value": "Housing"
+      },
+      {
+        "value": "Inland water transportation"
+      },
+      {
+        "value": "Landscape architects"
+      },
+      {
+        "value": "Landscape architecture"
+      },
+      {
+        "value": "Parks"
+      },
+      {
+        "value": "Railroads"
+      },
+      {
+        "value": "Regional planning"
+      },
+      {
+        "value": "Students"
+      },
+      {
+        "value": "Zoning"
+      },
+      {
+        "value": "Arkansas--Little Rock"
+      },
+      {
+        "value": "California--Sacramento"
+      },
+      {
+        "value": "California--San Diego"
+      },
+      {
+        "value": "Connecticut--Bridgeport"
+      },
+      {
+        "value": "Florida--Clearwater"
+      },
+      {
+        "value": "Florida--Clewiston"
+      },
+      {
+        "value": "Florida--Sarasota"
+      },
+      {
+        "value": "Florida--Venice"
+      },
+      {
+        "value": "Georgia--Columbus"
+      },
+      {
+        "value": "Iowa--Dubuque"
+      },
+      {
+        "value": "Massachusetts--Boston"
+      },
+      {
+        "value": "New Jersey--Riverton"
+      },
+      {
+        "value": "New York (State)--Niagara Falls"
+      },
+      {
+        "value": "North Carolina--Charlotte"
+      },
+      {
+        "value": "Ohio--Mariemont"
+      },
+      {
+        "value": "Pennsylvania--Lancaster"
+      },
+      {
+        "value": "Pennsylvania--Reading"
+      },
+      {
+        "value": "South Carolina--Spartanburg"
+      },
+      {
+        "value": "Tennessee--Johnson City"
+      },
+      {
+        "value": "Tennessee--Kingsport"
+      },
+      {
+        "value": "United States"
+      },
+      {
+        "value": "Virginia--Roanoke"
+      },
+      {
+        "value": "Wisconsin--La Crosse"
+      },
+      {
+        "value": "Wisconsin--Madison"
+      },
+      {
+        "value": "Alexander, S. B"
+      },
+      {
+        "value": "Allen, Philip R"
+      },
+      {
+        "value": "Ball, Charles B"
+      },
+      {
+        "value": "Beer, G. Frank"
+      },
+      {
+        "value": "Brooks, Joshua L"
+      },
+      {
+        "value": "Chase, Helen E"
+      },
+      {
+        "value": "Cheney, Charles E"
+      },
+      {
+        "value": "Chivers, Herbert C"
+      },
+      {
+        "value": "Dimmick, J. Benjamin"
+      },
+      {
+        "value": "Feidler, F. F"
+      },
+      {
+        "value": "Filene, Edward A"
+      },
+      {
+        "value": "Foster, Philip W"
+      },
+      {
+        "value": "Gallup, George B"
+      },
+      {
+        "value": "Griggs, Edward Howard"
+      },
+      {
+        "value": "Highland, Harry"
+      },
+      {
+        "value": "Hoggson, N. J"
+      },
+      {
+        "value": "Latham, J. E"
+      },
+      {
+        "value": "MacArthur, Arthur"
+      },
+      {
+        "value": "Maxwell, George H"
+      },
+      {
+        "value": "Meinig, Richard"
+      },
+      {
+        "value": "Varn, Claude G"
+      },
+      {
+        "value": "Walker, Hale J"
+      },
+      {
+        "value": "Williams, Frank B. (Frank Backus), 1864-1954"
+      },
+      {
+        "value": "Diaries--United States--20th century"
+      }
     ],
     "classifications": [],
     "publication": [],
@@ -1304,10 +1981,18 @@
       }
     ],
     "subjects": [
-      "Folk music--Java",
-      "Folk music--Indonesia",
-      "Folk music",
-      "Indonesia"
+      {
+        "value": "Folk music--Java"
+      },
+      {
+        "value": "Folk music--Indonesia"
+      },
+      {
+        "value": "Folk music"
+      },
+      {
+        "value": "Indonesia"
+      }
     ],
     "classifications": [],
     "publication": [],
@@ -1378,9 +2063,18 @@
       }
     ],
     "subjects": [
-      "Taxation--Law and legislation",
-      "Taxation--Indonesia--Law",
-      "Indonesia"
+      {
+        "value": "Taxation--Law and legislation"
+      },
+      {
+        "value": "Taxation--Indonesia--Law"
+      },
+      {
+        "value": "Taxation--Law and legislation"
+      },
+      {
+        "value": "Indonesia"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -1445,13 +2139,39 @@
       }
     ],
     "subjects": [
-      "Art, Indonesian",
-      "Art--Themes, motives",
-      "Visual communication--Indonesia",
-      "Wayang",
-      "Borobudur (Temple : Magelang, Indonesia)",
-      "Visual communication",
-      "Indonesia"
+      {
+        "value": "Art, Indonesian"
+      },
+      {
+        "value": "Art--Themes, motives"
+      },
+      {
+        "value": "Visual communication--Indonesia"
+      },
+      {
+        "value": "Wayang"
+      },
+      {
+        "value": "Borobudur (Temple : Magelang, Indonesia)"
+      },
+      {
+        "value": "Borobudur (Temple : Magelang, Indonesia)"
+      },
+      {
+        "value": "Art, Indonesian"
+      },
+      {
+        "value": "Art--Themes, motives"
+      },
+      {
+        "value": "Visual communication"
+      },
+      {
+        "value": "Wayang"
+      },
+      {
+        "value": "Indonesia"
+      }
     ],
     "classifications": [
       {
@@ -1549,7 +2269,9 @@
       "Y pedwaredd argraphiad yn gymraeg, wedi gwellau llawer o gam yfpeiliadau oedd yn yr Argraphiadau eraill."
     ],
     "series": [
-      "Early English books, 1641-1700 ; 1560:68."
+      {
+        "value": "Early English books, 1641-1700 ; 1560:68."
+      }
     ],
     "identifiers": [
       {
@@ -1578,7 +2300,12 @@
       }
     ],
     "subjects": [
-      "Christian life--Anglican authors"
+      {
+        "value": "Christian life--Anglican authors"
+      },
+      {
+        "value": "Christian life--Anglican authors"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -1684,13 +2411,33 @@
       }
     ],
     "subjects": [
-      "War crime trials",
-      "Yugoslav War Crime Trials, Hague, Netherlands, 1994-",
-      "International Criminal Tribunal for Rwanda",
-      "War crime trials--Rwanda",
-      "Yugoslav War Crime Trials (Hague, Netherlands : 1994-)",
-      "Netherlands--Hague",
-      "Rwanda"
+      {
+        "value": "War crime trials"
+      },
+      {
+        "value": "Yugoslav War Crime Trials, Hague, Netherlands, 1994-"
+      },
+      {
+        "value": "International Criminal Tribunal for Rwanda"
+      },
+      {
+        "value": "War crime trials--Rwanda"
+      },
+      {
+        "value": "International Criminal Tribunal for Rwanda"
+      },
+      {
+        "value": "Yugoslav War Crime Trials (Hague, Netherlands : 1994-)"
+      },
+      {
+        "value": "War crime trials"
+      },
+      {
+        "value": "Netherlands--Hague"
+      },
+      {
+        "value": "Rwanda"
+      }
     ],
     "classifications": [
       {
@@ -1901,10 +2648,18 @@
       }
     ],
     "subjects": [
-      "Androids--Fiction",
-      "Science fiction",
-      "Androids",
-      "Fiction"
+      {
+        "value": "Androids--Fiction"
+      },
+      {
+        "value": "Science fiction"
+      },
+      {
+        "value": "Androids"
+      },
+      {
+        "value": "Fiction"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -1976,12 +2731,27 @@
       }
     ],
     "subjects": [
-      "Alcoholism--United States",
-      "Alcoholism--United States--Prevention",
-      "Alcoholism",
-      "Alcoholism--prevention & control--United States",
-      "Alcoholism--Prevention",
-      "United States"
+      {
+        "value": "Alcoholism--United States"
+      },
+      {
+        "value": "Alcoholism--United States--Prevention"
+      },
+      {
+        "value": "Alcoholism"
+      },
+      {
+        "value": "Alcoholism--prevention & control--United States"
+      },
+      {
+        "value": "Alcoholism"
+      },
+      {
+        "value": "Alcoholism--Prevention"
+      },
+      {
+        "value": "United States"
+      }
     ],
     "classifications": [
       {
@@ -2105,9 +2875,24 @@
       }
     ],
     "subjects": [
-      "Periodicals",
-      "CURRENT EVENTS",
-      "Electronic journals"
+      {
+        "value": "Periodicals"
+      },
+      {
+        "value": "Periodicals"
+      },
+      {
+        "value": "CURRENT EVENTS"
+      },
+      {
+        "value": "Periodicals"
+      },
+      {
+        "value": "Electronic journals"
+      },
+      {
+        "value": "Periodicals"
+      }
     ],
     "classifications": [
       {
@@ -2255,9 +3040,15 @@
       }
     ],
     "subjects": [
-      "Great Britain--Archival resources",
-      "Archival resources",
-      "Great Britain"
+      {
+        "value": "Great Britain--Archival resources"
+      },
+      {
+        "value": "Archival resources"
+      },
+      {
+        "value": "Great Britain"
+      }
     ],
     "classifications": [
       {
@@ -2324,18 +3115,42 @@
       }
     ],
     "subjects": [
-      "Church of Grasmere (Grasmere, England)--Guidebooks",
-      "Church of England--History",
-      "Anglican church buildings--England--Grasmere--Guidebooks",
-      "Grasmere (England)--Church history",
-      "Cumbria (England)--Church history",
-      "Church of England",
-      "Anglican church buildings",
-      "England--Cumbria",
-      "England--Grasmere",
-      "Church history",
-      "Guidebooks",
-      "History"
+      {
+        "value": "Church of Grasmere (Grasmere, England)--Guidebooks"
+      },
+      {
+        "value": "Church of England--History"
+      },
+      {
+        "value": "Anglican church buildings--England--Grasmere--Guidebooks"
+      },
+      {
+        "value": "Grasmere (England)--Church history"
+      },
+      {
+        "value": "Cumbria (England)--Church history"
+      },
+      {
+        "value": "Church of England"
+      },
+      {
+        "value": "Anglican church buildings"
+      },
+      {
+        "value": "England--Cumbria"
+      },
+      {
+        "value": "England--Grasmere"
+      },
+      {
+        "value": "Church history"
+      },
+      {
+        "value": "Guidebooks"
+      },
+      {
+        "value": "History"
+      }
     ],
     "classifications": [
       {
@@ -2414,12 +3229,24 @@
       }
     ],
     "subjects": [
-      "Art--Catalogs",
-      "Art--Study and teaching (Higher)--New York (State)--Ithaca",
-      "Art",
-      "Art--Study and teaching (Higher)",
-      "New York (State)--Ithaca",
-      "Catalogs"
+      {
+        "value": "Art--Catalogs"
+      },
+      {
+        "value": "Art--Study and teaching (Higher)--New York (State)--Ithaca"
+      },
+      {
+        "value": "Art"
+      },
+      {
+        "value": "Art--Study and teaching (Higher)"
+      },
+      {
+        "value": "New York (State)--Ithaca"
+      },
+      {
+        "value": "Catalogs"
+      }
     ],
     "classifications": [
       {
@@ -2516,8 +3343,12 @@
       }
     ],
     "subjects": [
-      "Liquor traffic--New York (State)--New York",
-      "New York (State)--New York"
+      {
+        "value": "Liquor traffic--New York (State)--New York"
+      },
+      {
+        "value": "New York (State)--New York"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -2588,9 +3419,15 @@
       }
     ],
     "subjects": [
-      "Poverty--Philippines--Statistics",
-      "Rural poor--Philippines--Statistics",
-      "Philippines--Social conditions--1986-"
+      {
+        "value": "Poverty--Philippines--Statistics"
+      },
+      {
+        "value": "Rural poor--Philippines--Statistics"
+      },
+      {
+        "value": "Philippines--Social conditions--1986-"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -2686,9 +3523,15 @@
       }
     ],
     "subjects": [
-      "Law--Great Britain",
-      "Law",
-      "Great Britain"
+      {
+        "value": "Law--Great Britain"
+      },
+      {
+        "value": "Law"
+      },
+      {
+        "value": "Great Britain"
+      }
     ],
     "classifications": [
       {
@@ -2825,13 +3668,27 @@
       }
     ],
     "subjects": [
-      "United States--History--Civil War, 1861-1865--Sources",
-      "Confederate States of America--History--Sources",
-      "American Civil War (1861-1865)",
-      "1861 - 1865",
-      "United States",
-      "History",
-      "Sources"
+      {
+        "value": "United States--History--Civil War, 1861-1865--Sources"
+      },
+      {
+        "value": "Confederate States of America--History--Sources"
+      },
+      {
+        "value": "American Civil War (1861-1865)"
+      },
+      {
+        "value": "1861 - 1865"
+      },
+      {
+        "value": "United States"
+      },
+      {
+        "value": "History"
+      },
+      {
+        "value": "Sources"
+      }
     ],
     "classifications": [
       {
@@ -4073,13 +4930,42 @@
       }
     ],
     "subjects": [
-      "Rock music--1961-1970",
-      "Popular music--1961-1970",
-      "Motion picture music--Excerpts",
-      "Rock music",
-      "1961-1970",
-      "Motion picture music",
-      "Popular music"
+      {
+        "value": "Rock music--1961-1970"
+      },
+      {
+        "value": "Popular music--1961-1970"
+      },
+      {
+        "value": "Motion picture music--Excerpts"
+      },
+      {
+        "value": "Motion picture music--Excerpts"
+      },
+      {
+        "value": "Rock music"
+      },
+      {
+        "value": "1961-1970"
+      },
+      {
+        "value": "Motion picture music"
+      },
+      {
+        "value": "Popular music"
+      },
+      {
+        "value": "Rock music"
+      },
+      {
+        "value": "Rock music"
+      },
+      {
+        "value": "Popular music"
+      },
+      {
+        "value": "Motion picture music"
+      }
     ],
     "classifications": [
       {
@@ -4245,12 +5131,30 @@
     ],
     "contributors": [],
     "subjects": [
-      "Cuneiform tablets",
-      "Cuneiform inscriptions",
-      "Akkadian language--Texts",
-      "Sumerians--Economic conditions",
-      "Akkadian language",
-      "Texts"
+      {
+        "value": "Cuneiform tablets"
+      },
+      {
+        "value": "Cuneiform inscriptions"
+      },
+      {
+        "value": "Akkadian language--Texts"
+      },
+      {
+        "value": "Sumerians--Economic conditions"
+      },
+      {
+        "value": "Akkadian language"
+      },
+      {
+        "value": "Cuneiform inscriptions"
+      },
+      {
+        "value": "Cuneiform tablets"
+      },
+      {
+        "value": "Texts"
+      }
     ],
     "classifications": [],
     "publication": [],
@@ -4362,23 +5266,66 @@
       }
     ],
     "subjects": [
-      "Soriano, Yoan",
-      "Musicians--Dominican Republic",
-      "Bachata",
-      "Popular music--Dominican Republic",
-      "Dominican Republic--Social life and customs",
-      "Dominican Republic--Music",
-      "Monte Plata (Dominican Republic)--Social conditions",
-      "Monte Plata (Dominican Republic)--Economic conditions",
-      "Documentary films",
-      "Economic history",
-      "Manners and customs",
-      "Musicians",
-      "Popular music",
-      "Social history",
-      "Dominican Republic",
-      "Dominican Republic--Monte Plata",
-      "Music"
+      {
+        "value": "Soriano, Yoan"
+      },
+      {
+        "value": "Musicians--Dominican Republic"
+      },
+      {
+        "value": "Bachata"
+      },
+      {
+        "value": "Popular music--Dominican Republic"
+      },
+      {
+        "value": "Dominican Republic--Social life and customs"
+      },
+      {
+        "value": "Dominican Republic--Music"
+      },
+      {
+        "value": "Monte Plata (Dominican Republic)--Social conditions"
+      },
+      {
+        "value": "Monte Plata (Dominican Republic)--Economic conditions"
+      },
+      {
+        "value": "Documentary films"
+      },
+      {
+        "value": "Soriano, Yoan"
+      },
+      {
+        "value": "Bachata"
+      },
+      {
+        "value": "Economic history"
+      },
+      {
+        "value": "Manners and customs"
+      },
+      {
+        "value": "Musicians"
+      },
+      {
+        "value": "Popular music"
+      },
+      {
+        "value": "Social history"
+      },
+      {
+        "value": "Dominican Republic"
+      },
+      {
+        "value": "Dominican Republic--Monte Plata"
+      },
+      {
+        "value": "Documentary films"
+      },
+      {
+        "value": "Music"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -4499,24 +5446,69 @@
       }
     ],
     "subjects": [
-      "Bachata",
-      "Soriano, Yoan",
-      "Musicians--Dominican Republic--Biography",
-      "Documentary films",
-      "Popular music--Dominican Republic",
-      "Dominican Republic--Social life and customs",
-      "Dominican Republic--Music",
-      "Monte Plata (Dominican Republic)--Social conditions",
-      "Monte Plata (Dominican Republic)--Economic conditions",
-      "Economic history",
-      "Manners and customs",
-      "Musicians",
-      "Popular music",
-      "Social history",
-      "Dominican Republic",
-      "Dominican Republic--Monte Plata",
-      "Biography",
-      "Music"
+      {
+        "value": "Bachata"
+      },
+      {
+        "value": "Soriano, Yoan"
+      },
+      {
+        "value": "Musicians--Dominican Republic--Biography"
+      },
+      {
+        "value": "Documentary films"
+      },
+      {
+        "value": "Popular music--Dominican Republic"
+      },
+      {
+        "value": "Dominican Republic--Social life and customs"
+      },
+      {
+        "value": "Dominican Republic--Music"
+      },
+      {
+        "value": "Monte Plata (Dominican Republic)--Social conditions"
+      },
+      {
+        "value": "Monte Plata (Dominican Republic)--Economic conditions"
+      },
+      {
+        "value": "Soriano, Yoan"
+      },
+      {
+        "value": "Bachata"
+      },
+      {
+        "value": "Economic history"
+      },
+      {
+        "value": "Manners and customs"
+      },
+      {
+        "value": "Musicians"
+      },
+      {
+        "value": "Popular music"
+      },
+      {
+        "value": "Social history"
+      },
+      {
+        "value": "Dominican Republic"
+      },
+      {
+        "value": "Dominican Republic--Monte Plata"
+      },
+      {
+        "value": "Biography"
+      },
+      {
+        "value": "Documentary films"
+      },
+      {
+        "value": "Music"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -4634,8 +5626,18 @@
       }
     ],
     "subjects": [
-      "Digital music players",
-      "Symphonies (Electronics)"
+      {
+        "value": "Digital music players"
+      },
+      {
+        "value": "Symphonies (Electronics)"
+      },
+      {
+        "value": "Digital music players"
+      },
+      {
+        "value": "Symphonies (Electronics)"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -4742,17 +5744,39 @@
       }
     ],
     "subjects": [
-      "Hu, Shi, 1891-1962--Political and social views",
-      "Liberalism--China--History--20th century",
-      "Political science--China--Philosophy--History--20th century",
-      "Hu, Shi, 1891-1962",
-      "1900 - 1999",
-      "Liberalism",
-      "Political and social views",
-      "Political science--Philosophy",
-      "China",
-      "History",
-      "胡适, 1891-1962--Political and social views"
+      {
+        "value": "Hu, Shi, 1891-1962--Political and social views"
+      },
+      {
+        "value": "Liberalism--China--History--20th century"
+      },
+      {
+        "value": "Political science--China--Philosophy--History--20th century"
+      },
+      {
+        "value": "Hu, Shi, 1891-1962"
+      },
+      {
+        "value": "1900 - 1999"
+      },
+      {
+        "value": "Liberalism"
+      },
+      {
+        "value": "Political and social views"
+      },
+      {
+        "value": "Political science--Philosophy"
+      },
+      {
+        "value": "China"
+      },
+      {
+        "value": "History"
+      },
+      {
+        "value": "胡适, 1891-1962--Political and social views"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -4807,7 +5831,9 @@
     "alternativeTitles": [],
     "editions": [],
     "series": [
-      "Smithsonian global sound for libraries."
+      {
+        "value": "Smithsonian global sound for libraries."
+      }
     ],
     "identifiers": [
       {
@@ -4836,7 +5862,9 @@
       }
     ],
     "subjects": [
-      "Indians of South America--Ecuador--Music"
+      {
+        "value": "Indians of South America--Ecuador--Music"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -4950,9 +5978,24 @@
       }
     ],
     "subjects": [
-      "Qin music",
-      "Ambient music",
-      "Digital music players"
+      {
+        "value": "Qin music"
+      },
+      {
+        "value": "Ambient music"
+      },
+      {
+        "value": "Digital music players"
+      },
+      {
+        "value": "Ambient music"
+      },
+      {
+        "value": "Digital music players"
+      },
+      {
+        "value": "Qin music"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -5050,13 +6093,27 @@
       }
     ],
     "subjects": [
-      "Children--Philippines--Social conditions",
-      "Child labor--Philippines",
-      "Child welfare--Philippines",
-      "Child labor",
-      "Child welfare",
-      "Children--Social conditions",
-      "Philippines"
+      {
+        "value": "Children--Philippines--Social conditions"
+      },
+      {
+        "value": "Child labor--Philippines"
+      },
+      {
+        "value": "Child welfare--Philippines"
+      },
+      {
+        "value": "Child labor"
+      },
+      {
+        "value": "Child welfare"
+      },
+      {
+        "value": "Children--Social conditions"
+      },
+      {
+        "value": "Philippines"
+      }
     ],
     "classifications": [
       {
@@ -5176,8 +6233,15 @@
       }
     ],
     "subjects": [
-      "Requiems",
-      "Live sound recordings"
+      {
+        "value": "Requiems"
+      },
+      {
+        "value": "Live sound recordings"
+      },
+      {
+        "value": "Requiems"
+      }
     ],
     "classifications": [
       {
@@ -5277,10 +6341,18 @@
       }
     ],
     "subjects": [
-      "Child welfare",
-      "Children's rights",
-      "Intercountry adoption",
-      "Africa"
+      {
+        "value": "Child welfare"
+      },
+      {
+        "value": "Children's rights"
+      },
+      {
+        "value": "Intercountry adoption"
+      },
+      {
+        "value": "Africa"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -5336,17 +6408,39 @@
       }
     ],
     "subjects": [
-      "Great Britain--History--Sources",
-      "Great Britain--Foreign relations--Sources",
-      "Great Britain--Politics and government--Sources",
-      "United States--Politics and government--Sources",
-      "Electronic reference sources",
-      "Diplomatic relations",
-      "Political science",
-      "Great Britain",
-      "United States",
-      "History",
-      "Sources"
+      {
+        "value": "Great Britain--History--Sources"
+      },
+      {
+        "value": "Great Britain--Foreign relations--Sources"
+      },
+      {
+        "value": "Great Britain--Politics and government--Sources"
+      },
+      {
+        "value": "United States--Politics and government--Sources"
+      },
+      {
+        "value": "Electronic reference sources"
+      },
+      {
+        "value": "Diplomatic relations"
+      },
+      {
+        "value": "Political science"
+      },
+      {
+        "value": "Great Britain"
+      },
+      {
+        "value": "United States"
+      },
+      {
+        "value": "History"
+      },
+      {
+        "value": "Sources"
+      }
     ],
     "classifications": [
       {
@@ -5413,7 +6507,9 @@
     "alternativeTitles": [],
     "editions": [],
     "series": [
-      "Naxos Music Library"
+      {
+        "value": "Naxos Music Library"
+      }
     ],
     "identifiers": [
       {
@@ -5567,7 +6663,9 @@
       }
     ],
     "subjects": [
-      "Classical Music"
+      {
+        "value": "Classical Music"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -5639,7 +6737,9 @@
     "alternativeTitles": [],
     "editions": [],
     "series": [
-      "Naxos Music Library"
+      {
+        "value": "Naxos Music Library"
+      }
     ],
     "identifiers": [
       {
@@ -5679,7 +6779,9 @@
       }
     ],
     "subjects": [
-      "Classical Music"
+      {
+        "value": "Classical Music"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -5751,7 +6853,9 @@
     "alternativeTitles": [],
     "editions": [],
     "series": [
-      "Bruckner, Anton, 1824-1896. Works. 2015."
+      {
+        "value": "Bruckner, Anton, 1824-1896. Works. 2015."
+      }
     ],
     "identifiers": [],
     "contributors": [
@@ -5793,9 +6897,24 @@
       }
     ],
     "subjects": [
-      "Instrumental music",
-      "Vocal music",
-      "Symphonies"
+      {
+        "value": "Instrumental music"
+      },
+      {
+        "value": "Vocal music"
+      },
+      {
+        "value": "Symphonies"
+      },
+      {
+        "value": "Instrumental music"
+      },
+      {
+        "value": "Symphonies"
+      },
+      {
+        "value": "Vocal music"
+      }
     ],
     "classifications": [
       {
@@ -5897,14 +7016,30 @@
       }
     ],
     "subjects": [
-      "Child prostitution--Thailand--Prevention",
-      "Child prostitution--Government policy--Thailand",
-      "Sex tourism--Thailand",
-      "Social work with children--Thailand",
-      "Sex tourism",
-      "Child prostitution--Prevention",
-      "Social work with children",
-      "Thailand"
+      {
+        "value": "Child prostitution--Thailand--Prevention"
+      },
+      {
+        "value": "Child prostitution--Government policy--Thailand"
+      },
+      {
+        "value": "Sex tourism--Thailand"
+      },
+      {
+        "value": "Social work with children--Thailand"
+      },
+      {
+        "value": "Sex tourism"
+      },
+      {
+        "value": "Child prostitution--Prevention"
+      },
+      {
+        "value": "Social work with children"
+      },
+      {
+        "value": "Thailand"
+      }
     ],
     "classifications": [
       {
@@ -5996,8 +7131,18 @@
       }
     ],
     "subjects": [
-      "Reporters and reporting",
-      "Journalism--Authorship"
+      {
+        "value": "Reporters and reporting"
+      },
+      {
+        "value": "Journalism--Authorship"
+      },
+      {
+        "value": "Journalism--Authorship"
+      },
+      {
+        "value": "Reporters and reporting"
+      }
     ],
     "classifications": [
       {
@@ -6117,27 +7262,69 @@
       }
     ],
     "subjects": [
-      "Jazz--To 1921",
-      "Blues (Music)--To 1931",
-      "Blues (Music)--Discography",
-      "Jazz--Discography",
-      "Sound recording industry--Wisconsin",
-      "Record labels--Wisconsin",
-      "Sound recordings--United States--Catalogs",
-      "New York Recording Laboratories--Discography",
-      "Paramount (Sound recording label)--Discography",
-      "New York Recording Laboratories",
-      "Paramount (Sound recording label)",
-      "Blues (Music)",
-      "Jazz",
-      "Record labels",
-      "Sound recording industry",
-      "Sound recordings",
-      "United States",
-      "Wisconsin",
-      "To 1931",
-      "Catalogs",
-      "Discographies"
+      {
+        "value": "Jazz--To 1921"
+      },
+      {
+        "value": "Blues (Music)--To 1931"
+      },
+      {
+        "value": "Blues (Music)--Discography"
+      },
+      {
+        "value": "Jazz--Discography"
+      },
+      {
+        "value": "Sound recording industry--Wisconsin"
+      },
+      {
+        "value": "Record labels--Wisconsin"
+      },
+      {
+        "value": "Sound recordings--United States--Catalogs"
+      },
+      {
+        "value": "New York Recording Laboratories--Discography"
+      },
+      {
+        "value": "Paramount (Sound recording label)--Discography"
+      },
+      {
+        "value": "New York Recording Laboratories"
+      },
+      {
+        "value": "Paramount (Sound recording label)"
+      },
+      {
+        "value": "Blues (Music)"
+      },
+      {
+        "value": "Jazz"
+      },
+      {
+        "value": "Record labels"
+      },
+      {
+        "value": "Sound recording industry"
+      },
+      {
+        "value": "Sound recordings"
+      },
+      {
+        "value": "United States"
+      },
+      {
+        "value": "Wisconsin"
+      },
+      {
+        "value": "To 1931"
+      },
+      {
+        "value": "Catalogs"
+      },
+      {
+        "value": "Discographies"
+      }
     ],
     "classifications": [
       {
@@ -6296,14 +7483,30 @@
       }
     ],
     "subjects": [
-      "Bicycle trails--New York (State)--Tompkins County--Maps",
-      "Bicycle trails--New York (State)--Ithaca--Maps",
-      "Tompkins County (N.Y.)--Maps",
-      "Ithaca (N.Y.)--Maps",
-      "Bicycle trails",
-      "New York (State)--Ithaca",
-      "New York (State)--Tompkins County",
-      "Maps"
+      {
+        "value": "Bicycle trails--New York (State)--Tompkins County--Maps"
+      },
+      {
+        "value": "Bicycle trails--New York (State)--Ithaca--Maps"
+      },
+      {
+        "value": "Tompkins County (N.Y.)--Maps"
+      },
+      {
+        "value": "Ithaca (N.Y.)--Maps"
+      },
+      {
+        "value": "Bicycle trails"
+      },
+      {
+        "value": "New York (State)--Ithaca"
+      },
+      {
+        "value": "New York (State)--Tompkins County"
+      },
+      {
+        "value": "Maps"
+      }
     ],
     "classifications": [
       {
@@ -6386,7 +7589,9 @@
       "Second edition."
     ],
     "series": [
-      "Nineteenth Century Collections Online: Children's Literature and Childhood."
+      {
+        "value": "Nineteenth Century Collections Online: Children's Literature and Childhood."
+      }
     ],
     "identifiers": [
       {
@@ -6417,11 +7622,21 @@
       }
     ],
     "subjects": [
-      "Glory of God--Juvenile literature",
-      "Animals--Juvenile literature",
-      "Birds--Juvenile literature",
-      "Fishes--Juvenile literature",
-      "Insects--Juvenile literature"
+      {
+        "value": "Glory of God--Juvenile literature"
+      },
+      {
+        "value": "Animals--Juvenile literature"
+      },
+      {
+        "value": "Birds--Juvenile literature"
+      },
+      {
+        "value": "Fishes--Juvenile literature"
+      },
+      {
+        "value": "Insects--Juvenile literature"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -6534,9 +7749,15 @@
       }
     ],
     "subjects": [
-      "Agricultural colonies--China--Manchuria",
-      "Agricultural colonies",
-      "China--Manchuria"
+      {
+        "value": "Agricultural colonies--China--Manchuria"
+      },
+      {
+        "value": "Agricultural colonies"
+      },
+      {
+        "value": "China--Manchuria"
+      }
     ],
     "classifications": [
       {
@@ -6711,19 +7932,45 @@
       }
     ],
     "subjects": [
-      "Music",
-      "Interstellar communication",
-      "Harmony of the spheres",
-      "Salutations",
-      "Whale sounds",
-      "Nature sounds",
-      "Human sounds",
-      "Animal sounds",
-      "Sounds",
-      "Life--Pictorial works",
-      "Civilization--Pictorial works",
-      "Earth (Planet)--Pictorial works",
-      "Voyager Project"
+      {
+        "value": "Music"
+      },
+      {
+        "value": "Interstellar communication"
+      },
+      {
+        "value": "Harmony of the spheres"
+      },
+      {
+        "value": "Salutations"
+      },
+      {
+        "value": "Whale sounds"
+      },
+      {
+        "value": "Nature sounds"
+      },
+      {
+        "value": "Human sounds"
+      },
+      {
+        "value": "Animal sounds"
+      },
+      {
+        "value": "Sounds"
+      },
+      {
+        "value": "Life--Pictorial works"
+      },
+      {
+        "value": "Civilization--Pictorial works"
+      },
+      {
+        "value": "Earth (Planet)--Pictorial works"
+      },
+      {
+        "value": "Voyager Project"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -6881,14 +8128,30 @@
       }
     ],
     "subjects": [
-      "Accounting--Examinations--Study guides",
-      "Accounting--Examinations, questions, etc",
-      "Decision making--Examinations--Study guides",
-      "Decision making--Examinations, questions, etc",
-      "Accounting--Examinations",
-      "Decision making",
-      "Examinations, questions, etc",
-      "Study guides"
+      {
+        "value": "Accounting--Examinations--Study guides"
+      },
+      {
+        "value": "Accounting--Examinations, questions, etc"
+      },
+      {
+        "value": "Decision making--Examinations--Study guides"
+      },
+      {
+        "value": "Decision making--Examinations, questions, etc"
+      },
+      {
+        "value": "Accounting--Examinations"
+      },
+      {
+        "value": "Decision making"
+      },
+      {
+        "value": "Examinations, questions, etc"
+      },
+      {
+        "value": "Study guides"
+      }
     ],
     "classifications": [
       {
@@ -7020,13 +8283,36 @@
       }
     ],
     "subjects": [
-      "Historians--Ukraine--Cherkasʹka oblastʹ--Bio-bibliography--Dictionaries--Ukrainian",
-      "Cherkasʹka oblastʹ (Ukraine)--Bio-bibliography--Dictionaries--Ukrainian",
-      "Historians",
-      "Ukraine--Cherkasʹka oblastʹ",
-      "Biographies",
-      "Bibliographies",
-      "Dictionaries"
+      {
+        "value": "Historians--Ukraine--Cherkasʹka oblastʹ--Bio-bibliography--Dictionaries--Ukrainian"
+      },
+      {
+        "value": "Cherkasʹka oblastʹ (Ukraine)--Bio-bibliography--Dictionaries--Ukrainian"
+      },
+      {
+        "value": "Historians"
+      },
+      {
+        "value": "Ukraine--Cherkasʹka oblastʹ"
+      },
+      {
+        "value": "Biographies"
+      },
+      {
+        "value": "Bibliographies"
+      },
+      {
+        "value": "Dictionaries"
+      },
+      {
+        "value": "Bibliographies"
+      },
+      {
+        "value": "Biographies"
+      },
+      {
+        "value": "Dictionaries"
+      }
     ],
     "classifications": [
       {
@@ -7147,9 +8433,15 @@
       }
     ],
     "subjects": [
-      "Fungi",
-      "Fungi--Pictorial works",
-      "Pictorial works"
+      {
+        "value": "Fungi"
+      },
+      {
+        "value": "Fungi--Pictorial works"
+      },
+      {
+        "value": "Pictorial works"
+      }
     ],
     "classifications": [
       {
@@ -7249,10 +8541,18 @@
       }
     ],
     "subjects": [
-      "Songs (Medium voice) with instrumental ensemble--Scores and parts",
-      "Art music",
-      "Songs",
-      "Scores"
+      {
+        "value": "Songs (Medium voice) with instrumental ensemble--Scores and parts"
+      },
+      {
+        "value": "Art music"
+      },
+      {
+        "value": "Songs"
+      },
+      {
+        "value": "Scores"
+      }
     ],
     "classifications": [
       {
@@ -7356,15 +8656,42 @@
       }
     ],
     "subjects": [
-      "Guitar music",
-      "Romitelli, Fausto, 1963-2004--Manuscripts--Facsimiles",
-      "Romitelli, Fausto, 1963-2004",
-      "Music--Manuscripts--Facsimiles",
-      "Music",
-      "Art music",
-      "Scores",
-      "Facsimiles",
-      "Manuscripts"
+      {
+        "value": "Guitar music"
+      },
+      {
+        "value": "Romitelli, Fausto, 1963-2004--Manuscripts--Facsimiles"
+      },
+      {
+        "value": "Romitelli, Fausto, 1963-2004"
+      },
+      {
+        "value": "Music--Manuscripts--Facsimiles"
+      },
+      {
+        "value": "Guitar music"
+      },
+      {
+        "value": "Music"
+      },
+      {
+        "value": "Art music"
+      },
+      {
+        "value": "Scores"
+      },
+      {
+        "value": "Art music"
+      },
+      {
+        "value": "Facsimiles"
+      },
+      {
+        "value": "Manuscripts"
+      },
+      {
+        "value": "Scores"
+      }
     ],
     "classifications": [
       {
@@ -7452,11 +8779,21 @@
       }
     ],
     "subjects": [
-      "Steel band music--Scores and parts",
-      "Percussion ensembles--Scores and parts",
-      "Art music",
-      "Scores",
-      "Parts (Music)"
+      {
+        "value": "Steel band music--Scores and parts"
+      },
+      {
+        "value": "Percussion ensembles--Scores and parts"
+      },
+      {
+        "value": "Art music"
+      },
+      {
+        "value": "Scores"
+      },
+      {
+        "value": "Parts (Music)"
+      }
     ],
     "classifications": [
       {
@@ -7647,11 +8984,30 @@
       }
     ],
     "subjects": [
-      "Jewish philosophy--To 1500",
-      "Maimonides, Moses, 1135-1204",
-      "Crescas, Ḥasdai, 1340-approximately 1410",
-      "Jewish philosophy",
-      "To 1500"
+      {
+        "value": "Jewish philosophy--To 1500"
+      },
+      {
+        "value": "Maimonides, Moses, 1135-1204"
+      },
+      {
+        "value": "Crescas, Ḥasdai, 1340-approximately 1410"
+      },
+      {
+        "value": "Jewish philosophy"
+      },
+      {
+        "value": "Crescas, Ḥasdai, 1340-approximately 1410"
+      },
+      {
+        "value": "Maimonides, Moses, 1135-1204"
+      },
+      {
+        "value": "Jewish philosophy"
+      },
+      {
+        "value": "To 1500"
+      }
     ],
     "classifications": [
       {
@@ -7755,10 +9111,24 @@
       }
     ],
     "subjects": [
-      "Artists' books--United States",
-      "Three-dimensional printing",
-      "Artists' books",
-      "United States"
+      {
+        "value": "Artists' books--United States"
+      },
+      {
+        "value": "Three-dimensional printing"
+      },
+      {
+        "value": "Artists' books"
+      },
+      {
+        "value": "Three-dimensional printing"
+      },
+      {
+        "value": "United States"
+      },
+      {
+        "value": "Artists' books"
+      }
     ],
     "classifications": [
       {
@@ -7875,18 +9245,42 @@
       }
     ],
     "subjects": [
-      "Animals--Religious aspects--Islam--14th century",
-      "Muslims--Dietary laws--14th century",
-      "Islam--Customs and practices--Early works to 1800",
-      "Manuscripts, Arabic--New Jersey--Princeton",
-      "Animals--Religious aspects--Islam",
-      "Islam--Customs and practices",
-      "Manuscripts, Arabic",
-      "Muslims--Dietary laws",
-      "New Jersey--Princeton",
-      "1300-1399",
-      "Manuscripts, Arabic--15th century",
-      "Early works"
+      {
+        "value": "Animals--Religious aspects--Islam--14th century"
+      },
+      {
+        "value": "Muslims--Dietary laws--14th century"
+      },
+      {
+        "value": "Islam--Customs and practices--Early works to 1800"
+      },
+      {
+        "value": "Manuscripts, Arabic--New Jersey--Princeton"
+      },
+      {
+        "value": "Animals--Religious aspects--Islam"
+      },
+      {
+        "value": "Islam--Customs and practices"
+      },
+      {
+        "value": "Manuscripts, Arabic"
+      },
+      {
+        "value": "Muslims--Dietary laws"
+      },
+      {
+        "value": "New Jersey--Princeton"
+      },
+      {
+        "value": "1300-1399"
+      },
+      {
+        "value": "Manuscripts, Arabic--15th century"
+      },
+      {
+        "value": "Early works"
+      }
     ],
     "classifications": [],
     "publication": [
@@ -8030,10 +9424,18 @@
       }
     ],
     "subjects": [
-      "African Americans--Interviews",
-      "Chew, Raymond--Interviews",
-      "Oral histories",
-      "Internet videos"
+      {
+        "value": "African Americans--Interviews"
+      },
+      {
+        "value": "Chew, Raymond--Interviews"
+      },
+      {
+        "value": "Oral histories"
+      },
+      {
+        "value": "Internet videos"
+      }
     ],
     "classifications": [
       {
@@ -8150,24 +9552,60 @@
       }
     ],
     "subjects": [
-      "Spain--History--Bourbons, 1700-",
-      "Spain--Politics and government--18th century",
-      "Spain--Politics and government--19th century",
-      "Spain--Colonies--America--Administration--History--18th century",
-      "Spain--Colonies--America--Administration--History--19th century",
-      "Elite (Social sciences)--Spain--History--18th century",
-      "Elite (Social sciences)--Spain--History--19th century",
-      "Political culture--Spain--History--18th century",
-      "Political culture--Spain--History--19th century",
-      "Elite (Social sciences)",
-      "Management",
-      "Political culture",
-      "Politics and government",
-      "Spanish colonies",
-      "America",
-      "Spain",
-      "1700-1899",
-      "History"
+      {
+        "value": "Spain--History--Bourbons, 1700-"
+      },
+      {
+        "value": "Spain--Politics and government--18th century"
+      },
+      {
+        "value": "Spain--Politics and government--19th century"
+      },
+      {
+        "value": "Spain--Colonies--America--Administration--History--18th century"
+      },
+      {
+        "value": "Spain--Colonies--America--Administration--History--19th century"
+      },
+      {
+        "value": "Elite (Social sciences)--Spain--History--18th century"
+      },
+      {
+        "value": "Elite (Social sciences)--Spain--History--19th century"
+      },
+      {
+        "value": "Political culture--Spain--History--18th century"
+      },
+      {
+        "value": "Political culture--Spain--History--19th century"
+      },
+      {
+        "value": "Elite (Social sciences)"
+      },
+      {
+        "value": "Management"
+      },
+      {
+        "value": "Political culture"
+      },
+      {
+        "value": "Politics and government"
+      },
+      {
+        "value": "Spanish colonies"
+      },
+      {
+        "value": "America"
+      },
+      {
+        "value": "Spain"
+      },
+      {
+        "value": "1700-1899"
+      },
+      {
+        "value": "History"
+      }
     ],
     "classifications": [
       {
@@ -8241,7 +9679,9 @@
     ],
     "editions": [],
     "series": [
-      "Forever learning."
+      {
+        "value": "Forever learning."
+      }
     ],
     "identifiers": [
       {
@@ -8300,14 +9740,30 @@
       }
     ],
     "subjects": [
-      "Human ecology--Religious aspects--Hinduism",
-      "Environmental protection--Religious aspects--Hinduism",
-      "Human ecology--India",
-      "India--Civilization",
-      "Civilization",
-      "Ecology",
-      "Environmental protection--Religious aspects",
-      "India"
+      {
+        "value": "Human ecology--Religious aspects--Hinduism"
+      },
+      {
+        "value": "Environmental protection--Religious aspects--Hinduism"
+      },
+      {
+        "value": "Human ecology--India"
+      },
+      {
+        "value": "India--Civilization"
+      },
+      {
+        "value": "Civilization"
+      },
+      {
+        "value": "Ecology"
+      },
+      {
+        "value": "Environmental protection--Religious aspects"
+      },
+      {
+        "value": "India"
+      }
     ],
     "classifications": [
       {
