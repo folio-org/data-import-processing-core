@@ -27,6 +27,7 @@ import org.folio.Mtype;
 import org.folio.NatureOfContentTerm;
 import org.folio.StatisticalCode;
 import org.folio.StatisticalCodeType;
+import org.folio.Organization;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class MappingParameters {
   private String tenantConfiguration;
   private List<AuthorityNoteType> authorityNoteTypes;
   private List<AuthoritySourceFile> authoritySourceFiles;
+  private List<Organization> organizations;
 
   public MappingParameters withInitializedState(boolean initialized) {
     this.initialized = initialized;
@@ -442,6 +444,18 @@ public class MappingParameters {
 
   public MappingParameters withAuthoritySourceFiles(List<AuthoritySourceFile> authoritySourceFiles) {
     this.authoritySourceFiles = Collections.unmodifiableList(authoritySourceFiles);
+    return this;
+  }
+  public List<Organization> getOrganizations() {
+    return organizations;
+  }
+
+  public void setOrganizations(List<Organization> organizations) {
+    this.organizations = organizations;
+  }
+
+  public MappingParameters withOrganizations(List<Organization> organizations) {
+    this.organizations = new UnmodifiableList<>(organizations);
     return this;
   }
 }
