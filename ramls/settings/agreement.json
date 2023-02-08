@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "An organization agreement",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "The unique name of this agreement",
+      "type": "string"
+    },
+    "discount": {
+      "description": "The discount amount of this agreement",
+      "type": "number"
+    },
+    "referenceUrl": {
+      "description": "The reference url for this agreement",
+      "type": "string"
+    },
+    "notes": {
+      "description": "The notes of this agreement",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "name"
+  ]
+}

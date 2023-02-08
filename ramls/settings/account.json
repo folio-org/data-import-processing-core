@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "An organization account",
+  "type": "object",
+  "properties": {
+    "name": {
+      "description": "The unique name of this account",
+      "type": "string"
+    },
+    "accountNo": {
+      "description": "The unique number of this account",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of this account",
+      "type": "string"
+    },
+    "appSystemNo": {
+      "description": "The unique name of this group",
+      "type": "string"
+    },
+    "paymentMethod": {
+      "description": "The method of payment for this account",
+      "type": "string",
+      "enum": [
+        "Cash",
+        "Credit Card",
+        "EFT",
+        "Deposit Account",
+        "Physical Check",
+        "Bank Draft",
+        "Internal Transfer",
+        "Other"
+      ]
+    },
+    "accountStatus": {
+      "description": "The status of this account",
+      "type": "string"
+    },
+    "contactInfo": {
+      "description": "The contact info for the account",
+      "type": "string"
+    },
+    "libraryCode": {
+      "description": "The library code for this account",
+      "type": "string"
+    },
+    "libraryEdiCode": {
+      "description": "The EDI code for this account",
+      "type": "string"
+    },
+    "notes": {
+      "description": "The notes for this account",
+      "type": "string"
+    },
+    "acqUnitIds": {
+      "description": "Acquisition unit UUIDs associated with this organizations account",
+      "type": "array",
+      "items": {
+        "$ref": "../raml-storage/raml-util/schemas/uuid.schema"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "accountNo",
+    "accountStatus"
+  ]
+}
