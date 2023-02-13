@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.Location;
 import org.folio.MappingProfile;
+import org.folio.Organization;
 import org.folio.processing.exceptions.MappingException;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
@@ -37,6 +38,9 @@ public final class MappingManager {
   private static final FactoryRegistry FACTORY_REGISTRY = new FactoryRegistry();
   public static final String PERMANENT_LOCATION_ID = "permanentLocationId";
   public static final String TEMPORARY_LOCATION_ID = "temporaryLocationId";
+  public static final String VENDOR_ID = "vendor";
+  private static final String MATERIAL_SUPPLIER = "materialSupplier";
+  private static final String ACCESS_PROVIDER = "accessProvider";
 
   private MappingManager() {
   }
@@ -66,6 +70,7 @@ public final class MappingManager {
 
       //Fix MODDICORE-128 (The system doesn't update acceptedLocation in mapping profiles after the location list is changed)
       updateLocationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
+      updateOrganizationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
 
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
@@ -96,6 +101,26 @@ public final class MappingManager {
     }
   }
 
+  /**
+   * Fill {@link Organization} accepted values in MappingProfile from {@code mappingParameters}
+   *
+   * @param mappingProfile - MappingProfile
+   * @param mappingParameters - mapping parameters
+   */
+  private static void updateOrganizationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
+    if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
+      HashMap<String, String> organizations = getOrganizationsFromMappingParameters(mappingParameters);
+      if (!organizations.isEmpty()) {
+        for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
+          if ((mappingRule.getName() != null) && (mappingRule.getName().equals(VENDOR_ID)
+            || mappingRule.getName().equals(MATERIAL_SUPPLIER) || mappingRule.getName().equals(ACCESS_PROVIDER))) {
+            mappingRule.setAcceptedValues(organizations);
+          }
+        }
+      }
+    }
+  }
+
   private static HashMap<String, String> getLocationsFromMappingParameters(MappingParameters mappingParameters) {
     HashMap<String, String> locations = new HashMap<>();
     for (Location location : mappingParameters.getLocations()) {
@@ -107,6 +132,20 @@ public final class MappingManager {
       locations.put(location.getId(), String.valueOf(locationValue));
     }
     return locations;
+  }
+
+  private static HashMap<String, String> getOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
+    HashMap<String, String> organizations = new HashMap<>();
+    if (mappingParameters.getOrganizations() == null) return organizations;
+    for (Organization organization : mappingParameters.getOrganizations()) {
+      StringBuilder organizationValue = new StringBuilder()
+        .append(organization.getCode())
+        .append(" (")
+        .append(organization.getId())
+        .append(")");
+      organizations.put(organization.getId(), String.valueOf(organizationValue));
+    }
+    return organizations;
   }
 
   /**
