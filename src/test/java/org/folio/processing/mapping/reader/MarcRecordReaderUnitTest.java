@@ -1240,4 +1240,104 @@ public class MarcRecordReaderUnitTest {
     assertEquals(ValueType.STRING, value.getType());
     assertEquals("UAH", value.getValue());
   }
+
+  @Test
+  public void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByAcceptedValuesAndIsNotValid() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    String uuid = "UUID";
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put(uuid, String.format("CODE (%s)", uuid));
+    MappingRule vendorRule = new MappingRule()
+      .withName("vendor")
+      .withPath("order.po.vendor")
+      .withEnabled("true")
+      .withValue("\"RANDOM\"")
+      .withAcceptedValues(acceptedValues);
+    MappingRule materialSupplierRule = new MappingRule()
+      .withName("materialSupplier")
+      .withPath("order.poLine.physical.materialSupplier")
+      .withEnabled("true")
+      .withValue("\"RANDOM\"")
+      .withAcceptedValues(acceptedValues);
+    MappingRule accessProviderRule = new MappingRule()
+      .withName("accessProvider")
+      .withPath("order.poLine.eresource.accessProvider")
+      .withEnabled("true")
+      .withValue("\"RANDOM\"")
+      .withAcceptedValues(acceptedValues);
+
+    // when
+    Value valueVendor = reader.read(vendorRule);
+    Value valueMaterialSupplier = reader.read(materialSupplierRule);
+    Value valueAccessProvider = reader.read(accessProviderRule);
+
+    // then
+    assertNotNull(valueVendor);
+    assertEquals(valueVendor.getType(), ValueType.MISSING);
+
+    assertNotNull(valueMaterialSupplier);
+    assertEquals(valueMaterialSupplier.getType(), ValueType.MISSING);
+
+    assertNotNull(valueAccessProvider);
+    assertEquals(valueAccessProvider.getType(), ValueType.MISSING);
+  }
+
+  @Test
+  public void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByAcceptedValuesAndIsValid() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    String uuid = "UUID";
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put(uuid, String.format("CODE (%s)", uuid));
+    MappingRule vendorRule = new MappingRule()
+      .withName("vendor")
+      .withPath("order.po.vendor")
+      .withEnabled("true")
+      .withValue("\"CODE\"")
+      .withAcceptedValues(acceptedValues);
+    MappingRule materialSupplierRule = new MappingRule()
+      .withName("materialSupplier")
+      .withPath("order.poLine.physical.materialSupplier")
+      .withEnabled("true")
+      .withValue("\"CODE\"")
+      .withAcceptedValues(acceptedValues);
+    MappingRule accessProviderRule = new MappingRule()
+      .withName("accessProvider")
+      .withPath("order.poLine.eresource.accessProvider")
+      .withEnabled("true")
+      .withValue("\"CODE\"")
+      .withAcceptedValues(acceptedValues);
+
+    // when
+    Value valueVendor = reader.read(vendorRule);
+    Value valueMaterialSupplier = reader.read(materialSupplierRule);
+    Value valueAccessProvider = reader.read(accessProviderRule);
+
+    // then
+    assertNotNull(valueVendor);
+    assertEquals(valueVendor.getValue(), uuid);
+
+    assertNotNull(valueMaterialSupplier);
+    assertEquals(valueMaterialSupplier.getValue(), uuid);
+
+    assertNotNull(valueAccessProvider);
+    assertEquals(valueAccessProvider.getValue(), uuid);
+  }
 }

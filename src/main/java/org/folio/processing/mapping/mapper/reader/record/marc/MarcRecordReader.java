@@ -80,7 +80,8 @@ public class MarcRecordReader implements Reader {
   private static final String TIMEZONE_PROPERTY = "timezone";
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
-
+  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider");
+  private static final String BLANK = "";
 
   private EntityType entityType;
   private Record marcRecord;
@@ -186,6 +187,12 @@ public class MarcRecordReader implements Reader {
         }
       }
     }
+    boolean needsValidationByAcceptedValues = NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
+
+    if (needsValidationByAcceptedValues && !ruleExpression.getAcceptedValues().containsKey(value)) {
+      return BLANK;
+    }
+
     return value;
   }
 
