@@ -138,7 +138,6 @@ public class MarcRecordReader implements Reader {
   private Value readSingleField(MappingRule ruleExpression, boolean isRepeatableField) {
     String[] expressions = ruleExpression.getValue().split(EXPRESSIONS_DIVIDER);
     boolean arrayValue = ruleExpression.getPath().endsWith(EXPRESSIONS_ARRAY);
-    boolean needsValidationByAcceptedValues = NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
     List<String> resultList = new ArrayList<>();
     for (String expression : expressions) {
       StringBuilder sb = new StringBuilder();
@@ -147,9 +146,9 @@ public class MarcRecordReader implements Reader {
         if (MARC_PATTERN.matcher(expressionPart).matches()
           || (MARC_CONTROLLED.matcher(expressionPart).matches())
           || (MARC_LEADER.matcher(expressionPart).matches())) {
-          processMARCExpression(arrayValue, isRepeatableField, needsValidationByAcceptedValues, resultList, sb, expressionPart, ruleExpression);
+          processMARCExpression(arrayValue, isRepeatableField, resultList, sb, expressionPart, ruleExpression);
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
-          processStringExpression(ruleExpression, arrayValue, needsValidationByAcceptedValues, resultList, sb, expressionPart);
+          processStringExpression(ruleExpression, arrayValue, resultList, sb, expressionPart);
         } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
           processTodayExpression(sb);
         } else if (REMOVE_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
@@ -167,20 +166,20 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
-  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, boolean needsValidationByAcceptedValues, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
+  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
-      resultList.addAll(marcValues.stream().map(value -> getFromAcceptedValues(needsValidationByAcceptedValues, ruleExpression, value)).collect(Collectors.toList()));
+      resultList.addAll(marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList()));
     } else {
       marcValues.forEach(v -> {
         if (isNotEmpty(v)) {
-          sb.append(getFromAcceptedValues(needsValidationByAcceptedValues, ruleExpression, v));
+          sb.append(getFromAcceptedValues(ruleExpression, v));
         }
       });
     }
   }
 
-  private String getFromAcceptedValues(boolean needsValidationByAcceptedValues, MappingRule ruleExpression, String value) {
+  private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
         if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
@@ -188,6 +187,8 @@ public class MarcRecordReader implements Reader {
         }
       }
     }
+    boolean needsValidationByAcceptedValues = NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
+
     if (needsValidationByAcceptedValues && !ruleExpression.getAcceptedValues().containsKey(value)) {
       return BLANK;
     }
@@ -221,9 +222,9 @@ public class MarcRecordReader implements Reader {
     return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
 
-  private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, boolean needsValidationByAcceptedValues, List<String> resultList, StringBuilder sb, String expressionPart) {
+  private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
     String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
-    value = getFromAcceptedValues(needsValidationByAcceptedValues, ruleExpression, value);
+    value = getFromAcceptedValues(ruleExpression, value);
     if (isNotEmpty(value)) {
       if (arrayValue) {
         resultList.add(value);
