@@ -3,6 +3,7 @@
 * [MODSOURMAN-837](https://issues.folio.org/browse/MODSOURMAN-837) MARC bib - FOLIO instance mapping | Update default mapping to change how Relator term is populated on instance record
 * [MODDICORE-294](https://issues.folio.org/browse/MODDICORE-294) Add handling accepted values for repeatable fields
 * [MODDICORE-290](https://issues.folio.org/browse/MODDICORE-290) Extend Mapper for Order/OrderLines.
+* [MODDICORE-303](https://issues.folio.org/browse/MODDICORE-303) Allow for mapping the vendor, material supplier, and access provider based on CODE in MARC record.
 
 ## 2022-10-19 v3.5.1
 * [MODDICORE-281](https://issues.folio.org/browse/MODDICORE-281) Extend instance contributors schema with Authority ID
