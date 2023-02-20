@@ -96,6 +96,15 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("0"), 0);
   }
 
+  @Test
+  public void shouldAddNewUncontrolledSubfields() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"new subfield\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00096nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"new subfield\"},{\"0\":\"test\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
+  }
+
   //negative tests
   @Test
   public void shouldThrowExceptionWhenInvalidEntityType() throws IOException {
