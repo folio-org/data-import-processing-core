@@ -51,6 +51,15 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldRemoveLinksOnRepeatableLinkedFieldRemoval() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00099nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
+  }
+
+  @Test
   public void shouldNotUpdateLinkedSubfields() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
@@ -82,7 +91,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldNotUpdateLinkedSubfieldWhenOnlySubfieldMapped() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    var expectedParsedContent = "{\"leader\":\"00103nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00132nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("a"), 1);
   }
@@ -91,7 +100,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldRemoveLinksWhenOnlySubfield0Mapped() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    var expectedParsedContent = "{\"leader\":\"00104nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00133nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("0"), 0);
   }
@@ -148,7 +157,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
                                 int expectedLinksCount) throws IOException {
     var incomingRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(incomingParsedContent));
-    var existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\": \"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\": \"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var existingRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(existingParsedContent));
 
