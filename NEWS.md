@@ -1,8 +1,19 @@
-## 2022-xx-xx v3.6.0-SNAPSHOT
+## 2023-02-17 v4.0.0
 * [MODSOURMAN-873](https://issues.folio.org/browse/MODSOURMAN-873) Add MARC 720 field to default MARC Bib-Instance mapping and adjust relator term mapping. Expanded default mapper with alternative mapping logic
 * [MODSOURMAN-837](https://issues.folio.org/browse/MODSOURMAN-837) MARC bib - FOLIO instance mapping | Update default mapping to change how Relator term is populated on instance record
 * [MODDICORE-294](https://issues.folio.org/browse/MODDICORE-294) Add handling accepted values for repeatable fields
 * [MODDICORE-290](https://issues.folio.org/browse/MODDICORE-290) Extend Mapper for Order/OrderLines.
+* [MODDICORE-19](https://issues.folio.org/browse/MODDICORE-19) Add documentation for mapping engine
+* [MODDICORE-246](https://issues.folio.org/browse/MODDICORE-246) Logging improvement
+* [MODDICORE-294](https://issues.folio.org/browse/MODDICORE-294) Multiple item notes not creating
+* [MODDATAIMP-736](https://issues.folio.org/browse/MODDATAIMP-736) Adjust logging configuration to display datetime in a proper format
+* [MODDICORE-293](https://issues.folio.org/browse/MODDICORE-293) Handle bib-authority link when user updates a bib record via data import
+* [MODSOURCE-567](https://issues.folio.org/browse/MODSOURCE-567) Generate srs schemas
+* [MODDICORE-297](https://issues.folio.org/browse/MODDICORE-297) Mapping bib's $9 into subjects, series, alternativeTitles fields
+* [MODINV-774](https://issues.folio.org/browse/MODINV-774) Set POLine id when Item is created by DI
+* [MODDATAIMP-750](https://issues.folio.org/browse/MODDATAIMP-750) Update util libraries dependencies
+* [KAFKAWRAP-33](https://issues.folio.org/browse/KAFKAWRAP-33) Updated folio-kafka-wrapper to 2.7.0
+* [MODORDERS-844](https://issues.folio.org/browse/MODORDERS-844) Add organizations to MappingParameters
 * [MODDICORE-303](https://issues.folio.org/browse/MODDICORE-303) Allow for mapping the vendor, material supplier, and access provider based on CODE in MARC record.
 
 ## 2022-10-19 v3.5.1
