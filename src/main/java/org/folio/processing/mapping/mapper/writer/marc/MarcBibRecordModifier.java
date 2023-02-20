@@ -45,7 +45,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
                                     DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
     var linkOptional = getLink(fieldToUpdate);
-    if (linkOptional.isPresent() && fieldsLinked(fieldReplacement, fieldToUpdate)) {
+    if (linkOptional.isPresent() && fieldsLinked(linkOptional.get(), fieldReplacement, fieldToUpdate)) {
       var link = linkOptional.get();
       bibAuthorityLinksKept.add(link);
       return updateUncontrolledSubfields(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
@@ -94,11 +94,12 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   /**
    * Indicates that incoming and existing fields hold the same link
    * */
-  private boolean fieldsLinked(DataField incomingField, DataField fieldToChange) {
+  private boolean fieldsLinked(Link link, DataField incomingField, DataField fieldToChange) {
     var incomingSubfield0 = incomingField.getSubfield(SUBFIELD_0);
     var existingSubfield0 = fieldToChange.getSubfield(SUBFIELD_0);
     return incomingSubfield0 != null
       && existingSubfield0 != null
+      && incomingSubfield0.getData().endsWith(link.getAuthorityNaturalId())
       && incomingSubfield0.getData().equals(existingSubfield0.getData());
   }
 
@@ -107,10 +108,13 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
    * */
   private boolean fieldLinked(DataField dataField) {
     var subfield0 = dataField.getSubfield(SUBFIELD_0);
-    var linkKept = bibAuthorityLinksKept.stream()
-      .anyMatch(link -> link.getBibRecordTag().equals(dataField.getTag()));
+    if (subfield0 == null) {
+      return false;
+    }
 
-    return subfield0 != null && linkKept;
+    return bibAuthorityLinksKept.stream()
+      .filter(link -> link.getBibRecordTag().equals(dataField.getTag()))
+      .anyMatch(link -> subfield0.getData().endsWith(link.getAuthorityNaturalId()));
   }
 
   private void validateEntityType(EntityType entityType) {
