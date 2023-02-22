@@ -41,6 +41,7 @@ import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -1339,5 +1340,111 @@ public class MarcRecordReaderUnitTest {
 
     assertNotNull(valueAccessProvider);
     assertEquals(valueAccessProvider.getValue(), uuid);
+  }
+
+  @Test
+  public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldProductId() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    MappingRule productIdRule = new MappingRule()
+      .withName("productIds")
+      .withPath("order.poLine.details.productIds[]")
+      .withEnabled("true")
+      .withValue("")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.details.productIds[]")
+          .withFields(List.of(
+            new MappingRule()
+              .withName("productId")
+              .withPath("order.poLine.details.productIds[].productId")
+              .withValue("020$a")
+              .withRequired(true)
+              .withEnabled("true"),
+            new MappingRule()
+              .withName("qualifier")
+              .withPath("order.poLine.details.productIds[].qualifier")
+              .withValue("020$q")
+              .withEnabled("true"),
+            new MappingRule()
+              .withName("productIdType")
+              .withPath("order.poLine.details.productIds[].productIdType")
+              .withValue("\"ISBN\"")
+              .withEnabled("true")
+            )
+          )
+      ));
+
+    // when
+    Value valueProductId = reader.read(productIdRule);
+
+    // then
+    assertNotNull(valueProductId);
+    assertEquals(ValueType.REPEATABLE, valueProductId.getType());
+    assertTrue(((RepeatableFieldValue) valueProductId).getValue().isEmpty());
+  }
+
+  @Test
+  public void shouldReturnRepeatableFieldValueWhenHasNoDataForNotRequiredFieldProductId() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    MappingRule productIdRule = new MappingRule()
+      .withName("productIds")
+      .withPath("order.poLine.details.productIds[]")
+      .withEnabled("true")
+      .withValue("")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.details.productIds[]")
+          .withFields(List.of(
+              new MappingRule()
+                .withName("productId")
+                .withPath("order.poLine.details.productIds[].productId")
+                .withValue("020$a")
+                .withRequired(false)
+                .withEnabled("true"),
+              new MappingRule()
+                .withName("qualifier")
+                .withPath("order.poLine.details.productIds[].qualifier")
+                .withValue("020$q")
+                .withEnabled("true"),
+              new MappingRule()
+                .withName("productIdType")
+                .withPath("order.poLine.details.productIds[].productIdType")
+                .withValue("\"ISBN\"")
+                .withEnabled("true")
+            )
+          )
+      ));
+
+    // when
+    Value valueProductId = reader.read(productIdRule);
+
+    // then
+    assertNotNull(valueProductId);
+    assertEquals(ValueType.REPEATABLE, valueProductId.getType());
+    assertFalse(((RepeatableFieldValue) valueProductId).getValue().isEmpty());
   }
 }
