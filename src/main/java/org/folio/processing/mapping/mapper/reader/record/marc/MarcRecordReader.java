@@ -281,7 +281,7 @@ public class MarcRecordReader implements Reader {
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
             : readSingleField(mappingRule, isRepeatableField);
 
-          if (value.getType() == MISSING && RequiredFields.isRequiredFieldName(mappingRule.getName())) {
+          if (value.getType() == MISSING && (mappingRule.getRequired() || RequiredFields.isRequiredFieldName(mappingRule.getName()))) {
             repeatableObjectItems.remove(repeatableObjectItems.size() - 1);
             break;
           } else if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {
