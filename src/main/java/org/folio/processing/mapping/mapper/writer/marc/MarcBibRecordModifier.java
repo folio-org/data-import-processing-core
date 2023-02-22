@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
@@ -71,6 +72,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       fieldReplacement.getSubfields()
         .forEach(subfield ->
           updateUncontrolledSubfield(link, String.valueOf(subfield.getCode()), tmpFields, fieldToUpdate, fieldReplacement));
+      removeUncontrolledNotUpdatedSubfields(link, fieldToUpdate, fieldReplacement);
     } else {
       updateUncontrolledSubfield(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
     }
@@ -85,6 +87,15 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     }
 
     super.updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, false);
+  }
+
+  private void removeUncontrolledNotUpdatedSubfields(Link link, DataField fieldToUpdate, DataField fieldReplacement) {
+    fieldToUpdate.getSubfields().stream()
+      .filter(subfield -> !subfieldLinked(link, String.valueOf(subfield.getCode())))
+      .filter(subfield -> fieldReplacement.getSubfields().stream()
+        .noneMatch(subfieldReplacement -> subfield.getCode() == subfieldReplacement.getCode()))
+      .collect(Collectors.toList())
+      .forEach(fieldToUpdate::removeSubfield);
   }
 
   /**
