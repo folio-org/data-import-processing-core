@@ -41,7 +41,6 @@ import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -59,6 +58,14 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD_WITH_049_WITH_OLI_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_WITH_OLI_ALS_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli,als\"},{\"z\":\"Testing data\"}]}}]}";
   private final String RECORD_WITH_049_WITH_OL_LOCATION = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"ol\"},{\"z\":\"Testing data\"}]}}]}";
+
+  private final String RECORD_WITH_MULTIPLE_028_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"MCA2-4047\"},{\"b\":\"bMCA Records\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-156\"},{\"b\":\"Decca\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
+
+  private final String RECORD_WITH_MULTIPLE_028_FIELDS_2 = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"MCA2-4047\"},{\"b\":\"bMCA Records\"},{\"c\":\"Test1\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"DXSB7-156\"},{\"b\":\"Decca\"},{\"c\":\"Test2\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-157\"},{\"b\":\"Decca2\"},{\"c\":\"Test3\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
+  private final String RECORD_WITH_SINGLE_028_FIELD = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-156\"},{\"b\":\"Decca\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
+
+  private final String RECORD_WITH_THE_SAME_SUBFIELDS_IN_MULTIPLE_028_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aT90028\"},{\"b\":\"Verve\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aV-4061\"},{\"b\":\"Verve\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
+
 
   private MappingContext mappingContext = new MappingContext();
 
@@ -1243,208 +1250,127 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByAcceptedValuesAndIsNotValid() throws IOException {
-    // given
+  public void shouldRead() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_028_FIELDS))).encode());
     eventPayload.setContext(context);
-
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
-    String uuid = "UUID";
-
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("CODE (%s)", uuid));
-    MappingRule vendorRule = new MappingRule()
-      .withName("vendor")
-      .withPath("order.po.vendor")
+    List<MappingRule> listRules = new ArrayList<>();
+    listRules.add(new MappingRule()
+      .withName("productId")
+      .withPath("order.poLine.details.productIds[].productId")
       .withEnabled("true")
-      .withValue("\"RANDOM\"")
-      .withAcceptedValues(acceptedValues);
-    MappingRule materialSupplierRule = new MappingRule()
-      .withName("materialSupplier")
-      .withPath("order.poLine.physical.materialSupplier")
-      .withEnabled("true")
-      .withValue("\"RANDOM\"")
-      .withAcceptedValues(acceptedValues);
-    MappingRule accessProviderRule = new MappingRule()
-      .withName("accessProvider")
-      .withPath("order.poLine.eresource.accessProvider")
-      .withEnabled("true")
-      .withValue("\"RANDOM\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("028$a \" \" 028$b")
+    );
 
-    // when
-    Value valueVendor = reader.read(vendorRule);
-    Value valueMaterialSupplier = reader.read(materialSupplierRule);
-    Value valueAccessProvider = reader.read(accessProviderRule);
-
-    // then
-    assertNotNull(valueVendor);
-    assertEquals(valueVendor.getType(), ValueType.MISSING);
-
-    assertNotNull(valueMaterialSupplier);
-    assertEquals(valueMaterialSupplier.getType(), ValueType.MISSING);
-
-    assertNotNull(valueAccessProvider);
-    assertEquals(valueAccessProvider.getType(), ValueType.MISSING);
-  }
-
-  @Test
-  public void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByAcceptedValuesAndIsValid() throws IOException {
-    // given
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
-    eventPayload.setContext(context);
-
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    String uuid = "UUID";
-
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("CODE (%s)", uuid));
-    MappingRule vendorRule = new MappingRule()
-      .withName("vendor")
-      .withPath("order.po.vendor")
-      .withEnabled("true")
-      .withValue("\"CODE\"")
-      .withAcceptedValues(acceptedValues);
-    MappingRule materialSupplierRule = new MappingRule()
-      .withName("materialSupplier")
-      .withPath("order.poLine.physical.materialSupplier")
-      .withEnabled("true")
-      .withValue("\"CODE\"")
-      .withAcceptedValues(acceptedValues);
-    MappingRule accessProviderRule = new MappingRule()
-      .withName("accessProvider")
-      .withPath("order.poLine.eresource.accessProvider")
-      .withEnabled("true")
-      .withValue("\"CODE\"")
-      .withAcceptedValues(acceptedValues);
-
-    // when
-    Value valueVendor = reader.read(vendorRule);
-    Value valueMaterialSupplier = reader.read(materialSupplierRule);
-    Value valueAccessProvider = reader.read(accessProviderRule);
-
-    // then
-    assertNotNull(valueVendor);
-    assertEquals(valueVendor.getValue(), uuid);
-
-    assertNotNull(valueMaterialSupplier);
-    assertEquals(valueMaterialSupplier.getValue(), uuid);
-
-    assertNotNull(valueAccessProvider);
-    assertEquals(valueAccessProvider.getValue(), uuid);
-  }
-
-  @Test
-  public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldProductId() throws IOException {
-    // given
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
-    eventPayload.setContext(context);
-
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-
-    MappingRule productIdRule = new MappingRule()
-      .withName("productIds")
+    Value value = reader.read(new MappingRule()
       .withPath("order.poLine.details.productIds[]")
-      .withEnabled("true")
-      .withValue("")
       .withRepeatableFieldAction(EXTEND_EXISTING)
-      .withSubfields(List.of(
+      .withSubfields(singletonList(
         new RepeatableSubfieldMapping()
           .withOrder(0)
           .withPath("order.poLine.details.productIds[]")
-          .withFields(List.of(
-            new MappingRule()
-              .withName("productId")
-              .withPath("order.poLine.details.productIds[].productId")
-              .withValue("020$a")
-              .withRequired(true)
-              .withEnabled("true"),
-            new MappingRule()
-              .withName("qualifier")
-              .withPath("order.poLine.details.productIds[].qualifier")
-              .withValue("020$q")
-              .withEnabled("true"),
-            new MappingRule()
-              .withName("productIdType")
-              .withPath("order.poLine.details.productIds[].productIdType")
-              .withValue("\"ISBN\"")
-              .withEnabled("true")
-            )
-          )
-      ));
+          .withFields(listRules)
+      )));
 
-    // when
-    Value valueProductId = reader.read(productIdRule);
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("order.poLine.details.productIds[]", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
 
-    // then
-    assertNotNull(valueProductId);
-    assertEquals(ValueType.REPEATABLE, valueProductId.getType());
-    assertTrue(((RepeatableFieldValue) valueProductId).getValue().isEmpty());
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("order.poLine.details.productIds[].productId", StringValue.of("MCA2-4047 bMCA Records"));
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("order.poLine.details.productIds[].productId", StringValue.of("DXSB7-156 Decca"));
+
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "order.poLine.details.productIds[]")), JsonObject.mapFrom(value));
   }
 
   @Test
-  public void shouldReturnRepeatableFieldValueWhenHasNoDataForNotRequiredFieldProductId() throws IOException {
-    // given
+  public void shouldRead2() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_028_FIELDS_2))).encode());
     eventPayload.setContext(context);
-
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
-
-    MappingRule productIdRule = new MappingRule()
-      .withName("productIds")
-      .withPath("order.poLine.details.productIds[]")
+    List<MappingRule> listRules = new ArrayList<>();
+    listRules.add(new MappingRule()
+      .withName("productId")
+      .withPath("order.poLine.details.productIds[].productId")
       .withEnabled("true")
-      .withValue("")
+      .withValue("028$a \" \" 028$b \" \" 028$c")
+    );
+
+    Value value = reader.read(new MappingRule()
+      .withPath("order.poLine.details.productIds[]")
       .withRepeatableFieldAction(EXTEND_EXISTING)
-      .withSubfields(List.of(
+      .withSubfields(singletonList(
         new RepeatableSubfieldMapping()
           .withOrder(0)
           .withPath("order.poLine.details.productIds[]")
-          .withFields(List.of(
-              new MappingRule()
-                .withName("productId")
-                .withPath("order.poLine.details.productIds[].productId")
-                .withValue("020$a")
-                .withRequired(false)
-                .withEnabled("true"),
-              new MappingRule()
-                .withName("qualifier")
-                .withPath("order.poLine.details.productIds[].qualifier")
-                .withValue("020$q")
-                .withEnabled("true"),
-              new MappingRule()
-                .withName("productIdType")
-                .withPath("order.poLine.details.productIds[].productIdType")
-                .withValue("\"ISBN\"")
-                .withEnabled("true")
-            )
-          )
-      ));
+          .withFields(listRules)
+      )));
 
-    // when
-    Value valueProductId = reader.read(productIdRule);
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("order.poLine.details.productIds[]", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
 
-    // then
-    assertNotNull(valueProductId);
-    assertEquals(ValueType.REPEATABLE, valueProductId.getType());
-    assertFalse(((RepeatableFieldValue) valueProductId).getValue().isEmpty());
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("order.poLine.details.productIds[].productId", StringValue.of("MCA2-4047 bMCA Records Test1"));
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("order.poLine.details.productIds[].productId", StringValue.of("DXSB7-156 Decca Test2"));
+    Map<String, Value> object3 = new HashMap<>();
+    object3.put("order.poLine.details.productIds[].productId", StringValue.of("DXSB7-157 Decca2 Test3"));
+
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2, object3), EXTEND_EXISTING, "order.poLine.details.productIds[]")), JsonObject.mapFrom(value));
+  }
+
+  @Test
+  public void shouldRead3() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_THE_SAME_SUBFIELDS_IN_MULTIPLE_028_FIELDS))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    List<MappingRule> listRules = new ArrayList<>();
+    listRules.add(new MappingRule()
+      .withName("productId")
+      .withPath("order.poLine.details.productIds[].productId")
+      .withEnabled("true")
+      .withValue("028$a \" \" 028$b")
+    );
+
+    Value value = reader.read(new MappingRule()
+      .withPath("order.poLine.details.productIds[]")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(singletonList(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.details.productIds[]")
+          .withFields(listRules)
+      )));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("order.poLine.details.productIds[]", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("order.poLine.details.productIds[].productId", StringValue.of("aT90028 Verve"));
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("order.poLine.details.productIds[].productId", StringValue.of("aV-4061 Verve"));
+
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "order.poLine.details.productIds[]")), JsonObject.mapFrom(value));
   }
 }
