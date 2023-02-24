@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
@@ -19,6 +20,7 @@ import org.marc4j.marc.DataField;
 public class MarcBibRecordModifier extends MarcRecordModifier {
 
   private static final char SUBFIELD_0 = '0';
+  private static final char SUBFIELD_9 = '9';
 
   private List<Link> bibAuthorityLinks = emptyList();
   private final Set<Link> bibAuthorityLinksKept = new HashSet<>();
@@ -51,6 +53,11 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       return updateUncontrolledSubfields(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
     }
 
+    removeSubfield9(fieldToUpdate, fieldReplacement);
+    if (subfieldCode.charAt(0) == SUBFIELD_9) {
+      return false;
+    }
+
     return super.updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
   }
 
@@ -65,6 +72,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       fieldReplacement.getSubfields()
         .forEach(subfield ->
           updateUncontrolledSubfield(link, String.valueOf(subfield.getCode()), tmpFields, fieldToUpdate, fieldReplacement));
+      removeUncontrolledNotUpdatedSubfields(link, fieldToUpdate, fieldReplacement);
     } else {
       updateUncontrolledSubfield(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
     }
@@ -81,6 +89,25 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     super.updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, false);
   }
 
+  private void removeUncontrolledNotUpdatedSubfields(Link link, DataField fieldToUpdate, DataField fieldReplacement) {
+    fieldToUpdate.getSubfields().stream()
+      .filter(subfield -> !subfieldLinked(link, String.valueOf(subfield.getCode())))
+      .filter(subfield -> fieldReplacement.getSubfields().stream()
+        .noneMatch(subfieldReplacement -> subfield.getCode() == subfieldReplacement.getCode()))
+      .collect(Collectors.toList())
+      .forEach(fieldToUpdate::removeSubfield);
+  }
+
+  /**
+   * Removes subfield 9 from field.
+   * It's not enough to remove it only from incoming field.
+   * It also should be removed if $9 is not in mapping details (and subfield is not '*') but field is unlinked.
+   * */
+  private void removeSubfield9(DataField fieldToUpdate, DataField fieldReplacement) {
+    fieldToUpdate.getSubfields().removeIf(subfield -> subfield.getCode() == SUBFIELD_9);
+    fieldReplacement.getSubfields().removeIf(subfield -> subfield.getCode() == SUBFIELD_9);
+  }
+
   private Optional<Link> getLink(DataField dataField) {
     return bibAuthorityLinks.stream()
       .filter(link -> link.getBibRecordTag().equals(dataField.getTag()))
@@ -88,7 +115,9 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   private boolean subfieldLinked(Link link, String subfieldCode) {
-    return link.getBibRecordSubfields().contains(subfieldCode) || subfieldCode.charAt(0) == SUBFIELD_0;
+    return link.getBibRecordSubfields().contains(subfieldCode)
+      || subfieldCode.charAt(0) == SUBFIELD_0
+      || subfieldCode.charAt(0) == SUBFIELD_9;
   }
 
   /**
