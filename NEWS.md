@@ -1,3 +1,7 @@
+## 2023-02-24 v4.0.2
+* [MODDICORE-311](https://issues.folio.org/browse/MODDICORE-311) Unlinked field looks like linked on UI when update/import "MARC Bib" record when $9 is included in the imported file
+* [MODDICORE-309](https://issues.folio.org/browse/MODDICORE-309) Error when adding uncontrolled subfield in linked "MARC bib" record upon data import
+
 ## 2023-02-22 v4.0.1
 * [MODDICORE-308](https://issues.folio.org/browse/MODDICORE-308) Fix link wasn't deleted when user deletes linked repeatable field via "Data import" update.
 * [MODDICORE-306](https://issues.folio.org/browse/MODDICORE-306) Add validation for rule with required field.
