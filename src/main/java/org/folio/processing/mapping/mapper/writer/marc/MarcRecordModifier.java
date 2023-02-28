@@ -76,7 +76,7 @@ public class MarcRecordModifier {
   private static final String TAG_199 = "199";
   private static final String TAG_999 = "999";
   private static final char INDICATOR_F = 'f';
-  private static final char ANY_CHAR = '*';
+  protected static final char ANY_CHAR = '*';
 
   private final MarcFactory marcFactory = MarcFactory.newInstance();
 

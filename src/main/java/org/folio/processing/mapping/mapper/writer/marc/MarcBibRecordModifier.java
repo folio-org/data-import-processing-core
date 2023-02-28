@@ -16,6 +16,7 @@ import org.folio.MappingProfile;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 public class MarcBibRecordModifier extends MarcRecordModifier {
 
@@ -47,7 +48,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
                                     DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
     var linkOptional = getLink(fieldToUpdate);
-    if (linkOptional.isPresent() && fieldsLinked(linkOptional.get(), fieldReplacement, fieldToUpdate)) {
+    if (linkOptional.isPresent() && fieldsLinked(subfieldCode.charAt(0), linkOptional.get(), fieldReplacement, fieldToUpdate)) {
       var link = linkOptional.get();
       bibAuthorityLinksKept.add(link);
       return updateUncontrolledSubfields(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
@@ -123,8 +124,13 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   /**
    * Indicates that incoming and existing fields hold the same link
    * */
-  private boolean fieldsLinked(Link link, DataField incomingField, DataField fieldToChange) {
-    var incomingSubfield0 = incomingField.getSubfield(SUBFIELD_0);
+  private boolean fieldsLinked(char subfieldCode, Link link, DataField incomingField, DataField fieldToChange) {
+    Subfield incomingSubfield0;
+    if (subfieldCode == ANY_CHAR || subfieldCode == SUBFIELD_0) {
+      incomingSubfield0 = incomingField.getSubfield(SUBFIELD_0);
+    } else {
+      incomingSubfield0 = fieldToChange.getSubfield(SUBFIELD_0);
+    }
     var existingSubfield0 = fieldToChange.getSubfield(SUBFIELD_0);
     return incomingSubfield0 != null
       && existingSubfield0 != null
