@@ -170,6 +170,20 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldNotUpdateLinkedSubfieldWhenOnlySubfieldMappedAnd0Changed() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test updated\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00170nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("a"), 1);
+  }
+
+  @Test
   public void shouldRemoveLinksWhenOnlySubfield0MappedAndChanged() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
