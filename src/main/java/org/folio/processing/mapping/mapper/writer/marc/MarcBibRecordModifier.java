@@ -3,6 +3,7 @@ package org.folio.processing.mapping.mapper.writer.marc;
 import static java.util.Collections.emptyList;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -122,16 +123,30 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   /**
-   * Indicates that incoming and existing fields hold the same link
+   * Indicates that incoming and existing fields hold the same link.
+   * If subfieldCode is '*' - no mapping rules exists - take $0 from incoming field
+   * If subfieldCode is '0' - mapping rules exists that say that only $0 could be updated - take $0 from incoming field
+   * If subfieldCode is any other - mapping rules exists that say that subfield could be updated - take $0 from existing field, as it is not expected to be updated
+   * If there are more than one $0 exist in incoming field - at least one should match with existing field and link,
+   * all other will be removed during field update.
    * */
   private boolean fieldsLinked(char subfieldCode, Link link, DataField incomingField, DataField fieldToChange) {
-    Subfield incomingSubfield0;
+    List<Subfield> incomingSubfields0;
     if (subfieldCode == ANY_CHAR || subfieldCode == SUBFIELD_0) {
-      incomingSubfield0 = incomingField.getSubfield(SUBFIELD_0);
+      incomingSubfields0 = incomingField.getSubfields(SUBFIELD_0);
     } else {
-      incomingSubfield0 = fieldToChange.getSubfield(SUBFIELD_0);
+      incomingSubfields0 = Collections.singletonList(fieldToChange.getSubfield(SUBFIELD_0));
     }
     var existingSubfield0 = fieldToChange.getSubfield(SUBFIELD_0);
+    for (Subfield incomingSubfield0 : incomingSubfields0) {
+      if (hasSameLink(link, existingSubfield0, incomingSubfield0)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean hasSameLink(Link link, Subfield existingSubfield0, Subfield incomingSubfield0) {
     return incomingSubfield0 != null
       && existingSubfield0 != null
       && incomingSubfield0.getData().endsWith(link.getAuthorityNaturalId())

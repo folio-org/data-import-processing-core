@@ -116,6 +116,47 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldRemoveLinksOnSeveralNotMatchedSubfield0() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"0\":\"test2\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00127nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"0\":\"test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
+  }
+
+  @Test
+  public void shouldRemoveUnmatchedSubfield0OnSeveralSubfield0() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"},{\"0\":\"test2\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00149nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},"
+      + "{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},"
+      + "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}"
+      + ",{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
+  }
+
+  @Test
+  public void shouldRemoveUnmatchedSubfield0OnSeveralSubfield0WhenMatchedIsLastOne() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"020\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test2\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00149nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},"
+      + "{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},"
+      + "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}"
+      + ",{\"020\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
+  }
+
+  @Test
   public void shouldRemoveLinksOnSubfield0Change() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
