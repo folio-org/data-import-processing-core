@@ -156,6 +156,14 @@ public class MarcRecordReader implements Reader {
         }
       }
       resultList = resultList.stream().filter(r -> isNotBlank(r)).collect(Collectors.toList());
+      List<String> tmpResultList = new ArrayList<>(resultList);
+      String concatenator = sb.toString();
+      if(isNotBlank(concatenator)) {
+        for (int i = 0; i < tmpResultList.size(); i++) {
+          String element = tmpResultList.get(i);
+          resultList.set(i, element.concat(concatenator).toString());
+        }
+      }
       if ((arrayValue || isRepeatableField) && !resultList.isEmpty()) {
         return ListValue.of(resultList);
       }

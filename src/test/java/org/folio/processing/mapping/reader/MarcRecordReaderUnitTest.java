@@ -1250,7 +1250,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadAndConcatenate2Multiple028Fields() throws IOException {
+  public void shouldReadTwoRepeatableFields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1291,7 +1291,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadAndConcatenate3Multiple028Fields() throws IOException {
+  public void shouldReadThreeRepeatableField() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1334,7 +1334,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead2Multiple028FieldsWithTheSameSubfield() throws IOException {
+  public void shouldReadTwoFieldsWithRepeatableSecondSubfield() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
