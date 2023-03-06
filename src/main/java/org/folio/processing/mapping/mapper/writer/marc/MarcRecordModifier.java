@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
+import static java.lang.Character.isDigit;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -15,6 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +42,7 @@ import org.marc4j.marc.Leader;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
+import org.marc4j.marc.impl.SubfieldImpl;
 import org.marc4j.marc.impl.Verifier;
 
 import org.folio.DataImportEventPayload;
@@ -73,7 +76,7 @@ public class MarcRecordModifier {
   private static final String TAG_199 = "199";
   private static final String TAG_999 = "999";
   private static final char INDICATOR_F = 'f';
-  private static final char ANY_CHAR = '*';
+  protected static final char ANY_CHAR = '*';
 
   private final MarcFactory marcFactory = MarcFactory.newInstance();
 
@@ -251,12 +254,12 @@ public class MarcRecordModifier {
       filterOutOverriddenProtectionSettings(fieldProtectionSettings, overriddenProtectionSettings);
   }
 
-  private boolean isRecordValid(Record record) {
-    return nonNull(record.getParsedRecord()) && isNotBlank(record.getParsedRecord().getContent().toString());
+  private boolean isRecordValid(Record marcRecord) {
+    return nonNull(marcRecord.getParsedRecord()) && isNotBlank(marcRecord.getParsedRecord().getContent().toString());
   }
 
-  private org.marc4j.marc.Record readParsedContentToObjectRepresentation(Record record) {
-    MarcReader existingRecordReader = buildMarcReader(record);
+  private org.marc4j.marc.Record readParsedContentToObjectRepresentation(Record marcRecord) {
+    MarcReader existingRecordReader = buildMarcReader(marcRecord);
     if (existingRecordReader.hasNext()) {
       return existingRecordReader.next();
     } else {
@@ -265,10 +268,10 @@ public class MarcRecordModifier {
     }
   }
 
-  private MarcReader buildMarcReader(org.folio.Record record) {
-    JsonObject parsedContent = record.getParsedRecord().getContent() instanceof String
-      ? new JsonObject(record.getParsedRecord().getContent().toString())
-      : JsonObject.mapFrom(record.getParsedRecord().getContent());
+  private MarcReader buildMarcReader(org.folio.Record marcRecord) {
+    JsonObject parsedContent = marcRecord.getParsedRecord().getContent() instanceof String
+      ? new JsonObject(marcRecord.getParsedRecord().getContent().toString())
+      : JsonObject.mapFrom(marcRecord.getParsedRecord().getContent());
 
     return new MarcJsonReader(new ByteArrayInputStream(parsedContent
       .toString()
@@ -381,7 +384,10 @@ public class MarcRecordModifier {
       char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
-        .peek(targetField -> targetField.removeSubfield(targetField.getSubfield(subfieldCode)))
+        .map(targetField -> {
+          targetField.removeSubfield(targetField.getSubfield(subfieldCode));
+          return targetField;
+        })
         .filter(field -> field.getSubfields().isEmpty())
         .collect(Collectors.toList())
         .forEach(targetField -> marcRecordToChange.removeVariableField(targetField));
@@ -727,7 +733,16 @@ public class MarcRecordModifier {
       tmpFields.add(fieldToUpdate);
     } else {
       String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
-      fieldToUpdate.getSubfield(subfieldCode.charAt(0)).setData(newSubfieldData);
+      Subfield subfield = fieldToUpdate.getSubfield(subfieldCode.charAt(0));
+      if (subfield == null) {
+        subfield = new SubfieldImpl(subfieldCode.charAt(0));
+        fieldToUpdate.addSubfield(subfield);
+        fieldToUpdate.getSubfields()
+          .sort(Comparator.<Subfield, Boolean>comparing(sub -> isDigit(sub.getCode()))
+            .thenComparing(Subfield::getCode));
+      }
+
+      subfield.setData(newSubfieldData);
       ifNewDataShouldBeAdded = false;
       updatedFields.add(fieldToUpdate);
     }

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "An organization alias",
+  "type": "object",
+  "properties": {
+    "value": {
+      "description": "The unique name of this alias",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of this alias",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "value"
+  ]
+}

@@ -3,7 +3,7 @@
 
   <groupId>org.folio</groupId>
   <artifactId>data-import-processing-core</artifactId>
-  <version>3.6.0-SNAPSHOT</version>
+  <version>4.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>data-import-processing-core</name>
   <organization>
@@ -21,12 +21,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <commons.lang.version>2.6</commons.lang.version>
-    <logger.version>1.7.25</logger.version>
-    <jackson.version>2.13.4.1</jackson.version>
-    <junit.version>4.13.1</junit.version>
-    <vertx.version>4.3.4</vertx.version>
+    <logger.version>2.0.6</logger.version>
+    <jackson.version>2.14.2</jackson.version>
+    <junit.version>4.13.2</junit.version>
+    <vertx.version>4.3.7</vertx.version>
     <wiremock.version>2.27.2</wiremock.version>
-    <raml-module-builder.version>35.0.1</raml-module-builder.version>
+    <raml-module-builder.version>35.0.4</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
     <sonar.exclusions>**/OkapiConnectionParams.java</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
@@ -63,7 +63,7 @@
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-kafka-wrapper</artifactId>
-      <version>2.6.1</version>
+      <version>2.7.0</version>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
@@ -73,7 +73,7 @@
     <dependency>
       <groupId>org.marc4j</groupId>
       <artifactId>marc4j</artifactId>
-      <version>2.9.1</version>
+      <version>2.9.2</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -98,12 +98,12 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.8.1</version>
+      <version>3.8.7</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.9.0</version>
+      <version>2.11.0</version>
     </dependency>
     <dependency>
       <groupId>commons-collections</groupId>
@@ -123,7 +123,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.0.1-jre</version>
+      <version>31.1-jre</version>
     </dependency>
 
     <dependency>
@@ -147,13 +147,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>4.1.0</version>
+      <version>5.1.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.7.2</version>
+      <version>5.9.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -171,7 +171,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.9.0</version>
+      <version>5.9.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -291,6 +291,8 @@
                 <path>${basedir}/ramls/settings/issuancemodes.json</path>
                 <path>${basedir}/ramls/settings/authoritynotetypes.json</path>
                 <path>${basedir}/ramls/settings/authoritysourcefiles.json</path>
+                <path>${basedir}/ramls/settings/organization.json</path>
+                <path>${basedir}/ramls/settings/organization_collection.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>

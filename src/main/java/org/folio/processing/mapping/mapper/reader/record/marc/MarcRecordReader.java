@@ -79,7 +79,8 @@ public class MarcRecordReader implements Reader {
   private static final String TIMEZONE_PROPERTY = "timezone";
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
-
+  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider");
+  private static final String BLANK = "";
 
   private EntityType entityType;
   private Record marcRecord;
@@ -206,6 +207,12 @@ public class MarcRecordReader implements Reader {
         }
       }
     }
+    boolean needsValidationByAcceptedValues = NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
+
+    if (needsValidationByAcceptedValues && !ruleExpression.getAcceptedValues().containsKey(value)) {
+      return BLANK;
+    }
+
     return value;
   }
 
@@ -297,7 +304,7 @@ public class MarcRecordReader implements Reader {
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
             : readSingleField(mappingRule, isRepeatableField);
 
-          if (value.getType() == MISSING && RequiredFields.isRequiredFieldName(mappingRule.getName())) {
+          if (value.getType() == MISSING && (mappingRule.getRequired() || RequiredFields.isRequiredFieldName(mappingRule.getName()))) {
             repeatableObjectItems.remove(repeatableObjectItems.size() - 1);
             break;
           } else if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.folio.DataImportEventPayload;
 import org.folio.Location;
 import org.folio.MappingProfile;
+import org.folio.Organization;
 import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
@@ -16,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +25,9 @@ import java.util.UUID;
 import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.EntityType.ORDER;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -115,6 +119,59 @@ public class MappingManagerUnitTest {
     TestInstance mappedInstance = new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
     assertNotNull(mappedInstance.getId());
     assertNotNull(mappedInstance.getIndexTitle());
+  }
+
+  @Test
+  public void shouldMap_MarcBibliographicToOrder_checkOrganizations() throws IOException {
+    // given
+    MappingProfile mappingProfile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(ORDER)
+      .withMappingDetails(new MappingDetail()
+        .withMappingFields(new ArrayList<>(List.of(
+          new MappingRule().withName("vendor").withPath("order.po.vendor").withValue("\"CODE\"").withEnabled("true"),
+          new MappingRule().withName("materialSupplier").withPath("order.poLine.physical.materialSupplier").withValue("\"CODE\"").withEnabled("true"),
+          new MappingRule().withName("accessProvider").withPath("order.poLine.eresource.accessProvider").withValue("\"CODE\"").withEnabled("true")
+        ))));
+
+    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
+    mappingProfileWrapper.setContent(mappingProfile);
+    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
+
+    String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
+
+    String givenOrder = new ObjectMapper().writeValueAsString(new TestOrder(UUID.randomUUID().toString()));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
+    context.put(ORDER.value(), givenOrder);
+    eventPayload.setContext(context);
+    eventPayload.setCurrentNode(mappingProfileWrapper);
+
+    String organizationId = UUID.randomUUID().toString();
+    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
+      .withOrganizations(List.of(new Organization()
+        .withId(organizationId)
+        .withName("NAME")
+        .withCode("CODE")
+      )));
+
+    // when
+    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+    MappingManager.registerWriterFactory(new TestOrderWriterFactory());
+    MappingManager.map(eventPayload, mappingContext);
+
+    // then
+    assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(eventPayload.getContext().get(ORDER.value()));
+
+    for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
+      assertNotNull(mappingRule);
+      assertTrue(mappingRule.getAcceptedValues().containsKey(organizationId));
+      String expectedAcceptedValue = String.format("%s (%s)", mappingRule.getValue().replaceAll("\"",""), organizationId);
+      assertEquals(expectedAcceptedValue, mappingRule.getAcceptedValues().get(organizationId));
+    }
   }
 
   @Test(expected = RuntimeException.class)
