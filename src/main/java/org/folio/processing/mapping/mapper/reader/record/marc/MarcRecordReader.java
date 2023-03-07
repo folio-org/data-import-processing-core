@@ -174,6 +174,17 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
+  /**
+   * Process marc expression method
+   *
+   * @param arrayValue            if arrayValue process as array
+   * @param isRepeatableField     if isRepeatableField process as repeatable field
+   * @param resultList            resultList uses for saving result
+   * @param sb                    uses for appending single marc to buffer
+   * @param multipleStringBuilder uses for appending to results from buffer
+   * @param expressionPart        this String must be marc uses for serching values in marcRecord
+   * @param ruleExpression        uses for mapping values before processing
+   */
   private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart, MappingRule ruleExpression) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
@@ -186,7 +197,7 @@ public class MarcRecordReader implements Reader {
           resultList.set(i, element.concat(concatenator + collectedValues.get(i)).toString());
         }
       } else {
-        // TODO
+        // TODO This todo for cases where first subfields count not equals second subfields count
         List<String> collectedValues = marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList());
         resultList.addAll(collectedValues);
       }
@@ -241,7 +252,17 @@ public class MarcRecordReader implements Reader {
   private String retrieveNameWithoutCode(String mappingParameter) {
     return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
-
+  /**
+   * Process string expression method
+   *
+   * @param arrayValue            if arrayValue process as array
+   * @param resultList            resultList uses for saving result
+   * @param sb                    uses for appending value to buffer
+   * @param multipleStringBuilder uses for appending to results from buffer
+   * @param expressionPart        this String must be marc uses for serching values in marcRecord
+   * @param ruleExpression        uses for mapping values before processing
+   * @return empty StringBuilder if arrayValue or
+   */
   private StringBuilder processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart) {
     String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
     value = getFromAcceptedValues(ruleExpression, value);
@@ -255,7 +276,13 @@ public class MarcRecordReader implements Reader {
     }
     return new StringBuilder(EMPTY);
   }
-
+  /**
+   * Process TODAY expression method
+   * appends ZonedDateTime.now for tenant
+   * @param sb                    uses for appending today value to buffer
+   * @param multipleStringBuilder uses for appending today value to buffer
+   * @throws IllegalArgumentException if can not format today
+   */
   private void processTodayExpression(StringBuilder sb, StringBuilder multipleStringBuilder) {
     try {
       DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
