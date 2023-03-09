@@ -34,7 +34,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -141,21 +140,30 @@ public class MarcRecordReader implements Reader {
     List<String> resultList = new ArrayList<>();
     for (String expression : expressions) {
       StringBuilder sb = new StringBuilder();
+      StringBuilder sbForMultiple = new StringBuilder();
       String[] expressionParts = expression.split(WHITESPACE_DIVIDER);
       for (String expressionPart : expressionParts) {
         if (MARC_PATTERN.matcher(expressionPart).matches()
           || (MARC_CONTROLLED.matcher(expressionPart).matches())
           || (MARC_LEADER.matcher(expressionPart).matches())) {
-          processMARCExpression(arrayValue, isRepeatableField, resultList, sb, expressionPart, ruleExpression);
+          processMARCExpression(arrayValue, isRepeatableField, resultList, sb, sbForMultiple, expressionPart, ruleExpression);
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
-          processStringExpression(ruleExpression, arrayValue, resultList, sb, expressionPart);
+          sbForMultiple = processStringExpression(ruleExpression, arrayValue, resultList, sb, sbForMultiple, expressionPart);
         } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
-          processTodayExpression(sb);
+          processTodayExpression(sb, sbForMultiple);
         } else if (REMOVE_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
           return StringValue.of(expressionPart, true);
         }
       }
       resultList = resultList.stream().filter(r -> isNotBlank(r)).collect(Collectors.toList());
+      List<String> tmpResultList = new ArrayList<>(resultList);
+      String concatenator = sb.toString();
+      if(isNotBlank(concatenator)) {
+        for (int i = 0; i < tmpResultList.size(); i++) {
+          String element = tmpResultList.get(i);
+          resultList.set(i, element.concat(concatenator).toString());
+        }
+      }
       if ((arrayValue || isRepeatableField) && !resultList.isEmpty()) {
         return ListValue.of(resultList);
       }
@@ -166,10 +174,33 @@ public class MarcRecordReader implements Reader {
     return MissingValue.getInstance();
   }
 
-  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, String expressionPart, MappingRule ruleExpression) {
+  /**
+   * Process marc expression method
+   *
+   * @param arrayValue            if arrayValue process as array
+   * @param isRepeatableField     if isRepeatableField process as repeatable field
+   * @param resultList            resultList uses for saving result
+   * @param sb                    uses for appending single marc to buffer
+   * @param multipleStringBuilder uses for appending to results from buffer
+   * @param expressionPart        this String must be marc uses for serching values in marcRecord
+   * @param ruleExpression        uses for mapping values before processing
+   */
+  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart, MappingRule ruleExpression) {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
-      resultList.addAll(marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList()));
+      if (resultList.size() > 1 && marcValues.size() == resultList.size()) {
+        List<String> collectedValues = marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList());
+        List<String> tmpResultList = new ArrayList<>(resultList);
+        String concatenator = multipleStringBuilder.toString();
+        for (int i = 0; i < tmpResultList.size(); i++) {
+          String element = tmpResultList.get(i);
+          resultList.set(i, element.concat(concatenator + collectedValues.get(i)).toString());
+        }
+      } else {
+        // TODO This todo for cases where first subfields count not equals second subfields count
+        List<String> collectedValues = marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList());
+        resultList.addAll(collectedValues);
+      }
     } else {
       marcValues.forEach(v -> {
         if (isNotEmpty(v)) {
@@ -221,8 +252,18 @@ public class MarcRecordReader implements Reader {
   private String retrieveNameWithoutCode(String mappingParameter) {
     return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
-
-  private void processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, String expressionPart) {
+  /**
+   * Process string expression method
+   *
+   * @param arrayValue            if arrayValue process as array
+   * @param resultList            resultList uses for saving result
+   * @param sb                    uses for appending value to buffer
+   * @param multipleStringBuilder uses for appending to results from buffer
+   * @param expressionPart        this String must be marc uses for serching values in marcRecord
+   * @param ruleExpression        uses for mapping values before processing
+   * @return empty StringBuilder if arrayValue or
+   */
+  private StringBuilder processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart) {
     String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
     value = getFromAcceptedValues(ruleExpression, value);
     if (isNotEmpty(value)) {
@@ -230,22 +271,31 @@ public class MarcRecordReader implements Reader {
         resultList.add(value);
       } else {
         sb.append(value);
+        return new StringBuilder(value);
       }
     }
+    return new StringBuilder(EMPTY);
   }
-
-  private void processTodayExpression(StringBuilder sb) {
+  /**
+   * Process TODAY expression method
+   * appends ZonedDateTime.now for tenant
+   * @param sb                    uses for appending today value to buffer
+   * @param multipleStringBuilder uses for appending today value to buffer
+   * @throws IllegalArgumentException if can not format today
+   */
+  private void processTodayExpression(StringBuilder sb, StringBuilder multipleStringBuilder) {
     try {
       DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
-        String tenantConfiguration = this.mappingParameters.getTenantConfiguration();
-        String tenantTimezone;
-        if (isTimezoneParameterIsEmpty(tenantConfiguration)) {
-          tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
-        } else {
-          tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
-        }
-        ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
-        sb.append(isoFormatter.format(utcZonedDateTime));
+      String tenantConfiguration = this.mappingParameters.getTenantConfiguration();
+      String tenantTimezone;
+      if (isTimezoneParameterIsEmpty(tenantConfiguration)) {
+        tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
+      } else {
+        tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
+      }
+      ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
+      sb.append(isoFormatter.format(utcZonedDateTime));
+      multipleStringBuilder.append(isoFormatter.format(utcZonedDateTime));
     } catch (Exception e) {
       LOGGER.warn("processTodayExpression:: Can not process ##TODAY## expression", e);
       throw new IllegalArgumentException("Can not process ##TODAY## expression", e);
