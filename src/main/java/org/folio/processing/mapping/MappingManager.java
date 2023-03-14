@@ -141,8 +141,14 @@ public final class MappingManager {
           if (Objects.equals(mappingRule.getName(), STATISTICAL_CODE_IDS)) {
             for (RepeatableSubfieldMapping subfield : mappingRule.getSubfields()) {
               for (MappingRule field : subfield.getFields()) {
-                if(Objects.equals(field.getName(), STATISTICAL_CODE_ID)) {
-                  field.setAcceptedValues(statisticalCodes);
+                if (Objects.equals(field.getName(), STATISTICAL_CODE_ID)) {
+                  if (field.getAcceptedValues() != null) {
+                    if (!field.getAcceptedValues().containsValue(field.getValue().replace("\"", ""))) {
+                      field.getAcceptedValues().putAll(statisticalCodes);
+                    }
+                  } else {
+                    field.withAcceptedValues(statisticalCodes);
+                  }
                 }
               }
             }
