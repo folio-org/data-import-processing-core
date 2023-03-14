@@ -142,19 +142,23 @@ public final class MappingManager {
             for (RepeatableSubfieldMapping subfield : mappingRule.getSubfields()) {
               for (MappingRule field : subfield.getFields()) {
                 if (Objects.equals(field.getName(), STATISTICAL_CODE_ID)) {
-                  if (field.getAcceptedValues() != null) {
-                    if (!field.getAcceptedValues().containsValue(field.getValue().replace("\"", ""))) {
-                      field.getAcceptedValues().putAll(statisticalCodes);
-                    }
-                  } else {
-                    field.withAcceptedValues(statisticalCodes);
-                  }
+                  adjustAcceptedValues(field, statisticalCodes);
                 }
               }
             }
           }
         }
       }
+    }
+  }
+
+  private static void adjustAcceptedValues(MappingRule field, HashMap<String, String> statisticalCodes) {
+    if (field.getAcceptedValues() != null) {
+      if (!field.getAcceptedValues().containsValue(field.getValue().replace("\"", ""))) {
+        field.getAcceptedValues().putAll(statisticalCodes);
+      }
+    } else {
+      field.withAcceptedValues(statisticalCodes);
     }
   }
 
