@@ -1,3 +1,9 @@
+## 2023-03-15 v4.0.3
+* [MODDICORE-307](https://issues.folio.org/browse/MODDICORE-307) Order import: fix product identifier problem with 028 field
+* [MODDICORE-312](https://issues.folio.org/browse/MODDICORE-312) User updates linked bib field with multiple $0 via data import> Edit/Derive does not unlink field from authority
+* [MODDICORE-319](https://issues.folio.org/browse/MODDICORE-319) Link is removed from field when updating/deleting "$0" in linked "MARC bib" field upon data import if field mapping profile does not allow "$0" update
+* Updated folio-kafka-wrapper to v2.7.1
+
 ## 2023-02-24 v4.0.2
 * [MODDICORE-311](https://issues.folio.org/browse/MODDICORE-311) Unlinked field looks like linked on UI when update/import "MARC Bib" record when $9 is included in the imported file
 * [MODDICORE-309](https://issues.folio.org/browse/MODDICORE-309) Error when adding uncontrolled subfield in linked "MARC bib" record upon data import
