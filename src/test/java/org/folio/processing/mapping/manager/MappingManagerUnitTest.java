@@ -252,53 +252,68 @@ public class MappingManagerUnitTest {
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCodes() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Instance(), List.of(0,1));
+  public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Instance(), null, null, List.of(0,1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCode() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbd"), new Instance(), List.of(1));
+  public void shouldMap_MarcBibliographicToInstanceStatisticalCodeFromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbd"), new Instance(), null, null, List.of(1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), List.of(0));
+  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), null, null, List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode1() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd (abc)"), new Holdings(), List.of(0));
+  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode1FromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd (abc)"), new Holdings(), null, null, List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode2() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbd (bbc)"), new Holdings(), List.of(1));
+  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode2FromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbd (bbc)"), new Holdings(), null, null, List.of(1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToItemStatisticalCode() {
-    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbc"), new Holdings(), List.of(1));
+  public void shouldMap_MarcBibliographicToItemStatisticalCodeFromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbc"), new Holdings(), null, null, List.of(1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToItemStatisticalCodes() {
-    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbd", "abd (abc)"), new Holdings(), List.of(1,0));
+  public void shouldMap_MarcBibliographicToItemStatisticalCodesFromMarcValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbd", "abd (abc)"), new Holdings(), null, null, List.of(1,0));
   }
+
+  @Test
+  public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromStringValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Instance(), "\"test\"",
+      new HashMap<>(Map.of("uuid1", "test")), List.of(0));
+  }
+
+  @Test
+  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesFromStringValue() {
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Holdings(), "\"test\"",
+      new HashMap<>(Map.of("uuid1", "test")), List.of(0));
+  }
+
 
   private void shouldMap_MarcBibliographicStatisticalCodes(
     EntityType entityType,
     List<String> statisticalCodeValues,
     Object entityInstance,
+    String value,
+    HashMap<String, String> acceptedValues,
     List<Integer> expectedResultIndexes
   ) {
     List<StatisticalCode> statisticalCodes = List.of(
       new StatisticalCode()
-        .withId(UUID.randomUUID().toString())
+        .withId("uuid1")
         .withCode("abc")
         .withName("abd"),
       new StatisticalCode()
-        .withId(UUID.randomUUID().toString())
+        .withId("uuid2")
         .withCode("bbc")
         .withName("bbd (bbc)")
     );
@@ -319,8 +334,9 @@ public class MappingManagerUnitTest {
                 .withFields(List.of(
                   new MappingRule().withName("statisticalCodeId")
                     .withPath("instance.statisticalCodeIds[]")
-                    .withValue("971")
+                    .withValue(value == null ? "971" : value)
                     .withEnabled("true")
+                    .withAcceptedValues(acceptedValues)
                 ))
             )))
         ))));
