@@ -2,7 +2,6 @@ package org.folio.processing.mapping.reader;
 
 import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonObject;
-
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -1580,4 +1579,49 @@ public class MarcRecordReaderUnitTest {
 
     assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "order.poLine.details.productIds[]")), JsonObject.mapFrom(value));
   }
+
+  @Test
+  public void shouldReturnMissingValueOnlyForRuleWithNullValueOnProcessingRepeatableFieldRule() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_028_FIELDS))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    String productIdFieldPath = "order.poLine.details.productIds[].productId";
+    String productQualifierFieldPath = "order.poLine.details.productIds[].qualifier";
+
+    List<MappingRule> productIdRules = List.of(
+      new MappingRule()
+        .withName("productId")
+        .withPath(productIdFieldPath)
+        .withEnabled("true")
+        .withValue("028$a"),
+      new MappingRule()
+        .withName("qualifier")
+        .withPath(productQualifierFieldPath)
+        .withEnabled("true")
+        .withValue(null));
+
+    Value value = reader.read(new MappingRule()
+      .withName("productIds")
+      .withPath("order.poLine.details.productIds[]")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.details.productIds[]")
+          .withFields(productIdRules)
+      )));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
+    assertFalse(actualValue.getValue().isEmpty());
+    assertEquals(ValueType.STRING, actualValue.getValue().get(0).get(productIdFieldPath).getType());
+    assertEquals(ValueType.MISSING, actualValue.getValue().get(0).get(productQualifierFieldPath).getType());
+  }
+
 }
