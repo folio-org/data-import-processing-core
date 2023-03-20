@@ -135,6 +135,10 @@ public class MarcRecordReader implements Reader {
   }
 
   private Value readSingleField(MappingRule ruleExpression, boolean isRepeatableField) {
+    if (ruleExpression.getValue() == null) {
+      return MissingValue.getInstance();
+    }
+
     String[] expressions = ruleExpression.getValue().split(EXPRESSIONS_DIVIDER);
     boolean arrayValue = ruleExpression.getPath().endsWith(EXPRESSIONS_ARRAY);
     List<String> resultList = new ArrayList<>();
