@@ -10,12 +10,15 @@ import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.UPDATE;
 import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
+import org.folio.LinkingRuleDto;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -33,6 +36,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
+  private static final Integer LINKING_RULE_ID = 1;
+  public static final String SUB_FIELD_CODE_A = "a";
   private final MarcBibRecordModifier marcBibRecordModifier;
 
   public MarcBibRecordModifierTest() {
@@ -285,7 +290,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
     var exceptionThrown = false;
     try {
-      marcBibRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, entityType, new InstanceLinkDtoCollection());
+      marcBibRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, entityType, new InstanceLinkDtoCollection(),new ArrayList<>());
     } catch (IllegalArgumentException ex) {
       Assert.assertTrue(ex.getMessage().endsWith("support only " + MARC_BIBLIOGRAPHIC.value()));
       exceptionThrown = true;
@@ -332,10 +337,11 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(mappingDetails));
     var mappingParameters = new MappingParameters();
-    var links = constructLinkCollection("020");
+    var links = constructLinkCollection();
+    var linkingRules = constructLinkingRuleCollection("020");
 
     //when
-    marcBibRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC, links);
+    marcBibRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC, links, linkingRules);
     marcBibRecordModifier.processUpdateMappingOption(mappingProfile.getMappingDetails().getMarcMappingDetails());
     marcBibRecordModifier.getResult(eventPayload);
     //then
@@ -345,17 +351,24 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     Assert.assertEquals(expectedLinksCount, marcBibRecordModifier.getBibAuthorityLinksKept().size());
   }
 
-  private InstanceLinkDtoCollection constructLinkCollection(String bibRecordTag) {
-    return new InstanceLinkDtoCollection()
-      .withLinks(singletonList(constructLink(bibRecordTag)));
+  private List<LinkingRuleDto> constructLinkingRuleCollection(String bibRecordTag) {
+    LinkingRuleDto dto = new LinkingRuleDto();
+    dto.setId(LINKING_RULE_ID);
+    dto.setBibRecordTag(bibRecordTag);
+    dto.setAuthoritySubfields(List.of(SUB_FIELD_CODE_A));
+    return Collections.singletonList(dto);
   }
 
-  private Link constructLink(String bibRecordTag) {
+  private InstanceLinkDtoCollection constructLinkCollection() {
+    return new InstanceLinkDtoCollection()
+      .withLinks(singletonList(constructLink()));
+  }
+
+  private Link constructLink() {
     return new Link().withId(nextInt())
-      .withBibRecordTag(bibRecordTag)
-      .withBibRecordSubfields(singletonList("a"))
       .withAuthorityId(UUID.randomUUID().toString())
       .withInstanceId(UUID.randomUUID().toString())
+      .withLinkingRuleId(LINKING_RULE_ID)
       .withAuthorityNaturalId("test");
   }
 
