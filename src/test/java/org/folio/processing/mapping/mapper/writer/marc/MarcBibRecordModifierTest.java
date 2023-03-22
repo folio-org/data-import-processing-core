@@ -343,6 +343,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       Assert.assertTrue(ex.getMessage().endsWith("support only " + MARC_BIBLIOGRAPHIC.value()));
       exceptionThrown = true;
     }
+
     Assert.assertTrue("Exception not thrown for " + entityType.value(), exceptionThrown);
   }
 
