@@ -24,6 +24,7 @@ import org.marc4j.MarcJsonReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.ControlField;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.ControlFieldImpl;
 import org.marc4j.marc.impl.DataFieldImpl;
@@ -206,11 +207,9 @@ public class MarcRecordReader implements Reader {
         resultList.addAll(collectedValues);
       }
     } else {
-      marcValues.forEach(v -> {
-        if (isNotEmpty(v)) {
-          sb.append(getFromAcceptedValues(ruleExpression, v));
-        }
-      });
+      if (!marcValues.isEmpty()) {
+        sb.append(getFromAcceptedValues(ruleExpression, marcValues.get(0)));
+      }
     }
   }
 
@@ -415,7 +414,7 @@ public class MarcRecordReader implements Reader {
       List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
       LinkedHashSet<String> result = new LinkedHashSet<>();
       for (VariableField variableField : fields) {
-        result.add(extractValueFromMarcRecord(variableField, marcPath));
+        result.addAll(extractValueFromMarcRecord(variableField, marcPath));
       }
       results.addAll(result);
     } else if ((MARC_CONTROLLED.matcher(marcPath).matches())) {
@@ -441,16 +440,26 @@ public class MarcRecordReader implements Reader {
     return data.substring(from, to > data.length() - 1 ? data.length() - 1 : to);
   }
 
-  private String extractValueFromMarcRecord(VariableField field, String marcPath) {
-    String value = EMPTY;
+  private List<String> extractValueFromMarcRecord(VariableField field, String marcPath) {
+    List<String> value = new ArrayList<>();
     if (field instanceof DataFieldImpl) {
-      value = ((DataFieldImpl) field).getSubfieldsAsString(marcPath.substring(marcPath.length() - 1));
-      return formatToIsoDate(value);
+      ((DataFieldImpl) field).getSubfields(marcPath.substring(marcPath.length() - 1))
+        .stream()
+        .map(Subfield::getData)
+        .map(this::formatToIsoDate)
+        .forEach(v -> value.add(v));
     } else if (field instanceof ControlFieldImpl) {
-      value = ((ControlFieldImpl) field).getData();
-      return formatToIsoDate(value);
+      value.add(((ControlFieldImpl) field).getData());
     }
     return value;
+  }
+
+  private List<String> formatToIsoDate(List<String> stringsToFormat) {
+    List<String> formattedStrings = new ArrayList<>();
+    for (String stringToFormat : stringsToFormat) {
+      formattedStrings.add(formatToIsoDate(stringToFormat));
+    }
+    return formattedStrings;
   }
 
   private String formatToIsoDate(String stringToFormat) {
