@@ -139,15 +139,17 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     LinkingRuleDto dto = ruleDto.get();
     List<String> bibControlledSubfields = dto.getAuthoritySubfields();
     List<SubfieldModification> subfieldModifications = dto.getSubfieldModifications();
-    List<String> modifiedBibSubfields = new ArrayList<>();
-    subfieldModifications.forEach(subfieldModification -> bibControlledSubfields.stream()
-      .filter(s->subfieldModification.getSource().equals(s))
-      .findFirst()
-      .ifPresent(s -> modifiedBibSubfields.add(s.replace(subfieldModification.getSource(), subfieldModification.getTarget()))));
 
-    return ruleDto.filter(linkingRuleDto -> linkingRuleDto.getAuthoritySubfields().contains(subfieldCode)
+    bibControlledSubfields = bibControlledSubfields.stream()
+      .map(s -> subfieldModifications.stream()
+        .filter(subfieldModification -> s.equals(subfieldModification.getSource()))
+        .map(SubfieldModification::getTarget)
+        .findFirst()
+        .orElse(s))
+      .collect(Collectors.toList());
+    return bibControlledSubfields.contains(subfieldCode)
       || subfieldCode.charAt(0) == SUBFIELD_0
-      || subfieldCode.charAt(0) == SUBFIELD_9).isPresent() || modifiedBibSubfields.contains(subfieldCode);
+      || subfieldCode.charAt(0) == SUBFIELD_9;
   }
 
   /**
