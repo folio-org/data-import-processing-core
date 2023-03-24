@@ -55,8 +55,8 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
    */
   @Override
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
-    DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
-    var linkOptional = getLink(fieldReplacement);
+                                    DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
+    var linkOptional = getLink(fieldToUpdate);
     if (linkOptional.isPresent() && fieldsLinked(subfieldCode.charAt(0), linkOptional.get(), fieldReplacement, fieldToUpdate)) {
       var link = linkOptional.get();
       bibAuthorityLinksKept.add(link);
@@ -137,10 +137,10 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     }
 
     LinkingRuleDto dto = ruleDto.get();
-    List<String> bibRecordSubfields = dto.getBibRecordSubfields();
+    List<String> bibControlledSubfields = dto.getAuthoritySubfields();
     List<SubfieldModification> subfieldModifications = dto.getSubfieldModifications();
     List<String> modifiedBibSubfields = new ArrayList<>();
-    subfieldModifications.forEach(subfieldModification -> bibRecordSubfields.stream()
+    subfieldModifications.forEach(subfieldModification -> bibControlledSubfields.stream()
       .filter(s->subfieldModification.getSource().equals(s))
       .findFirst()
       .ifPresent(s -> modifiedBibSubfields.add(s.replace(subfieldModification.getSource(), subfieldModification.getTarget()))));
