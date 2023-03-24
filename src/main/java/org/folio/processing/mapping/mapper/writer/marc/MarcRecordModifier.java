@@ -67,8 +67,8 @@ public class MarcRecordModifier {
   private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
     Set.of("001", "002", "003", "004", "005", "008", "009");
   public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
-    "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
-    "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
+    "044", "045", "066", "073", "100", "110", "111", "130", "240", "243", "245", "254", "256", "263", "306", "357",
+    "378", "384", "507", "514", "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   protected static final String ANY_STRING = "*";
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
@@ -714,6 +714,7 @@ public class MarcRecordModifier {
               ifNewDataShouldBeAdded = false;
             }
             LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
+            doAdditionalProtectedFieldAction(fieldToUpdate);
           }
         }
       }
@@ -725,6 +726,10 @@ public class MarcRecordModifier {
       updatedFields.add(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  protected void doAdditionalProtectedFieldAction(DataField fieldToUpdate) {
+    // do nothing
   }
 
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
