@@ -68,12 +68,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldNotUpdateLinkedSubfields() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00149nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
@@ -83,12 +81,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldNotUpdateLinkedSubfield9() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"aaaf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"aaaf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00149nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
@@ -101,8 +97,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00149nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
@@ -180,8 +175,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldRemoveLinksOnSubfield0RemovalWith9SubfieldIncoming() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00113nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
@@ -194,8 +188,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldRemoveLinksOnSubfield0ChangeWith9SubfieldIncoming() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00120nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
@@ -321,8 +314,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldRetainLinkIfFieldIsRepeatableAndProtected() throws IOException {
     // given
     var existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\": \"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}},"
-      +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"700\":{\"subfields\":[{\"a\":\"artistic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"111\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
