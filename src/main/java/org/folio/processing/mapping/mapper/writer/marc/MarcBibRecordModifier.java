@@ -44,6 +44,11 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     bibAuthorityLinks = links.getLinks();
   }
 
+  @Override
+  protected void doAdditionalProtectedFieldAction(DataField fieldToUpdate) {
+    getLink(fieldToUpdate).ifPresent(bibAuthorityLinksKept::add);
+  }
+
   /**
    * Should call regular update subfield flow only for uncontrolled subfields
    * */
