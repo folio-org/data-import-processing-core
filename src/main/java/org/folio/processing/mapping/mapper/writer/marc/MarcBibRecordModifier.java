@@ -3,7 +3,9 @@ package org.folio.processing.mapping.mapper.writer.marc;
 import static java.util.Collections.emptyList;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +17,7 @@ import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
 import org.folio.LinkingRuleDto;
 import org.folio.MappingProfile;
+import org.folio.SubfieldModification;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.marc4j.marc.DataField;
@@ -53,7 +56,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   @Override
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
     DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
-    var linkOptional = getLink();
+    var linkOptional = getLink(fieldReplacement);
     if (linkOptional.isPresent() && fieldsLinked(subfieldCode.charAt(0), linkOptional.get(), fieldReplacement, fieldToUpdate)) {
       var link = linkOptional.get();
       bibAuthorityLinksKept.add(link);
@@ -76,7 +79,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   private boolean updateUncontrolledSubfields(Link link, String subfieldCode, List<DataField> tmpFields,
-    DataField fieldToUpdate, DataField fieldReplacement) {
+                                              DataField fieldToUpdate, DataField fieldReplacement) {
     if (subfieldCode.equals(ANY_STRING)) {
       fieldReplacement.getSubfields()
         .forEach(subfield ->
@@ -90,7 +93,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   private void updateUncontrolledSubfield(Link link, String subfieldCode, List<DataField> tmpFields,
-    DataField fieldToUpdate, DataField fieldReplacement) {
+                                          DataField fieldToUpdate, DataField fieldReplacement) {
     if (subfieldLinked(link, subfieldCode)) {
       return;
     }
@@ -117,9 +120,10 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     fieldReplacement.getSubfields().removeIf(subfield -> subfield.getCode() == SUBFIELD_9);
   }
 
-  private Optional<Link> getLink() {
+  private Optional<Link> getLink(DataField dataField) {
     return bibAuthorityLinks.stream()
       .filter(link -> linkingRules.stream()
+        .filter(linkingRuleDto -> linkingRuleDto.getBibRecordTag().equals(dataField.getTag()))
         .map(LinkingRuleDto::getId)
         .collect(Collectors.toList())
         .contains(link.getLinkingRuleId()))
@@ -128,10 +132,22 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
 
   private boolean subfieldLinked(Link link, String subfieldCode) {
     Optional<LinkingRuleDto> ruleDto = linkingRules.stream().filter(r -> r.getId().equals(link.getLinkingRuleId())).findFirst();
+    if (ruleDto.isEmpty()) {
+      return false;
+    }
+
+    LinkingRuleDto dto = ruleDto.get();
+    List<String> bibRecordSubfields = dto.getBibRecordSubfields();
+    List<SubfieldModification> subfieldModifications = dto.getSubfieldModifications();
+    List<String> modifiedBibSubfields = new ArrayList<>();
+    subfieldModifications.forEach(subfieldModification -> bibRecordSubfields.stream()
+      .filter(s->subfieldModification.getSource().equals(s))
+      .findFirst()
+      .ifPresent(s -> modifiedBibSubfields.add(s.replace(subfieldModification.getSource(), subfieldModification.getTarget()))));
 
     return ruleDto.filter(linkingRuleDto -> linkingRuleDto.getAuthoritySubfields().contains(subfieldCode)
       || subfieldCode.charAt(0) == SUBFIELD_0
-      || subfieldCode.charAt(0) == SUBFIELD_9).isPresent();
+      || subfieldCode.charAt(0) == SUBFIELD_9).isPresent() || modifiedBibSubfields.contains(subfieldCode);
   }
 
   /**
