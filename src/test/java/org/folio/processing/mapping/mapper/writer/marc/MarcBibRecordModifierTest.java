@@ -68,7 +68,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldNotUpdateLinkedSubfields() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test\"},{\"9\":\"aabf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00149nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
@@ -162,7 +162,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   public void shouldRemoveLinksOnSubfield0Change() throws IOException {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
       "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00120nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
