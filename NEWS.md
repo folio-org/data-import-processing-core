@@ -1,3 +1,7 @@
+## 2023-03-24 v4.0.4
+* [MODDICORE-304](https://issues.folio.org/browse/MODDICORE-304) Allow import statistical code values based on the text
+* [MODDICORE-305](https://issues.folio.org/browse/MODDICORE-305) Order import: fix product identifier mapping problem with multiple product ID TYPES
+
 ## 2023-03-15 v4.0.3
 * [MODDICORE-307](https://issues.folio.org/browse/MODDICORE-307) Order import: fix product identifier problem with 028 field
 * [MODDICORE-312](https://issues.folio.org/browse/MODDICORE-312) User updates linked bib field with multiple $0 via data import> Edit/Derive does not unlink field from authority
