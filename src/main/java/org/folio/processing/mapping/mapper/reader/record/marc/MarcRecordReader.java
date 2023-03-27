@@ -454,14 +454,6 @@ public class MarcRecordReader implements Reader {
     return value;
   }
 
-  private List<String> formatToIsoDate(List<String> stringsToFormat) {
-    List<String> formattedStrings = new ArrayList<>();
-    for (String stringToFormat : stringsToFormat) {
-      formattedStrings.add(formatToIsoDate(stringToFormat));
-    }
-    return formattedStrings;
-  }
-
   private String formatToIsoDate(String stringToFormat) {
     try {
       if (isNotEmpty(stringToFormat)) {
