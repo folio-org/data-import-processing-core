@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -342,7 +343,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       + "{\"700\":{\"subfields\":[{\"a\":\"artistic\"},{\"b\":\"new subfield\"},{\"0\":\"test0\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), constructMarcFieldProtectionSettings("700", false),
-      emptyList(), 2, "700", "700");
+      emptyList(), 1, "700");
   }
 
   @Test
@@ -471,7 +472,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
         .withMarcMappingDetails(mappingDetails));
     var mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(systemProtectionSettings);
-    var links = constructLinkCollection();
+    var links = constructLinkCollection(linkedTags);
     var linkingRules = constructLinkingRuleCollection(linkedTags);
 
     //when
@@ -486,11 +487,16 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   }
 
   private List<LinkingRuleDto> constructLinkingRuleCollection(String[] bibRecordTag) {
-    LinkingRuleDto dto = new LinkingRuleDto();
-    dto.setId(LINKING_RULE_ID);
-    dto.setBibField(bibRecordTag[0]);
-    dto.setAuthoritySubfields(List.of(SUB_FIELD_CODE_A));
-    return Collections.singletonList(dto);
+    List<LinkingRuleDto> linkingRuleDtos = new ArrayList<>();
+    for (int i = 0; i < bibRecordTag.length; i++) {
+      LinkingRuleDto dto = new LinkingRuleDto();
+      dto.setId(i);
+      dto.setBibField(bibRecordTag[i]);
+      dto.setAuthoritySubfields(List.of(SUB_FIELD_CODE_A));
+      linkingRuleDtos.add(dto);
+    }
+
+    return linkingRuleDtos;
   }
 
   private List<MarcFieldProtectionSetting> constructMarcFieldProtectionSettings(String bibRecordTag, boolean override) {
@@ -504,18 +510,22 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       .withData("*"));
   }
 
-  private InstanceLinkDtoCollection constructLinkCollection() {
+  private InstanceLinkDtoCollection constructLinkCollection(String... bibRecordTag) {
+    List<Link> links = new ArrayList<>();
+    for (int i = 0; i < bibRecordTag.length; i++) {
+      Link link = constructLink(i);
+      links.add(link);
+    }
     return new InstanceLinkDtoCollection()
-      .withLinks(singletonList(constructLink(0)));
+      .withLinks(links);
   }
 
   private Link constructLink(int id) {
-    return new Link().withId(nextInt())
+    return new Link().withId(id)
+      .withLinkingRuleId(id)
       .withAuthorityId(UUID.randomUUID().toString())
-
-      .withLinkingRuleId(LINKING_RULE_ID)
-      .withAuthorityNaturalId("test" + id)
-      .withAuthorityNaturalId("test");
+      .withInstanceId(UUID.randomUUID().toString())
+      .withAuthorityNaturalId("test" + id);
   }
 
   private List<MarcMappingDetail> constructMappingDetails(String subfield) {

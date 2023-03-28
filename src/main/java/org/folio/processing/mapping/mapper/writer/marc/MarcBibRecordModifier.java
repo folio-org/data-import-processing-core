@@ -126,11 +126,13 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
 
   private Optional<Link> getLink(DataField dataField) {
     return bibAuthorityLinks.stream()
-      .filter(link -> linkingRules.stream()
-        .filter(linkingRuleDto -> linkingRuleDto.getBibField().equals(dataField.getTag()))
-        .map(LinkingRuleDto::getId)
-        .collect(Collectors.toList())
-        .contains(link.getLinkingRuleId()))
+      .filter(link ->
+        linkingRules.stream()
+                    .filter(linkingRuleDto -> linkingRuleDto.getBibField().equals(dataField.getTag()))
+                    .map(LinkingRuleDto::getId)
+                    .collect(Collectors.toList())
+                    .contains(link.getLinkingRuleId())
+      )
       .filter(link -> {
         var sub9Matches = Optional.ofNullable(dataField.getSubfield(SUBFIELD_9))
           .map(subfield -> subfield.getData().equalsIgnoreCase(link.getAuthorityId()))
