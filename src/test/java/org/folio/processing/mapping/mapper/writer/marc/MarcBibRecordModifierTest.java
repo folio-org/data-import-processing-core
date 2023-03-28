@@ -301,6 +301,19 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
 
+  @Test
+  public void shouldUpdateRepeatableUncontrolledSubfields() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\": \"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"e\":\"e-value\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"e\":\"new subfield\"},{\"e\":\"e-value\"},{\"u\":\"u-value\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00153nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},"
+      + "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"e\":\"new subfield\"},{\"e\":\"e-value\"},{\"u\":\"u-value\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,emptyList(), emptyList(),emptyList(),1, "100");
+  }
+
   //field protection settings tests
   @Test
   public void shouldRetainLinkIfNotRepeatableAndProtectedFieldChanged() throws IOException {
