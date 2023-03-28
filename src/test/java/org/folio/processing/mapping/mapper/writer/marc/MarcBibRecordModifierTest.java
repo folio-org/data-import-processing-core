@@ -443,7 +443,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(systemProtectionSettings);
     var links = constructLinkCollection();
-    var linkingRules = constructLinkingRuleCollection("100");
+    var linkingRules = constructLinkingRuleCollection(linkedTag);
 
     //when
     marcBibRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC, links, linkingRules);
@@ -459,7 +459,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   private List<LinkingRuleDto> constructLinkingRuleCollection(String bibRecordTag) {
     LinkingRuleDto dto = new LinkingRuleDto();
     dto.setId(LINKING_RULE_ID);
-    dto.setBibRecordTag(bibRecordTag);
+    dto.setBibField(bibRecordTag);
     dto.setAuthoritySubfields(List.of(SUB_FIELD_CODE_A));
     return Collections.singletonList(dto);
   }

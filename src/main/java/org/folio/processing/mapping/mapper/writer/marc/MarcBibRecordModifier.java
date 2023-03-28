@@ -3,9 +3,7 @@ package org.folio.processing.mapping.mapper.writer.marc;
 import static java.util.Collections.emptyList;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,7 +55,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
 
   /**
    * Should call regular update subfield flow only for uncontrolled subfields
-   */
+   * */
   @Override
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
                                     DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
@@ -128,7 +126,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   private Optional<Link> getLink(DataField dataField) {
     return bibAuthorityLinks.stream()
       .filter(link -> linkingRules.stream()
-        .filter(linkingRuleDto -> linkingRuleDto.getBibRecordTag().equals(dataField.getTag()))
+        .filter(linkingRuleDto -> linkingRuleDto.getBibField().equals(dataField.getTag()))
         .map(LinkingRuleDto::getId)
         .collect(Collectors.toList())
         .contains(link.getLinkingRuleId()))
