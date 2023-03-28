@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
@@ -130,6 +131,15 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
         .map(LinkingRuleDto::getId)
         .collect(Collectors.toList())
         .contains(link.getLinkingRuleId()))
+      .filter(link -> {
+        var sub9Matches = Optional.ofNullable(dataField.getSubfield(SUBFIELD_9))
+          .map(subfield -> subfield.getData().equalsIgnoreCase(link.getAuthorityId()))
+          .orElse(false);
+        var sub0Matches = Optional.ofNullable(dataField.getSubfield(SUBFIELD_0))
+          .map(subfield -> StringUtils.endsWithIgnoreCase(subfield.getData(), link.getAuthorityNaturalId()))
+          .orElse(false);
+        return sub9Matches || sub0Matches;
+      })
       .findFirst();
   }
 

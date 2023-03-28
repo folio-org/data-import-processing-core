@@ -783,6 +783,8 @@ public class MarcRecordModifier {
     for (DataField dataField : marcRecordToChange.getDataFields()) {
       if (unUpdatedFieldShouldBeRemoved(dataField)) {
         tmpFields.add(dataField);
+      } else {
+        doAdditionalProtectedFieldAction(dataField);
       }
     }
     updatedFields = new ArrayList<>();
