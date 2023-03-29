@@ -65,7 +65,7 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD_WITH_SINGLE_028_FIELD = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-156\"},{\"b\":\"Decca\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
 
   private final String RECORD_WITH_THE_SAME_SUBFIELDS_IN_MULTIPLE_028_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aT90028\"},{\"b\":\"Verve\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aV-4061\"},{\"b\":\"Verve\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
-
+  private final String RECORD_WITH_MULTIPLE_SUBFIELDS_IN_MULTIPLE_050_FIELD = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"Z2013.5.W6\"}, {\"b\": \"K46 2018\"}, {\"a\": \"PR1286.W6\"}]}}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"a2-val\"}, {\"b\": \"b2-val\"}, {\"a\": \"a2-val\"}]}}, {\"245\": \"American Bar Association journal\"}]}";
 
   private MappingContext mappingContext = new MappingContext();
 
@@ -1416,6 +1416,28 @@ public class MarcRecordReaderUnitTest {
     assertFalse(actualValue.getValue().isEmpty());
     assertEquals(ValueType.STRING, actualValue.getValue().get(0).get(productIdFieldPath).getType());
     assertEquals(ValueType.MISSING, actualValue.getValue().get(0).get(productQualifierFieldPath).getType());
+  }
+
+  @Test
+  public void shouldReturnStringValueFromFirstSubfieldOnlyOnProcessingNonRepeatableFieldRuleWhenFieldHasMultipleSpecifiedSubfields() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_SUBFIELDS_IN_MULTIPLE_050_FIELD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    MappingRule callNumberRule = new MappingRule()
+      .withPath("holdings.callNumber")
+      .withEnabled("true")
+      .withValue("050$a");
+
+    Value value = reader.read(callNumberRule);
+
+    assertNotNull(value);
+    assertEquals(ValueType.STRING, value.getType());
+    assertEquals("Z2013.5.W6", value.getValue());
   }
 
 }
