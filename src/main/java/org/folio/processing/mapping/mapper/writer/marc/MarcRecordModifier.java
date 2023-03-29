@@ -42,7 +42,6 @@ import org.marc4j.marc.Leader;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
-import org.marc4j.marc.impl.SubfieldImpl;
 import org.marc4j.marc.impl.Verifier;
 
 import org.folio.DataImportEventPayload;
@@ -67,8 +66,8 @@ public class MarcRecordModifier {
   private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
     Set.of("001", "002", "003", "004", "005", "008", "009");
   public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
-    "044", "045", "066", "073", "240", "243", "245", "254", "256", "263", "306", "357", "378", "384", "507", "514",
-    "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
+    "044", "045", "066", "073", "100", "110", "111", "130", "240", "243", "245", "254", "256", "263", "306", "357",
+    "378", "384", "507", "514", "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   protected static final String ANY_STRING = "*";
   private static final char BLANK_SUBFIELD_CODE = ' ';
   private static final String LDR_TAG = "LDR";
@@ -714,6 +713,7 @@ public class MarcRecordModifier {
               ifNewDataShouldBeAdded = false;
             }
             LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
+            doAdditionalProtectedFieldAction(fieldToUpdate);
           }
         }
       }
@@ -727,22 +727,30 @@ public class MarcRecordModifier {
     }
   }
 
+  protected void doAdditionalProtectedFieldAction(DataField fieldToUpdate) {
+    // do nothing
+  }
+
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
-                                 DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
+                                    DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
     if (subfieldCode.equals(ANY_STRING)) {
       tmpFields.add(fieldToUpdate);
     } else {
-      String newSubfieldData = fieldReplacement.getSubfield(subfieldCode.charAt(0)).getData();
-      Subfield subfield = fieldToUpdate.getSubfield(subfieldCode.charAt(0));
-      if (subfield == null) {
-        subfield = new SubfieldImpl(subfieldCode.charAt(0));
-        fieldToUpdate.addSubfield(subfield);
-        fieldToUpdate.getSubfields()
-          .sort(Comparator.<Subfield, Boolean>comparing(sub -> isDigit(sub.getCode()))
-            .thenComparing(Subfield::getCode));
+      var subfieldChar = subfieldCode.charAt(0);
+      var newSubfields = fieldReplacement.getSubfields(subfieldChar);
+      var existingSubfields = fieldToUpdate.getSubfields(subfieldChar);
+      var allSubfields = fieldToUpdate.getSubfields();
+      if (existingSubfields.isEmpty()) {
+        allSubfields.addAll(newSubfields);
+      } else {
+        var indexOfFirstSubfield = allSubfields.indexOf(existingSubfields.get(0));
+        // replace all existed subfields to all new subfields
+        allSubfields.removeIf(subfield -> subfield.getCode() == subfieldChar);
+        allSubfields.addAll(indexOfFirstSubfield, newSubfields);
       }
-
-      subfield.setData(newSubfieldData);
+      allSubfields
+        .sort(Comparator.<Subfield, Boolean>comparing(sub -> isDigit(sub.getCode()))
+          .thenComparing(Subfield::getCode));
       ifNewDataShouldBeAdded = false;
       updatedFields.add(fieldToUpdate);
     }
@@ -778,6 +786,8 @@ public class MarcRecordModifier {
     for (DataField dataField : marcRecordToChange.getDataFields()) {
       if (unUpdatedFieldShouldBeRemoved(dataField)) {
         tmpFields.add(dataField);
+      } else {
+        doAdditionalProtectedFieldAction(dataField);
       }
     }
     updatedFields = new ArrayList<>();
