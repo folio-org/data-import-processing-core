@@ -1,3 +1,9 @@
+## 2023-03-30 v4.0.5
+* [MODDICORE-322](https://issues.folio.org/browse/MODDICORE-322) Multiple 050 fields or subfields all map to Holdings/Item Call Number if Holdings/Item Mapping is set to 050$a or 050$a " " 050$b
+* [MODDICORE-326](https://issues.folio.org/browse/MODDICORE-326) Cannot add multiple uncontrolled subfields to a linked "MARC bib" field
+* [MODDICORE-327](https://issues.folio.org/browse/MODDICORE-327) Update of linked and protected field via "Data import" leads to link deletion
+* [MODDICORE-324](https://issues.folio.org/browse/MODDICORE-324) Update MARC bib field should retain subfield $9
+
 ## 2023-03-24 v4.0.4
 * [MODDICORE-304](https://issues.folio.org/browse/MODDICORE-304) Allow import statistical code values based on the text
 * [MODDICORE-305](https://issues.folio.org/browse/MODDICORE-305) Order import: fix product identifier mapping problem with multiple product ID TYPES
