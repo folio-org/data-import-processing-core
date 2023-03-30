@@ -206,9 +206,11 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     if (subfield0 == null) {
       return false;
     }
-
+    var rulesForTag = linkingRules.stream()
+                      .filter(r -> r.getBibField().equals(dataField.getTag()))
+                      .collect(Collectors.toList());
     return bibAuthorityLinksKept.stream()
-      .filter(link -> linkingRules.stream()
+      .filter(link -> rulesForTag.stream()
         .map(LinkingRuleDto::getId)
         .collect(Collectors.toList())
         .contains(link.getLinkingRuleId()))
