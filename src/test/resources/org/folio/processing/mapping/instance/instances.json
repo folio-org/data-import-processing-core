@@ -783,7 +783,19 @@
     ],
     "classifications": [
       {
-        "classificationNumber": "M1613.3.C92 A5 M1528 M1619.5.G33 ML96.5.C865",
+        "classificationNumber": "M1613.3.C92 A5",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "M1528",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "M1619.5.G33",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "ML96.5.C865",
         "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
       }
     ],

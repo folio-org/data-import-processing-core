@@ -59,6 +59,8 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
+  private static final String CLASSIFICATIONS_TEST = "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
+  private static final String INSTANCES_CLASSIFICATIONS_PATH = "src/test/resources/org/folio/processing/mapping/instance/classificationsTestInstance.json";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
   private static final String DEFAULT_INSTANCE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instanceTypes.json";
   private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/resourceIdentifiers.json";
@@ -72,6 +74,32 @@ public class InstanceMappingTest {
     var reader = new MarcStreamReader(
       new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_PATH).getBytes(StandardCharsets.UTF_8)));
     var expected = new JsonArray(TestUtil.readFileFromPath(INSTANCES_PATH));
+    var mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    var actual = new JsonArray();
+    try (var factory = Validation.buildDefaultValidatorFactory()) {
+      var validator = factory.getValidator();
+
+      while (reader.hasNext()) {
+        var os = new ByteArrayOutputStream();
+        var writer = new MarcJsonWriter(os);
+        writer.write(reader.next());
+        var marcJson = new JsonObject(os.toString());
+        var actualMappedInstance = mapper.mapRecord(marcJson, new MappingParameters(), mappingRules);
+        var violations = validator.validate(actualMappedInstance);
+        assertTrue(violations.isEmpty());
+
+        actual.add(JsonObject.mapFrom(actualMappedInstance).put("id", "0"));
+      }
+    }
+    assertEquals(expected.encode(), actual.encode());
+  }
+
+  @Test
+  public void testMarcToInstanceClassifications() throws IOException {
+    var reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(CLASSIFICATIONS_TEST).getBytes(StandardCharsets.UTF_8)));
+    var expected = new JsonArray(TestUtil.readFileFromPath(INSTANCES_CLASSIFICATIONS_PATH));
     var mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     var actual = new JsonArray();
