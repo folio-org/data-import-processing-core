@@ -11,14 +11,17 @@ import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
+import org.folio.LinkingRuleDto;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -37,6 +40,8 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
+  private static final Integer LINKING_RULE_ID = 1;
+  private static final String SUB_FIELD_CODE_A = "a";
   private final MarcBibRecordModifier marcBibRecordModifier;
 
   public MarcBibRecordModifierTest() {
@@ -159,7 +164,6 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
-
 
   @Test
   public void shouldRemoveLinksOnSubfield0Change() throws IOException {
@@ -406,11 +410,12 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var exceptionThrown = false;
     try {
       marcBibRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, entityType,
-        new InstanceLinkDtoCollection());
+        new InstanceLinkDtoCollection(), new ArrayList<>());
     } catch (IllegalArgumentException ex) {
       Assert.assertTrue(ex.getMessage().endsWith("support only " + MARC_BIBLIOGRAPHIC.value()));
       exceptionThrown = true;
     }
+
     Assert.assertTrue("Exception not thrown for " + entityType.value(), exceptionThrown);
   }
 
@@ -481,9 +486,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(systemProtectionSettings);
     var links = constructLinkCollection(linkedTags);
+    var linkingRules = constructLinkingRuleCollection(linkedTags);
 
     //when
-    marcBibRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC, links);
+    marcBibRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC, links, linkingRules);
     marcBibRecordModifier.processUpdateMappingOption(mappingProfile.getMappingDetails().getMarcMappingDetails());
     marcBibRecordModifier.getResult(eventPayload);
     //then
@@ -491,6 +497,19 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var actualRecord = mapper().readValue(recordJson, Record.class);
     Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
     Assert.assertEquals(expectedLinksCount, marcBibRecordModifier.getBibAuthorityLinksKept().size());
+  }
+
+  private List<LinkingRuleDto> constructLinkingRuleCollection(String[] bibRecordTag) {
+    List<LinkingRuleDto> linkingRuleDtos = new ArrayList<>();
+    for (int i = 0; i < bibRecordTag.length; i++) {
+      LinkingRuleDto dto = new LinkingRuleDto();
+      dto.setId(i);
+      dto.setBibField(bibRecordTag[i]);
+      dto.setAuthoritySubfields(List.of(SUB_FIELD_CODE_A));
+      linkingRuleDtos.add(dto);
+    }
+
+    return linkingRuleDtos;
   }
 
   private List<MarcFieldProtectionSetting> constructMarcFieldProtectionSettings(String bibRecordTag, boolean override) {
@@ -507,18 +526,16 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   private InstanceLinkDtoCollection constructLinkCollection(String... bibRecordTag) {
     List<Link> links = new ArrayList<>();
     for (int i = 0; i < bibRecordTag.length; i++) {
-      String tag = bibRecordTag[i];
-      Link link = constructLink(tag, i);
+      Link link = constructLink(i);
       links.add(link);
     }
     return new InstanceLinkDtoCollection()
       .withLinks(links);
   }
 
-  private Link constructLink(String bibRecordTag, int id) {
+  private Link constructLink(int id) {
     return new Link().withId(id)
-      .withBibRecordTag(bibRecordTag)
-      .withBibRecordSubfields(singletonList("a"))
+      .withLinkingRuleId(id)
       .withAuthorityId(UUID.randomUUID().toString())
       .withInstanceId(UUID.randomUUID().toString())
       .withAuthorityNaturalId("test" + id);
