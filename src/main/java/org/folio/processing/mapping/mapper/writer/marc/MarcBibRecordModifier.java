@@ -14,7 +14,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
+import org.folio.LinkingRuleDto;
 import org.folio.MappingProfile;
+import org.folio.SubfieldModification;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.marc4j.marc.DataField;
@@ -28,6 +30,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     "611", "630", "700", "710", "711", "730", "800", "810", "811", "830");
 
   private List<Link> bibAuthorityLinks = emptyList();
+  private List<LinkingRuleDto> linkingRules = emptyList();
   private final Set<Link> bibAuthorityLinksKept = new HashSet<>();
 
   public List<Link> getBibAuthorityLinksKept() {
@@ -35,14 +38,15 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   public void initialize(DataImportEventPayload eventPayload, MappingParameters mappingParameters,
-                         MappingProfile mappingProfile, EntityType marcType,
-                         InstanceLinkDtoCollection links) throws IOException {
+    MappingProfile mappingProfile, EntityType marcType,
+    InstanceLinkDtoCollection links, List<LinkingRuleDto> linkingRules) throws IOException {
     validateEntityType(marcType);
     initialize(eventPayload, mappingParameters, mappingProfile, marcType);
     if (links == null || links.getLinks() == null) {
       return;
     }
     bibAuthorityLinks = links.getLinks();
+    this.linkingRules = linkingRules;
   }
 
   @Override
@@ -122,7 +126,13 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
 
   private Optional<Link> getLink(DataField dataField) {
     return bibAuthorityLinks.stream()
-      .filter(link -> link.getBibRecordTag().equals(dataField.getTag()))
+      .filter(link ->
+        linkingRules.stream()
+                    .filter(linkingRuleDto -> linkingRuleDto.getBibField().equals(dataField.getTag()))
+                    .map(LinkingRuleDto::getId)
+                    .collect(Collectors.toList())
+                    .contains(link.getLinkingRuleId())
+      )
       .filter(link -> {
         var sub9Matches = Optional.ofNullable(dataField.getSubfield(SUBFIELD_9))
           .map(subfield -> subfield.getData().equalsIgnoreCase(link.getAuthorityId()))
@@ -136,7 +146,23 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   private boolean subfieldLinked(Link link, String subfieldCode) {
-    return link.getBibRecordSubfields().contains(subfieldCode)
+    Optional<LinkingRuleDto> ruleDto = linkingRules.stream().filter(r -> r.getId().equals(link.getLinkingRuleId())).findFirst();
+    if (ruleDto.isEmpty()) {
+      return false;
+    }
+
+    LinkingRuleDto dto = ruleDto.get();
+    List<String> bibControlledSubfields = dto.getAuthoritySubfields();
+    List<SubfieldModification> subfieldModifications = dto.getSubfieldModifications();
+
+    bibControlledSubfields = bibControlledSubfields.stream()
+      .map(s -> subfieldModifications.stream()
+        .filter(subfieldModification -> s.equals(subfieldModification.getSource()))
+        .map(SubfieldModification::getTarget)
+        .findFirst()
+        .orElse(s))
+      .collect(Collectors.toList());
+    return bibControlledSubfields.contains(subfieldCode)
       || subfieldCode.charAt(0) == SUBFIELD_0
       || subfieldCode.charAt(0) == SUBFIELD_9;
   }
@@ -180,9 +206,14 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     if (subfield0 == null) {
       return false;
     }
-
+    var rulesForTag = linkingRules.stream()
+                      .filter(r -> r.getBibField().equals(dataField.getTag()))
+                      .collect(Collectors.toList());
     return bibAuthorityLinksKept.stream()
-      .filter(link -> link.getBibRecordTag().equals(dataField.getTag()))
+      .filter(link -> rulesForTag.stream()
+        .map(LinkingRuleDto::getId)
+        .collect(Collectors.toList())
+        .contains(link.getLinkingRuleId()))
       .anyMatch(link -> subfield0.getData().endsWith(link.getAuthorityNaturalId()));
   }
 

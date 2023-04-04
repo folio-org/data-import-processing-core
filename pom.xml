@@ -261,6 +261,7 @@
                 <path>${basedir}/ramls/raml-storage/schemas/dto/record.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/dto/edifactParsedContent.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/mod-entities-links/instanceLinkDtoCollection.json</path>
+                <path>${basedir}/ramls/raml-storage/schemas/mod-entities-links/linkingRuleDto.json</path>
                 <path>${basedir}/ramls/event.json</path>
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/holdings.json</path>
