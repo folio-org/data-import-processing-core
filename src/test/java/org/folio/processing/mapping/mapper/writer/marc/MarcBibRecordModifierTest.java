@@ -41,7 +41,7 @@ import org.junit.runners.JUnit4;
 public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
   private static final Integer LINKING_RULE_ID = 1;
-  public static final String SUB_FIELD_CODE_A = "a";
+  private static final String SUB_FIELD_CODE_A = "a";
   private final MarcBibRecordModifier marcBibRecordModifier;
 
   public MarcBibRecordModifierTest() {
@@ -356,7 +356,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       + "{\"700\":{\"subfields\":[{\"a\":\"artistic\"},{\"b\":\"new subfield\"},{\"0\":\"test0\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), constructMarcFieldProtectionSettings("700", false),
-      emptyList(), 1, "700");
+      emptyList(), 2, "700", "700");
   }
 
   @Test
