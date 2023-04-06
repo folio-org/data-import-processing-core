@@ -1,0 +1,143 @@
+[
+  {
+    "id": "0",
+    "hrid": "123123123123",
+    "source": "MARC",
+    "parentInstances": [],
+    "childInstances": [],
+    "title": "Sample record to test classification and call numbers - SINGLE FIELDS ONLY",
+    "indexTitle": "Sample record to test classification and call numbers - SINGLE FIELDS ONLY",
+    "alternativeTitles": [],
+    "editions": [],
+    "series": [],
+    "identifiers": [],
+    "contributors": [],
+    "subjects": [
+      {
+        "value": "AMBtest"
+      }
+    ],
+    "classifications": [
+      {
+        "classificationNumber": "B3199.A33 P7613 2000a",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "B3199.A33 P7613 2000b",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "Z5853.M38 G37 1993",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "TA418.9.C6",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "W1 ME9616J v.69 1997",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "QH 442.4 C386 1997",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "W1 NE372F v.12",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "QU 95 S839",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "001.81 B67",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "001.82 BAR",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "300.723 HEA",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "338.76292092 HEA",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "300.723 HEA",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "338.76292092",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "D 210.6:M 56",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "Y 3.AT 7:6 M 56/",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "A 1.1:",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "A 1.1/3:984",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "A 1.1/4:985",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "B3199.A33 P7613 2000a",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "B3199.A33 P7613 2000b",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "Z5853.M38 G37 1993",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      },
+      {
+        "classificationNumber": "TA418.9.C6",
+        "classificationTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+      }
+    ],
+    "publication": [
+      {
+        "place": "Atlanta, GA",
+        "dateOfPublication": "2023",
+        "role": "Publication"
+      }
+    ],
+    "publicationFrequency": [],
+    "publicationRange": [],
+    "electronicAccess": [],
+    "instanceTypeId": "fe19bae4-da28-472b-be90-d442e2428ead",
+    "instanceFormatIds": [],
+    "physicalDescriptions": [],
+    "languages": [
+      "eng"
+    ],
+    "notes": [
+      {
+        "instanceNoteTypeId": "fe19bae4-da28-472b-be90-d442e2428ead",
+        "note": "Testing multiple subfields in the same classification field",
+        "staffOnly": false
+      }
+    ],
+    "administrativeNotes": [],
+    "statisticalCodeIds": [],
+    "natureOfContentTermIds": [],
+    "precedingTitles": [],
+    "succeedingTitles": []
+  }
+]
