@@ -3,7 +3,6 @@ package org.folio.processing.mapping.mapper.writer.marc;
 import static io.vertx.core.json.jackson.DatabindCodec.mapper;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.UPDATE;
 
@@ -11,13 +10,9 @@ import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
@@ -40,7 +35,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
-  private static final Integer LINKING_RULE_ID = 1;
   private static final String SUB_FIELD_CODE_A = "a";
   private final MarcBibRecordModifier marcBibRecordModifier;
 
@@ -291,7 +285,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"110\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(),emptyList(),1, "100");
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(),emptyList(),1, "100", "110");
   }
 
   @Test
@@ -372,7 +366,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       + "{\"700\":{\"subfields\":[{\"a\":\"artistic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), constructMarcFieldProtectionSettings("700", false),
-      emptyList(), 1, "700");;
+      emptyList(), 1, "700");
   }
 
   @Test
