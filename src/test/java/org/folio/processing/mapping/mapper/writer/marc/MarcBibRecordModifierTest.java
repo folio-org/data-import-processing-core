@@ -28,6 +28,7 @@ import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MarcMappingDetail;
 import org.folio.rest.jaxrs.model.MarcSubfield;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -56,14 +57,16 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   @Test
   public void shouldRemoveLinksOnRepeatableLinkedFieldRemoval() throws IOException {
     // given
-    var incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    var expectedParsedContent = "{\"leader\":\"00099nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), 0, "700");
   }
 
   @Test
@@ -71,10 +74,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test0\"},{\"9\":\"aabf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00150nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
@@ -84,10 +87,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"aaaf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00150nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
@@ -97,10 +100,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00150nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
@@ -110,10 +113,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00113nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
   }
@@ -123,10 +126,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"0\":\"test2\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00127nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"0\":\"test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
   }
@@ -136,11 +139,11 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test0\"},{\"0\":\"test2\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00150nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},"
       + "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},"
-      + "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}"
-      + ",{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      + "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}},"
+      + "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
@@ -150,11 +153,11 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test2\"},{\"0\":\"test0\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00150nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},"
       + "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},"
-      + "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}"
-      + ",{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      + "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}},"
+      + "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 1);
   }
@@ -164,10 +167,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00120nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
   }
@@ -177,10 +180,10 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00113nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
   }
@@ -190,12 +193,154 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00120nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(incomingParsedContent, expectedParsedContent, 0);
+  }
+
+  @Test
+  public void shouldNotUpdateLinkedSubfield9WIthAnotherAlsoLinked() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"tes\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"245\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaaaa\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"245\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaaaa\"},{\"0\":\"test1\"},{\"9\":\"(AuCNLDY)3360609\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00218nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"245\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaaaa\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(), emptyList(), 2, "100", "700");
+  }
+
+  @Test
+  public void shouldUnlinkAndRemoveAll9SubfieldsWhenSubfield0ChangeInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaaaa\"},{\"b\":\"tes\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"tes\"},{\"0\":\"test0\"}," +
+      "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaaaa\"},{\"b\":\"tes\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}," +
+      "{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"},{\"9\":\"aaaf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}," +
+      "{\"9\":\"aaa\"},{\"9\":\"bbb\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00111nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaaaa\"},{\"b\":\"tes\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(), emptyList(), 0, "700");
+  }
+
+  //repeatable linked cases
+  @Test
+  public void shouldNotUpdateLinkedSubfield9InRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"(AuCNLDY)3360609\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00142nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(), emptyList(), 1, "700");
+  }
+
+  @Test
+  public void shouldHandleMultipleSubfield0ChangeAndSomeLinksKeptInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test4\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"},{\"9\":\"edbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test5\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test3\"},{\"9\":\"fdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00282nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"aaaa\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test4\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test5\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), 2, "700", "700", "700", "700");
+  }
+
+  @Test
+  public void shouldHandleSubfield0ChangeAndSomeLinksKeptInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan1\"},{\"0\":\"test1\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00214nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan1\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), 2, "700", "700", "700");
+  }
+
+  @Test
+  public void shouldHandleSubfield0ChangeAndSomeLinksKeptWithShuffleInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John1\"},{\"0\":\"test1\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00214nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John1\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), 2, "700", "700", "700");
+  }
+
+  @Test
+  @Ignore("Requirements unknown. Leave as is until clarified.")
+  public void shouldHandleSubfield0ChangeWithShuffleInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John1\"},{\"0\":\"test1\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan1\"},{\"0\":\"test0\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny1\"},{\"0\":\"test2\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00251nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John1\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan1\"},{\"0\":\"test0\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny1\"},{\"0\":\"test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), 0, "700", "700", "700");
   }
 
   //custom mapping details tests
@@ -204,7 +349,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00171nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
@@ -218,7 +363,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     // given
     var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"100\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
     var expectedParsedContent = "{\"leader\":\"00133nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
