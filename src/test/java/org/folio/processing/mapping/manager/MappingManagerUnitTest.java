@@ -56,6 +56,7 @@ public class MappingManagerUnitTest {
   public void beforeTest() {
     MappingManager.clearReaderFactories();
     MappingManager.clearWriterFactories();
+    MappingManager.clearMapperFactories();
   }
 
   @Test
