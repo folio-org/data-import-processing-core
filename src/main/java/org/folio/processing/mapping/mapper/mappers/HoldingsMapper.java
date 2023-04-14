@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.mapper.mappers;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,14 @@ public class HoldingsMapper implements Mapper {
     this.reader = reader;
     this.writer = writer;
   }
+
+  @Override
+  public void initializeReaderAndWriter(DataImportEventPayload eventPayload, Reader reader, Writer writer, MappingContext mappingContext) throws IOException {
+    eventPayload.getContext().put("ifDuplicatesNeeded", "true");
+    reader.initialize(eventPayload, mappingContext);
+    writer.initialize(eventPayload);
+  }
+
   @Override
   public boolean isEligibleForEntityType(DataImportEventPayload eventPayload) {
     return false;
@@ -56,30 +65,37 @@ public class HoldingsMapper implements Mapper {
   private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile) throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
 
-    ListValue permanentLocationIds = null;
+    ListValue permanentLocationIdsWithDuplicates = null;
     for (MappingRule rule : mappingRules) {
       if (Boolean.parseBoolean(rule.getEnabled())) {
         if (StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
-          permanentLocationIds = (ListValue) reader.read(rule);
+          permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
         }
       }
     }
-    List<MappingRule> mappingRulesWithoutPermanentLocation = filterRulesByPermanentLocationId(mappingRules);
-    for (MappingRule rule : mappingRulesWithoutPermanentLocation) {
-      if (Boolean.parseBoolean(rule.getEnabled())) {
-        Value value = reader.read(rule);
-        writer.write(rule.getPath(), value);
+    if (permanentLocationIdsWithDuplicates != null && permanentLocationIdsWithDuplicates.getValue() != null) {
+      List<String> locationsWithDuplicates = permanentLocationIdsWithDuplicates.getValue();
+      eventPayload.getContext().put("holdingsIdentifier", String.valueOf(locationsWithDuplicates));
+      List<String> uniquePermanentLocationIds = locationsWithDuplicates
+        .stream()
+        .distinct()
+        .collect(Collectors.toList());
+
+      List<MappingRule> mappingRulesWithoutPermanentLocation = filterRulesByPermanentLocationId(mappingRules);
+      for (MappingRule rule : mappingRulesWithoutPermanentLocation) {
+        if (Boolean.parseBoolean(rule.getEnabled())) {
+          Value value = reader.read(rule);
+          writer.write(rule.getPath(), value);
+        }
       }
-    }
-    DataImportEventPayload result = writer.getResult(eventPayload);
-    JsonObject originalHolding = new JsonObject(result.getContext().get(HOLDINGS));
-    JsonArray holdings = new JsonArray();
-    if (permanentLocationIds != null) {
-      for (String location : permanentLocationIds.getValue()) {
+      DataImportEventPayload result = writer.getResult(eventPayload);
+      JsonObject originalHolding = new JsonObject(result.getContext().get(HOLDINGS));
+      JsonArray holdings = new JsonArray();
+      for (String location : uniquePermanentLocationIds) {
         holdings.add(originalHolding.copy().put(PERMANENT_LOCATION_ID, location));
       }
+      eventPayload.getContext().put(HOLDINGS, holdings.encode());
     }
-    eventPayload.getContext().put(HOLDINGS, holdings.encode());
     return eventPayload;
   }
 

@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -86,6 +87,7 @@ public class MarcRecordReader implements Reader {
   private EntityType entityType;
   private Record marcRecord;
   private MappingParameters mappingParameters;
+  private DataImportEventPayload eventPayload;
 
   MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
@@ -95,6 +97,7 @@ public class MarcRecordReader implements Reader {
   public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) {
     try {
       if (eventPayload.getContext() != null && eventPayload.getContext().containsKey(entityType.value())) {
+        this.eventPayload = eventPayload;
         this.mappingParameters = mappingContext.getMappingParameters();
         String stringRecord = eventPayload.getContext().get(entityType.value());
         org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
@@ -163,7 +166,7 @@ public class MarcRecordReader implements Reader {
       resultList = resultList.stream().filter(r -> isNotBlank(r)).collect(Collectors.toList());
       List<String> tmpResultList = new ArrayList<>(resultList);
       String concatenator = sb.toString();
-      if(isNotBlank(concatenator)) {
+      if (isNotBlank(concatenator)) {
         for (int i = 0; i < tmpResultList.size(); i++) {
           String element = tmpResultList.get(i);
           resultList.set(i, element.concat(concatenator).toString());
@@ -255,6 +258,7 @@ public class MarcRecordReader implements Reader {
   private String retrieveNameWithoutCode(String mappingParameter) {
     return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
+
   /**
    * Process string expression method
    *
@@ -279,9 +283,11 @@ public class MarcRecordReader implements Reader {
     }
     return new StringBuilder(EMPTY);
   }
+
   /**
    * Process TODAY expression method
    * appends ZonedDateTime.now for tenant
+   *
    * @param sb                    uses for appending today value to buffer
    * @param multipleStringBuilder uses for appending today value to buffer
    * @throws IllegalArgumentException if can not format today
@@ -412,7 +418,9 @@ public class MarcRecordReader implements Reader {
     List<String> results = new ArrayList<>();
     if (MARC_PATTERN.matcher(marcPath).matches()) {
       List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
-      LinkedHashSet<String> result = new LinkedHashSet<>();
+
+      Boolean ifDuplicatesNeeded = Boolean.valueOf(eventPayload.getContext().get("ifDuplicatesNeeded"));
+      var result = buildResultedCollection(ifDuplicatesNeeded);
       for (VariableField variableField : fields) {
         result.addAll(extractValueFromMarcRecord(variableField, marcPath));
       }
@@ -491,5 +499,16 @@ public class MarcRecordReader implements Reader {
         .getContent()
         .toString()
         .getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private static AbstractCollection<String> buildResultedCollection(Boolean ifDuplicatesNeeded) {
+    if (ifDuplicatesNeeded != null || ifDuplicatesNeeded == true) {
+      ArrayList<String> result = new ArrayList<String>();
+      return result;
+    }
+    else {
+      LinkedHashSet<String> result = new LinkedHashSet<>();
+      return result;
+    }
   }
 }

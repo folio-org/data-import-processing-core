@@ -21,7 +21,6 @@ import static java.lang.String.format;
 public class FactoryRegistry {
   private static final List<ReaderFactory> READER_FACTORIES = new ArrayList<>();
   private static final List<WriterFactory> WRITER_FACTORIES = new ArrayList<>();
-
   private static final List<MapperFactory> MAPPER_FACTORIES = new ArrayList<>();
 
 
