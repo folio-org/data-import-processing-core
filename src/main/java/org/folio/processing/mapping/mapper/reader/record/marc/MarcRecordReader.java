@@ -502,7 +502,7 @@ public class MarcRecordReader implements Reader {
   }
 
   private static AbstractCollection<String> buildResultedCollection(Boolean ifDuplicatesNeeded) {
-    if (ifDuplicatesNeeded != null || ifDuplicatesNeeded == true) {
+    if (ifDuplicatesNeeded == true) {
       ArrayList<String> result = new ArrayList<String>();
       return result;
     }

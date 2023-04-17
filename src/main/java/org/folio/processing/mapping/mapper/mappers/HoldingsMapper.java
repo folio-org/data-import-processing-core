@@ -38,7 +38,6 @@ public class HoldingsMapper implements Mapper {
 
   @Override
   public void initializeReaderAndWriter(DataImportEventPayload eventPayload, Reader reader, Writer writer, MappingContext mappingContext) throws IOException {
-    eventPayload.getContext().put("ifDuplicatesNeeded", "true");
     reader.initialize(eventPayload, mappingContext);
     writer.initialize(eventPayload);
   }
@@ -65,6 +64,7 @@ public class HoldingsMapper implements Mapper {
   private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile) throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
 
+    eventPayload.getContext().put("ifDuplicatesNeeded", "true");
     ListValue permanentLocationIdsWithDuplicates = null;
     for (MappingRule rule : mappingRules) {
       if (Boolean.parseBoolean(rule.getEnabled())) {
@@ -73,6 +73,8 @@ public class HoldingsMapper implements Mapper {
         }
       }
     }
+    eventPayload.getContext().remove("ifDuplicatesNeeded");
+
     if (permanentLocationIdsWithDuplicates != null && permanentLocationIdsWithDuplicates.getValue() != null) {
       List<String> locationsWithDuplicates = permanentLocationIdsWithDuplicates.getValue();
       eventPayload.getContext().put("holdingsIdentifier", String.valueOf(locationsWithDuplicates));
