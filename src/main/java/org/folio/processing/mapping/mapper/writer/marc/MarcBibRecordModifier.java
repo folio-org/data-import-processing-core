@@ -26,8 +26,6 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
 
   private static final char SUBFIELD_0 = '0';
   private static final char SUBFIELD_9 = '9';
-  private static final List<String> LINKABLE_TAGS = List.of("100", "110", "111", "130", "240", "600", "610",
-    "611", "630", "700", "710", "711", "730", "800", "810", "811", "830");
 
   private List<Link> bibAuthorityLinks = emptyList();
   private List<LinkingRuleDto> linkingRules = emptyList();
@@ -67,7 +65,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       return updateUncontrolledSubfields(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
     }
 
-    if (LINKABLE_TAGS.contains(fieldReplacement.getTag())) {
+    if (containsBibTag(linkingRules, fieldReplacement.getTag())) {
       removeSubfield9(fieldToUpdate, fieldReplacement);
       if (subfieldCode.charAt(0) == SUBFIELD_9) {
         return false;
@@ -196,6 +194,12 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       && existingSubfield0 != null
       && incomingSubfield0.getData().endsWith(link.getAuthorityNaturalId())
       && incomingSubfield0.getData().equals(existingSubfield0.getData());
+  }
+
+  private boolean containsBibTag(List<LinkingRuleDto> linkingRules, String tag) {
+    return linkingRules.stream()
+      .map(LinkingRuleDto::getBibField)
+      .anyMatch(bibField -> bibField.equals(tag));
   }
 
   /**

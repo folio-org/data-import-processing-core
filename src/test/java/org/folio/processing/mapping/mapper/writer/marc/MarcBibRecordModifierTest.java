@@ -3,7 +3,6 @@ package org.folio.processing.mapping.mapper.writer.marc;
 import static io.vertx.core.json.jackson.DatabindCodec.mapper;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.RandomUtils.nextInt;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.UPDATE;
 
@@ -11,13 +10,9 @@ import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.folio.DataImportEventPayload;
 import org.folio.InstanceLinkDtoCollection;
 import org.folio.Link;
@@ -40,7 +35,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
-  private static final Integer LINKING_RULE_ID = 1;
   private static final String SUB_FIELD_CODE_A = "a";
   private final MarcBibRecordModifier marcBibRecordModifier;
 
@@ -243,7 +237,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var expectedParsedContent = "{\"leader\":\"00121nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(),emptyList(),emptyList(), 1, "100");
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, 1, "100");
   }
 
   @Test
@@ -259,7 +253,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"101\":{\"subfields\":[{\"b\":\"book\"},{\"9\":\"aabf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(),emptyList(),1,"100");
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, 1,"100");
   }
 
   @Test
@@ -275,7 +269,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"101\":{\"subfields\":[{\"b\":\"book\"},{\"9\":\"aabf59b7-913b-42ac-b1c6-e50ae7b00e6a\"},{\"9\":\"test\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(),emptyList(),1, "100");
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, 1, "100");
   }
 
   @Test
@@ -291,7 +285,9 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
       "{\"110\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), emptyList(),emptyList(),1, "100");
+
+    var linkingRules = constructLinkingRules("100", "110");
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, linkingRules, 1, "100");
   }
 
   @Test
@@ -315,7 +311,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var expectedParsedContent = "{\"leader\":\"00153nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},"
       + "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"e\":\"new subfield\"},{\"e\":\"e-value\"},{\"u\":\"u-value\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,emptyList(), emptyList(),emptyList(),1, "100");
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, 1, "100");
   }
 
   //field protection settings tests
@@ -372,7 +368,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       + "{\"700\":{\"subfields\":[{\"a\":\"artistic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, emptyList(), constructMarcFieldProtectionSettings("700", false),
-      emptyList(), 1, "700");;
+      emptyList(), 1, "700");
   }
 
   @Test
@@ -383,7 +379,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var expectedParsedContent = "{\"leader\":\"00135nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
       "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"new subfield\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMarcFieldProtectionSettings("100", false), constructMarcFieldProtectionSettings("100", true),1);
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMarcFieldProtectionSettings("100", false), constructMarcFieldProtectionSettings("100", true), 1);
   }
 
   //negative tests
@@ -443,6 +439,37 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       expectedLinksCount);
   }
 
+  private void testMarcUpdating(String existingParsedContent,
+                                String incomingParsedContent,
+                                String expectedParsedContent,
+                                int expectedLinksCount, String... linkedTags) throws IOException {
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), constructLinkingRules(linkedTags),
+      expectedLinksCount, linkedTags);
+  }
+
+  private void testMarcUpdating(String existingParsedContent,
+                                String incomingParsedContent,
+                                String expectedParsedContent,
+                                List<LinkingRuleDto> linkingRules,
+                                int expectedLinksCount, String... linkedTags) throws IOException {
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), linkingRules,
+      expectedLinksCount, linkedTags);
+  }
+
+  private void testMarcUpdating(String existingParsedContent,
+                                String incomingParsedContent,
+                                String expectedParsedContent,
+                                List<MarcMappingDetail> mappingDetails,
+                                List<MarcFieldProtectionSetting> systemProtectionSettings,
+                                List<MarcFieldProtectionSetting> profileProtectionSettings,
+                                int expectedLinksCount, String... linkedTags) throws IOException {
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, mappingDetails,
+      systemProtectionSettings, profileProtectionSettings, constructLinkingRules(linkedTags),
+      expectedLinksCount, linkedTags);
+  }
+
   private void testMarcUpdating(String incomingParsedContent,
                                 String expectedParsedContent,
                                 List<MarcMappingDetail> mappingDetails,
@@ -456,7 +483,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       "{\"111\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, mappingDetails,
-      systemProtectionSettings, profileProtectionSettings,
+      systemProtectionSettings, profileProtectionSettings, constructLinkingRules("100"),
       expectedLinksCount, "100");
   }
 
@@ -466,6 +493,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
                                 List<MarcMappingDetail> mappingDetails,
                                 List<MarcFieldProtectionSetting> systemProtectionSettings,
                                 List<MarcFieldProtectionSetting> profileProtectionSettings,
+                                List<LinkingRuleDto> linkingRules,
                                 int expectedLinksCount, String... linkedTags) throws IOException {
     var incomingRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(incomingParsedContent));
@@ -486,7 +514,6 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     var mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(systemProtectionSettings);
     var links = constructLinkCollection(linkedTags);
-    var linkingRules = constructLinkingRuleCollection(linkedTags);
 
     //when
     marcBibRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC, links, linkingRules);
@@ -499,7 +526,7 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     Assert.assertEquals(expectedLinksCount, marcBibRecordModifier.getBibAuthorityLinksKept().size());
   }
 
-  private List<LinkingRuleDto> constructLinkingRuleCollection(String[] bibRecordTag) {
+  private List<LinkingRuleDto> constructLinkingRules(String... bibRecordTag) {
     List<LinkingRuleDto> linkingRuleDtos = new ArrayList<>();
     for (int i = 0; i < bibRecordTag.length; i++) {
       LinkingRuleDto dto = new LinkingRuleDto();
