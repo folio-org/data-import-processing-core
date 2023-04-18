@@ -555,6 +555,17 @@ public class MarcRecordModifier {
     return subfieldCode == ANY_CHAR || field.getSubfield(subfieldCode) != null;
   }
 
+  private boolean fieldMatches(DataField fieldReplacement, DataField fieldToUpdate, String tag, char ind1, char ind2, char subfieldCode) {
+    return fieldMatches(fieldToUpdate, tag, ind1, ind2, subfieldCode)
+      && fieldsDeepMatch(incomingMarcRecord.getDataFields(), marcRecordToChange.getDataFields(),
+      fieldReplacement, fieldToUpdate);
+  }
+
+  protected boolean fieldsDeepMatch(List<DataField> fieldReplacements, List<DataField> fieldsToUpdate,
+                                    DataField fieldReplacement, DataField fieldToUpdate) {
+    return true;
+  }
+
   private List<Subfield> findSubfields(DataField field, char subfieldCode, String subfieldDataFragment) {
     List<Subfield> subfieldsForSearch = subfieldCode == ANY_CHAR ? field.getSubfields() : field.getSubfields(subfieldCode);
     return subfieldsForSearch.stream()
@@ -702,10 +713,10 @@ public class MarcRecordModifier {
     List<DataField> dataFields = marcRecordToChange.getDataFields();
     List<DataField> tmpFields = new ArrayList<>();
 
-    if (fieldToRemove == null || !fieldMatches(fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+    if (fieldToRemove == null || !fieldMatches(fieldReplacement, fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
       fieldToRemove = fieldReplacement;
       for (DataField fieldToUpdate : dataFields) {
-        if (fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+        if (fieldMatches(fieldReplacement, fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
           if (isNotProtected(fieldToUpdate)) {
             ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
           } else {
@@ -719,6 +730,8 @@ public class MarcRecordModifier {
       }
       tmpFields.removeAll(updatedFields);
       dataFields.removeAll(tmpFields);
+    } else {
+      clearDataField(fieldReplacement);
     }
 
     if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
@@ -756,6 +769,10 @@ public class MarcRecordModifier {
     }
 
     return ifNewDataShouldBeAdded;
+  }
+
+  protected void clearDataField(DataField dataField) {
+    // do nothing
   }
 
   boolean isNonRepeatableField(DataField field) {
