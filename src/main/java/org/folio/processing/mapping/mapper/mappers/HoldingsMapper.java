@@ -19,6 +19,8 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,12 +36,6 @@ public class HoldingsMapper implements Mapper {
   public HoldingsMapper(Reader reader, Writer writer) {
     this.reader = reader;
     this.writer = writer;
-  }
-
-  @Override
-  public void initializeReaderAndWriter(DataImportEventPayload eventPayload, Reader reader, Writer writer, MappingContext mappingContext) throws IOException {
-    reader.initialize(eventPayload, mappingContext);
-    writer.initialize(eventPayload);
   }
 
   @Override
@@ -77,7 +73,9 @@ public class HoldingsMapper implements Mapper {
 
     if (permanentLocationIdsWithDuplicates != null && permanentLocationIdsWithDuplicates.getValue() != null) {
       List<String> locationsWithDuplicates = permanentLocationIdsWithDuplicates.getValue();
-      eventPayload.getContext().put("holdingsIdentifier", String.valueOf(locationsWithDuplicates));
+
+      JsonArray holdingsIdentifier = new JsonArray(locationsWithDuplicates);
+      eventPayload.getContext().put("HOLDINGS_IDENTIFIERS", holdingsIdentifier.toString());
       List<String> uniquePermanentLocationIds = locationsWithDuplicates
         .stream()
         .distinct()
