@@ -95,6 +95,12 @@ public class FactoryRegistry {
   public List<WriterFactory> getWriterFactories() {
     return WRITER_FACTORIES;
   }
+
+  /**
+   * Returns list of registered mapper factories
+   *
+   * @return list of mapper factories
+   */
   public List<MapperFactory> getMapperFactories() {
     return MAPPER_FACTORIES;
   }

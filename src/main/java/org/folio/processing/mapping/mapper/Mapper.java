@@ -17,15 +17,35 @@ import java.io.IOException;
  */
 public interface Mapper {
 
-
+  /**
+   *
+   * Template method for mapping.
+   * @param profile - current Mapping Profile
+   * @param eventPayload - current eventPayload
+   * @param mappingContext - current Context
+   * @return - DataImportEventPayload with mapped entities inside
+   */
   DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload,
                              MappingContext mappingContext);
 
+  /**
+   * Initialization reader and writer
+   * @param reader    -     Reader to read values from given event payload
+   * @param writer     -    Writer to write values to given event payload
+   * @param eventPayload - current eventPayload
+   * @param mappingContext - current Context
+   * @throws IOException if a low-level I/O problem occurs (JSON serialization)
+   */
   default void initializeReaderAndWriter(DataImportEventPayload eventPayload, Reader reader, Writer writer, MappingContext mappingContext) throws IOException {
     reader.initialize(eventPayload, mappingContext);
     writer.initialize(eventPayload);
   }
 
+  /**
+   * Check if MappingProfile is valid
+   * @param profile - current Mapping Profile
+   * @return true if MappingProfile is valid otherwise - false.
+   */
   default boolean ifProfileIsInvalid( MappingProfile profile) {
     return profile.getMappingDetails() == null
       || profile.getMappingDetails().getMappingFields() == null
