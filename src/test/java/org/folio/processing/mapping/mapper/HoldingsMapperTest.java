@@ -114,7 +114,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateSingleHoldingIfLocationsAreTheSame() throws IOException {
+  public void  shouldCreateMultipleHoldingsButWithoutDuplicatedLocations() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"AM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"asdf\"},{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -175,10 +175,10 @@ public class HoldingsMapperTest {
     assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals( 2, holdings.size());
-    JsonObject secondHoldings = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
-    JsonObject firstHoldings = holdings.getJsonObject(1);
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    JsonObject firstHoldings = holdings.getJsonObject(0);
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    JsonObject secondHoldings = holdings.getJsonObject(1);
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(3, holdingsIdentifier.size());
@@ -188,7 +188,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateMultipleHoldingsButWithoutDuplicatedLocations() throws IOException {
+  public void shouldCreateSingleHoldingIfLocationsAreTheSame() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"AM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"asdf\"},{\"h\":\"fcd64ce1-6995-48f0-840e-89ffa2288371\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
