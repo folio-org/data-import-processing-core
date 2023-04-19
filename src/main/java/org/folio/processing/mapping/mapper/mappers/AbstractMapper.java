@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.processing.exceptions.MappingException;
-import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
