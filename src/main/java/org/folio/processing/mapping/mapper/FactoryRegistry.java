@@ -23,7 +23,6 @@ public class FactoryRegistry {
   private static final List<WriterFactory> WRITER_FACTORIES = new ArrayList<>();
   private static final List<MapperFactory> MAPPER_FACTORIES = new ArrayList<>();
 
-
   /**
    * Creates reader by given entity type using reader factory
    *
@@ -60,6 +59,13 @@ public class FactoryRegistry {
     }
   }
 
+  /**
+   * Created specific mapper by given
+   * @param dataImportEventPayload
+   * @param reader
+   * @param writer
+   * @return
+   */
   public Mapper createMapper(DataImportEventPayload dataImportEventPayload, Reader reader, Writer writer) {
     Optional<MapperFactory> optionalMapperFactory = MAPPER_FACTORIES.stream()
       .filter(mapperFactory -> mapperFactory.isEligiblePayload(dataImportEventPayload))
@@ -69,7 +75,6 @@ public class FactoryRegistry {
       return mapperFactory.createMapper(reader, writer);
     } else {
       return new AbstractMapper(reader, writer);
-      //throw new IllegalArgumentException(format("Can not find MapperFactory for current node inside payload %s", dataImportEventPayload.getCurrentNode()));
     }
   }
 

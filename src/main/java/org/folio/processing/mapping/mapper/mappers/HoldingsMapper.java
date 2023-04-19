@@ -1,6 +1,6 @@
 package org.folio.processing.mapping.mapper.mappers;
 
-import com.google.common.collect.Lists;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -19,17 +19,16 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class HoldingsMapper implements Mapper {
-
-  private static final Logger LOGGER = LogManager.getLogger(MappingManager.class);
+  private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
   public static final String PERMANENT_LOCATION_ID = "permanentLocationId";
-  public static final String HOLDINGS = "HOLDINGS";
 
+  public static final String HOLDINGS = "HOLDINGS";
+  public static final String IF_DUPLICATES_NEEDED = "ifDuplicatesNeeded";
+  public static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
   private Reader reader;
   private Writer writer;
 
@@ -59,37 +58,19 @@ public class HoldingsMapper implements Mapper {
 
   private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile) throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
-
-    eventPayload.getContext().put("ifDuplicatesNeeded", "true");
-    ListValue permanentLocationIdsWithDuplicates = null;
-    for (MappingRule rule : mappingRules) {
-      if (Boolean.parseBoolean(rule.getEnabled())) {
-        if (StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
-          permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
-        }
-      }
-    }
-    eventPayload.getContext().remove("ifDuplicatesNeeded");
+    ListValue permanentLocationIdsWithDuplicates = constructLocationsWithDuplicates(eventPayload, mappingRules);;
 
     if (permanentLocationIdsWithDuplicates != null && permanentLocationIdsWithDuplicates.getValue() != null) {
       List<String> locationsWithDuplicates = permanentLocationIdsWithDuplicates.getValue();
 
       JsonArray holdingsIdentifier = new JsonArray(locationsWithDuplicates);
-      eventPayload.getContext().put("HOLDINGS_IDENTIFIERS", holdingsIdentifier.toString());
+      eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, holdingsIdentifier.toString());
       List<String> uniquePermanentLocationIds = locationsWithDuplicates
         .stream()
         .distinct()
         .collect(Collectors.toList());
 
-      List<MappingRule> mappingRulesWithoutPermanentLocation = filterRulesByPermanentLocationId(mappingRules);
-      for (MappingRule rule : mappingRulesWithoutPermanentLocation) {
-        if (Boolean.parseBoolean(rule.getEnabled())) {
-          Value value = reader.read(rule);
-          writer.write(rule.getPath(), value);
-        }
-      }
-      DataImportEventPayload result = writer.getResult(eventPayload);
-      JsonObject originalHolding = new JsonObject(result.getContext().get(HOLDINGS));
+      JsonObject originalHolding = mapDefaultHolding(eventPayload, mappingRules);
       JsonArray holdings = new JsonArray();
       for (String location : uniquePermanentLocationIds) {
         holdings.add(originalHolding.copy().put(PERMANENT_LOCATION_ID, location));
@@ -97,6 +78,32 @@ public class HoldingsMapper implements Mapper {
       eventPayload.getContext().put(HOLDINGS, holdings.encode());
     }
     return eventPayload;
+  }
+
+  private JsonObject mapDefaultHolding(DataImportEventPayload eventPayload, List<MappingRule> mappingRules) throws JsonProcessingException {
+    List<MappingRule> mappingRulesWithoutPermanentLocation = filterRulesByPermanentLocationId(mappingRules);
+    for (MappingRule rule : mappingRulesWithoutPermanentLocation) {
+      if (Boolean.parseBoolean(rule.getEnabled())) {
+        Value value = reader.read(rule);
+        writer.write(rule.getPath(), value);
+      }
+    }
+    DataImportEventPayload resultedHolding = writer.getResult(eventPayload);
+    return new JsonObject(resultedHolding.getContext().get(HOLDINGS));
+  }
+
+  private ListValue constructLocationsWithDuplicates(DataImportEventPayload eventPayload, List<MappingRule> mappingRules) {
+    ListValue permanentLocationIdsWithDuplicates = null;
+    eventPayload.getContext().put(IF_DUPLICATES_NEEDED, "true");
+    for (MappingRule rule : mappingRules) {
+      if (Boolean.parseBoolean(rule.getEnabled())) {
+        if (StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
+          permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
+        }
+      }
+    }
+    eventPayload.getContext().remove(IF_DUPLICATES_NEEDED);
+    return permanentLocationIdsWithDuplicates;
   }
 
   private static List<MappingRule> filterRulesByPermanentLocationId(List<MappingRule> rules) {

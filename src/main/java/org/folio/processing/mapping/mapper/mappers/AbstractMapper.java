@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class AbstractMapper implements Mapper {
-  private static final Logger LOGGER = LogManager.getLogger(MappingManager.class);
+  private static final Logger LOGGER = LogManager.getLogger(AbstractMapper.class);
 
   private Reader reader;
   private Writer writer;

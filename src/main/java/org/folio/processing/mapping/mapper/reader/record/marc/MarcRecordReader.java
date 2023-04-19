@@ -83,6 +83,7 @@ public class MarcRecordReader implements Reader {
   private static final String UTC_TIMEZONE = "UTC";
   private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider");
   private static final String BLANK = "";
+  public static final String IF_DUPLICATES_NEEDED = "ifDuplicatesNeeded";
 
   private EntityType entityType;
   private Record marcRecord;
@@ -419,7 +420,7 @@ public class MarcRecordReader implements Reader {
     if (MARC_PATTERN.matcher(marcPath).matches()) {
       List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
 
-      Boolean ifDuplicatesNeeded = Boolean.valueOf(eventPayload.getContext().get("ifDuplicatesNeeded"));
+      Boolean ifDuplicatesNeeded = Boolean.valueOf(eventPayload.getContext().get(IF_DUPLICATES_NEEDED));
       var result = buildResultedCollection(ifDuplicatesNeeded);
       for (VariableField variableField : fields) {
         result.addAll(extractValueFromMarcRecord(variableField, marcPath));
