@@ -96,10 +96,8 @@ public class HoldingsMapper implements Mapper {
     ListValue permanentLocationIdsWithDuplicates = null;
     eventPayload.getContext().put(IF_DUPLICATES_NEEDED, "true");
     for (MappingRule rule : mappingRules) {
-      if (Boolean.parseBoolean(rule.getEnabled())) {
-        if (StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
+        if (Boolean.parseBoolean(rule.getEnabled()) && StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
           permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
-        }
       }
     }
     eventPayload.getContext().remove(IF_DUPLICATES_NEEDED);
