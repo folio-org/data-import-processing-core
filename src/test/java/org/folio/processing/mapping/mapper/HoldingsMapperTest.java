@@ -30,6 +30,8 @@ import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class HoldingsMapperTest {
@@ -249,5 +251,53 @@ public class HoldingsMapperTest {
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(0));
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(1));
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(2));
+  }
+
+  @Test
+  public void shouldNotCreateOneHoldingsIfProfileIsInvalid() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), new JsonObject().toString());
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    eventPayload.setContext(context);
+
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
+    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
+
+    MappingDetail mappingDetails = null;
+
+    MappingProfile profile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withName("Create testing Holdings")
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(HOLDINGS)
+      .withMappingDetails(mappingDetails);
+
+    MappingContext mappingContext = new MappingContext()
+      .withMappingParameters(new MappingParameters()
+        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
+          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+          .withName("Main Library")
+          .withCode("KU/CC/DI/M")))));
+
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    JsonBasedWriter writer = new JsonBasedWriter(EntityType.HOLDINGS);
+    Mapper mapper = new HoldingsMapper(reader, writer);
+    mapper.initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
+    DataImportEventPayload mappedPayload = mapper.map(profile, eventPayload, mappingContext);
+    assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
+    JsonObject holdings = new JsonObject(mappedPayload.getContext().get(HOLDINGS.value()));
+    assertEquals(0, holdings.size());
+    assertNull(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
   }
 }

@@ -27,15 +27,10 @@ public class AbstractMapper implements Mapper {
   }
 
   @Override
-  public boolean isEligibleForEntityType(DataImportEventPayload eventPayload) {
-    return false;
-  }
-
-  @Override
   public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload, MappingContext mappingContext) {
     try {
       initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
-      if (ifProfileIsInvalid(eventPayload, profile)) {
+      if (ifProfileIsInvalid(profile)) {
         return eventPayload;
       }
       List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();

@@ -17,8 +17,6 @@ import java.io.IOException;
  */
 public interface Mapper {
 
-  boolean isEligibleForEntityType(DataImportEventPayload eventPayload);
-
 
   DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload,
                              MappingContext mappingContext);
@@ -28,7 +26,7 @@ public interface Mapper {
     writer.initialize(eventPayload);
   }
 
-  default boolean ifProfileIsInvalid(DataImportEventPayload eventPayload, MappingProfile profile) {
+  default boolean ifProfileIsInvalid( MappingProfile profile) {
     return profile.getMappingDetails() == null
       || profile.getMappingDetails().getMappingFields() == null
       || profile.getMappingDetails().getMappingFields().isEmpty();
