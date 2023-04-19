@@ -71,7 +71,12 @@ public class HoldingsMapperTest {
             .withEnabled("true")
             .withPath("holdings.permanentLocationId[]")
             .withValue("945$h")
-            .withAcceptedValues(acceptedValues)))))));
+            .withAcceptedValues(acceptedValues))))),
+        new MappingRule()
+          .withName("statisticalCodeIds")
+          .withEnabled("true")
+          .withPath("holdings.statisticalCodeIds[]")
+          .withValue("\"Testing\"")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -99,8 +104,9 @@ public class HoldingsMapperTest {
     assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals( 1, holdings.size());
-    JsonObject secondHoldings = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", secondHoldings.getString("permanentLocationId"));
+    JsonObject firstHolding = holdings.getJsonObject(0);
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHolding.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("Testing", firstHolding.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(1, holdingsIdentifier.size());
@@ -170,9 +176,9 @@ public class HoldingsMapperTest {
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals( 2, holdings.size());
     JsonObject secondHoldings = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", secondHoldings.getString("permanentLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonObject firstHoldings = holdings.getJsonObject(1);
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", firstHoldings.getString("permanentLocationId"));
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(3, holdingsIdentifier.size());
@@ -243,8 +249,8 @@ public class HoldingsMapperTest {
     assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals( 1, holdings.size());
-    JsonObject secondHoldings = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", secondHoldings.getString("permanentLocationId"));
+    JsonObject firstHoldings = holdings.getJsonObject(0);
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(3, holdingsIdentifier.size());

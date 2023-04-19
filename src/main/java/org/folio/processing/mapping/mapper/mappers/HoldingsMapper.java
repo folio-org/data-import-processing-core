@@ -29,6 +29,7 @@ public class HoldingsMapper implements Mapper {
   public static final String HOLDINGS = "HOLDINGS";
   public static final String IF_DUPLICATES_NEEDED = "ifDuplicatesNeeded";
   public static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
+  public static final String HOLDINGS_PROPERTY = "holdings";
   private Reader reader;
   private Writer writer;
 
@@ -53,7 +54,7 @@ public class HoldingsMapper implements Mapper {
 
   private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile) throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
-    ListValue permanentLocationIdsWithDuplicates = constructLocationsWithDuplicates(eventPayload, mappingRules);;
+    ListValue permanentLocationIdsWithDuplicates = constructLocationsWithDuplicates(eventPayload, mappingRules);
 
     if (permanentLocationIdsWithDuplicates != null && permanentLocationIdsWithDuplicates.getValue() != null) {
       List<String> locationsWithDuplicates = permanentLocationIdsWithDuplicates.getValue();
@@ -68,7 +69,15 @@ public class HoldingsMapper implements Mapper {
       JsonObject originalHolding = mapDefaultHolding(eventPayload, mappingRules);
       JsonArray holdings = new JsonArray();
       for (String location : uniquePermanentLocationIds) {
-        holdings.add(originalHolding.copy().put(PERMANENT_LOCATION_ID, location));
+        JsonObject coreHolding = originalHolding.getJsonObject(HOLDINGS_PROPERTY);
+        JsonObject copiedHoldings = originalHolding.copy();
+        if (coreHolding == null) { //In case if there are no other rules, just for permanentLocationIds.
+          copiedHoldings.put(HOLDINGS_PROPERTY, new JsonObject().put(PERMANENT_LOCATION_ID, location));
+          holdings.add(copiedHoldings);
+        } else {
+          copiedHoldings.getJsonObject(HOLDINGS_PROPERTY).put(PERMANENT_LOCATION_ID, location);
+          holdings.add(copiedHoldings);
+        }
       }
       eventPayload.getContext().put(HOLDINGS, holdings.encode());
     }
@@ -83,16 +92,16 @@ public class HoldingsMapper implements Mapper {
         writer.write(rule.getPath(), value);
       }
     }
-    DataImportEventPayload resultedHolding = writer.getResult(eventPayload);
-    return new JsonObject(resultedHolding.getContext().get(HOLDINGS));
+    DataImportEventPayload resultedPayload = writer.getResult(eventPayload);
+    return new JsonObject(resultedPayload.getContext().get(HOLDINGS));
   }
 
   private ListValue constructLocationsWithDuplicates(DataImportEventPayload eventPayload, List<MappingRule> mappingRules) {
     ListValue permanentLocationIdsWithDuplicates = null;
-    eventPayload.getContext().put(IF_DUPLICATES_NEEDED, "true");
+    eventPayload.getContext().put(IF_DUPLICATES_NEEDED, "true"); //For execute reading but with duplicates values.
     for (MappingRule rule : mappingRules) {
-        if (Boolean.parseBoolean(rule.getEnabled()) && StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
-          permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
+      if (Boolean.parseBoolean(rule.getEnabled()) && StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
+        permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
       }
     }
     eventPayload.getContext().remove(IF_DUPLICATES_NEEDED);
