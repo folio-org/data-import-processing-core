@@ -1,6 +1,6 @@
 package org.folio.processing.mapping.mapper.mappers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
@@ -9,27 +9,23 @@ import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.processing.exceptions.MappingException;
-import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.writer.Writer;
-import org.folio.processing.value.ListValue;
-import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.STRING_VALUE_PATTERN;
 
 public class HoldingsMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
-  public static final String PERMANENT_LOCATION_ID = "permanentLocationId";
-
-  public static final String HOLDINGS = "HOLDINGS";
-  public static final String IF_DUPLICATES_NEEDED = "ifDuplicatesNeeded";
+  private static final String PERMANENT_LOCATION_ID = "permanentLocationId";
+  private static final String HOLDINGS = "HOLDINGS";
   public static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
-  public static final String HOLDINGS_PROPERTY = "holdings";
   private Reader reader;
   private Writer writer;
 
@@ -45,72 +41,66 @@ public class HoldingsMapper implements Mapper {
       if (ifProfileIsInvalid(profile)) {
         return eventPayload;
       }
-      return executeMultipleHoldingsLogic(eventPayload, profile);
+      return executeMultipleHoldingsLogic(eventPayload, profile, mappingContext);
     } catch (IOException e) {
       LOGGER.warn("map:: Failed to perform Holdings mapping", e);
       throw new MappingException(e);
     }
   }
 
-  private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile) throws IOException {
+  private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile, MappingContext mappingContext) throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
-    ListValue permanentLocationIdsWithDuplicates = constructLocationsWithDuplicates(eventPayload, mappingRules);
+    JsonArray holdings = new JsonArray();
+    Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
-    if (permanentLocationIdsWithDuplicates != null && permanentLocationIdsWithDuplicates.getValue() != null) {
-      List<String> locationsWithDuplicates = permanentLocationIdsWithDuplicates.getValue();
+    if (permanentLocationMappingRule.isEmpty() || STRING_VALUE_PATTERN.matcher(permanentLocationMappingRule.get().getValue()).matches()) {
+      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
+    } else {
+      String marcField = retrieveMarcFieldFromMappingRule(permanentLocationMappingRule.get())
+        .orElseThrow(() -> new RuntimeException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
+      eventPayload.getContext().put("REPEATABLE_HOLDINGS_FIELD", marcField);
 
-      JsonArray holdingsIdentifier = new JsonArray(locationsWithDuplicates);
-      eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, holdingsIdentifier.toString());
-      List<String> uniquePermanentLocationIds = locationsWithDuplicates
-        .stream()
-        .distinct()
-        .collect(Collectors.toList());
-
-      JsonObject originalHolding = mapDefaultHolding(eventPayload, mappingRules);
-      JsonArray holdings = new JsonArray();
-      for (String location : uniquePermanentLocationIds) {
-        JsonObject coreHolding = originalHolding.getJsonObject(HOLDINGS_PROPERTY);
-        JsonObject copiedHoldings = originalHolding.copy();
-        if (coreHolding == null) { //In case if there are no other rules, just for permanentLocationIds.
-          copiedHoldings.put(HOLDINGS_PROPERTY, new JsonObject().put(PERMANENT_LOCATION_ID, location));
-          holdings.add(copiedHoldings);
-        } else {
-          copiedHoldings.getJsonObject(HOLDINGS_PROPERTY).put(PERMANENT_LOCATION_ID, location);
-          holdings.add(copiedHoldings);
-        }
-      }
-      eventPayload.getContext().put(HOLDINGS, holdings.encode());
+      holdings = mapMultipleEntities(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
     }
+    eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
+    eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     return eventPayload;
   }
 
-  private JsonObject mapDefaultHolding(DataImportEventPayload eventPayload, List<MappingRule> mappingRules) throws JsonProcessingException {
-    List<MappingRule> mappingRulesWithoutPermanentLocation = filterRulesByPermanentLocationId(mappingRules);
-    for (MappingRule rule : mappingRulesWithoutPermanentLocation) {
-      if (Boolean.parseBoolean(rule.getEnabled())) {
-        Value value = reader.read(rule);
-        writer.write(rule.getPath(), value);
+  private List<JsonObject> distinctHoldingsByPermanentLocation(JsonArray holdings) {
+    List<JsonObject> distinctHoldings = new ArrayList<>();
+    for (int i = 0; i < holdings.size(); i++) {
+      JsonObject holdingsAsJson = getHoldingsAsJson(holdings.getJsonObject(i));
+      String holdingPermanentLocation = holdingsAsJson.getString(PERMANENT_LOCATION_ID);
+
+      if (distinctHoldings.stream().noneMatch(hol -> StringUtils.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
+        distinctHoldings.add(holdings.getJsonObject(i));
       }
     }
-    DataImportEventPayload resultedPayload = writer.getResult(eventPayload);
-    return new JsonObject(resultedPayload.getContext().get(HOLDINGS));
+    return distinctHoldings;
   }
 
-  private ListValue constructLocationsWithDuplicates(DataImportEventPayload eventPayload, List<MappingRule> mappingRules) {
-    ListValue permanentLocationIdsWithDuplicates = null;
-    eventPayload.getContext().put(IF_DUPLICATES_NEEDED, "true"); //For execute reading but with duplicates values.
-    for (MappingRule rule : mappingRules) {
-      if (Boolean.parseBoolean(rule.getEnabled()) && StringUtils.equals(rule.getName(), PERMANENT_LOCATION_ID)) {
-        permanentLocationIdsWithDuplicates = (ListValue) reader.read(rule);
-      }
+  private JsonObject getHoldingsAsJson(JsonObject holdings) {
+    if (holdings.getJsonObject("holdings") != null) {
+      return holdings.getJsonObject("holdings");
     }
-    eventPayload.getContext().remove(IF_DUPLICATES_NEEDED);
-    return permanentLocationIdsWithDuplicates;
+    return holdings;
   }
 
-  private static List<MappingRule> filterRulesByPermanentLocationId(List<MappingRule> rules) {
-    return rules.stream()
-      .filter(mappingRule -> !PERMANENT_LOCATION_ID.equals(mappingRule.getName()))
-      .collect(Collectors.toList());
+  private List<String> getPermanentLocationsFromHoldings(JsonArray holdings) {
+    List<String> permanentLocationsIds = new ArrayList<>();
+    holdings.forEach(e -> {
+      JsonObject holdingsAsJson = getHoldingsAsJson((JsonObject) e);
+      permanentLocationsIds.add(holdingsAsJson.getString(PERMANENT_LOCATION_ID));
+    });
+    return permanentLocationsIds;
+  }
+
+  private Optional<String> retrieveMarcFieldFromMappingRule(MappingRule mappingRule) {
+    String[] marcFields = mappingRule.getValue().split("\\$");
+    if (marcFields.length > 0) {
+      return Optional.of(marcFields[0]);
+    }
+    return Optional.empty();
   }
 }

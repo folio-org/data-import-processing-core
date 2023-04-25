@@ -31,7 +31,6 @@ import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class HoldingsMapperTest {
@@ -60,18 +59,9 @@ public class HoldingsMapperTest {
       .withMappingFields(Lists.newArrayList(new MappingRule()
         .withName("permanentLocationId")
         .withEnabled("true")
-        .withPath("holdings.permanentLocationId[]")
-        .withValue("")
-        .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
-        .withSubfields(Lists.newArrayList(new RepeatableSubfieldMapping()
-          .withOrder(0)
-          .withPath("holdings.permanentLocationId[]")
-          .withFields(Lists.newArrayList(new MappingRule()
-            .withName("permanentLocationId")
-            .withEnabled("true")
-            .withPath("holdings.permanentLocationId[]")
-            .withValue("945$h")
-            .withAcceptedValues(acceptedValues))))),
+        .withPath("holdings.permanentLocationId")
+        .withValue("945$h")
+        .withAcceptedValues(acceptedValues),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -136,18 +126,9 @@ public class HoldingsMapperTest {
       .withMappingFields(Lists.newArrayList(new MappingRule()
         .withName("permanentLocationId")
         .withEnabled("true")
-        .withPath("holdings.permanentLocationId[]")
-        .withValue("")
-        .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
-        .withSubfields(Lists.newArrayList(new RepeatableSubfieldMapping()
-          .withOrder(0)
-          .withPath("holdings.permanentLocationId[]")
-          .withFields(Lists.newArrayList(new MappingRule()
-            .withName("permanentLocationId")
-            .withEnabled("true")
-            .withPath("holdings.permanentLocationId[]")
-            .withValue("945$h")
-            .withAcceptedValues(acceptedValues)))))));
+        .withPath("holdings.permanentLocationId")
+        .withValue("945$h")
+        .withAcceptedValues(acceptedValues)));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -210,18 +191,9 @@ public class HoldingsMapperTest {
       .withMappingFields(Lists.newArrayList(new MappingRule()
         .withName("permanentLocationId")
         .withEnabled("true")
-        .withPath("holdings.permanentLocationId[]")
-        .withValue("")
-        .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
-        .withSubfields(Lists.newArrayList(new RepeatableSubfieldMapping()
-          .withOrder(0)
-          .withPath("holdings.permanentLocationId[]")
-          .withFields(Lists.newArrayList(new MappingRule()
-            .withName("permanentLocationId")
-            .withEnabled("true")
-            .withPath("holdings.permanentLocationId[]")
-            .withValue("945$h")
-            .withAcceptedValues(acceptedValues)))))));
+        .withPath("holdings.permanentLocationId")
+        .withValue("945$h")
+        .withAcceptedValues(acceptedValues)));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
