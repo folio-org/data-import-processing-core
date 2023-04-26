@@ -17,15 +17,19 @@ import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.STRING_VALUE_PATTERN;
+
+import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
+import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.WHITESPACE_DIVIDER;
 
 public class HoldingsMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
   private static final String PERMANENT_LOCATION_ID = "permanentLocationId";
   private static final String HOLDINGS = "HOLDINGS";
-  public static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
+  private static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
+  private static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
   private Reader reader;
   private Writer writer;
 
@@ -48,19 +52,21 @@ public class HoldingsMapper implements Mapper {
     }
   }
 
-  private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload, MappingProfile profile, MappingContext mappingContext) throws IOException {
+  private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload,
+                                                              MappingProfile profile, MappingContext mappingContext) throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
     JsonArray holdings = new JsonArray();
     Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
-    if (permanentLocationMappingRule.isEmpty() || STRING_VALUE_PATTERN.matcher(permanentLocationMappingRule.get().getValue()).matches()) {
+    if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
       holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
     } else {
-      String marcField = retrieveMarcFieldFromMappingRule(permanentLocationMappingRule.get())
+      String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
+      String marcField = retrieveMarcFieldName(expressionPart)
         .orElseThrow(() -> new RuntimeException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
-      eventPayload.getContext().put("REPEATABLE_HOLDINGS_FIELD", marcField);
+      eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
 
-      holdings = mapMultipleEntities(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+      holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
     }
     eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
     eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
@@ -80,13 +86,6 @@ public class HoldingsMapper implements Mapper {
     return distinctHoldings;
   }
 
-  private JsonObject getHoldingsAsJson(JsonObject holdings) {
-    if (holdings.getJsonObject("holdings") != null) {
-      return holdings.getJsonObject("holdings");
-    }
-    return holdings;
-  }
-
   private List<String> getPermanentLocationsFromHoldings(JsonArray holdings) {
     List<String> permanentLocationsIds = new ArrayList<>();
     holdings.forEach(e -> {
@@ -96,11 +95,19 @@ public class HoldingsMapper implements Mapper {
     return permanentLocationsIds;
   }
 
-  private Optional<String> retrieveMarcFieldFromMappingRule(MappingRule mappingRule) {
-    String[] marcFields = mappingRule.getValue().split("\\$");
-    if (marcFields.length > 0) {
-      return Optional.of(marcFields[0]);
+  private JsonObject getHoldingsAsJson(JsonObject holdings) {
+    if (holdings.getJsonObject("holdings") != null) {
+      return holdings.getJsonObject("holdings");
     }
-    return Optional.empty();
+    return holdings;
+  }
+
+  private boolean isStaredWithMarcField(String value) {
+    String[] expressionsParts = value.split(WHITESPACE_DIVIDER);
+    return expressionsParts.length > 0 && MARC_PATTERN.matcher(expressionsParts[0]).matches();
+  }
+
+  private Optional<String> retrieveMarcFieldName(String value) {
+    return Arrays.stream(value.split("\\$")).findFirst();
   }
 }

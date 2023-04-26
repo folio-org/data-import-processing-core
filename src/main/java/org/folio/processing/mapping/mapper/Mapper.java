@@ -3,12 +3,10 @@ package org.folio.processing.mapping.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.writer.Writer;
-import org.folio.processing.value.ListValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 
@@ -16,8 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.IF_DUPLICATES_NEEDED;
 
 /**
  * The central component for reading data from source and writing data to target.
@@ -31,6 +27,7 @@ public interface Mapper {
   String CONTENT = "content";
   String FIELDS = "fields";
   String PARSED_RECORD = "parsedRecord";
+  String EMPTY_JSON = "{}";
 
   /**
    * Template method for mapping.
@@ -66,42 +63,45 @@ public interface Mapper {
     return profile.getMappingDetails() == null || profile.getMappingDetails().getMappingFields() == null || profile.getMappingDetails().getMappingFields().isEmpty();
   }
 
-  default JsonArray mapMultipleEntities(DataImportEventPayload eventPayload, MappingContext mappingContext, Reader reader, Writer writer,
-                                        List<MappingRule> mappingRules, String entityType, String marcField) throws IOException {
+  default JsonArray mapMultipleEntitiesByMarcField(DataImportEventPayload eventPayload, MappingContext mappingContext, Reader reader, Writer writer,
+                                                   List<MappingRule> mappingRules, String entityType, String marcField) throws IOException {
     HashMap<String, String> payloadContext = eventPayload.getContext();
     JsonArray entities = new JsonArray();
 
     JsonObject originalMarcBib = new JsonObject(payloadContext.get(MARC_BIBLIOGRAPHIC));
     JsonObject content = new JsonObject(originalMarcBib.getJsonObject(PARSED_RECORD).getString(CONTENT));
-    List<String> multipleEntityFields = new ArrayList<>();
-    List<String> nonMultipleFields = new ArrayList<>();
+    List<JsonObject> multipleEntityFields = new ArrayList<>();
+    List<JsonObject> nonMultipleFields = new ArrayList<>();
 
     content.getJsonArray(FIELDS).forEach(e -> {
       JsonObject field = (JsonObject) e;
-      if (field.getValue(marcField) != null) multipleEntityFields.add(field.toString());
-      else nonMultipleFields.add(field.toString());
+      if (field.getValue(marcField) != null) multipleEntityFields.add(new JsonObject(field.toString()));
+      else nonMultipleFields.add(new JsonObject(field.toString()));
     });
 
-    for (String field : multipleEntityFields) {
-      JsonArray singleEntityFields = new JsonArray();
-      nonMultipleFields.forEach(nonRepField -> singleEntityFields.add(new JsonObject(nonRepField)));
-      singleEntityFields.add(new JsonObject(field));
+    for (JsonObject field : multipleEntityFields) {
+      List<JsonObject> singleEntityFields = new ArrayList<>(nonMultipleFields);
+      singleEntityFields.add(field);
       content.put(FIELDS, singleEntityFields);
 
-      JsonObject marcBibForSingleEntity = new JsonObject(originalMarcBib.encode());
+      JsonObject marcBibForSingleEntity = originalMarcBib.copy();
       marcBibForSingleEntity.getJsonObject(PARSED_RECORD).put(CONTENT, content.encode());
+      payloadContext.put(entityType, EMPTY_JSON);
       payloadContext.put(MARC_BIBLIOGRAPHIC, marcBibForSingleEntity.encode());
 
       reader.initialize(eventPayload, mappingContext);
+      writer.initialize(eventPayload);
       entities.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, entityType));
     }
 
     payloadContext.put(MARC_BIBLIOGRAPHIC, originalMarcBib.encode());
     reader.initialize(eventPayload, mappingContext);
+    writer.initialize(eventPayload);
     return entities;
   }
 
-  default JsonObject mapSingleEntity(DataImportEventPayload eventPayload, Reader reader, Writer writer, List<MappingRule> mappingRules, String entityType) throws JsonProcessingException {
+  default JsonObject mapSingleEntity(DataImportEventPayload eventPayload, Reader reader, Writer writer,
+                                     List<MappingRule> mappingRules, String entityType) throws JsonProcessingException {
     for (MappingRule rule : mappingRules) {
       if (Boolean.parseBoolean(rule.getEnabled())) {
         Value value = reader.read(rule);
