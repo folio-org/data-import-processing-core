@@ -38,7 +38,6 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -83,12 +82,10 @@ public class MarcRecordReader implements Reader {
   private static final String UTC_TIMEZONE = "UTC";
   private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider");
   private static final String BLANK = "";
-  public static final String IF_DUPLICATES_NEEDED = "ifDuplicatesNeeded";
 
   private EntityType entityType;
   private Record marcRecord;
   private MappingParameters mappingParameters;
-  private DataImportEventPayload eventPayload;
 
   MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
@@ -98,7 +95,6 @@ public class MarcRecordReader implements Reader {
   public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) {
     try {
       if (eventPayload.getContext() != null && eventPayload.getContext().containsKey(entityType.value())) {
-        this.eventPayload = eventPayload;
         this.mappingParameters = mappingContext.getMappingParameters();
         String stringRecord = eventPayload.getContext().get(entityType.value());
         org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
@@ -419,9 +415,7 @@ public class MarcRecordReader implements Reader {
     List<String> results = new ArrayList<>();
     if (MARC_PATTERN.matcher(marcPath).matches()) {
       List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
-
-      Boolean ifDuplicatesNeeded = Boolean.valueOf(eventPayload.getContext().get(IF_DUPLICATES_NEEDED));
-      var result = buildResultedCollection(ifDuplicatesNeeded);
+      LinkedHashSet<String> result = new LinkedHashSet<>();
       for (VariableField variableField : fields) {
         result.addAll(extractValueFromMarcRecord(variableField, marcPath));
       }
@@ -500,16 +494,5 @@ public class MarcRecordReader implements Reader {
         .getContent()
         .toString()
         .getBytes(StandardCharsets.UTF_8)));
-  }
-
-  private static AbstractCollection<String> buildResultedCollection(Boolean ifDuplicatesNeeded) {
-    if (ifDuplicatesNeeded == true) {
-      ArrayList<String> result = new ArrayList<String>();
-      return result;
-    }
-    else {
-      LinkedHashSet<String> result = new LinkedHashSet<>();
-      return result;
-    }
   }
 }
