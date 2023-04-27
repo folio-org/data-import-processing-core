@@ -23,13 +23,13 @@ import java.util.Optional;
 
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.WHITESPACE_DIVIDER;
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 
 public class HoldingsMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
   private static final String PERMANENT_LOCATION_ID = "permanentLocationId";
-  private static final String HOLDINGS = "HOLDINGS";
   private static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
-  private static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
+  public static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
   private Reader reader;
   private Writer writer;
 
@@ -59,17 +59,17 @@ public class HoldingsMapper implements Mapper {
     Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
     if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
-      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
+      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS.value()));
     } else {
       String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
       String marcField = retrieveMarcFieldName(expressionPart)
         .orElseThrow(() -> new RuntimeException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
       eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
 
-      holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+      holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS.value(), marcField);
     }
     eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
-    eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
+    eventPayload.getContext().put(HOLDINGS.value(), Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     return eventPayload;
   }
 
