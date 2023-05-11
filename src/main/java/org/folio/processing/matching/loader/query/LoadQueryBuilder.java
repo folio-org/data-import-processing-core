@@ -23,7 +23,7 @@ public class LoadQueryBuilder {
   private LoadQueryBuilder() {
   }
 
-  private static final String JSON_PATH_SEPARATOR = ".";
+  public static final String JSON_PATH_SEPARATOR = ".";
   private static final String IDENTIFIER_TYPE_ID = "identifierTypeId";
   private static final String IDENTIFIER_TYPE_VALUE = "instance.identifiers[].value";
   private static final String IDENTIFIER_CQL_QUERY = "identifiers =/@value/@identifierTypeId=\"%s\" %s";
