@@ -164,6 +164,73 @@ public class HoldingsMapperTest {
   }
 
   @Test
+  public void shouldMapOneHoldingInExistingHoldingIfPermanentLocationIsStringValue() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
+
+    JsonArray holdingsAsJson = new JsonArray(List.of(
+      new JsonObject()
+        .put("id", UUID.randomUUID())
+        .put("permanentLocationId", UUID.randomUUID())));
+
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), holdingsAsJson.encode());
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    eventPayload.setContext(context);
+
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
+    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
+
+    MappingDetail mappingDetails = new MappingDetail()
+      .withName("holdings")
+      .withRecordType(HOLDINGS)
+      .withMappingFields(Lists.newArrayList(new MappingRule()
+        .withName("permanentLocationId")
+        .withEnabled("true")
+        .withPath("holdings.permanentLocationId")
+        .withValue("\"KU/CC/DI/A\"; else 945$h")
+        .withAcceptedValues(acceptedValues)));
+
+    MappingProfile profile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withName("Create testing Holdings")
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(HOLDINGS)
+      .withMappingDetails(mappingDetails);
+
+    MappingContext mappingContext = new MappingContext()
+      .withMappingParameters(new MappingParameters()
+        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
+          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+          .withName("Main Library")
+          .withCode("KU/CC/DI/M")))));
+
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    JsonBasedWriter writer = new JsonBasedWriter(EntityType.HOLDINGS);
+    Mapper mapper = new HoldingsMapper(reader, writer);
+    mapper.initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
+    DataImportEventPayload mappedPayload = mapper.map(profile, eventPayload, mappingContext);
+    assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
+    JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
+    assertEquals(1, holdings.size());
+    JsonObject firstHoldings = holdings.getJsonObject(0);
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
+    assertNotNull(holdingsIdentifier);
+    assertEquals(1, holdingsIdentifier.size());
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", holdingsIdentifier.getString(0));
+  }
+
+  @Test
   public void shouldCreateMultipleHoldingsButWithoutDuplicatedLocations() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
