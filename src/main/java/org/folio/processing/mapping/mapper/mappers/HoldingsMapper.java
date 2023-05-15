@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
@@ -79,7 +80,7 @@ public class HoldingsMapper implements Mapper {
       JsonObject holdingsAsJson = getHoldingsAsJson(holdings.getJsonObject(i));
       String holdingPermanentLocation = holdingsAsJson.getString(PERMANENT_LOCATION_ID);
 
-      if (distinctHoldings.stream().noneMatch(hol -> StringUtils.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
+      if (distinctHoldings.stream().noneMatch(hol -> Objects.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
         distinctHoldings.add(holdings.getJsonObject(i));
       }
     }
