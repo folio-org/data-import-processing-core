@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
+import static org.folio.rest.jaxrs.model.EntityType.ITEM;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 import static org.mockito.ArgumentMatchers.any;
@@ -86,6 +87,36 @@ public class HoldingsItemMatcherTest {
     result.whenComplete((matched, throwable) -> {
       JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS.value()));
       testContext.assertEquals(3, holdings.size());
+      testContext.assertNull(throwable);
+      testContext.assertTrue(matched);
+      testContext.assertEquals("0", eventPayload.getContext().get("NOT_MATCHED_NUMBER"));
+    });
+  }
+
+  @Test
+  public void shouldMatchMultipleItems(TestContext testContext) {
+    MatchProfile matchProfile = new MatchProfile()
+      .withExistingRecordType(ITEM)
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withMatchDetails(Collections.singletonList(new MatchDetail().withExistingRecordType(ITEM).withIncomingRecordType(MARC_BIBLIOGRAPHIC)));
+
+    ProfileSnapshotWrapper matchProfileWrapper = new ProfileSnapshotWrapper();
+    matchProfileWrapper.setContent(matchProfile);
+    matchProfileWrapper.setContentType(MATCH_PROFILE);
+
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put("NOT_MATCHED_NUMBER", "3");
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    eventPayload.setContext(context);
+    eventPayload.setCurrentNode(matchProfileWrapper);
+
+    CompletableFuture<Boolean> result = matcher.match(eventPayload);
+
+    result.whenComplete((matched, throwable) -> {
+      JsonArray items = new JsonArray(eventPayload.getContext().get(ITEM.value()));
+      testContext.assertEquals(3, items.size());
       testContext.assertNull(throwable);
       testContext.assertTrue(matched);
       testContext.assertEquals("0", eventPayload.getContext().get("NOT_MATCHED_NUMBER"));
