@@ -4,6 +4,7 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.processing.exceptions.MatchingException;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 public class HoldingsItemMatcher extends AbstractMatcher {
   private static final String ERRORS = "ERRORS";
+  private static final String EMPTY_JSON_ARRAY = "[]";
 
   public HoldingsItemMatcher(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader) {
     super(matchValueReader, matchValueLoader);
@@ -31,7 +33,15 @@ public class HoldingsItemMatcher extends AbstractMatcher {
     if (value instanceof ListValue) {
       return processMultipleMatching(value, matchDetail, eventPayload);
     }
-    return super.performMatching(value, matchDetail, eventPayload);
+    return super.performMatching(value, matchDetail, eventPayload)
+      .whenComplete((matched, throwable) -> {
+        if (throwable == null) {
+          String entityType = matchDetail.getExistingRecordType().value();
+          String entityAsJsonString = eventPayload.getContext().get(entityType);
+          String jsonArrayOfEntitiesAsString = entityAsJsonString != null ? new JsonArray().add(new JsonObject(entityAsJsonString)).encode() : EMPTY_JSON_ARRAY;
+          eventPayload.getContext().put(entityType, jsonArrayOfEntitiesAsString);
+        }
+      });
   }
 
   private CompletableFuture<Boolean> processMultipleMatching(Value genericValue, MatchDetail matchDetail,
@@ -50,7 +60,7 @@ public class HoldingsItemMatcher extends AbstractMatcher {
           if (throwable != null) {
             errors.add(new PartialError(null, throwable.getMessage()));
           } else {
-            if (loadResult.getValue() != null) matchedEntities.add(loadResult.getValue());
+            if (loadResult.getValue() != null) matchedEntities.add(new JsonObject(loadResult.getValue()));
           }
           promise.complete();
         });
