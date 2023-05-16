@@ -24,6 +24,7 @@ import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.REL
 public class AbstractMatcher implements Matcher {
   private final MatchValueReader matchValueReader;
   private final MatchValueLoader matchValueLoader;
+  protected static final String NOT_MATCHED_NUMBER = "NOT_MATCHED_NUMBER";
 
   public AbstractMatcher(MatchValueReader matchValueReader, MatchValueLoader matchValueLoader) {
     this.matchValueReader = matchValueReader;
@@ -33,6 +34,7 @@ public class AbstractMatcher implements Matcher {
   @Override
   public CompletableFuture<Boolean> match(DataImportEventPayload eventPayload) {
     HashMap<String, String> payloadContext = eventPayload.getContext();
+    payloadContext.remove(NOT_MATCHED_NUMBER);
     ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
     MatchProfile matchProfile;
     if (matchingProfileWrapper.getContent() instanceof Map) {
@@ -55,7 +57,7 @@ public class AbstractMatcher implements Matcher {
     return performMatching(value, matchDetail, eventPayload);
   }
 
-  public CompletableFuture<Boolean> performMatching(Value value, MatchDetail matchDetail, DataImportEventPayload eventPayload) {
+  protected CompletableFuture<Boolean> performMatching(Value value, MatchDetail matchDetail, DataImportEventPayload eventPayload) {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
     loadEntity(value, matchDetail, eventPayload)
       .whenComplete((loadResult, throwable) -> {
@@ -73,7 +75,7 @@ public class AbstractMatcher implements Matcher {
     return future;
   }
 
-  public CompletableFuture<LoadResult> loadEntity(Value value, MatchDetail matchDetail, DataImportEventPayload eventPayload) {
+  protected CompletableFuture<LoadResult> loadEntity(Value value, MatchDetail matchDetail, DataImportEventPayload eventPayload) {
     LoadQuery query = LoadQueryBuilder.build(value, matchDetail);
     return matchValueLoader.loadEntity(query, eventPayload);
   }
