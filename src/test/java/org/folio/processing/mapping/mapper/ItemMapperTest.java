@@ -78,6 +78,52 @@ public class ItemMapperTest {
   }
 
   @Test
+  public void shouldMapExistingItemFromContext() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+    HashMap<String, String> context = new HashMap<>();
+    JsonArray itemsAsJson = new JsonArray(List.of(
+      new JsonObject()
+        .put("id", UUID.randomUUID())));
+
+    context.put(ITEM.value(), itemsAsJson.encode());
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    eventPayload.setContext(context);
+
+    MappingDetail mappingDetails = new MappingDetail()
+      .withName("item")
+      .withRecordType(ITEM)
+      .withMappingFields(Lists.newArrayList(new MappingRule()
+        .withName("barcode")
+        .withEnabled("true")
+        .withPath("item.barcode")
+        .withValue("\"123\"")));
+
+    MappingProfile profile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withName("Create testing Items")
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(ITEM)
+      .withMappingDetails(mappingDetails);
+
+    MappingContext mappingContext = new MappingContext();
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    JsonBasedWriter writer = new JsonBasedWriter(ITEM);
+    Mapper mapper = new ItemMapper(reader, writer);
+    mapper.initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
+    DataImportEventPayload mappedPayload = mapper.map(profile, eventPayload, mappingContext);
+    assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(mappedPayload.getContext().get(ITEM.value()));
+    JsonArray items = new JsonArray(mappedPayload.getContext().get(ITEM.value()));
+    assertEquals(1, items.size());
+    assertEquals("123", items.getJsonObject(0).getJsonObject("item").getString("barcode"));
+  }
+
+  @Test
   public void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()

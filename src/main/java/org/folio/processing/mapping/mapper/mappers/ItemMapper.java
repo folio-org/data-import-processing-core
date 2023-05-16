@@ -22,8 +22,8 @@ import static org.folio.rest.jaxrs.model.EntityType.ITEM;
 
 public class ItemMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(ItemMapper.class);
-  private Reader reader;
-  private Writer writer;
+  private final Reader reader;
+  private final Writer writer;
 
   public ItemMapper(Reader reader, Writer writer) {
     this.reader = reader;
@@ -52,6 +52,8 @@ public class ItemMapper implements Mapper {
     String marcField = payloadContext.get(MULTIPLE_HOLDINGS_FIELD);
 
     if (marcField == null) {
+      adjustContextToContainEntitiesAsJsonObject(eventPayload, ITEM);
+      writer.initialize(eventPayload);
       items.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, ITEM.value()));
     } else {
       items = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, ITEM.value(), marcField);
