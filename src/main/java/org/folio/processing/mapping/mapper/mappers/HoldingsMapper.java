@@ -1,9 +1,9 @@
 package org.folio.processing.mapping.mapper.mappers;
 
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
@@ -59,6 +60,8 @@ public class HoldingsMapper implements Mapper {
     Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
     if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
+      adjustContextToContainHoldingsAsJsonObject(eventPayload);
+      writer.initialize(eventPayload);
       holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS.value()));
     } else {
       String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
@@ -73,13 +76,31 @@ public class HoldingsMapper implements Mapper {
     return eventPayload;
   }
 
+  private void adjustContextToContainHoldingsAsJsonObject(DataImportEventPayload eventPayload) {
+    if (isJsonArray(eventPayload.getContext().get(HOLDINGS))) {
+      JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS));
+      if (holdings.size() > 0) {
+        eventPayload.getContext().put(HOLDINGS, holdings.getJsonObject(0).encode());
+      }
+    }
+  }
+
+  private boolean isJsonArray(String jsonArrayAsString) {
+    try {
+      new JsonArray(jsonArrayAsString);
+      return true;
+    } catch (DecodeException e) {
+      return false;
+    }
+  }
+
   private List<JsonObject> distinctHoldingsByPermanentLocation(JsonArray holdings) {
     List<JsonObject> distinctHoldings = new ArrayList<>();
     for (int i = 0; i < holdings.size(); i++) {
       JsonObject holdingsAsJson = getHoldingsAsJson(holdings.getJsonObject(i));
       String holdingPermanentLocation = holdingsAsJson.getString(PERMANENT_LOCATION_ID);
 
-      if (distinctHoldings.stream().noneMatch(hol -> StringUtils.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
+      if (distinctHoldings.stream().noneMatch(hol -> Objects.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
         distinctHoldings.add(holdings.getJsonObject(i));
       }
     }
