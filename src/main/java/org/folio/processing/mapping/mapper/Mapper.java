@@ -116,9 +116,9 @@ public interface Mapper {
 
   default void adjustContextToContainEntitiesAsJsonObject(DataImportEventPayload eventPayload, EntityType entityType) {
     if (isJsonArray(eventPayload.getContext().get(entityType.value()))) {
-      JsonArray holdings = new JsonArray(eventPayload.getContext().get(entityType.value()));
-      if (holdings.size() > 0) {
-        eventPayload.getContext().put(entityType.value(), holdings.getJsonObject(0).encode());
+      JsonArray entities = new JsonArray(eventPayload.getContext().get(entityType.value()));
+      if (entities.size() > 0) {
+        eventPayload.getContext().put(entityType.value(), entities.getJsonObject(0).encode());
       } else {
         eventPayload.getContext().put(entityType.value(), EMPTY_JSON);
       }
