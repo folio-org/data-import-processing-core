@@ -41,7 +41,7 @@ public class ItemMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
     HashMap<String, String> context = new HashMap<>();
-    context.put(ITEM.value(), new JsonObject().toString());
+    context.put(ITEM.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
@@ -83,9 +83,9 @@ public class ItemMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
     HashMap<String, String> context = new HashMap<>();
+    UUID itemId = UUID.randomUUID();
     JsonArray itemsAsJson = new JsonArray(List.of(
-      new JsonObject()
-        .put("id", UUID.randomUUID())));
+      new JsonObject().put("item", new JsonObject().put("id", itemId))));
 
     context.put(ITEM.value(), itemsAsJson.encode());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
@@ -121,6 +121,7 @@ public class ItemMapperTest {
     JsonArray items = new JsonArray(mappedPayload.getContext().get(ITEM.value()));
     assertEquals(1, items.size());
     assertEquals("123", items.getJsonObject(0).getJsonObject("item").getString("barcode"));
+    assertEquals(itemId.toString(), items.getJsonObject(0).getJsonObject("item").getString("id"));
   }
 
   @Test
@@ -129,7 +130,7 @@ public class ItemMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
     HashMap<String, String> context = new HashMap<>();
-    context.put(ITEM.value(), new JsonObject().toString());
+    context.put(ITEM.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     context.put(MULTIPLE_HOLDINGS_FIELD, "945");
     eventPayload.setContext(context);
@@ -206,7 +207,7 @@ public class ItemMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
     HashMap<String, String> context = new HashMap<>();
-    context.put(ITEM.value(), new JsonObject().toString());
+    context.put(ITEM.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
@@ -230,7 +231,7 @@ public class ItemMapperTest {
     DataImportEventPayload mappedPayload = mapper.map(profile, eventPayload, mappingContext);
     assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(mappedPayload.getContext().get(ITEM.value()));
-    JsonObject items = new JsonObject(mappedPayload.getContext().get(ITEM.value()));
+    JsonArray items = new JsonArray(mappedPayload.getContext().get(ITEM.value()));
     assertEquals(0, items.size());
   }
 }

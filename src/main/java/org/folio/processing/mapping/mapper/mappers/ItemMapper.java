@@ -2,6 +2,7 @@ package org.folio.processing.mapping.mapper.mappers;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -56,11 +57,26 @@ public class ItemMapper implements Mapper {
       writer.initialize(eventPayload);
       items.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, ITEM.value()));
     } else {
-      items = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, ITEM.value(), marcField);
-      payloadContext.remove(MULTIPLE_HOLDINGS_FIELD);
+      if (new JsonArray(eventPayload.getContext().get(ITEM.value())).isEmpty()) {
+        items = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, ITEM.value(), marcField);
+        payloadContext.remove(MULTIPLE_HOLDINGS_FIELD);
+      } else {
+        mapMultipleItemIfItemEntityExistsInContext(eventPayload, mappingContext, payloadContext, mappingRules, items);
+      }
     }
-
     payloadContext.put(ITEM.value(), Json.encode(items));
     return eventPayload;
+  }
+
+  private void mapMultipleItemIfItemEntityExistsInContext(DataImportEventPayload eventPayload, MappingContext mappingContext, HashMap<String, String> payloadContext, List<MappingRule> mappingRules, JsonArray items) throws IOException {
+    JsonArray itemList = new JsonArray(eventPayload.getContext().get(ITEM.value()));
+    for (int i=0; i < itemList.size(); i++) {
+      JsonObject currentItem = itemList.getJsonObject(i);
+      eventPayload.getContext().put(ITEM.value(), currentItem.encode());
+      reader.initialize(eventPayload, mappingContext);
+      writer.initialize(eventPayload);
+      items.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, ITEM.value()));
+    }
+    payloadContext.remove(MULTIPLE_HOLDINGS_FIELD);
   }
 }
