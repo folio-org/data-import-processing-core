@@ -95,6 +95,8 @@ public interface Mapper {
     }
 
     payloadContext.put(MARC_BIBLIOGRAPHIC, originalMarcBib.encode());
+    reader.initialize(eventPayload, mappingContext);
+    writer.initialize(eventPayload);
     return entities;
   }
 
