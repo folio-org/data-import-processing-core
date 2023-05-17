@@ -376,6 +376,7 @@ public class HoldingsItemMatcherTest {
   @Test
   public void shouldNonMatchAndReturnPartialErrorsForFailedHoldings(TestContext testContext) {
     Async async = testContext.async();
+    Mockito.doAnswer(invocationOnMock -> ListValue.of(List.of("test1", "test2", "test3", "test4"))).when(valueReader).read(any(), any());
     CompletableFuture<LoadResult> errorFuture = new CompletableFuture<>();
     errorFuture.completeExceptionally(new MatchingException("Error"));
 
@@ -387,6 +388,7 @@ public class HoldingsItemMatcherTest {
     completedFutureNonMatched.complete(loadResultNonMatched);
 
     Mockito.when(holdingsValueLoader.loadEntity(any(), any()))
+      .thenReturn(errorFuture)
       .thenReturn(errorFuture)
       .thenReturn(completedFutureNonMatched)
       .thenReturn(completedFutureNonMatched);
@@ -414,7 +416,7 @@ public class HoldingsItemMatcherTest {
       JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS.value()));
       testContext.assertEquals(0, holdings.size());
       JsonArray errors = new JsonArray(eventPayload.getContext().get("ERRORS"));
-      testContext.assertEquals(1, errors.size());
+      testContext.assertEquals(2, errors.size());
       testContext.assertNull(throwable);
       testContext.assertFalse(matched);
       testContext.assertEquals("2", eventPayload.getContext().get("NOT_MATCHED_NUMBER"));
