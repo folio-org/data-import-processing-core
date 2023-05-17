@@ -119,6 +119,8 @@ public interface Mapper {
       JsonArray holdings = new JsonArray(eventPayload.getContext().get(entityType.value()));
       if (holdings.size() > 0) {
         eventPayload.getContext().put(entityType.value(), holdings.getJsonObject(0).encode());
+      } else {
+        eventPayload.getContext().put(entityType.value(), EMPTY_JSON);
       }
     }
   }
