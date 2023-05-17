@@ -184,6 +184,7 @@ public class HoldingsItemMatcherTest {
   @Test
   public void shouldMatchMultipleHoldings(TestContext testContext) {
     Async async = testContext.async();
+    Mockito.doAnswer(invocationOnMock -> ListValue.of(List.of("test1", "test2", "test3", "test3"))).when(valueReader).read(any(), any());
     MatchProfile matchProfile = new MatchProfile()
       .withExistingRecordType(HOLDINGS)
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
