@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.mapper.mappers;
 
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -23,15 +24,15 @@ import java.util.Optional;
 
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.WHITESPACE_DIVIDER;
-import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 
 public class HoldingsMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
   private static final String PERMANENT_LOCATION_ID = "permanentLocationId";
+  private static final String HOLDINGS = "HOLDINGS";
   private static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
-  public static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
-  private final Reader reader;
-  private final Writer writer;
+  private static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
+  private Reader reader;
+  private Writer writer;
 
   public HoldingsMapper(Reader reader, Writer writer) {
     this.reader = reader;
@@ -59,20 +60,52 @@ public class HoldingsMapper implements Mapper {
     Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
     if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
-      adjustContextToContainEntitiesAsJsonObject(eventPayload, HOLDINGS);
+      adjustContextToContainHoldingsAsJsonObject(eventPayload);
       writer.initialize(eventPayload);
-      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS.value()));
+      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
     } else {
       String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
       String marcField = retrieveMarcFieldName(expressionPart)
         .orElseThrow(() -> new RuntimeException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
       eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
-
-      holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS.value(), marcField);
+      if (new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
+        holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+      } else {
+        mapMultipleHoldingsIfHoldingsEntityExistsInContext(eventPayload, mappingContext, mappingRules, holdings);
+      }
     }
     eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
-    eventPayload.getContext().put(HOLDINGS.value(), Json.encode(distinctHoldingsByPermanentLocation(holdings)));
+    eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     return eventPayload;
+  }
+
+  private void mapMultipleHoldingsIfHoldingsEntityExistsInContext(DataImportEventPayload eventPayload, MappingContext mappingContext, List<MappingRule> mappingRules, JsonArray holdings) throws IOException {
+    JsonArray holdingsList = new JsonArray(eventPayload.getContext().get(HOLDINGS));
+    for (int i=0; i < holdingsList.size(); i++) {
+      JsonObject currentHolding = holdingsList.getJsonObject(i);
+      eventPayload.getContext().put(HOLDINGS, currentHolding.encode());
+      reader.initialize(eventPayload, mappingContext);
+      writer.initialize(eventPayload);
+      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
+    }
+  }
+
+  private void adjustContextToContainHoldingsAsJsonObject(DataImportEventPayload eventPayload) {
+    if (isJsonArray(eventPayload.getContext().get(HOLDINGS))) {
+      JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS));
+      if (holdings.size() > 0) {
+        eventPayload.getContext().put(HOLDINGS, holdings.getJsonObject(0).encode());
+      }
+    }
+  }
+
+  private boolean isJsonArray(String jsonArrayAsString) {
+    try {
+      new JsonArray(jsonArrayAsString);
+      return true;
+    } catch (DecodeException e) {
+      return false;
+    }
   }
 
   private List<JsonObject> distinctHoldingsByPermanentLocation(JsonArray holdings) {
