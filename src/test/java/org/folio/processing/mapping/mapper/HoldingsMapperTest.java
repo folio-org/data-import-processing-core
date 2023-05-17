@@ -42,7 +42,7 @@ public class HoldingsMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
-    context.put(HOLDINGS.value(), new JsonObject().toString());
+    context.put(HOLDINGS.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
@@ -237,7 +237,7 @@ public class HoldingsMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
-    context.put(HOLDINGS.value(), new JsonObject().toString());
+    context.put(HOLDINGS.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
@@ -340,7 +340,7 @@ public class HoldingsMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
-    context.put(HOLDINGS.value(), new JsonObject().toString());
+    context.put(HOLDINGS.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
@@ -444,7 +444,7 @@ public class HoldingsMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
-    context.put(HOLDINGS.value(), new JsonObject().toString());
+    context.put(HOLDINGS.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
