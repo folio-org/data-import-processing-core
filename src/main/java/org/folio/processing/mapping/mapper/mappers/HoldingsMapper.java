@@ -68,12 +68,26 @@ public class HoldingsMapper implements Mapper {
       String marcField = retrieveMarcFieldName(expressionPart)
         .orElseThrow(() -> new RuntimeException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
       eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
-
-      holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+      if (new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
+        holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+      } else {
+        mapMultipleHoldingsIfHoldingsEntityExistsInContext(eventPayload, mappingContext, mappingRules, holdings);
+      }
     }
     eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
     eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     return eventPayload;
+  }
+
+  private void mapMultipleHoldingsIfHoldingsEntityExistsInContext(DataImportEventPayload eventPayload, MappingContext mappingContext, List<MappingRule> mappingRules, JsonArray holdings) throws IOException {
+    JsonArray holdingsList = new JsonArray(eventPayload.getContext().get(HOLDINGS));
+    for (int i=0; i < holdingsList.size(); i++) {
+      JsonObject currentHolding = holdingsList.getJsonObject(i);
+      eventPayload.getContext().put(HOLDINGS, currentHolding.encode());
+      reader.initialize(eventPayload, mappingContext);
+      writer.initialize(eventPayload);
+      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
+    }
   }
 
   private void adjustContextToContainHoldingsAsJsonObject(DataImportEventPayload eventPayload) {
