@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
+import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
@@ -138,11 +140,17 @@ public class MarcRecordModifier {
           isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
         String subfieldCode = detail.getField().getSubfields().get(0).getSubfield();
 
-        incomingMarcRecord.getDataFields().stream()
-          .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)))
-          .findFirst()
-          .ifPresent(
-            field -> replaceDataField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode));
+        Stream<DataField> incomingDataFields = incomingMarcRecord.getDataFields().stream()
+          .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)));
+        Consumer<DataField> dataFieldAction = field -> replaceDataField(field, field.getTag(), field.getIndicator1(),
+          field.getIndicator2(), subfieldCode);
+
+        if (isNonRepeatableDataField(fieldTag, ind1, ind2)) {
+          incomingDataFields.findFirst()
+            .ifPresent(dataFieldAction);
+        } else {
+          incomingDataFields.forEach(dataFieldAction);
+        }
       }
     }
   }
@@ -735,9 +743,13 @@ public class MarcRecordModifier {
     }
 
     if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
-      updatedFields.add(fieldReplacement);
+      addNewUpdatedField(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     }
+  }
+
+  protected void addNewUpdatedField(DataField fieldReplacement) {
+    updatedFields.add(fieldReplacement);
   }
 
   protected void doAdditionalProtectedFieldAction(DataField fieldToUpdate) {
@@ -776,15 +788,19 @@ public class MarcRecordModifier {
   }
 
   boolean isNonRepeatableField(DataField field) {
+    return isNonRepeatableDataField(field.getTag(), field.getIndicator1(), field.getIndicator2());
+  }
+
+  boolean isNonRepeatableDataField(String tag, char indicator1, char indicator2) {
     // is any of 1xx fields
-    if (field.getTag().compareTo(TAG_100) > -1 && field.getTag().compareTo(TAG_199) < 1) {
+    if (tag.compareTo(TAG_100) > -1 && tag.compareTo(TAG_199) < 1) {
       return true;
     }
-    if (field.getTag().equals(TAG_999)) {
-      return field.getIndicator1() == INDICATOR_F && field.getIndicator2() == INDICATOR_F;
+    if (tag.equals(TAG_999)) {
+      return indicator1 == INDICATOR_F && indicator2 == INDICATOR_F;
     }
 
-    return NON_REPEATABLE_DATA_FIELDS_TAGS.contains(field.getTag());
+    return NON_REPEATABLE_DATA_FIELDS_TAGS.contains(tag);
   }
 
   private void clearUnUpdatedControlFields() {
