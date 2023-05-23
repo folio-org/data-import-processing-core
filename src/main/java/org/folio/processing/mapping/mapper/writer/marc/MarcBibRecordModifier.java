@@ -50,6 +50,14 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   @Override
+  protected void addNewUpdatedField(DataField fieldReplacement) {
+    if (containsBibTag(linkingRules, fieldReplacement.getTag()) && getLink(fieldReplacement).isEmpty()) {
+      removeSubfield9(fieldReplacement);
+    }
+    super.addNewUpdatedField(fieldReplacement);
+  }
+
+  @Override
   protected void doAdditionalProtectedFieldAction(DataField fieldToUpdate) {
     getLink(fieldToUpdate).ifPresent(bibAuthorityLinksKept::add);
   }
