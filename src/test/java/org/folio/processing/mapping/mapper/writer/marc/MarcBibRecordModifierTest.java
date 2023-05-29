@@ -507,17 +507,34 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
   @Test
   public void shouldUnLinkWhenSubfield0ChangeInRepeatable() throws IOException {
-      // given
-      var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-        "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-      var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-        "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0 updated\"}, {\"9\":\"ddbf59b7-913b-42ac-b1c6-11111111a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-      var expectedParsedContent = "{\"leader\":\"00088nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-        "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0 updated\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0 updated\"}, {\"9\":\"ddbf59b7-913b-42ac-b1c6-11111111a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00088nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0 updated\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-      testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
-        constructMappingDetails("700", "0"), emptyList(), emptyList(), 0, "700");
-    }
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      constructMappingDetails("700", "0"), emptyList(), emptyList(), 0, "700");
+  }
+
+  @Test
+  public void shouldKeepLinkWhenOtherRepeatableUpdatedWithMappingDetails() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00145nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"600\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"e\":\"letterer.\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"600\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"e\":\"Writer\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00145nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"600\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"e\":\"Writer\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      constructMappingDetails("*", "e"), emptyList(), emptyList(), 1, "600");
+  }
 
   //field protection settings tests
   @Test
