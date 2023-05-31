@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
+import static com.google.common.collect.Lists.newLinkedList;
 import static java.lang.Character.isDigit;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -126,6 +127,7 @@ public class MarcRecordModifier {
       return;
     }
 
+    var notUpdatedDataFields = newLinkedList(incomingMarcRecord.getDataFields());
     for (MarcMappingDetail detail : marcMappingRules) {
       String fieldTag = detail.getField().getField();
       if (Verifier.isControlField(fieldTag)) {
@@ -142,8 +144,10 @@ public class MarcRecordModifier {
 
         Stream<DataField> incomingDataFields = incomingMarcRecord.getDataFields().stream()
           .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)));
-        Consumer<DataField> dataFieldAction = field -> replaceDataField(field, field.getTag(), field.getIndicator1(),
-          field.getIndicator2(), subfieldCode);
+        Consumer<DataField> dataFieldAction = field -> {
+          replaceDataField(field, field.getTag(), field.getIndicator1(), field.getIndicator2(), subfieldCode);
+          notUpdatedDataFields.remove(field);
+        };
 
         if (isNonRepeatableDataField(fieldTag, ind1, ind2)) {
           incomingDataFields.findFirst()
@@ -153,6 +157,7 @@ public class MarcRecordModifier {
         }
       }
     }
+    notUpdatedDataFields.forEach(this::doAdditionalProtectedFieldAction);
   }
 
   /**
@@ -402,7 +407,7 @@ public class MarcRecordModifier {
   }
 
   private boolean fieldMatches(DataField field, String tag, char ind1, char ind2) {
-    if (!field.getTag().equals(tag)) {
+    if (!String.valueOf(ANY_CHAR).equals(tag) && !field.getTag().equals(tag)) {
       return false;
     }
     if (ind1 != ANY_CHAR && field.getIndicator1() != ind1) {
