@@ -59,6 +59,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
+  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations.mrc";
   private static final String CLASSIFICATIONS_TEST = "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
   private static final String INSTANCES_CLASSIFICATIONS_PATH = "src/test/resources/org/folio/processing/mapping/instance/classificationsTestInstance.json";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
@@ -401,8 +402,8 @@ public class InstanceMappingTest {
       Map.entry("9780471622673 (acid-free paper)", ISBN_IDENTIFIER_ID),
       Map.entry("0471725331 (electronic bk.)", ISBN_IDENTIFIER_ID),
       Map.entry("9780471725336 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID),
-      Map.entry("0471725323 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID ),
-      Map.entry("9780471725329 (electronic bk.)", ISBN_IDENTIFIER_ID ),
+      Map.entry("0471725323 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID),
+      Map.entry("9780471725329 (electronic bk.)", ISBN_IDENTIFIER_ID),
       Map.entry("0471622672 (acid-free paper)", INVALID_ISBN_IDENTIFIER_ID));
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_020_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
@@ -429,10 +430,10 @@ public class InstanceMappingTest {
     List<Identifier> identifierTypes = mappedInstances.get(0).getIdentifiers();
     assertEquals(6, identifierTypes.size());
     IntStream.range(0, expectedResults.size()).forEach(index -> {
-        Map.Entry<String, String> expected = expectedResults.get(index);
-        Identifier actual = identifierTypes.get(index);
-        assertEquals(expected.getValue(), actual.getIdentifierTypeId());
-        assertEquals(expected.getKey(), actual.getValue());
+      Map.Entry<String, String> expected = expectedResults.get(index);
+      Identifier actual = identifierTypes.get(index);
+      assertEquals(expected.getValue(), actual.getIdentifierTypeId());
+      assertEquals(expected.getKey(), actual.getValue());
     });
   }
 
@@ -618,6 +619,81 @@ public class InstanceMappingTest {
       assertEquals("1", instance.getContributors().get(14).getContributorTypeId());
       assertNull(instance.getContributors().get(14).getContributorTypeText());
       assertEquals("3", instance.getContributors().get(14).getContributorNameTypeId());
+
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcAlternativeMappingForInstanceContributorsWithPunctuations() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS)
+      .getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    List<ContributorType> contributorTypes = List.of(
+      new ContributorType().withName("Author").withCode("aut").withId("1"),
+      new ContributorType().withName("Editor").withCode("edi").withId("2"),
+      new ContributorType().withName("Conceptor").withCode("conc").withId("3"),
+      new ContributorType().withName("Court reporter").withCode("court").withId("4"),
+      new ContributorType().withName("Film distributor").withCode("film").withId("5"),
+      new ContributorType().withName("Associated name").withCode("associated").withId("6"),
+      new ContributorType().withName("Interviewer").withCode("inter").withId("8")
+    );
+
+    List<ContributorNameType> contributorNameTypes = List.of(
+      new ContributorNameType().withName("Personal name").withId("1"),
+      new ContributorNameType().withName("Corporate name").withId("2"),
+      new ContributorNameType().withName("Meeting name").withId("3"));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
+      assertNotNull(instance.getSource());
+      assertEquals(6, instance.getContributors().size());
+
+
+      // 100 1\$aKani, John,$econceptor;$ecourt report should match by first $e subfield and set contributorTypeId to 3
+      assertEquals("Kani, John", instance.getContributors().get(0).getName());
+      assertEquals("3", instance.getContributors().get(0).getContributorTypeId());
+      assertNull(instance.getContributors().get(0).getContributorTypeText());
+      assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
+
+      // 110 2\$aBuena Vista Corporate (Firm),$efilm distributor. should remove comma at the end of the name, match by first $e subfield and set contributorTypeId to 5
+      assertEquals("Buena Vista Corporate (Firm)", instance.getContributors().get(1).getName());
+      assertEquals("5", instance.getContributors().get(1).getContributorTypeId());
+      assertNull(instance.getContributors().get(1).getContributorTypeText());
+      assertEquals("2", instance.getContributors().get(1).getContributorNameTypeId());
+
+      // 111 2\$aSuperheroes,$jassociated name;$jdepicted. should remove comma at the end of the name, match by first $j subfield and set contributorTypeId to 6
+      assertEquals("Superheroes", instance.getContributors().get(2).getName());
+      assertEquals("6", instance.getContributors().get(2).getContributorTypeId());
+      assertNull(instance.getContributors().get(2).getContributorTypeText());
+      assertEquals("3", instance.getContributors().get(2).getContributorNameTypeId());
+
+      // 700 1\$aBrown, Sterling K.,$eactress;$einterviewer. should remove comma at the end of the name, match by second $e subfield and set contributorTypeId to 8
+      assertEquals("Brown, Sterling K.", instance.getContributors().get(3).getName());
+      assertEquals("8", instance.getContributors().get(3).getContributorTypeId());
+      assertNull(instance.getContributors().get(3).getContributorTypeText());
+      assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
+
+      // 700 1\$aBrown, Sterling K,.$eactress;$einterviewer. should remove comma at the end of the name, match by second $e subfield and set contributorTypeId to 8
+      assertEquals("Brown, Sterling K.", instance.getContributors().get(4).getName());
+      assertEquals("8", instance.getContributors().get(4).getContributorTypeId());
+      assertNull(instance.getContributors().get(4).getContributorTypeText());
+      assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
+
+      // 700 1\$aMorrison, Rachel$c(Cinematographer),$edirector of photorgaphy. should remove comma at the end of the name(subfield a+c), not match by $e subfield and set it as contributorTypeText to 8
+      assertEquals("Morrison, Rachel (Cinematographer)", instance.getContributors().get(5).getName());
+      assertNull(instance.getContributors().get(5).getContributorTypeId());
+      assertEquals("director of photorgaphy.", instance.getContributors().get(5).getContributorTypeText());
+      assertEquals("1", instance.getContributors().get(5).getContributorNameTypeId());
 
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);

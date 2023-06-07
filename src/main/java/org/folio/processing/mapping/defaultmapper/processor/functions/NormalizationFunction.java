@@ -28,6 +28,7 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -95,6 +96,26 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     public String apply(RuleExecutionContext context) {
       String subFieldData = context.getSubFieldValue();
       if (subFieldData.endsWith(PERIOD)) {
+        return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 1);
+      }
+      return subFieldData;
+    }
+  },
+
+  TRIM_PUNCTUATION() {
+    private static final String PERIOD = ".";
+    private static final String COMMA = ",";
+    private static final String HYPHEN = "-";
+
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String subFieldData = context.getSubFieldValue().trim();
+      if (subFieldData.matches("^(.*?)\\s.[.]$") || subFieldData.endsWith(HYPHEN)) {
+        return subFieldData;
+      } else if (subFieldData.matches("^(.*?)\\s.,[.]$")) {
+        return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 2).concat(PERIOD);
+      } else if (subFieldData.endsWith(PERIOD) || subFieldData.endsWith(COMMA)) {
         return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 1);
       }
       return subFieldData;
@@ -296,8 +317,9 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
       for (Subfield contributorNameSubfield : context.getDataField().getSubfields(contributorNameSfName.charAt(0))) {
         if (contributorNameSubfield != null) {
+          //TODO: Ignore punctuation
           String contributorTypeId =
-            getContributorTypeIdBy(types, type -> type.getName().equalsIgnoreCase(contributorNameSubfield.getData().trim()));
+            getContributorTypeIdBy(types, type -> equalsIgnoringPunctuationIfNeeded(contributorNameSubfield, type));
           if (!contributorTypeId.isEmpty()) {
             return contributorTypeId;
           }
@@ -305,6 +327,22 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       }
 
       return StringUtils.EMPTY;
+    }
+
+    private boolean equalsIgnoringPunctuationIfNeeded(Subfield contributorNameSubfield, ContributorType type) {
+      String currentSubfield = contributorNameSubfield.getData().trim();
+      String resultedSubfield = currentSubfield;
+      resultedSubfield = trimPunctuationIfNeeded(currentSubfield, resultedSubfield);
+      return type.getName().equalsIgnoreCase(resultedSubfield);
+    }
+
+    private String trimPunctuationIfNeeded(String currentSubfield, String resultedSubfield) {
+      for (String punctuation : Arrays.asList(".", ",", ";")) {
+        if (currentSubfield.endsWith(punctuation)) {
+          return currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1);
+        }
+      }
+      return resultedSubfield;
     }
 
     private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {
