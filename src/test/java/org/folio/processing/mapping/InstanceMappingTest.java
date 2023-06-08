@@ -609,7 +609,7 @@ public class InstanceMappingTest {
       assertEquals("3", instance.getContributors().get(12).getContributorNameTypeId());
 
       // 711 1\$aKURIHARA, N.$edata contact$jcreator should set data from first $e to the "contributorTypeText" if all $e don't match
-      assertEquals("KURIHARA, N", instance.getContributors().get(13).getName());
+      assertEquals("KURIHARA, N.", instance.getContributors().get(13).getName());
       assertNull(instance.getContributors().get(13).getContributorTypeId());
       assertEquals("data contact", instance.getContributors().get(13).getContributorTypeText());
       assertEquals("3", instance.getContributors().get(13).getContributorNameTypeId());
