@@ -106,8 +106,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     private static final String PERIOD = ".";
     private static final String COMMA = ",";
     private static final String HYPHEN = "-";
-    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD ="^(.*?)\\s.[.]$";
-    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA ="^(.*?)\\s.,[.]$";
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD = "^(.*?)\\s.[.]$";
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA = "^(.*?)\\s.,[.]$";
 
     @Override
     public String apply(RuleExecutionContext context) {
@@ -293,6 +293,11 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
   },
 
   SET_CONTRIBUTOR_TYPE_ID_BY_CODE_OR_NAME() {
+
+    private static final String PERIOD = ".";
+    private static final String COMMA = ",";
+    private static final String SEMICOLON = ";";
+
     private static final String CONTRIBUTOR_CODE_SUBFIELD_PARAM = "contributorCodeSubfield";
     private static final String CONTRIBUTOR_NAME_SUBFIELD_PARAM = "contributorNameSubfield";
 
@@ -333,12 +338,19 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     private boolean equalsIgnoringPunctuationIfNeeded(Subfield contributorNameSubfield, ContributorType type) {
       String currentSubfield = contributorNameSubfield.getData().trim();
       String resultedSubfield = currentSubfield;
+      if (type.getName().endsWith(PERIOD)) {
+        if (resultedSubfield.endsWith(PERIOD)) {
+          return type.getName().equalsIgnoreCase(resultedSubfield);
+        } else {
+          return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(resultedSubfield);
+        }
+      }
       resultedSubfield = trimPunctuationIfNeeded(currentSubfield, resultedSubfield);
       return type.getName().equalsIgnoreCase(resultedSubfield);
     }
 
     private String trimPunctuationIfNeeded(String currentSubfield, String resultedSubfield) {
-      for (String punctuation : Arrays.asList(".", ",", ";")) {
+      for (String punctuation : Arrays.asList(PERIOD, COMMA, SEMICOLON)) {
         if (currentSubfield.endsWith(punctuation)) {
           return currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1);
         }
