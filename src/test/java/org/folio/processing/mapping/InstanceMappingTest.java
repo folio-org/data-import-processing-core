@@ -656,7 +656,7 @@ public class InstanceMappingTest {
       JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
       assertNotNull(instance.getSource());
-      assertEquals(6, instance.getContributors().size());
+      assertEquals(7, instance.getContributors().size());
 
 
       // 100 1\$aKani, John,$econceptor;$ecourt report should match by first $e subfield and set contributorTypeId to 3
@@ -689,16 +689,21 @@ public class InstanceMappingTest {
       assertNull(instance.getContributors().get(4).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
 
-      // 700 1\$aMorrison, Rachel$c(Cinematographer),$edirector of photorgaphy. should remove comma at the end of the name(subfield a+c), not match by $e subfield and set it as contributorTypeText to 8
-      assertEquals("Morrison, Rachel (Cinematographer)", instance.getContributors().get(5).getName());
-      assertNull(instance.getContributors().get(5).getContributorTypeId());
-      assertEquals("director of photorgaphy.", instance.getContributors().get(5).getContributorTypeText());
+      // 700 1\$aBrown, Sterling K-$$einterviewer. should NOT remove the hyphen at the end of the name, match by second $e subfield and set contributorTypeId to 8
+      assertEquals("Brown, Sterling K-", instance.getContributors().get(5).getName());
+      assertEquals("8", instance.getContributors().get(5).getContributorTypeId());
+      assertNull(instance.getContributors().get(5).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(5).getContributorNameTypeId());
+
+      // 700 1\$aMorrison, Rachel$c(Cinematographer),$edirector of photorgaphy. should remove comma at the end of the name(subfield a+c), not match by $e subfield and set it as contributorTypeText to 8
+      assertEquals("Morrison, Rachel (Cinematographer)", instance.getContributors().get(6).getName());
+      assertNull(instance.getContributors().get(6).getContributorTypeId());
+      assertEquals("director of photorgaphy.", instance.getContributors().get(6).getContributorTypeText());
+      assertEquals("1", instance.getContributors().get(6).getContributorNameTypeId());
 
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
     }
   }
-
 }
