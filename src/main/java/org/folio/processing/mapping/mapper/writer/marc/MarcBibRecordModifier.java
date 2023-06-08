@@ -5,8 +5,8 @@ import static java.util.Collections.emptyList;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -26,15 +26,15 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
 
   private static final char SUBFIELD_0 = '0';
   private static final char SUBFIELD_9 = '9';
-  private static final List<String> LINKABLE_TAGS = List.of("100", "110", "111", "130", "240", "600", "610",
-    "611", "630", "700", "710", "711", "730", "800", "810", "811", "830");
 
-  private List<Link> bibAuthorityLinks = emptyList();
+  private List<LinkFull> bibAuthorityLinks = emptyList();
   private List<LinkingRuleDto> linkingRules = emptyList();
-  private final Set<Link> bibAuthorityLinksKept = new HashSet<>();
+  private final Set<LinkFull> bibAuthorityLinksKept = new HashSet<>();
 
   public List<Link> getBibAuthorityLinksKept() {
-    return new LinkedList<>(bibAuthorityLinksKept);
+    return bibAuthorityLinksKept.stream()
+      .map(LinkFull::getLink)
+      .collect(Collectors.toList());
   }
 
   public void initialize(DataImportEventPayload eventPayload, MappingParameters mappingParameters,
@@ -45,8 +45,16 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     if (links == null || links.getLinks() == null) {
       return;
     }
-    bibAuthorityLinks = links.getLinks();
+    bibAuthorityLinks = buildFullLinks(links.getLinks(), linkingRules);
     this.linkingRules = linkingRules;
+  }
+
+  @Override
+  protected void addNewUpdatedField(DataField fieldReplacement) {
+    if (containsBibTag(linkingRules, fieldReplacement.getTag()) && getLink(fieldReplacement).isEmpty()) {
+      removeSubfield9(fieldReplacement);
+    }
+    super.addNewUpdatedField(fieldReplacement);
   }
 
   @Override
@@ -61,13 +69,13 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   protected boolean updateSubfields(String subfieldCode, List<DataField> tmpFields, DataField fieldToUpdate,
                                     DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
     var linkOptional = getLink(fieldToUpdate);
-    if (linkOptional.isPresent() && fieldsLinked(subfieldCode.charAt(0), linkOptional.get(), fieldReplacement, fieldToUpdate)) {
+    if (linkOptional.isPresent() && fieldsLinked(subfieldCode.charAt(0), linkOptional.get().getLink(), fieldReplacement, fieldToUpdate)) {
       var link = linkOptional.get();
       bibAuthorityLinksKept.add(link);
       return updateUncontrolledSubfields(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
     }
 
-    if (LINKABLE_TAGS.contains(fieldReplacement.getTag())) {
+    if (containsBibTag(linkingRules, fieldReplacement.getTag())) {
       removeSubfield9(fieldToUpdate, fieldReplacement);
       if (subfieldCode.charAt(0) == SUBFIELD_9) {
         return false;
@@ -78,17 +86,64 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   @Override
+  protected void clearDataField(DataField updatedField) {
+    removeSubfield9(updatedField);
+    super.clearDataField(updatedField);
+  }
+
+  @Override
   protected boolean unUpdatedFieldShouldBeRemoved(DataField dataField) {
     return super.unUpdatedFieldShouldBeRemoved(dataField) && !fieldLinked(dataField);
   }
 
-  private boolean updateUncontrolledSubfields(Link link, String subfieldCode, List<DataField> tmpFields,
+  @Override
+  protected boolean fieldsDeepMatch(List<DataField> fieldReplacements, List<DataField> fieldsToUpdate,
+                                    DataField fieldReplacement, DataField fieldToUpdate) {
+    if (isNonRepeatableField(fieldReplacement)) {
+      return true;
+    }
+
+    var incomingSubfields0 = fieldReplacement.getSubfields(SUBFIELD_0).stream()
+      .map(Subfield::getData)
+      .collect(Collectors.toList());
+    // only one subfield $0 extracted from existing because linked field can only have single $0
+    var existingSubfield0 = fieldToUpdate.getSubfield(SUBFIELD_0);
+
+    // both absent or both have equal $0
+    if (incomingSubfields0.isEmpty() && existingSubfield0 == null
+      || existingSubfield0 != null && incomingSubfields0.contains(existingSubfield0.getData())) {
+      return true;
+    }
+
+    //if incoming linked to some other existing
+    var incomingFieldLinked = fieldsToUpdate.stream()
+      .anyMatch(dataField -> dataField.getTag().equals(fieldReplacement.getTag())
+        && dataField.getSubfield(SUBFIELD_0) != null
+        && incomingSubfields0.contains(dataField.getSubfield(SUBFIELD_0).getData()));
+
+    if (existingSubfield0 == null) {
+      return !incomingFieldLinked;
+    }
+
+    //if existing linked to some other incoming
+    var existingFieldLinked = fieldReplacements.stream()
+      .anyMatch(dataField -> dataField.getTag().equals(fieldToUpdate.getTag())
+        && dataField.getSubfield(SUBFIELD_0) != null
+        && existingSubfield0.getData().equals(dataField.getSubfield(SUBFIELD_0).getData()));
+
+    return !(incomingFieldLinked || existingFieldLinked);
+  }
+
+  private boolean updateUncontrolledSubfields(LinkFull link, String subfieldCode, List<DataField> tmpFields,
                                               DataField fieldToUpdate, DataField fieldReplacement) {
     if (subfieldCode.equals(ANY_STRING)) {
       fieldReplacement.getSubfields()
         .forEach(subfield ->
           updateUncontrolledSubfield(link, String.valueOf(subfield.getCode()), tmpFields, fieldToUpdate, fieldReplacement));
       removeUncontrolledNotUpdatedSubfields(link, fieldToUpdate, fieldReplacement);
+      fieldReplacement.getSubfields().clear();
+      fieldReplacement.getSubfields().addAll(fieldToUpdate.getSubfields());
+      return super.updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, true);
     } else {
       updateUncontrolledSubfield(link, subfieldCode, tmpFields, fieldToUpdate, fieldReplacement);
     }
@@ -96,7 +151,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     return false;
   }
 
-  private void updateUncontrolledSubfield(Link link, String subfieldCode, List<DataField> tmpFields,
+  private void updateUncontrolledSubfield(LinkFull link, String subfieldCode, List<DataField> tmpFields,
                                           DataField fieldToUpdate, DataField fieldReplacement) {
     if (subfieldLinked(link, subfieldCode)) {
       return;
@@ -105,7 +160,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     super.updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, false);
   }
 
-  private void removeUncontrolledNotUpdatedSubfields(Link link, DataField fieldToUpdate, DataField fieldReplacement) {
+  private void removeUncontrolledNotUpdatedSubfields(LinkFull link, DataField fieldToUpdate, DataField fieldReplacement) {
     fieldToUpdate.getSubfields().stream()
       .filter(subfield -> !subfieldLinked(link, String.valueOf(subfield.getCode())))
       .filter(subfield -> fieldReplacement.getSubfields().stream()
@@ -120,49 +175,30 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
    * It also should be removed if $9 is not in mapping details (and subfield is not '*') but field is unlinked.
    * */
   private void removeSubfield9(DataField fieldToUpdate, DataField fieldReplacement) {
-    fieldToUpdate.getSubfields().removeIf(subfield -> subfield.getCode() == SUBFIELD_9);
-    fieldReplacement.getSubfields().removeIf(subfield -> subfield.getCode() == SUBFIELD_9);
+    removeSubfield9(fieldToUpdate);
+    removeSubfield9(fieldReplacement);
+  }
+  private void removeSubfield9(DataField dataField) {
+    dataField.getSubfields().removeIf(subfield -> subfield.getCode() == SUBFIELD_9);
   }
 
-  private Optional<Link> getLink(DataField dataField) {
+  private Optional<LinkFull> getLink(DataField dataField) {
     return bibAuthorityLinks.stream()
-      .filter(link ->
-        linkingRules.stream()
-                    .filter(linkingRuleDto -> linkingRuleDto.getBibField().equals(dataField.getTag()))
-                    .map(LinkingRuleDto::getId)
-                    .collect(Collectors.toList())
-                    .contains(link.getLinkingRuleId())
-      )
+      .filter(link -> link.getBibTag().equals(dataField.getTag()))
       .filter(link -> {
         var sub9Matches = Optional.ofNullable(dataField.getSubfield(SUBFIELD_9))
-          .map(subfield -> subfield.getData().equalsIgnoreCase(link.getAuthorityId()))
+          .map(subfield -> subfield.getData().equalsIgnoreCase(link.getLink().getAuthorityId()))
           .orElse(false);
         var sub0Matches = Optional.ofNullable(dataField.getSubfield(SUBFIELD_0))
-          .map(subfield -> StringUtils.endsWithIgnoreCase(subfield.getData(), link.getAuthorityNaturalId()))
+          .map(subfield -> StringUtils.endsWithIgnoreCase(subfield.getData(), link.getLink().getAuthorityNaturalId()))
           .orElse(false);
         return sub9Matches || sub0Matches;
       })
       .findFirst();
   }
 
-  private boolean subfieldLinked(Link link, String subfieldCode) {
-    Optional<LinkingRuleDto> ruleDto = linkingRules.stream().filter(r -> r.getId().equals(link.getLinkingRuleId())).findFirst();
-    if (ruleDto.isEmpty()) {
-      return false;
-    }
-
-    LinkingRuleDto dto = ruleDto.get();
-    List<String> bibControlledSubfields = dto.getAuthoritySubfields();
-    List<SubfieldModification> subfieldModifications = dto.getSubfieldModifications();
-
-    bibControlledSubfields = bibControlledSubfields.stream()
-      .map(s -> subfieldModifications.stream()
-        .filter(subfieldModification -> s.equals(subfieldModification.getSource()))
-        .map(SubfieldModification::getTarget)
-        .findFirst()
-        .orElse(s))
-      .collect(Collectors.toList());
-    return bibControlledSubfields.contains(subfieldCode)
+  private boolean subfieldLinked(LinkFull link, String subfieldCode) {
+    return link.getBibSubfields().contains(subfieldCode)
       || subfieldCode.charAt(0) == SUBFIELD_0
       || subfieldCode.charAt(0) == SUBFIELD_9;
   }
@@ -198,6 +234,12 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       && incomingSubfield0.getData().equals(existingSubfield0.getData());
   }
 
+  private boolean containsBibTag(List<LinkingRuleDto> linkingRules, String tag) {
+    return linkingRules.stream()
+      .map(LinkingRuleDto::getBibField)
+      .anyMatch(bibField -> bibField.equals(tag));
+  }
+
   /**
    * Indicates that field is still linked after update
    * */
@@ -206,15 +248,10 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     if (subfield0 == null) {
       return false;
     }
-    var rulesForTag = linkingRules.stream()
-                      .filter(r -> r.getBibField().equals(dataField.getTag()))
-                      .collect(Collectors.toList());
+
     return bibAuthorityLinksKept.stream()
-      .filter(link -> rulesForTag.stream()
-        .map(LinkingRuleDto::getId)
-        .collect(Collectors.toList())
-        .contains(link.getLinkingRuleId()))
-      .anyMatch(link -> subfield0.getData().endsWith(link.getAuthorityNaturalId()));
+      .filter(link -> link.getBibTag().equals(dataField.getTag()))
+      .anyMatch(link -> subfield0.getData().endsWith(link.getLink().getAuthorityNaturalId()));
   }
 
   private void validateEntityType(EntityType entityType) {
@@ -222,5 +259,31 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
       throw new IllegalArgumentException(this.getClass().getSimpleName() + " support only "
         + EntityType.MARC_BIBLIOGRAPHIC.value());
     }
+  }
+
+  private List<LinkFull> buildFullLinks(List<Link> links, List<LinkingRuleDto> linkingRules) {
+    return links.stream()
+      .map(link -> {
+        var linkingRule = linkingRules.stream()
+          .filter(linkingRuleDto -> linkingRuleDto.getId().equals(link.getLinkingRuleId()))
+          .findFirst();
+
+        if (linkingRule.isEmpty()) {
+          return null;
+        }
+
+        var subfieldModifications = linkingRule.get().getSubfieldModifications();
+        var bibSubfields = linkingRule.get().getAuthoritySubfields().stream()
+          .map(s -> subfieldModifications.stream()
+            .filter(subfieldModification -> s.equals(subfieldModification.getSource()))
+            .map(SubfieldModification::getTarget)
+            .findFirst()
+            .orElse(s))
+          .collect(Collectors.toList());
+
+        return new LinkFull(link, linkingRule.get().getBibField(), bibSubfields);
+      })
+      .filter(Objects::nonNull)
+      .collect(Collectors.toList());
   }
 }

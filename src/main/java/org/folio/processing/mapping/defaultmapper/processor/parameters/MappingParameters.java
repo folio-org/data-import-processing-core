@@ -21,6 +21,7 @@ import org.folio.InstanceType;
 import org.folio.IssuanceMode;
 import org.folio.ItemDamageStatus;
 import org.folio.ItemNoteType;
+import org.folio.LinkingRuleDto;
 import org.folio.Loantype;
 import org.folio.Location;
 import org.folio.Mtype;
@@ -69,6 +70,8 @@ public class MappingParameters {
   private List<AuthorityNoteType> authorityNoteTypes;
   private List<AuthoritySourceFile> authoritySourceFiles;
   private List<Organization> organizations;
+
+  private List<LinkingRuleDto> linkingRules;
 
   public MappingParameters withInitializedState(boolean initialized) {
     this.initialized = initialized;
@@ -456,6 +459,19 @@ public class MappingParameters {
 
   public MappingParameters withOrganizations(List<Organization> organizations) {
     this.organizations = new UnmodifiableList<>(organizations);
+    return this;
+  }
+
+  public List<LinkingRuleDto> getLinkingRules() {
+    return linkingRules;
+  }
+
+  public void setLinkingRules(List<LinkingRuleDto> linkingRules) {
+    this.linkingRules = linkingRules;
+  }
+
+  public MappingParameters withLinkingRules(List<LinkingRuleDto> linkingRules) {
+    this.linkingRules = new UnmodifiableList<>(linkingRules);
     return this;
   }
 }
