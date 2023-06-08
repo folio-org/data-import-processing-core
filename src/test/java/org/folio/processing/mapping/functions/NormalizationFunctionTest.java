@@ -143,6 +143,30 @@ public class NormalizationFunctionTest {
   }
 
   @Test
+  public void TRIM_PUNCTUATION_shouldReturnExpectedResult() {
+    // given
+    Map<String, String> givenAndExpectedSubFieldMap = new HashMap<>();
+    givenAndExpectedSubFieldMap.put(" test ", "test");
+    givenAndExpectedSubFieldMap.put("test value. ", "test value");
+    givenAndExpectedSubFieldMap.put("testing comma value,", "testing comma value");
+    givenAndExpectedSubFieldMap.put("Brown, Sterling K.", "Brown, Sterling K.");
+    givenAndExpectedSubFieldMap.put("Brown, Sterling K,.", "Brown, Sterling K.");
+    givenAndExpectedSubFieldMap.put("Kaluuya, Daniel, 1989-", "Kaluuya, Daniel, 1989-");
+    givenAndExpectedSubFieldMap.put(EMPTY_STRING, EMPTY_STRING);
+
+    RuleExecutionContext context = new RuleExecutionContext();
+    for (Map.Entry<String, String> entry : givenAndExpectedSubFieldMap.entrySet()) {
+      String givenSubField = entry.getKey();
+      context.setSubFieldValue(givenSubField);
+      String expectedSubField = entry.getValue();
+      // when
+      String actualSubField = runFunction("trim_punctuation", context);
+      // then
+      assertEquals(expectedSubField, actualSubField);
+    }
+  }
+
+  @Test
   public void REMOVE_SUBSTRING_shouldReturnExpectedResult() {
     // given
     String givenSubField = "362 .2/92 ./8";

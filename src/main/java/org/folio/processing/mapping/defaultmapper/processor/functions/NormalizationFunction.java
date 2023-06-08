@@ -106,14 +106,15 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     private static final String PERIOD = ".";
     private static final String COMMA = ",";
     private static final String HYPHEN = "-";
-
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD ="^(.*?)\\s.[.]$";
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA ="^(.*?)\\s.,[.]$";
 
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldData = context.getSubFieldValue().trim();
-      if (subFieldData.matches("^(.*?)\\s.[.]$") || subFieldData.endsWith(HYPHEN)) {
+      if (subFieldData.matches(REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD) || subFieldData.endsWith(HYPHEN)) {
         return subFieldData;
-      } else if (subFieldData.matches("^(.*?)\\s.,[.]$")) {
+      } else if (subFieldData.matches(REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA)) {
         return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 2).concat(PERIOD);
       } else if (subFieldData.endsWith(PERIOD) || subFieldData.endsWith(COMMA)) {
         return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 1);
