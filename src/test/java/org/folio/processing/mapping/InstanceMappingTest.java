@@ -468,7 +468,7 @@ public class InstanceMappingTest {
       assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
 
       // 720  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
-      assertEquals("CHUJO, T", instance.getContributors().get(1).getName());
+      assertEquals("CHUJO, T.", instance.getContributors().get(1).getName());
       assertEquals("2", instance.getContributors().get(1).getContributorTypeId());
       assertNull(instance.getContributors().get(1).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(1).getContributorNameTypeId());
@@ -486,7 +486,7 @@ public class InstanceMappingTest {
       assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
 
       // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if all $e don't match
-      assertEquals("KURIHARA, N", instance.getContributors().get(4).getName());
+      assertEquals("KURIHARA, N.", instance.getContributors().get(4).getName());
       assertNull(instance.getContributors().get(4).getContributorTypeId());
       assertEquals("data contact", instance.getContributors().get(4).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
@@ -555,7 +555,7 @@ public class InstanceMappingTest {
       assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
 
       // 700  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
-      assertEquals("CHUJO, T", instance.getContributors().get(4).getName());
+      assertEquals("CHUJO, T.", instance.getContributors().get(4).getName());
       assertEquals("2", instance.getContributors().get(4).getContributorTypeId());
       assertNull(instance.getContributors().get(4).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
@@ -573,7 +573,7 @@ public class InstanceMappingTest {
       assertEquals("1", instance.getContributors().get(6).getContributorNameTypeId());
 
       // 700 1\$aKURIHARA, N.$edata contact$jcreator should set data from first $e to the "contributorTypeText" if all $e don't match
-      assertEquals("KURIHARA, N", instance.getContributors().get(7).getName());
+      assertEquals("KURIHARA, N.", instance.getContributors().get(7).getName());
       assertNull(instance.getContributors().get(7).getContributorTypeId());
       assertEquals("data contact", instance.getContributors().get(7).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(7).getContributorNameTypeId());
