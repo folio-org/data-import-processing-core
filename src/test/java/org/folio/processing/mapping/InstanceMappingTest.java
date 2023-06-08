@@ -591,7 +591,7 @@ public class InstanceMappingTest {
       assertEquals("3", instance.getContributors().get(9).getContributorNameTypeId());
 
       // 711  \\$aCHUJO, T.$jauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
-      assertEquals("CHUJO, T", instance.getContributors().get(10).getName());
+      assertEquals("CHUJO, T.", instance.getContributors().get(10).getName());
       assertEquals("2", instance.getContributors().get(10).getContributorTypeId());
       assertNull(instance.getContributors().get(10).getContributorTypeText());
       assertEquals("3", instance.getContributors().get(10).getContributorNameTypeId());
