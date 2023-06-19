@@ -59,7 +59,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
-  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations_2.mrc";
+  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations.mrc";
   private static final String CLASSIFICATIONS_TEST = "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
   private static final String INSTANCES_CLASSIFICATIONS_PATH = "src/test/resources/org/folio/processing/mapping/instance/classificationsTestInstance.json";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
