@@ -342,7 +342,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         if (resultedSubfield.endsWith(PERIOD)) {
           return type.getName().equalsIgnoreCase(resultedSubfield);
         }
-        if (resultedSubfield.endsWith(SEMICOLON) || resultedSubfield.endsWith(SEMICOLON)) {
+        if (resultedSubfield.endsWith(SEMICOLON) || resultedSubfield.endsWith(COMMA)) {
           return type.getName().equalsIgnoreCase(resultedSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1));
         } else {
           return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(resultedSubfield);
