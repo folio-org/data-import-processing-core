@@ -341,6 +341,9 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       if (type.getName().endsWith(PERIOD)) {
         if (resultedSubfield.endsWith(PERIOD)) {
           return type.getName().equalsIgnoreCase(resultedSubfield);
+        }
+        if (resultedSubfield.endsWith(SEMICOLON) || resultedSubfield.endsWith(SEMICOLON)) {
+          return type.getName().equalsIgnoreCase(resultedSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1));
         } else {
           return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(resultedSubfield);
         }
