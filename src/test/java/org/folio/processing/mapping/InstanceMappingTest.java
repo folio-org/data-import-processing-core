@@ -640,7 +640,8 @@ public class InstanceMappingTest {
       new ContributorType().withName("Film distributor").withCode("film").withId("5"),
       new ContributorType().withName("Associated name").withCode("associated").withId("6"),
       new ContributorType().withName("Interviewer").withCode("inter").withId("8"),
-      new ContributorType().withName("Author of introduction, etc.").withCode("autofintro").withId("9")
+      new ContributorType().withName("Author of introduction, etc.").withCode("autofintro").withId("9"),
+      new ContributorType().withName("Actor").withCode("act").withId("10")
     );
 
     List<ContributorNameType> contributorNameTypes = List.of(
@@ -657,7 +658,7 @@ public class InstanceMappingTest {
       JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
       assertNotNull(instance.getSource());
-      assertEquals(9, instance.getContributors().size());
+      assertEquals(10, instance.getContributors().size());
 
 
       // 100 1\$aKani, John,$econceptor;$ecourt report should match by first $e subfield and set contributorTypeId to 3
@@ -713,6 +714,12 @@ public class InstanceMappingTest {
       assertEquals("9", instance.getContributors().get(8).getContributorTypeId());
       assertNull(instance.getContributors().get(8).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(8).getContributorNameTypeId());
+
+      // 700 1\$aWright, Letitia,$d1993-$eauthor of introduction, etc.;$eactor. should remove comma at the end of the name(subfield a+c), match by $e author of introduction, etc. subfield and set contributorTypeId to 9
+      assertEquals("Wright, Letitia, 1993-", instance.getContributors().get(9).getName());
+      assertEquals("9", instance.getContributors().get(9).getContributorTypeId());
+      assertNull(instance.getContributors().get(9).getContributorTypeText());
+      assertEquals("1", instance.getContributors().get(9).getContributorNameTypeId());
 
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
