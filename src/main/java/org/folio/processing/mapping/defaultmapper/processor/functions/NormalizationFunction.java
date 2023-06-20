@@ -346,17 +346,17 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
           return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(currentSubfield);
         }
       }
-      currentSubfield = trimPunctuationIfNeeded(currentSubfield, currentSubfield);
+      currentSubfield = trimPunctuationIfNeeded(currentSubfield);
       return type.getName().equalsIgnoreCase(currentSubfield);
     }
 
-    private String trimPunctuationIfNeeded(String currentSubfield, String resultedSubfield) {
+    private String trimPunctuationIfNeeded(String currentSubfield) {
       for (String punctuation : Arrays.asList(PERIOD, COMMA, SEMICOLON)) {
         if (currentSubfield.endsWith(punctuation)) {
           return currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1);
         }
       }
-      return resultedSubfield;
+      return currentSubfield;
     }
 
     private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {
