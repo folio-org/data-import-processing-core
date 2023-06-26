@@ -1,10 +1,14 @@
 package org.folio.processing.mapping.reader;
 
 import com.google.common.collect.Lists;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
+import org.folio.Holdings;
 import org.folio.ParsedRecord;
 import org.folio.Record;
+import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
@@ -33,9 +37,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
@@ -1438,6 +1442,89 @@ public class MarcRecordReaderUnitTest {
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
     assertEquals("Z2013.5.W6", value.getValue());
+  }
+
+  @Test
+  public void shouldMapElectronicAccessUrlAndLinkText() throws IOException {
+    MappingRule mappingRule = new MappingRule().withName("electronicAccess")
+      .withPath("holdings.electronicAccess[]")
+      .withValue("")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withEnabled("true")
+      .withSubfields(new ArrayList<>(List.of(
+        new RepeatableSubfieldMapping().withPath("holdings.electronicAccess[]")
+          .withOrder(0)
+          .withFields(List.of(
+            new MappingRule().withName("uri")
+              .withPath("holdings.electronicAccess[].uri")
+              .withValue("856$u")
+              .withEnabled("true"),
+            new MappingRule().withName("linkText")
+              .withPath("holdings.electronicAccess[].linkText")
+              .withValue("856$y")
+              .withEnabled("true")
+          ))
+      )));
+    List<String> urls = List.of("https://muse.jhu.edu/book/67428",
+      "https://muse.jhu.edu/book/74528",
+      "https://www.jstor.org/stable/10.2307/j.ctv26d9pv",
+      "https://www.jstor.org/stable/10.2307/j.ctvcwp01n");
+    List<String> linkTexts = List.of("Project Muse", "Project Muse", "JSTOR", "JSTOR");
+
+    List<JsonObject> parsedRecordContentFields = new ArrayList<>();
+    var urlIterator = urls.listIterator();
+    var linkTextIterator = linkTexts.listIterator();
+    while (urlIterator.hasNext() && linkTextIterator.hasNext()) {
+      JsonObject fieldWrapper = new JsonObject();
+      JsonObject field = new JsonObject();
+      field.put("ind1", "4");
+      field.put("ind1", "0");
+      JsonArray subfields = new JsonArray();
+      subfields.add(createSubField("u", urlIterator.next()));
+      subfields.add(createSubField("y", linkTextIterator.next()));
+      field.put("subfields", subfields);
+
+      fieldWrapper.put("856", field);
+      parsedRecordContentFields.add(fieldWrapper);
+    }
+
+    JsonObject parsedRecordContent = new JsonObject();
+    parsedRecordContent.put("leader", "01314nam  22003851a 4500");
+    parsedRecordContent.put("fields", parsedRecordContentFields);
+    ParsedRecord parsedRecord = new ParsedRecord()
+      .withContent(parsedRecordContent.toString());
+
+    String givenMarcRecord = Json.encode(new Record()
+      .withParsedRecord(parsedRecord));
+    var entity = new JsonObject();
+    entity.put("instance", new Holdings());
+    String encodedEntity = entity.encode();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
+    context.put(HOLDINGS.toString(), encodedEntity);
+    eventPayload.setContext(context);
+
+    MappingContext mappingContext = new MappingContext();
+    MappingManager.registerReaderFactory(new MarcBibReaderFactory());
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+
+    Value value = reader.read(mappingRule);
+    var electronicResources = (ArrayList<HashMap>) value.getValue();
+    urlIterator = urls.listIterator();
+    linkTextIterator = linkTexts.listIterator();
+    for (HashMap electronicResource : electronicResources) {
+      assertEquals(((StringValue) electronicResource.get("holdings.electronicAccess[].uri")).getValue(), urlIterator.next());
+      assertEquals(((StringValue) electronicResource.get("holdings.electronicAccess[].linkText")).getValue(), linkTextIterator.next());
+    }
+  }
+
+  private JsonObject createSubField(String name, String value) {
+    JsonObject subfield = new JsonObject();
+    subfield.put(name, value);
+    return subfield;
   }
 
 }
