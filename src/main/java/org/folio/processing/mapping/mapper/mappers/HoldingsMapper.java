@@ -13,6 +13,7 @@ import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.writer.Writer;
+import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class HoldingsMapper implements Mapper {
   private static final String PERMANENT_LOCATION_ID = "permanentLocationId";
   private static final String HOLDINGS = "HOLDINGS";
   private static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
-  private static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
+  public static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
   private Reader reader;
   private Writer writer;
 
@@ -60,7 +61,7 @@ public class HoldingsMapper implements Mapper {
     Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
     if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
-      adjustContextToContainHoldingsAsJsonObject(eventPayload);
+      adjustContextToContainEntitiesAsJsonObject(eventPayload, EntityType.HOLDINGS);
       writer.initialize(eventPayload);
       holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
     } else {
@@ -87,24 +88,6 @@ public class HoldingsMapper implements Mapper {
       reader.initialize(eventPayload, mappingContext);
       writer.initialize(eventPayload);
       holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
-    }
-  }
-
-  private void adjustContextToContainHoldingsAsJsonObject(DataImportEventPayload eventPayload) {
-    if (isJsonArray(eventPayload.getContext().get(HOLDINGS))) {
-      JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS));
-      if (holdings.size() > 0) {
-        eventPayload.getContext().put(HOLDINGS, holdings.getJsonObject(0).encode());
-      }
-    }
-  }
-
-  private boolean isJsonArray(String jsonArrayAsString) {
-    try {
-      new JsonArray(jsonArrayAsString);
-      return true;
-    } catch (DecodeException e) {
-      return false;
     }
   }
 
