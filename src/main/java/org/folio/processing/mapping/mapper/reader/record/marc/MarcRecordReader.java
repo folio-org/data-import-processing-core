@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -415,11 +415,16 @@ public class MarcRecordReader implements Reader {
     List<String> results = new ArrayList<>();
     if (MARC_PATTERN.matcher(marcPath).matches()) {
       List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
-      LinkedHashSet<String> result = new LinkedHashSet<>();
+      List<String> result = new LinkedList<>();
       for (VariableField variableField : fields) {
         result.addAll(extractValueFromMarcRecord(variableField, marcPath));
       }
-      results.addAll(result);
+      List<String> distinctResult = result.stream().distinct().collect(Collectors.toList());
+      if (distinctResult.size() > 1 && distinctResult.size() != fields.size()) {
+        results.addAll(result);
+      } else {
+        results.addAll(distinctResult);
+      }
     } else if ((MARC_CONTROLLED.matcher(marcPath).matches())) {
       String controllFieldTag = StringUtils.substringBefore(marcPath, MARC_SPLITTER);
       Optional<ControlField> controlField = marcRecord.getControlFields().stream()

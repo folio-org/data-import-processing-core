@@ -323,6 +323,29 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldHandleSubfield0ChangeRemovalKeepInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonnys\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test00\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonnys\"},{\"0\":\"test22\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00200nam  22000851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test00\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonnys\"},{\"0\":\"test22\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      emptyList(), emptyList(), emptyList(), 1, "700", "700", "700", "700");
+  }
+
+  @Test
   @Ignore("Requirements unknown. Leave as is until clarified.")
   public void shouldHandleSubfield0ChangeWithShuffleInRepeatable() throws IOException {
     // given
@@ -341,35 +364,6 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
       emptyList(), emptyList(), emptyList(), 0, "700", "700", "700");
-  }
-
-  //custom mapping details tests
-  @Test
-  public void shouldNotUpdateLinkedSubfieldWhenOnlySubfieldMapped() throws IOException {
-    // given
-    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    var expectedParsedContent = "{\"leader\":\"00171nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"111\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-
-    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("a"), 1);
-  }
-
-  @Test
-  public void shouldRemoveLinksWhenOnlySubfield0MappedAndChanged() throws IOException {
-    // given
-    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
-      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    var expectedParsedContent = "{\"leader\":\"00133nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
-      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
-      "{\"111\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-
-    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("0"), 0);
   }
 
   @Test
@@ -457,6 +451,89 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
       + "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"e\":\"new subfield\"},{\"e\":\"e-value\"},{\"u\":\"u-value\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent, 1, "100");
+  }
+
+  //custom mapping details tests
+  @Test
+  public void shouldNotUpdateLinkedSubfieldWhenOnlySubfieldMapped() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00171nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"111\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("a"), 1);
+  }
+
+  @Test
+  public void shouldRemoveLinksWhenOnlySubfield0MappedAndChanged() throws IOException {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic updated\"},{\"0\":\"test1\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00133nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"110\":{\"subfields\":[{\"b\":\"book1\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"111\":{\"subfields\":[{\"b\":\"book\"},{\"0\":\"test1\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+
+    testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMappingDetails("0"), 0);
+  }
+
+  @Test
+  public void shouldHandleSubfield0ChangeRemovalKeepInRepeatableWithMapping() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"0\":\"test1\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonnys\"},{\"0\":\"test2\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test00\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonnys\"},{\"0\":\"test22\"},{\"9\":\"cdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00200nam  22000851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test00\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonnys\"},{\"0\":\"test22\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test3\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      constructMappingDetails("700", "*"), emptyList(), emptyList(), 1, "700", "700", "700", "700");
+  }
+
+  @Test
+  public void shouldUnLinkWhenSubfield0ChangeInRepeatable() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0\"},{\"9\":\"ddbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0 updated\"}, {\"9\":\"ddbf59b7-913b-42ac-b1c6-11111111a\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00088nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonatan\"},{\"0\":\"test0 updated\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      constructMappingDetails("700", "0"), emptyList(), emptyList(), 0, "700");
+  }
+
+  @Test
+  public void shouldKeepLinkWhenOtherRepeatableUpdatedWithMappingDetails() throws IOException {
+    // given
+    var existingParsedContent = "{\"leader\":\"00145nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"600\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"e\":\"letterer.\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"600\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"e\":\"Writer\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00145nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"600\":{\"subfields\":[{\"a\":\"John\"},{\"0\":\"test0\"},{\"9\":\"adbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"700\":{\"subfields\":[{\"a\":\"Jonny\"},{\"e\":\"Writer\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    testMarcUpdating(existingParsedContent, incomingParsedContent, expectedParsedContent,
+      constructMappingDetails("*", "e"), emptyList(), emptyList(), 1, "600");
   }
 
   //field protection settings tests
@@ -714,10 +791,14 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
   }
 
   private List<MarcMappingDetail> constructMappingDetails(String subfield) {
+    return constructMappingDetails("100", subfield);
+  }
+
+  private List<MarcMappingDetail> constructMappingDetails(String field, String subfield) {
     return singletonList(new MarcMappingDetail()
       .withOrder(0)
       .withField(new MarcField()
-        .withField("100")
+        .withField(field)
         .withIndicator1("*")
         .withIndicator2("*")
         .withSubfields(singletonList(

@@ -1,3 +1,6 @@
+## 2023-XX-XX v4.1.0-SNAPSHOT
+* [MODDICORE-347](https://issues.folio.org/browse/MODDICORE-347) MARC bib - FOLIO instance mapping | Adjust contributor and relator term mapping WRT punctuation
+
 ## 2023-03-xo v4.0.5-SNAPSHOT
 * [MODDICORE-322](https://issues.folio.org/browse/MODDICORE-322) Multiple 050 fields or subfields all map to Holdings/Item Call Number if Holdings/Item Mapping is set to 050$a or 050$a " " 050$b
 * [MODDICORE-336](https://issues.folio.org/browse/MODDICORE-336) Change Mapper to allow mapping of multiple Holdings
