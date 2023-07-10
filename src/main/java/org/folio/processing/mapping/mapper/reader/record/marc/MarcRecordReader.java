@@ -60,11 +60,11 @@ import static org.folio.processing.value.Value.ValueType.MISSING;
 public class MarcRecordReader implements Reader {
   private static final Logger LOGGER = LogManager.getLogger(MarcRecordReader.class);
 
-  private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
+  public final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
   private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
   private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
-  private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
-  private final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
+  public final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
+  public final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
   private final static String EXPRESSIONS_DIVIDER = "; else ";
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
@@ -163,7 +163,7 @@ public class MarcRecordReader implements Reader {
       resultList = resultList.stream().filter(r -> isNotBlank(r)).collect(Collectors.toList());
       List<String> tmpResultList = new ArrayList<>(resultList);
       String concatenator = sb.toString();
-      if(isNotBlank(concatenator)) {
+      if (isNotBlank(concatenator)) {
         for (int i = 0; i < tmpResultList.size(); i++) {
           String element = tmpResultList.get(i);
           resultList.set(i, element.concat(concatenator).toString());
@@ -255,6 +255,7 @@ public class MarcRecordReader implements Reader {
   private String retrieveNameWithoutCode(String mappingParameter) {
     return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
+
   /**
    * Process string expression method
    *
@@ -279,9 +280,11 @@ public class MarcRecordReader implements Reader {
     }
     return new StringBuilder(EMPTY);
   }
+
   /**
    * Process TODAY expression method
    * appends ZonedDateTime.now for tenant
+   *
    * @param sb                    uses for appending today value to buffer
    * @param multipleStringBuilder uses for appending today value to buffer
    * @throws IllegalArgumentException if can not format today

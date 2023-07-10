@@ -13,6 +13,7 @@
     },
     "codes": {
       "type" : "array",
+      "description": "array of codes",
       "items": {
         "type": "string",
         "description": "identifying prefix, i.e. 'n', 'D', 'fst'"
