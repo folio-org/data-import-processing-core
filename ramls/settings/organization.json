@@ -103,7 +103,7 @@
     },
     "agreements": {
       "id": "agreement",
-      "description": "The the list of agreements for this organization",
+      "description": "The list of agreements for this organization",
       "type": "array",
       "items": {
         "type": "object",

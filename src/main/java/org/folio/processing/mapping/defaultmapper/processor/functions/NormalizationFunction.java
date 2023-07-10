@@ -28,6 +28,7 @@ import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherR
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -95,6 +96,27 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     public String apply(RuleExecutionContext context) {
       String subFieldData = context.getSubFieldValue();
       if (subFieldData.endsWith(PERIOD)) {
+        return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 1);
+      }
+      return subFieldData;
+    }
+  },
+
+  TRIM_PUNCTUATION() {
+    private static final String PERIOD = ".";
+    private static final String COMMA = ",";
+    private static final String HYPHEN = "-";
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD = "^(.*?)\\s.[.]$";
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA = "^(.*?)\\s.,[.]$";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String subFieldData = context.getSubFieldValue().trim();
+      if (subFieldData.matches(REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD) || subFieldData.endsWith(HYPHEN)) {
+        return subFieldData;
+      } else if (subFieldData.matches(REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA)) {
+        return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 2).concat(PERIOD);
+      } else if (subFieldData.endsWith(PERIOD) || subFieldData.endsWith(COMMA)) {
         return subFieldData.substring(INTEGER_ZERO, subFieldData.length() - 1);
       }
       return subFieldData;
@@ -271,6 +293,11 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
   },
 
   SET_CONTRIBUTOR_TYPE_ID_BY_CODE_OR_NAME() {
+
+    private static final String PERIOD = ".";
+    private static final String COMMA = ",";
+    private static final String SEMICOLON = ";";
+
     private static final String CONTRIBUTOR_CODE_SUBFIELD_PARAM = "contributorCodeSubfield";
     private static final String CONTRIBUTOR_NAME_SUBFIELD_PARAM = "contributorNameSubfield";
 
@@ -297,7 +324,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       for (Subfield contributorNameSubfield : context.getDataField().getSubfields(contributorNameSfName.charAt(0))) {
         if (contributorNameSubfield != null) {
           String contributorTypeId =
-            getContributorTypeIdBy(types, type -> type.getName().equalsIgnoreCase(contributorNameSubfield.getData().trim()));
+            getContributorTypeIdBy(types, type -> equalsIgnoringPunctuationIfNeeded(contributorNameSubfield, type));
           if (!contributorTypeId.isEmpty()) {
             return contributorTypeId;
           }
@@ -305,6 +332,31 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       }
 
       return StringUtils.EMPTY;
+    }
+
+    private boolean equalsIgnoringPunctuationIfNeeded(Subfield contributorNameSubfield, ContributorType type) {
+      String currentSubfield = contributorNameSubfield.getData().trim();
+      if (type.getName().endsWith(PERIOD)) {
+        if (currentSubfield.endsWith(PERIOD)) {
+          return type.getName().equalsIgnoreCase(currentSubfield);
+        }
+        if (currentSubfield.endsWith(SEMICOLON) || currentSubfield.endsWith(COMMA)) {
+          return type.getName().equalsIgnoreCase(currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1));
+        } else {
+          return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(currentSubfield);
+        }
+      }
+      currentSubfield = trimPunctuationIfNeeded(currentSubfield);
+      return type.getName().equalsIgnoreCase(currentSubfield);
+    }
+
+    private String trimPunctuationIfNeeded(String currentSubfield) {
+      for (String punctuation : Arrays.asList(PERIOD, COMMA, SEMICOLON)) {
+        if (currentSubfield.endsWith(punctuation)) {
+          return currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1);
+        }
+      }
+      return currentSubfield;
     }
 
     private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {
