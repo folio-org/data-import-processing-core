@@ -1,5 +1,8 @@
 package org.folio.processing.mapping.mapper;
 
+import org.folio.DataImportEventPayload;
+import org.folio.processing.mapping.mapper.mappers.AbstractMapper;
+import org.folio.processing.mapping.mapper.mappers.MapperFactory;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
@@ -18,6 +21,7 @@ import static java.lang.String.format;
 public class FactoryRegistry {
   private static final List<ReaderFactory> READER_FACTORIES = new ArrayList<>();
   private static final List<WriterFactory> WRITER_FACTORIES = new ArrayList<>();
+  private static final List<MapperFactory> MAPPER_FACTORIES = new ArrayList<>();
 
   /**
    * Creates reader by given entity type using reader factory
@@ -56,6 +60,25 @@ public class FactoryRegistry {
   }
 
   /**
+   * Created specific mapper by given
+   * @param dataImportEventPayload
+   * @param reader
+   * @param writer
+   * @return
+   */
+  public Mapper createMapper(DataImportEventPayload dataImportEventPayload, Reader reader, Writer writer) {
+    Optional<MapperFactory> optionalMapperFactory = MAPPER_FACTORIES.stream()
+      .filter(mapperFactory -> mapperFactory.isEligiblePayload(dataImportEventPayload))
+      .findFirst();
+    if (optionalMapperFactory.isPresent()) {
+      MapperFactory mapperFactory = optionalMapperFactory.get();
+      return mapperFactory.createMapper(reader, writer);
+    } else {
+      return new AbstractMapper(reader, writer);
+    }
+  }
+
+  /**
    * Returns list of registered reader factories
    *
    * @return list of reader factories
@@ -71,5 +94,14 @@ public class FactoryRegistry {
    */
   public List<WriterFactory> getWriterFactories() {
     return WRITER_FACTORIES;
+  }
+
+  /**
+   * Returns list of registered mapper factories
+   *
+   * @return list of mapper factories
+   */
+  public List<MapperFactory> getMapperFactories() {
+    return MAPPER_FACTORIES;
   }
 }

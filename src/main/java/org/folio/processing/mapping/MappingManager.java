@@ -1,6 +1,8 @@
 package org.folio.processing.mapping;
 
 import io.vertx.core.json.JsonObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.Location;
 import org.folio.MappingProfile;
@@ -11,14 +13,13 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.MappingContext;
+import org.folio.processing.mapping.mapper.mappers.MapperFactory;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 
 import java.util.HashMap;
@@ -80,8 +81,9 @@ public final class MappingManager {
 
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
-      return new Mapper() {
-      }.map(reader, writer, mappingProfile, eventPayload, mappingContext);
+
+      Mapper mapper = FACTORY_REGISTRY.createMapper(eventPayload, reader, writer);
+      return mapper.map(mappingProfile, eventPayload, mappingContext);
     } catch (Exception e) {
       LOGGER.warn("map:: Failed to perform mapping", e);
       throw new MappingException(e);
@@ -227,6 +229,10 @@ public final class MappingManager {
     return FACTORY_REGISTRY.getWriterFactories().add(factory);
   }
 
+  public static boolean registerMapperFactory(MapperFactory factory) {
+    return FACTORY_REGISTRY.getMapperFactories().add(factory);
+  }
+
   /**
    * Clears the registry of reader factories
    */
@@ -239,5 +245,9 @@ public final class MappingManager {
    */
   public static void clearWriterFactories() {
     FACTORY_REGISTRY.getWriterFactories().clear();
+  }
+
+  public static void clearMapperFactories() {
+    FACTORY_REGISTRY.getMapperFactories().clear();
   }
 }
