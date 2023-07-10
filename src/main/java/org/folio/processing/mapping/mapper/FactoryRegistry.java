@@ -7,6 +7,11 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
+import org.folio.processing.matching.loader.MatchValueLoader;
+import org.folio.processing.matching.matcher.AbstractMatcher;
+import org.folio.processing.matching.matcher.Matcher;
+import org.folio.processing.matching.matcher.MatcherFactory;
+import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.rest.jaxrs.model.EntityType;
 
 import java.util.ArrayList;
@@ -21,6 +26,7 @@ import static java.lang.String.format;
 public class FactoryRegistry {
   private static final List<ReaderFactory> READER_FACTORIES = new ArrayList<>();
   private static final List<WriterFactory> WRITER_FACTORIES = new ArrayList<>();
+  private static final List<MatcherFactory> MATCHER_FACTORIES = new ArrayList<>();
   private static final List<MapperFactory> MAPPER_FACTORIES = new ArrayList<>();
 
   /**
@@ -60,6 +66,24 @@ public class FactoryRegistry {
   }
 
   /**
+   * Creates matcher by given entities type using matcher factory
+   *
+   * @param entityType type of the entity which MatcherFactory produces
+   * @return Reader
+   */
+  public Matcher createMatcher(EntityType entityType, MatchValueReader matchValueReader, MatchValueLoader matchValueLoader) {
+    Optional<MatcherFactory> optionalWriterFactory = MATCHER_FACTORIES.stream()
+      .filter(matcherFactory -> matcherFactory.isEligibleForEntityType(entityType))
+      .findFirst();
+    if (optionalWriterFactory.isPresent()) {
+      MatcherFactory matcherFactory = optionalWriterFactory.get();
+      return matcherFactory.createMatcher(matchValueReader, matchValueLoader);
+    } else {
+      return new AbstractMatcher(matchValueReader, matchValueLoader);
+    }
+  }
+
+  /**
    * Created specific mapper by given
    * @param dataImportEventPayload
    * @param reader
@@ -94,6 +118,15 @@ public class FactoryRegistry {
    */
   public List<WriterFactory> getWriterFactories() {
     return WRITER_FACTORIES;
+  }
+
+  /**
+   * Returns list of registered matcher factories
+   *
+   * @return list of matcher factories
+   */
+  public List<MatcherFactory> getMatcherFactories() {
+    return MATCHER_FACTORIES;
   }
 
   /**
