@@ -1,6 +1,7 @@
 package org.folio.processing.mapping.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
@@ -8,6 +9,7 @@ import org.folio.MappingProfile;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 
 import java.io.IOException;
@@ -110,5 +112,25 @@ public interface Mapper {
     }
     DataImportEventPayload resultedPayload = writer.getResult(eventPayload);
     return new JsonObject(resultedPayload.getContext().get(entityType));
+  }
+
+  default void adjustContextToContainEntitiesAsJsonObject(DataImportEventPayload eventPayload, EntityType entityType) {
+    if (isJsonArray(eventPayload.getContext().get(entityType.value()))) {
+      JsonArray entities = new JsonArray(eventPayload.getContext().get(entityType.value()));
+      if (entities.size() > 0) {
+        eventPayload.getContext().put(entityType.value(), entities.getJsonObject(0).encode());
+      } else {
+        eventPayload.getContext().put(entityType.value(), EMPTY_JSON);
+      }
+    }
+  }
+
+  default boolean isJsonArray(String jsonArrayAsString) {
+    try {
+      new JsonArray(jsonArrayAsString);
+      return true;
+    } catch (DecodeException e) {
+      return false;
+    }
   }
 }
