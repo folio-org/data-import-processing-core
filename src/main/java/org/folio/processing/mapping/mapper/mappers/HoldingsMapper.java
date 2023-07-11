@@ -1,6 +1,5 @@
 package org.folio.processing.mapping.mapper.mappers;
 
-import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -67,7 +66,7 @@ public class HoldingsMapper implements Mapper {
     } else {
       String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
       String marcField = retrieveMarcFieldName(expressionPart)
-        .orElseThrow(() -> new RuntimeException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
+        .orElseThrow(() -> new MappingException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
       eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
       if (new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
         holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
