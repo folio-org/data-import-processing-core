@@ -1,4 +1,5 @@
 ## 2023-XX-XX v4.1.0-SNAPSHOT
+* [MODDICORE-356](https://issues.folio.org/browse/KAFKAWRAP-356) Upgrade data-import-processing-core to Java 17
 * [MODDICORE-347](https://issues.folio.org/browse/MODDICORE-347) MARC bib - FOLIO instance mapping | Adjust contributor and relator term mapping WRT punctuation
 
 ## 2023-03-xo v4.0.5-SNAPSHOT

@@ -21,7 +21,8 @@ public class JSManager {
 
   private static final Logger LOGGER = LogManager.getLogger(JSManager.class);
 
-  private static final ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+  private static final String GRAAL_JS_ENGINE = "graal.js";
+  private static final ScriptEngine engine = new ScriptEngineManager().getEngineByName(GRAAL_JS_ENGINE);
   private static final Map<Integer, CompiledScript> preCompiledJS = new HashMap<>();
 
   public static Object runJScript(String jscript, String data) throws ScriptException {

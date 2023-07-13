@@ -737,11 +737,7 @@ public class Processor<T> {
 
       if (isCustom) {
         try {
-
-          splitData = ((jdk.nashorn.api.scripting.ScriptObjectMirror) JSManager.runJScript(param, data))
-            .values()
-            .iterator();
-
+          splitData = ((Map<?, ?>) JSManager.runJScript(param, data)).values().iterator();
         } catch (Exception e) {
           LOGGER.warn("expandSubfields:: Expanding a field via subFieldSplit must return an array of results. ");
           throw e;
