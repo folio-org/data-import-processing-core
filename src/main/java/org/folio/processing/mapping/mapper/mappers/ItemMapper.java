@@ -50,7 +50,7 @@ public class ItemMapper implements Mapper {
     HashMap<String, String> payloadContext = eventPayload.getContext();
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
     JsonArray items = new JsonArray();
-    if (isJsonArray(eventPayload.getContext().get(ITEM.value())) && !new JsonArray(eventPayload.getContext().get(ITEM.value())).isEmpty()) {
+    if (isJsonArray(payloadContext.get(ITEM.value())) && !new JsonArray(payloadContext.get(ITEM.value())).isEmpty()) {
       mapMultipleItemIfItemEntityExistsInContext(eventPayload, mappingContext, payloadContext, mappingRules, items);
     } else {
       String marcField = payloadContext.get(MULTIPLE_HOLDINGS_FIELD);
