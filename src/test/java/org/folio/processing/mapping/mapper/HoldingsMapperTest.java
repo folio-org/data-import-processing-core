@@ -46,7 +46,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
     acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
@@ -81,7 +80,6 @@ public class HoldingsMapperTest {
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
 
-
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
 
@@ -113,7 +111,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
     acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
@@ -142,7 +139,6 @@ public class HoldingsMapperTest {
           .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
-
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -211,7 +207,6 @@ public class HoldingsMapperTest {
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
 
-
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
 
@@ -248,7 +243,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
     acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
@@ -277,7 +271,6 @@ public class HoldingsMapperTest {
           .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
-
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -308,7 +301,6 @@ public class HoldingsMapperTest {
     context.put(HOLDINGS.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
-
 
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
@@ -368,7 +360,6 @@ public class HoldingsMapperTest {
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
 
-
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
 
@@ -411,7 +402,6 @@ public class HoldingsMapperTest {
     context.put(HOLDINGS.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
-
 
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
@@ -471,7 +461,6 @@ public class HoldingsMapperTest {
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
 
-
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
 
@@ -516,7 +505,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
     acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
@@ -545,7 +533,6 @@ public class HoldingsMapperTest {
           .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
-
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -579,7 +566,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
     acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
@@ -600,7 +586,6 @@ public class HoldingsMapperTest {
           .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
-
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -657,7 +642,6 @@ public class HoldingsMapperTest {
     context.put(HOLDINGS.value(), existedHoldings.encode());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
-
 
     HashMap<String, String> acceptedValues = new HashMap<>();
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
@@ -716,7 +700,6 @@ public class HoldingsMapperTest {
           .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
           .withName("Main Library")
           .withCode("KU/CC/DI/M")))));
-
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
