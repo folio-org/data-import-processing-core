@@ -59,19 +59,19 @@ public class HoldingsMapper implements Mapper {
     JsonArray holdings = new JsonArray();
     Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
-    if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
-      adjustContextToContainEntitiesAsJsonObject(eventPayload, EntityType.HOLDINGS);
-      writer.initialize(eventPayload);
-      holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
+    if (isJsonArray(eventPayload.getContext().get(HOLDINGS)) && !new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
+      mapMultipleHoldingsIfHoldingsEntityExistsInContext(eventPayload, mappingContext, mappingRules, holdings);
     } else {
-      String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
-      String marcField = retrieveMarcFieldName(expressionPart)
-        .orElseThrow(() -> new MappingException(String.format("Invalid  value for mapping rule: %s", PERMANENT_LOCATION_ID)));
-      eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
-      if (new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
-        holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+      if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
+        adjustContextToContainEntitiesAsJsonObject(eventPayload, EntityType.HOLDINGS);
+        writer.initialize(eventPayload);
+        holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
       } else {
-        mapMultipleHoldingsIfHoldingsEntityExistsInContext(eventPayload, mappingContext, mappingRules, holdings);
+        String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
+        String marcField = retrieveMarcFieldName(expressionPart)
+          .orElseThrow(() -> new MappingException(String.format("Invalid value for mapping rule: %s", PERMANENT_LOCATION_ID)));
+        eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
+        holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
       }
     }
     eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
