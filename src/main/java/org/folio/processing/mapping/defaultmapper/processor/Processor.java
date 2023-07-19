@@ -345,7 +345,7 @@ public class Processor<T> {
     }
     if (subFields.stream().noneMatch(sf -> (checkIfSubfieldShouldBeHandled(subFieldsSet, sf)))) {
       //skip further processing if there are no subfields to map
-      LOGGER.debug("handleFields:: no subfields to map from {} to {}", subFields.stream().map(Subfield::getCode).collect(Collectors.toList()), subFieldsSet);
+      LOGGER.debug("handleFields:: no subfields to map from {} to {}", subFields.stream().map(Subfield::getCode).toList(), subFieldsSet);
       return;
     }
 
@@ -737,11 +737,7 @@ public class Processor<T> {
 
       if (isCustom) {
         try {
-
-          splitData = ((jdk.nashorn.api.scripting.ScriptObjectMirror) JSManager.runJScript(param, data))
-            .values()
-            .iterator();
-
+          splitData = ((Map<?, ?>) JSManager.runJScript(param, data)).values().iterator();
         } catch (Exception e) {
           LOGGER.warn("expandSubfields:: Expanding a field via subFieldSplit must return an array of results. ");
           throw e;
