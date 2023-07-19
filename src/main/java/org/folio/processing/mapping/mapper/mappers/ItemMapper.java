@@ -50,18 +50,17 @@ public class ItemMapper implements Mapper {
     HashMap<String, String> payloadContext = eventPayload.getContext();
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
     JsonArray items = new JsonArray();
-    String marcField = payloadContext.get(MULTIPLE_HOLDINGS_FIELD);
-
-    if (marcField == null) {
-      adjustContextToContainEntitiesAsJsonObject(eventPayload, ITEM);
-      writer.initialize(eventPayload);
-      items.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, ITEM.value()));
+    if (isJsonArray(eventPayload.getContext().get(ITEM.value())) && !new JsonArray(eventPayload.getContext().get(ITEM.value())).isEmpty()) {
+      mapMultipleItemIfItemEntityExistsInContext(eventPayload, mappingContext, payloadContext, mappingRules, items);
     } else {
-      if (new JsonArray(eventPayload.getContext().get(ITEM.value())).isEmpty()) {
+      String marcField = payloadContext.get(MULTIPLE_HOLDINGS_FIELD);
+      if (marcField == null) {
+        adjustContextToContainEntitiesAsJsonObject(eventPayload, ITEM);
+        writer.initialize(eventPayload);
+        items.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, ITEM.value()));
+      } else {
         items = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, ITEM.value(), marcField);
         payloadContext.remove(MULTIPLE_HOLDINGS_FIELD);
-      } else {
-        mapMultipleItemIfItemEntityExistsInContext(eventPayload, mappingContext, payloadContext, mappingRules, items);
       }
     }
     payloadContext.put(ITEM.value(), Json.encode(items));
@@ -70,7 +69,7 @@ public class ItemMapper implements Mapper {
 
   private void mapMultipleItemIfItemEntityExistsInContext(DataImportEventPayload eventPayload, MappingContext mappingContext, HashMap<String, String> payloadContext, List<MappingRule> mappingRules, JsonArray items) throws IOException {
     JsonArray itemList = new JsonArray(eventPayload.getContext().get(ITEM.value()));
-    for (int i=0; i < itemList.size(); i++) {
+    for (int i = 0; i < itemList.size(); i++) {
       JsonObject currentItem = itemList.getJsonObject(i);
       eventPayload.getContext().put(ITEM.value(), currentItem.encode());
       reader.initialize(eventPayload, mappingContext);

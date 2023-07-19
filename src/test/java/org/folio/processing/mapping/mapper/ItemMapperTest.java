@@ -83,9 +83,11 @@ public class ItemMapperTest {
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
     HashMap<String, String> context = new HashMap<>();
-    UUID itemId = UUID.randomUUID();
+    UUID itemId1 = UUID.randomUUID();
+    UUID itemId2 = UUID.randomUUID();
     JsonArray itemsAsJson = new JsonArray(List.of(
-      new JsonObject().put("item", new JsonObject().put("id", itemId))));
+      new JsonObject().put("item", new JsonObject().put("id", itemId1)),
+      new JsonObject().put("item", new JsonObject().put("id", itemId2))));
 
     context.put(ITEM.value(), itemsAsJson.encode());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
@@ -119,9 +121,11 @@ public class ItemMapperTest {
     assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(mappedPayload.getContext().get(ITEM.value()));
     JsonArray items = new JsonArray(mappedPayload.getContext().get(ITEM.value()));
-    assertEquals(1, items.size());
+    assertEquals(2, items.size());
     assertEquals("123", items.getJsonObject(0).getJsonObject("item").getString("barcode"));
-    assertEquals(itemId.toString(), items.getJsonObject(0).getJsonObject("item").getString("id"));
+    assertEquals(itemId1.toString(), items.getJsonObject(0).getJsonObject("item").getString("id"));
+    assertEquals("123", items.getJsonObject(1).getJsonObject("item").getString("barcode"));
+    assertEquals(itemId2.toString(), items.getJsonObject(1).getJsonObject("item").getString("id"));
   }
 
   @Test
