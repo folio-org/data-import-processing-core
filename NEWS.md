@@ -1,3 +1,6 @@
+## 2023-07-31 v4.0.6
+* [MODDICORE-333](https://issues.folio.org/browse/MODDICORE-333) Electronic access mapping from the 856 to the holdings is not maintaining relationships between url and link text
+
 ## 2023-03-30 v4.0.5
 * [MODDICORE-322](https://issues.folio.org/browse/MODDICORE-322) Multiple 050 fields or subfields all map to Holdings/Item Call Number if Holdings/Item Mapping is set to 050$a or 050$a " " 050$b
 * [MODDICORE-326](https://issues.folio.org/browse/MODDICORE-326) Cannot add multiple uncontrolled subfields to a linked "MARC bib" field
