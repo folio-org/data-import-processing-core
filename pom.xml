@@ -3,7 +3,7 @@
 
   <groupId>org.folio</groupId>
   <artifactId>data-import-processing-core</artifactId>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.1.0-SNAPSHOT.MODDICONV310</version>
   <packaging>jar</packaging>
   <name>data-import-processing-core</name>
   <organization>
