@@ -38,7 +38,7 @@ public class HoldingsItemMatcher extends AbstractMatcher {
         if (throwable == null) {
           String entityType = matchDetail.getExistingRecordType().value();
           String entityAsJsonString = eventPayload.getContext().get(entityType);
-          String jsonArrayOfEntitiesAsString = entityAsJsonString != null ? new JsonArray().add(new JsonObject(entityAsJsonString)).encode() : EMPTY_JSON_ARRAY;
+          String jsonArrayOfEntitiesAsString = getJsonArrayOfEntities(entityAsJsonString);
           eventPayload.getContext().put(entityType, jsonArrayOfEntitiesAsString);
         }
       });
@@ -80,5 +80,16 @@ public class HoldingsItemMatcher extends AbstractMatcher {
       });
 
     return resultFuture;
+  }
+
+  private String getJsonArrayOfEntities(String entityAsJsonString) {
+    if (entityAsJsonString == null) {
+      return EMPTY_JSON_ARRAY;
+    }
+    try {
+      return new JsonArray(entityAsJsonString).encode();
+    } catch (Exception e) {
+      return new JsonArray().add(new JsonObject(entityAsJsonString)).encode();
+    }
   }
 }
