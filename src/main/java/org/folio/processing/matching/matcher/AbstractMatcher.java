@@ -68,6 +68,7 @@ public class AbstractMatcher implements Matcher {
             eventPayload.getContext().put(loadResult.getEntityType(), loadResult.getValue());
             future.complete(true);
           } else {
+            eventPayload.getContext().put(NOT_MATCHED_NUMBER, String.valueOf(1));
             future.complete(false);
           }
         }
