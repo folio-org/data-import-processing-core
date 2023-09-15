@@ -604,6 +604,7 @@ public class MarcRecordReaderUnitTest {
 
     listRules.add(new MappingRule()
       .withName("uri")
+      .withRequired(true)
       .withPath("holdings.electronicAccess[].uri")
       .withEnabled("true")
       .withValue("856$u"));
