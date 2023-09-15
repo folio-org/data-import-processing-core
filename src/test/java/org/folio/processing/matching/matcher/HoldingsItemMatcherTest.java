@@ -94,6 +94,7 @@ public class HoldingsItemMatcherTest {
     result.whenComplete((matched, throwable) -> {
       JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS.value()));
       testContext.assertEquals(0, holdings.size());
+      testContext.assertEquals("1", eventPayload.getContext().get("NOT_MATCHED_NUMBER"));
       testContext.assertNull(throwable);
       testContext.assertFalse(matched);
       async.complete();
@@ -131,6 +132,7 @@ public class HoldingsItemMatcherTest {
     result.whenComplete((matched, throwable) -> {
       JsonArray holdings = new JsonArray(eventPayload.getContext().get(HOLDINGS.value()));
       testContext.assertEquals(1, holdings.size());
+      testContext.assertNull(eventPayload.getContext().get("NOT_MATCHED_NUMBER"));
       testContext.assertNull(throwable);
       testContext.assertTrue(matched);
       async.complete();
