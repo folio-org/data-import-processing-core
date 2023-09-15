@@ -10,7 +10,6 @@ import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.reader.utils.RequiredFields;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
@@ -337,7 +336,7 @@ public class MarcRecordReader implements Reader {
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
             : readSingleField(mappingRule, isRepeatableField);
 
-          if (value.getType() == MISSING && (mappingRule.getRequired() || RequiredFields.isRequiredFieldName(mappingRule.getName()))) {
+          if (value.getType() == MISSING && mappingRule.getRequired()) {
             repeatableObjectItems.remove(repeatableObjectItems.size() - 1);
             break;
           } else if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {
