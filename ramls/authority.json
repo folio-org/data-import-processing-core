@@ -15,7 +15,7 @@
     "source": {
       "type": "string",
       "description": "The metadata source of the underlying record to the authority record. (e.g. FOLIO if it's a record created in Inventory;  MARC if it's a MARC record created in data-import)",
-      "enum": ["MARC", "FOLIO"],
+      "enum": ["MARC", "FOLIO", "CONSORTIUM-MARC", "CONSORTIUM-FOLIO"],
       "readonly": true
     },
     "personalName": {
