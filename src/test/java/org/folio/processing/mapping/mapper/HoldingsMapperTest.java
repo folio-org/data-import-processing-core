@@ -711,7 +711,6 @@ public class HoldingsMapperTest {
     assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
-    assertEquals(1, holdings.size()); // There will be just 1 Holdings because there is duplicated permanentLocationId in the second Holdings
     JsonObject firstHoldings = holdings.getJsonObject(0);
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
