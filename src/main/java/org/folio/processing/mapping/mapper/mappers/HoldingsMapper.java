@@ -61,6 +61,7 @@ public class HoldingsMapper implements Mapper {
 
     if (isJsonArray(eventPayload.getContext().get(HOLDINGS)) && !new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
       mapMultipleHoldingsIfHoldingsEntityExistsInContext(eventPayload, mappingContext, mappingRules, holdings);
+      eventPayload.getContext().put(HOLDINGS, Json.encode(holdings));
     } else {
       if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
         adjustContextToContainEntitiesAsJsonObject(eventPayload, EntityType.HOLDINGS);
@@ -73,9 +74,9 @@ public class HoldingsMapper implements Mapper {
         eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
         holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
       }
+      eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     }
     eventPayload.getContext().put(HOLDINGS_IDENTIFIERS, Json.encode(getPermanentLocationsFromHoldings(holdings)));
-    eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     return eventPayload;
   }
 
