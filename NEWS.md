@@ -37,7 +37,7 @@
 * [MODDICORE-314](https://issues.folio.org/browse/MODDICORE-314) Remove redundant RequiredFields enum
 * [MODDATAIMP-926](https://issues.folio.org/browse/MODDATAIMP-926) Add consortium-based source values into authority source
 
-## 2023-03-30 v4.0.5-SNAPSHOT
+## 2023-03-30 v4.0.5
 * [MODDICORE-322](https://issues.folio.org/browse/MODDICORE-322) Multiple 050 fields or subfields all map to Holdings/Item Call Number if Holdings/Item Mapping is set to 050$a or 050$a " " 050$b
 
 ## 2023-02-17 v4.0.0
