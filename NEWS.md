@@ -1,12 +1,44 @@
-## 2023-XX-XX v4.1.0-SNAPSHOT
+## 2023-10-11 v4.1.0
 * [MODDICORE-360](https://issues.folio.org/browse/MODDICORE-360) Migrate to folio-kafka-wrapper 3.0.0 version
 * [MODDICORE-356](https://issues.folio.org/browse/MODDICORE-356) Upgrade data-import-processing-core to Java 17
 * [MODDICORE-347](https://issues.folio.org/browse/MODDICORE-347) MARC bib - FOLIO instance mapping | Adjust contributor and relator term mapping WRT punctuation
 * [MODDICORE-366](https://issues.folio.org/browse/MODDICORE-366) Remove distinct by permanentLocationId for multiple Holdings during mapping if Holdings already contain at the context
-
-## 2023-03-xo v4.0.5-SNAPSHOT
+* [MODDICORE-308](https://issues.folio.org/browse/MODDICORE-308) Link wasn't deleted when user deletes linked repeatable field via "Data import" update
+* [MODDICORE-309](https://issues.folio.org/browse/MODDICORE-309) Error when adding uncontrolled subfield in linked "MARC bib" record upon data import
+* [MODDICORE-311](https://issues.folio.org/browse/MODDICORE-311) Unlinked field looks like linked on UI when update/import "MARC Bib" record when $9 is included in the imported file
+* [MODDICORE-306](https://issues.folio.org/browse/MODDICORE-306) Order import: fix product identifier problem with ISBN field
+* [MODDICORE-307](https://issues.folio.org/browse/MODDICORE-307) Order import: fix product identifier problem with 028 field
+* [MODDICORE-319](https://issues.folio.org/browse/MODDICORE-319) Link is removed from field when updating/deleting "$0" in linked "MARC bib" field upon data import if field mapping profile does not allow "$0" update
+* [MODDICORE-312](https://issues.folio.org/browse/MODDICORE-312) Modify linking check when several $0 income
+* [MODDICORE-304](https://issues.folio.org/browse/MODDICORE-304) Cannot import statistical code values based on the text
+* [MODDICORE-305](https://issues.folio.org/browse/MODDICORE-305) Order import: fix product identifier mapping problem with multiple product ID TYPES
+* [MODDICORE-324](https://issues.folio.org/browse/MODDICORE-324) Update MARC bib field should retain subfield $9
+* [MODDICORE-327](https://issues.folio.org/browse/MODDICORE-327) Retain link if field is protected
+* [MODDICORE-326](https://issues.folio.org/browse/MODDICORE-326) Update all subfield to all subfields with same code
 * [MODDICORE-322](https://issues.folio.org/browse/MODDICORE-322) Multiple 050 fields or subfields all map to Holdings/Item Call Number if Holdings/Item Mapping is set to 050$a or 050$a " " 050$b
+* [MODDICORE-320](https://issues.folio.org/browse/MODDICORE-320) Update links interactions according to 'instance-authority-links' interface change to 2.0
+* [MODDICORE-323](https://issues.folio.org/browse/MODDICORE-323) Problems with default MARC-Instance mapping when some call number fields are repeated or have repeated subfields
+* [MODDICORE-325](https://issues.folio.org/browse/MODDICORE-325) Use linkable tags from linking rules, not hardcoded
+* [MODDICORE-338](https://issues.folio.org/browse/MODDICORE-338) Update of "MARC Bib" record completed with error
+* [MODDICORE-335](https://issues.folio.org/browse/MODDICORE-335) Controlled subfields of Second repeatable and linked field could be overwritten by "Data import" update
+* [MODSOURMAN-974](https://issues.folio.org/browse/MODSOURMAN-974) MARC bib $9 handling: remove $9 subfields from linkable fields
+* [MODDICORE-342](https://issues.folio.org/browse/MODDICORE-342) Updated action profile schema
+* [MODDICORE-346](https://issues.folio.org/browse/MODDICORE-346) Improve handling $0 and $9 in repeatable fields
+* [MODDICORE-341](https://issues.folio.org/browse/MODDICORE-341) MARC Bib record doesn't open after update of repeatable linked field "$0" using mapping profile which allows to update
+* [MODDICORE-349](https://issues.folio.org/browse/MODDICORE-349) Fix handling field updates for mapping details tag '*' in repeatable
+* [MODDICORE-363](https://issues.folio.org/browse/MODDICORE-363) Electronic access mapping from the 856 to the holdings is not maintaining relationships between url and link text (MODDICORE-333)
+* [MODDICORE-340](https://issues.folio.org/browse/MODDICORE-340) Allow mapping multiple items/holdings from context
+* [MODDICORE-90](https://issues.folio.org/browse/MODDICORE-90) Change Mapper to allow mapping of multiple Items
 * [MODDICORE-336](https://issues.folio.org/browse/MODDICORE-336) Change Mapper to allow mapping of multiple Holdings
+* [MODDICORE-317](https://issues.folio.org/browse/MODDICORE-317) Add support for matching multiple entities from one incoming MARC record
+* [MODDICORE-340](https://issues.folio.org/browse/MODDICORE-340) Allow mapping multiple items/holdings from context
+* [MODINV-862](https://issues.folio.org/browse/MODINV-862) Add support for json array of entities represented in String
+* [FAT-6493](https://issues.folio.org/browse/FAT-6493) Set not matched number for single holdings match
+* [MODDICORE-314](https://issues.folio.org/browse/MODDICORE-314) Remove redundant RequiredFields enum
+* [MODDATAIMP-926](https://issues.folio.org/browse/MODDATAIMP-926) Add consortium-based source values into authority source
+
+## 2023-03-30 v4.0.5
+* [MODDICORE-322](https://issues.folio.org/browse/MODDICORE-322) Multiple 050 fields or subfields all map to Holdings/Item Call Number if Holdings/Item Mapping is set to 050$a or 050$a " " 050$b
 
 ## 2023-02-17 v4.0.0
 * [MODSOURMAN-873](https://issues.folio.org/browse/MODSOURMAN-873) Add MARC 720 field to default MARC Bib-Instance mapping and adjust relator term mapping. Expanded default mapper with alternative mapping logic
