@@ -1,3 +1,6 @@
+## 2023-10-28 v4.1.1
+* [MODDICORE-375](https://issues.folio.org/browse/MODDICORE-375) Fix inventory settings schemas mismatch that caused issues with DI
+
 ## 2023-10-11 v4.1.0
 * [MODDICORE-360](https://issues.folio.org/browse/MODDICORE-360) Migrate to folio-kafka-wrapper 3.0.0 version
 * [MODDICORE-356](https://issues.folio.org/browse/MODDICORE-356) Upgrade data-import-processing-core to Java 17
