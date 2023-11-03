@@ -42,6 +42,7 @@ public final class EventManager {
 
   public static final String POST_PROCESSING_INDICATOR = "POST_PROCESSING";
   public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST_PROCESSING_RESULT_EVENT";
+  public static final String OL_ACCUMULATIVE_RESULTS = "OL_ACCUMULATIVE_RESULTS";
 
   private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
 

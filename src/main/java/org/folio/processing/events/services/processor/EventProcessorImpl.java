@@ -13,6 +13,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
 import static org.folio.DataImportEventTypes.DI_SRS_MARC_AUTHORITY_RECORD_CREATED;
+import static org.folio.processing.events.EventManager.OL_ACCUMULATIVE_RESULTS;
 import static org.folio.processing.events.EventManager.POST_PROCESSING_INDICATOR;
 import static org.folio.processing.events.EventManager.POST_PROCESSING_RESULT_EVENT_KEY;
 
@@ -37,6 +38,7 @@ public class EventProcessorImpl implements EventProcessor {
           .thenApply(dataImportEventPayload -> eventHandler.isPostProcessingNeeded() ? preparePayloadForPostProcessing(dataImportEventPayload, eventHandler) : dataImportEventPayload)
           .whenComplete((payload, throwable) -> {
             logEventProcessingTime(eventType, startTime, eventPayload);
+            updatePayloadIfNeeded(payload);
             if (throwable != null) {
               future.completeExceptionally(throwable);
             } else {
@@ -84,5 +86,9 @@ public class EventProcessorImpl implements EventProcessor {
   private String getLastEvent(DataImportEventPayload eventPayload) {
     final var eventsChain = eventPayload.getEventsChain();
     return eventsChain.get(eventsChain.size() - 1);
+  }
+
+  private void updatePayloadIfNeeded(DataImportEventPayload dataImportEventPayload) {
+    dataImportEventPayload.getContext().remove(OL_ACCUMULATIVE_RESULTS);
   }
 }
