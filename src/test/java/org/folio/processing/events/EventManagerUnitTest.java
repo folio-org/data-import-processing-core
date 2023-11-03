@@ -533,4 +533,46 @@ public class EventManagerUnitTest extends AbstractRestTest {
       async.complete();
     });
   }
+
+  @Test
+  public void shouldClearExtraOLKeyFromPayload(TestContext testContext) {
+    Async async = testContext.async();
+    // given
+    EventManager.registerEventHandler(new CreateInstanceEventHandler());
+    EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
+    EventManager.registerEventHandler(new CreateItemRecordEventHandler());
+    EventManager.registerEventHandler(new CreateAuthorityEventHandler());
+
+    ProfileSnapshotWrapper jobProfileSnapshot = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withContentType(JOB_PROFILE)
+      .withContent(JsonObject.mapFrom(new JobProfile()))
+      .withChildSnapshotWrappers(List.of(new ProfileSnapshotWrapper()
+        .withId(UUID.randomUUID().toString())
+        .withContentType(ACTION_PROFILE)
+        .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))));
+
+    HashMap<String, String> extraOLKey = new HashMap<>();
+    extraOLKey.put("OL_ACCUMULATIVE_RESULTS", "test data");
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType("DI_HOLDINGS_RECORD_CREATED")
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN)
+      .withContext(extraOLKey)
+      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().get(0));
+    // when
+    EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
+      // then
+      testContext.assertNull(throwable);
+      testContext.assertEquals(2, nextEventContext.getEventsChain().size());
+      testContext.assertEquals(
+        nextEventContext.getEventsChain(),
+        Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
+      );
+      testContext.assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+      testContext.assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
+      async.complete();
+    });
+  }
 }
