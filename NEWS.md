@@ -1,3 +1,6 @@
+## 2023-XX-XX v4.2.0-SANPSHOT
+* [MODDICORE-382](https://issues.folio.org/browse/MODDICORE-382) Remove from the payload extra key after Multiple Optimistic Locking error reveals
+
 ## 2023-10-11 v4.1.0
 * [MODDICORE-360](https://issues.folio.org/browse/MODDICORE-360) Migrate to folio-kafka-wrapper 3.0.0 version
 * [MODDICORE-356](https://issues.folio.org/browse/MODDICORE-356) Upgrade data-import-processing-core to Java 17
