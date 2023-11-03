@@ -36,9 +36,9 @@ public class EventProcessorImpl implements EventProcessor {
         long startTime = System.nanoTime();
         eventHandler.handle(eventPayload)
           .thenApply(dataImportEventPayload -> eventHandler.isPostProcessingNeeded() ? preparePayloadForPostProcessing(dataImportEventPayload, eventHandler) : dataImportEventPayload)
+          .thenApply(this::updatePayloadIfNeeded)
           .whenComplete((payload, throwable) -> {
             logEventProcessingTime(eventType, startTime, eventPayload);
-            updatePayloadIfNeeded(payload);
             if (throwable != null) {
               future.completeExceptionally(throwable);
             } else {
@@ -88,7 +88,8 @@ public class EventProcessorImpl implements EventProcessor {
     return eventsChain.get(eventsChain.size() - 1);
   }
 
-  private void updatePayloadIfNeeded(DataImportEventPayload dataImportEventPayload) {
+  private DataImportEventPayload updatePayloadIfNeeded(DataImportEventPayload dataImportEventPayload) {
     dataImportEventPayload.getContext().remove(OL_ACCUMULATIVE_RESULTS);
+    return dataImportEventPayload;
   }
 }
