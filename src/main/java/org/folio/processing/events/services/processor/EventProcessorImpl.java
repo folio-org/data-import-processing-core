@@ -89,9 +89,7 @@ public class EventProcessorImpl implements EventProcessor {
   }
 
   private DataImportEventPayload updatePayloadIfNeeded(DataImportEventPayload dataImportEventPayload) {
-    if (dataImportEventPayload != null && dataImportEventPayload.getContext() != null) {
-      dataImportEventPayload.getContext().remove(OL_ACCUMULATIVE_RESULTS);
-    }
+    dataImportEventPayload.getContext().remove(OL_ACCUMULATIVE_RESULTS);
     return dataImportEventPayload;
   }
 }
