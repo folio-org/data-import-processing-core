@@ -395,6 +395,12 @@
       "type": "boolean",
       "default": false
     },
+    "isDonor": {
+      "id": "isDonor",
+      "description": "Used to designate whether this organization is a donor",
+      "type": "boolean",
+      "default": false
+    },
     "sanCode": {
       "description": "The SAN code for this organization address",
       "type": "string"

@@ -10,7 +10,6 @@ import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
-import org.folio.processing.mapping.mapper.reader.utils.RequiredFields;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
@@ -42,7 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,11 +59,11 @@ import static org.folio.processing.value.Value.ValueType.MISSING;
 public class MarcRecordReader implements Reader {
   private static final Logger LOGGER = LogManager.getLogger(MarcRecordReader.class);
 
-  private final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
+  public final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
   private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
   private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
-  private final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
-  private final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
+  public final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
+  public final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
   private final static String EXPRESSIONS_DIVIDER = "; else ";
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
@@ -163,7 +162,7 @@ public class MarcRecordReader implements Reader {
       resultList = resultList.stream().filter(r -> isNotBlank(r)).collect(Collectors.toList());
       List<String> tmpResultList = new ArrayList<>(resultList);
       String concatenator = sb.toString();
-      if(isNotBlank(concatenator)) {
+      if (isNotBlank(concatenator)) {
         for (int i = 0; i < tmpResultList.size(); i++) {
           String element = tmpResultList.get(i);
           resultList.set(i, element.concat(concatenator).toString());
@@ -255,6 +254,7 @@ public class MarcRecordReader implements Reader {
   private String retrieveNameWithoutCode(String mappingParameter) {
     return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
   }
+
   /**
    * Process string expression method
    *
@@ -279,9 +279,11 @@ public class MarcRecordReader implements Reader {
     }
     return new StringBuilder(EMPTY);
   }
+
   /**
    * Process TODAY expression method
    * appends ZonedDateTime.now for tenant
+   *
    * @param sb                    uses for appending today value to buffer
    * @param multipleStringBuilder uses for appending today value to buffer
    * @throws IllegalArgumentException if can not format today
@@ -334,7 +336,7 @@ public class MarcRecordReader implements Reader {
             ? BooleanValue.of(mappingRule.getBooleanFieldAction())
             : readSingleField(mappingRule, isRepeatableField);
 
-          if (value.getType() == MISSING && (mappingRule.getRequired() || RequiredFields.isRequiredFieldName(mappingRule.getName()))) {
+          if (value.getType() == MISSING && mappingRule.getRequired()) {
             repeatableObjectItems.remove(repeatableObjectItems.size() - 1);
             break;
           } else if (shouldCreateItemPerRepeatedMarcField(value.getType(), mappingRule)) {
@@ -412,11 +414,16 @@ public class MarcRecordReader implements Reader {
     List<String> results = new ArrayList<>();
     if (MARC_PATTERN.matcher(marcPath).matches()) {
       List<VariableField> fields = marcRecord.getVariableFields(marcPath.substring(0, 3));
-      LinkedHashSet<String> result = new LinkedHashSet<>();
+      List<String> result = new LinkedList<>();
       for (VariableField variableField : fields) {
         result.addAll(extractValueFromMarcRecord(variableField, marcPath));
       }
-      results.addAll(result);
+      List<String> distinctResult = result.stream().distinct().collect(Collectors.toList());
+      if (distinctResult.size() > 1 && distinctResult.size() != fields.size()) {
+        results.addAll(result);
+      } else {
+        results.addAll(distinctResult);
+      }
     } else if ((MARC_CONTROLLED.matcher(marcPath).matches())) {
       String controllFieldTag = StringUtils.substringBefore(marcPath, MARC_SPLITTER);
       Optional<ControlField> controlField = marcRecord.getControlFields().stream()

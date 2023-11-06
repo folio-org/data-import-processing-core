@@ -7,8 +7,12 @@ import org.folio.MatchDetail;
 import org.folio.MatchProfile;
 import org.folio.processing.exceptions.MatchingException;
 import org.folio.processing.matching.MatchingManager;
+import org.folio.processing.matching.loader.LoadResult;
+import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.MatchValueLoaderFactory;
+import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
+import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,18 +22,35 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
 import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
 
 @RunWith(VertxUnitRunner.class)
 public class MatchingManagerTest {
+  private MatchValueLoader instanceValueLoader;
 
   @Before
   public void beforeTest() {
     MatchValueReaderFactory.clearReaderFactory();
     MatchValueLoaderFactory.clearLoaderFactory();
+    instanceValueLoader = new MatchValueLoader() {
+      @Override
+      public CompletableFuture<LoadResult> loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload) {
+        CompletableFuture<LoadResult> future = new CompletableFuture<>();
+        LoadResult result = new LoadResult();
+        result.setValue("Some value");
+        result.setEntityType("INSTANCE");
+        future.complete(result);
+        return future;
+      }
+
+      @Override
+      public boolean isEligibleForEntityType(EntityType existingRecordType) {
+        return existingRecordType == INSTANCE;
+      }
+    };
   }
 
   @Test

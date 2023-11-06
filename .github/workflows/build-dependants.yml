@@ -16,6 +16,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - uses: actions/cache@v2
         with:
           path: |
@@ -37,6 +41,10 @@ jobs:
       fail-fast: false
     timeout-minutes: 5
     steps:
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-inventory
       - uses: actions/cache@v2
         with:
@@ -57,6 +65,10 @@ jobs:
       fail-fast: false
     timeout-minutes: 20
     steps:
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-source-record-manager
       - uses: actions/cache@v2
         with:

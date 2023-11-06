@@ -323,7 +323,6 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
       for (Subfield contributorNameSubfield : context.getDataField().getSubfields(contributorNameSfName.charAt(0))) {
         if (contributorNameSubfield != null) {
-          //TODO: Ignore punctuation
           String contributorTypeId =
             getContributorTypeIdBy(types, type -> equalsIgnoringPunctuationIfNeeded(contributorNameSubfield, type));
           if (!contributorTypeId.isEmpty()) {
@@ -337,25 +336,27 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
     private boolean equalsIgnoringPunctuationIfNeeded(Subfield contributorNameSubfield, ContributorType type) {
       String currentSubfield = contributorNameSubfield.getData().trim();
-      String resultedSubfield = currentSubfield;
       if (type.getName().endsWith(PERIOD)) {
-        if (resultedSubfield.endsWith(PERIOD)) {
-          return type.getName().equalsIgnoreCase(resultedSubfield);
+        if (currentSubfield.endsWith(PERIOD)) {
+          return type.getName().equalsIgnoreCase(currentSubfield);
+        }
+        if (currentSubfield.endsWith(SEMICOLON) || currentSubfield.endsWith(COMMA)) {
+          return type.getName().equalsIgnoreCase(currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1));
         } else {
-          return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(resultedSubfield);
+          return type.getName().substring(INTEGER_ZERO, type.getName().length() - 1).equalsIgnoreCase(currentSubfield);
         }
       }
-      resultedSubfield = trimPunctuationIfNeeded(currentSubfield, resultedSubfield);
-      return type.getName().equalsIgnoreCase(resultedSubfield);
+      currentSubfield = trimPunctuationIfNeeded(currentSubfield);
+      return type.getName().equalsIgnoreCase(currentSubfield);
     }
 
-    private String trimPunctuationIfNeeded(String currentSubfield, String resultedSubfield) {
+    private String trimPunctuationIfNeeded(String currentSubfield) {
       for (String punctuation : Arrays.asList(PERIOD, COMMA, SEMICOLON)) {
         if (currentSubfield.endsWith(punctuation)) {
           return currentSubfield.substring(INTEGER_ZERO, currentSubfield.length() - 1);
         }
       }
-      return resultedSubfield;
+      return currentSubfield;
     }
 
     private String getContributorTypeIdBy(List<ContributorType> types, Predicate<ContributorType> criteria) {

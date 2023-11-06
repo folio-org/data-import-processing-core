@@ -32,6 +32,7 @@
       "type": "string"
     },
     "institution": {
+      "description": "Object of institution",
       "type": "object",
       "folio:$ref": "locinst.json",
       "readonly": true,
@@ -46,6 +47,7 @@
       "type": "string"
     },
     "campus": {
+      "description": "Object of campus",
       "type": "object",
       "folio:$ref": "loccamp.json",
       "readonly": true,
@@ -60,6 +62,7 @@
       "type": "string"
     },
     "library": {
+      "description": "Object of library",
       "type": "object",
       "folio:$ref": "locinst.json",
       "readonly": true,
