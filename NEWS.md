@@ -1,3 +1,6 @@
+## 2023-11-06
+* [MODDICORE-382](https://issues.folio.org/browse/MODDICORE-382) Remove from the payload extra key after Multiple Optimistic Locking error occurs
+
 ## 2023-10-28 v4.1.1
 * [MODDICORE-375](https://issues.folio.org/browse/MODDICORE-375) Fix inventory settings schemas mismatch that caused issues with DI
 
