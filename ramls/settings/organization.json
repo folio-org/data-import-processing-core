@@ -101,6 +101,14 @@
         "$ref": "../raml-storage/raml-util/schemas/uuid.schema"
       }
     },
+    "privilegedContacts": {
+      "description": "An array of privileged contact record IDs",
+      "type": "array",
+      "items": {
+        "description": "UUID of a privileged contact record",
+        "$ref": "../raml-storage/raml-util/schemas/uuid.schema"
+      }
+    },
     "agreements": {
       "id": "agreement",
       "description": "The list of agreements for this organization",
