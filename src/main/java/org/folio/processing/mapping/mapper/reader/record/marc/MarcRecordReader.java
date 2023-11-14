@@ -10,6 +10,8 @@ import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
+import org.folio.processing.mapping.mapper.reader.matcher.AcceptedValuesMatcher;
+import org.folio.processing.mapping.mapper.reader.matcher.StatisticalCodeAcceptedValuesMatcher;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
@@ -80,14 +82,17 @@ public class MarcRecordReader implements Reader {
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
   private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider");
+  private static final String STATISTICAL_CODE_ID_FIELD = "statisticalCodeId";
   private static final String BLANK = "";
 
   private EntityType entityType;
+  private Map<String, AcceptedValuesMatcher> acceptedValuesMatchers;
   private Record marcRecord;
   private MappingParameters mappingParameters;
 
   MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
+    this.acceptedValuesMatchers = Map.of(STATISTICAL_CODE_ID_FIELD, new StatisticalCodeAcceptedValuesMatcher());
   }
 
   @Override
@@ -213,9 +218,12 @@ public class MarcRecordReader implements Reader {
   }
 
   private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
+    AcceptedValuesMatcher acceptedValuesMatcher = acceptedValuesMatchers.get(ruleExpression.getName());
+
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
+        if ((acceptedValuesMatcher != null && acceptedValuesMatcher.matches(entry.getValue(), value))
+          || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
           value = entry.getKey();
         }
       }
