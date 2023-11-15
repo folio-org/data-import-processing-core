@@ -254,58 +254,62 @@ public class MappingManagerUnitTest {
 
   @Test
   public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Instance(), null, null, List.of(0,1));
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(), null, List.of(0, 1));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToInstanceStatisticalCodeFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbd"), new Instance(), null, null, List.of(1));
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbd"), new Instance(), null, List.of(1));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), null, null, List.of(0));
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), null, List.of(0));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCode1FromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd (abc)"), new Holdings(), null, null, List.of(0));
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd (abc)"), new Holdings(), null, List.of(0));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCode2FromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbd (bbc)"), new Holdings(), null, null, List.of(1));
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbd (bbc)"), new Holdings(), null, List.of(1));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToItemStatisticalCodeFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbc"), new Holdings(), null, null, List.of(1));
+    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbc"), new Holdings(), null, List.of(1));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToItemStatisticalCodesFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbd", "abd (abc)"), new Holdings(), null, null, List.of(1,0));
+    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbd", "abd (abc)"), new Holdings(), null, List.of(1, 0));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromStringValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Instance(), "\"test\"",
-      new HashMap<>(Map.of("uuid1", "test")), List.of(0));
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(),
+      "\"TEST (test code type): abc - abd\"", List.of(0));
   }
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesFromStringValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc","bbc"), new Holdings(), "\"test\"",
-      new HashMap<>(Map.of("uuid1", "test")), List.of(0));
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(),
+      "\"TEST (test code type): abc - abd\"", List.of(0));
   }
 
+  @Test
+  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesIfStringValueSpecifiedInElsePart() {
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbc"), new Holdings(),
+      "990$a; else \"TEST (test code type): abc - abd\"", List.of(0));
+  }
 
   private void shouldMap_MarcBibliographicStatisticalCodes(
     EntityType entityType,
     List<String> statisticalCodeValues,
     Object entityInstance,
     String value,
-    HashMap<String, String> acceptedValues,
     List<Integer> expectedResultIndexes
   ) {
     List<StatisticalCode> statisticalCodes = List.of(
@@ -318,6 +322,11 @@ public class MappingManagerUnitTest {
         .withCode("bbc")
         .withName("bbd (bbc)")
     );
+
+    HashMap<String, String> acceptedValues = new HashMap<>(Map.of(
+      "uuid1", "TEST (test code type): abc - abd",
+      "uuid2", "TEST (test code type): bbc - bbd (bbc)"));
+
     MappingProfile mappingProfile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
