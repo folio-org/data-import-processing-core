@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
 
 /**
- * Test event handler. Handles event context with event DI_SRS_MARC_BIB_RECORD_CREATED
+ * Test event handler. Handles event context with event DI_INCOMING_MARC_BIB_RECORD_PARSED
  */
 public class CreateInstanceEventHandler implements EventHandler {
 

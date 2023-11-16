@@ -36,7 +36,7 @@ import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
-import static org.folio.DataImportEventTypes.DI_SRS_MARC_BIB_RECORD_CREATED;
+import static org.folio.DataImportEventTypes.DI_INCOMING_MARC_BIB_RECORD_PARSED;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
@@ -89,7 +89,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
                   .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))))))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
+      .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       .withTenant(TENANT_ID)
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
@@ -102,7 +102,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       testContext.assertEquals(1, nextEventContext.getEventsChain().size());
       testContext.assertEquals(
         nextEventContext.getEventsChain(),
-        Collections.singletonList("DI_SRS_MARC_BIB_RECORD_CREATED")
+        Collections.singletonList("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       );
       testContext.assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
       async.complete();
@@ -228,7 +228,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
           .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
+      .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       .withTenant(TENANT_ID)
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
@@ -245,7 +245,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       );
       testContext.assertEquals(
         eventContext.getEventsChain(),
-        Arrays.asList("DI_SRS_MARC_BIB_RECORD_CREATED", "DI_INVENTORY_INSTANCE_CREATED")
+        Arrays.asList("DI_INCOMING_MARC_BIB_RECORD_PARSED", "DI_INVENTORY_INSTANCE_CREATED")
       );
       testContext.assertEquals("DI_COMPLETED", eventContext.getEventType());
       async.complete();
@@ -367,7 +367,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
         matchWrapper.withChildSnapshotWrappers(Arrays.asList(action1Wrapper, action2Wrapper))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_SRS_MARC_BIB_RECORD_CREATED.value())
+      .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
@@ -432,7 +432,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
         matchWrapper1.withChildSnapshotWrappers(Collections.singletonList(actionWrapper)), matchWrapper2));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_SRS_MARC_BIB_RECORD_CREATED.value())
+      .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
@@ -468,7 +468,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
           .withContent(JsonObject.mapFrom(new ActionProfile().withAction(UPDATE).withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_SRS_MARC_BIB_RECORD_CREATED.value())
+      .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
@@ -484,7 +484,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       testContext.assertEquals(1, payload.getEventsChain().size());
       testContext.assertEquals(1, payload.getCurrentNodePath().size());
       testContext.assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
-      testContext.assertEquals(payload.getEventsChain(), Collections.singletonList(DI_SRS_MARC_BIB_RECORD_CREATED.value()));
+      testContext.assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
       async.complete();
     });
   }
