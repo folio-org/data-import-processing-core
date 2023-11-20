@@ -22,11 +22,4 @@ public class StatisticalCodeAcceptedValuesMatcherTest {
     Assert.assertTrue(acceptedValuesMatcher.matches(statisticalCodeAcceptedValue, code));
   }
 
-  @Test
-  public void shouldMatchByNameExcludingCode() {
-    String statisticalCodeAcceptedValue = "RECM (Record management): arch - Archives (arch)";
-    String nameWithoutCodePart = "Archives";
-    Assert.assertTrue(acceptedValuesMatcher.matches(statisticalCodeAcceptedValue, nameWithoutCodePart));
-  }
-
 }

@@ -7,8 +7,7 @@ public class StatisticalCodeAcceptedValuesMatcher implements AcceptedValuesMatch
   @Override
   public boolean matches(String acceptedValue, String valueToCompare) {
     return matchesByCode(acceptedValue, valueToCompare)
-      || matchesByName(acceptedValue, valueToCompare)
-      || matchesByNameExcludingCode(acceptedValue, valueToCompare);
+      || matchesByName(acceptedValue, valueToCompare);
   }
 
   private boolean matchesByCode(String acceptedValue, String valueToCompare) {
@@ -19,11 +18,6 @@ public class StatisticalCodeAcceptedValuesMatcher implements AcceptedValuesMatch
   private boolean matchesByName(String acceptedValue, String valueToCompare) {
     String statisticalCodeName = StringUtils.substringAfter(acceptedValue, " - ");
     return valueToCompare.equalsIgnoreCase(statisticalCodeName);
-  }
-
-  private boolean matchesByNameExcludingCode(String acceptedValue, String valueToCompare) {
-    String statisticalCodeNameWithoutCodePart = StringUtils.substringBetween(acceptedValue, " - ", " (");
-    return valueToCompare.equalsIgnoreCase(statisticalCodeNameWithoutCodePart);
   }
 
 }

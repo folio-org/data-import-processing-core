@@ -258,18 +258,8 @@ public class MappingManagerUnitTest {
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCodeFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbd"), new Instance(), null, List.of(1));
-  }
-
-  @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcValue() {
     shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), null, List.of(0));
-  }
-
-  @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode1FromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd (abc)"), new Holdings(), null, List.of(0));
   }
 
   @Test
@@ -280,11 +270,6 @@ public class MappingManagerUnitTest {
   @Test
   public void shouldMap_MarcBibliographicToItemStatisticalCodeFromMarcValue() {
     shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbc"), new Holdings(), null, List.of(1));
-  }
-
-  @Test
-  public void shouldMap_MarcBibliographicToItemStatisticalCodesFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbd", "abd (abc)"), new Holdings(), null, List.of(1, 0));
   }
 
   @Test
