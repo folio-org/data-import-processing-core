@@ -92,7 +92,9 @@ public class MarcRecordReader implements Reader {
 
   MarcRecordReader(EntityType entityType) {
     this.entityType = entityType;
-    this.acceptedValuesMatchers = Map.of(STATISTICAL_CODE_ID_FIELD, new StatisticalCodeAcceptedValuesMatcher());
+    this.acceptedValuesMatchers = new HashMap<>() {{
+      put(STATISTICAL_CODE_ID_FIELD, new StatisticalCodeAcceptedValuesMatcher());
+    }};
   }
 
   @Override
