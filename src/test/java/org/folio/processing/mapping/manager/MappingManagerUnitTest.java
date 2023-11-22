@@ -39,7 +39,6 @@ import java.util.UUID;
 import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
-import static org.folio.rest.jaxrs.model.EntityType.ITEM;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.EntityType.ORDER;
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
@@ -186,7 +185,7 @@ public class MappingManagerUnitTest {
     for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
       assertNotNull(mappingRule);
       assertTrue(mappingRule.getAcceptedValues().containsKey(organizationId));
-      String expectedAcceptedValue = String.format("%s (%s)", mappingRule.getValue().replaceAll("\"",""), organizationId);
+      String expectedAcceptedValue = String.format("%s (%s)", mappingRule.getValue().replaceAll("\"", ""), organizationId);
       assertEquals(expectedAcceptedValue, mappingRule.getAcceptedValues().get(organizationId));
     }
   }
@@ -253,23 +252,18 @@ public class MappingManagerUnitTest {
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromMarcValue() {
+  public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromMultipleMarcFieldsByCode() {
     shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(), null, List.of(0, 1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcValue() {
+  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcFieldByName() {
     shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), null, List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCode2FromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbd (bbc)"), new Holdings(), null, List.of(1));
-  }
-
-  @Test
-  public void shouldMap_MarcBibliographicToItemStatisticalCodeFromMarcValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(ITEM, List.of("bbc"), new Holdings(), null, List.of(1));
+  public void shouldMap_MarcBibliographicToInstanceStatisticalCodeFromMarcFieldByCode() {
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbc"), new Instance(), null, List.of(1));
   }
 
   @Test
@@ -280,13 +274,13 @@ public class MappingManagerUnitTest {
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesFromStringValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(),
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abc", "bbc"), new Holdings(),
       "\"TEST (test code type): abc - abd\"", List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesIfStringValueSpecifiedInElsePart() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("bbc"), new Holdings(),
+  public void shouldMap_MarcBibliographicToStatisticalCodesFromStringValueSpecifiedInElsePart() {
+    shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbc"), new Instance(),
       "990$a; else \"TEST (test code type): abc - abd\"", List.of(0));
   }
 
@@ -343,12 +337,12 @@ public class MappingManagerUnitTest {
     List<JsonObject> parsedRecordContentFields = new ArrayList<>();
     for (String statisticalCodeValue : statisticalCodeValues) {
       JsonObject field = new JsonObject();
-      field.put("971",statisticalCodeValue);
+      field.put("971", statisticalCodeValue);
       parsedRecordContentFields.add(field);
     }
     JsonObject parsedRecordContent = new JsonObject();
-    parsedRecordContent.put("leader","01314nam  22003851a 4500");
-    parsedRecordContent.put("fields",parsedRecordContentFields);
+    parsedRecordContent.put("leader", "01314nam  22003851a 4500");
+    parsedRecordContent.put("fields", parsedRecordContentFields);
     ParsedRecord parsedRecord = new ParsedRecord()
       .withContent(parsedRecordContent.toString());
 
@@ -384,11 +378,11 @@ public class MappingManagerUnitTest {
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(entityType.value()));
 
-    Map<String,Object> entityResult = (Map) Json.decodeValue(eventPayload.getContext().get(entityType.value()), Map.class).get("instance");
-    List<String> statisticalCodeIds =(List) entityResult.get("statisticalCodeIds");
+    Map<String, Object> entityResult = (Map) Json.decodeValue(eventPayload.getContext().get(entityType.value()), Map.class).get("instance");
+    List<String> statisticalCodeIds = (List) entityResult.get("statisticalCodeIds");
     assertEquals(statisticalCodeIds.size(), expectedResultIndexes.size());
     for (int i = 0; i < expectedResultIndexes.size(); i++) {
-      assertEquals(statisticalCodes.get(expectedResultIndexes.get(i)).getId(),statisticalCodeIds.get(i));
+      assertEquals(statisticalCodes.get(expectedResultIndexes.get(i)).getId(), statisticalCodeIds.get(i));
     }
   }
 }
