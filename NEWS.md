@@ -1,3 +1,6 @@
+## 2023-12-06 v4.1.3-SANPSHOT
+* [MODDICORE-368](https://issues.folio.org/browse/MODDICORE-368) 'else' statement in Field Mapping Profile for Statistical Code is ignored
+
 ## 2023-11-06
 * [MODDICORE-382](https://issues.folio.org/browse/MODDICORE-382) Remove from the payload extra key after Multiple Optimistic Locking error occurs
 

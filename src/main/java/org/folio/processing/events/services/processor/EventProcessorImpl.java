@@ -50,6 +50,7 @@ public class EventProcessorImpl implements EventProcessor {
         future.completeExceptionally(new EventHandlerNotFoundException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
       }
     } catch (Exception e) {
+      LOG.warn("process:: Failed to process event payload", e);
       future.completeExceptionally(e);
     }
     return future;

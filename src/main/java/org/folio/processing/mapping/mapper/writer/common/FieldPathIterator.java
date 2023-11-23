@@ -1,6 +1,5 @@
 package org.folio.processing.mapping.mapper.writer.common;
 
-import org.apache.commons.collections15.iterators.ObjectArrayIterator;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
@@ -20,7 +19,7 @@ class FieldPathIterator {
     } else {
       String[] stringItems = path.split(DELIMITER_REGEX);
       PathItem[] pathItems = Arrays.stream(stringItems).map(PathItem::new).toArray(PathItem[]::new);
-      this.delegate = new ObjectArrayIterator<>(pathItems);
+      this.delegate = Arrays.stream(pathItems).iterator();
     }
   }
 
