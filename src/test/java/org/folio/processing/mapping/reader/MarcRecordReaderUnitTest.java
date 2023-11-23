@@ -84,7 +84,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("\"test\" \" \" \"value\""));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("\"test\" \" \" \"value\""));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -101,7 +101,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("LDR/4"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("LDR/4"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -118,7 +118,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("LDR/04"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("LDR/04"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -135,7 +135,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("LDR/4-5"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("LDR/4-5"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -152,7 +152,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("LDR/04-05"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("LDR/04-05"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -169,7 +169,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("001/4"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("001/4"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -186,7 +186,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("001/04"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("001/04"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -203,7 +203,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("001/4-5"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("001/4-5"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -220,7 +220,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("").withValue("001/04-05"));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("").withValue("001/04-05"));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -237,7 +237,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("[]").withValue("\"test\" \" \" \"value\""));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("[]").withValue("\"test\" \" \" \"value\""));
     // then
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
@@ -254,7 +254,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     // when
-    Value value = reader.read(new MappingRule().withPath("[]").withValue("\" \";else \"value\""));
+    Value value = reader.read(new MappingRule().withName("testField").withPath("[]").withValue("\" \";else \"value\""));
     // then
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
@@ -292,6 +292,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("randomUUID2", "noValue");
     // when
     Value value = reader.read(new MappingRule()
+      .withName("testField")
       .withPath("")
       .withValue("\"test\" \" \" \"value\" \" \"")
       .withAcceptedValues(acceptedValues));
@@ -331,6 +332,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
+      .withName("testField")
       .withPath("")
       .withValue("042$a \" \" 042$a"));
     // then
@@ -350,6 +352,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
+      .withName("testField")
       .withPath("")
       .withValue("042$3 \" \" 042$a"));
     // then
@@ -369,6 +372,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
+      .withName("testField")
       .withPath("[]")
       .withValue("042$a \" \" 042$a"));
     // then
@@ -391,6 +395,7 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     Value value = reader.read(new MappingRule()
+      .withName("testField")
       .withPath("")
       .withValue("043$a \" \"; else 010; else 042$a \" \" \"data\" \" \" 001; else 042$a"));
     // then
@@ -709,7 +714,7 @@ public class MarcRecordReaderUnitTest {
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
-    String expectedDateString = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC).format(Instant.now());
+    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
     Value value = reader.read(new MappingRule()
       .withPath("")
@@ -788,6 +793,7 @@ public class MarcRecordReaderUnitTest {
     reader.initialize(eventPayload, mappingContext);
     // when
     Value value = reader.read(new MappingRule()
+      .withName("testField")
       .withPath("[]")
       .withValue("902$a 902$b 902$c 902$d"));
     // then
@@ -939,6 +945,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/2)");
 
     Value value = reader.read(new MappingRule()
+      .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
@@ -965,6 +972,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/MU)");
 
     Value value = reader.read(new MappingRule()
+      .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
@@ -990,6 +998,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
 
     Value value = reader.read(new MappingRule()
+      .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
@@ -1016,6 +1025,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
 
     Value value = reader.read(new MappingRule()
+      .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
@@ -1041,6 +1051,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
 
     Value value = reader.read(new MappingRule()
+      .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
@@ -1067,6 +1078,7 @@ public class MarcRecordReaderUnitTest {
     acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli)(oli,als)");
 
     Value value = reader.read(new MappingRule()
+      .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
@@ -1094,6 +1106,7 @@ public class MarcRecordReaderUnitTest {
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
+      .withName("permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
     assertNotNull(value);
@@ -1120,6 +1133,7 @@ public class MarcRecordReaderUnitTest {
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
+      .withName("permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
     assertNotNull(value);
@@ -1146,6 +1160,7 @@ public class MarcRecordReaderUnitTest {
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
+      .withName("permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
     assertNotNull(value);
@@ -1171,6 +1186,7 @@ public class MarcRecordReaderUnitTest {
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
+      .withName("permanentLocationId")
       .withValue("049$a")
       .withAcceptedValues(acceptedValues));
     assertNotNull(value);
@@ -1379,22 +1395,22 @@ public class MarcRecordReaderUnitTest {
           .withOrder(0)
           .withPath("order.poLine.details.productIds[]")
           .withFields(List.of(
-            new MappingRule()
-              .withName("productId")
-              .withPath("order.poLine.details.productIds[].productId")
-              .withValue("020$a")
-              .withRequired(true)
-              .withEnabled("true"),
-            new MappingRule()
-              .withName("qualifier")
-              .withPath("order.poLine.details.productIds[].qualifier")
-              .withValue("020$q")
-              .withEnabled("true"),
-            new MappingRule()
-              .withName("productIdType")
-              .withPath("order.poLine.details.productIds[].productIdType")
-              .withValue("\"ISBN\"")
-              .withEnabled("true")
+              new MappingRule()
+                .withName("productId")
+                .withPath("order.poLine.details.productIds[].productId")
+                .withValue("020$a")
+                .withRequired(true)
+                .withEnabled("true"),
+              new MappingRule()
+                .withName("qualifier")
+                .withPath("order.poLine.details.productIds[].qualifier")
+                .withValue("020$q")
+                .withEnabled("true"),
+              new MappingRule()
+                .withName("productIdType")
+                .withPath("order.poLine.details.productIds[].productIdType")
+                .withValue("\"ISBN\"")
+                .withEnabled("true")
             )
           )
       ));
@@ -1641,6 +1657,7 @@ public class MarcRecordReaderUnitTest {
     reader.initialize(eventPayload, mappingContext);
 
     MappingRule callNumberRule = new MappingRule()
+      .withName("callNumber")
       .withPath("holdings.callNumber")
       .withEnabled("true")
       .withValue("050$a");
