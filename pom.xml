@@ -116,11 +116,6 @@
       <version>4.4</version>
     </dependency>
     <dependency>
-      <groupId>net.sourceforge.collections</groupId>
-      <artifactId>collections-generic</artifactId>
-      <version>4.01</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>32.0.0-jre</version>

@@ -7,7 +7,6 @@ import org.folio.DataImportEventPayload;
 import org.folio.Location;
 import org.folio.MappingProfile;
 import org.folio.Organization;
-import org.folio.StatisticalCode;
 import org.folio.processing.exceptions.MappingException;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
@@ -20,11 +19,9 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
 
@@ -45,8 +42,6 @@ public final class MappingManager {
   public static final String VENDOR_ID = "vendor";
   private static final String MATERIAL_SUPPLIER = "materialSupplier";
   private static final String ACCESS_PROVIDER = "accessProvider";
-  private static final String STATISTICAL_CODE_ID = "statisticalCodeId";
-  private static final String STATISTICAL_CODE_IDS = "statisticalCodeIds";
 
   private MappingManager() {
   }
@@ -77,7 +72,6 @@ public final class MappingManager {
       //Fix MODDICORE-128 (The system doesn't update acceptedLocation in mapping profiles after the location list is changed)
       updateLocationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
       updateOrganizationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
-      updateStatisticalCodesInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
 
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
@@ -129,41 +123,6 @@ public final class MappingManager {
     }
   }
 
-  /**
-   * Fill {@link StatisticalCode} accepted values in MappingProfile from {@code mappingParameters}
-   *
-   * @param mappingProfile - MappingProfile
-   * @param mappingParameters - mapping parameters
-   */
-  private static void updateStatisticalCodesInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
-    if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
-      HashMap<String, String> statisticalCodes = getStatisticalCodesFromMappingParameters(mappingParameters);
-      if (!statisticalCodes.isEmpty()) {
-        for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
-          if (Objects.equals(mappingRule.getName(), STATISTICAL_CODE_IDS)) {
-            for (RepeatableSubfieldMapping subfield : mappingRule.getSubfields()) {
-              for (MappingRule field : subfield.getFields()) {
-                if (Objects.equals(field.getName(), STATISTICAL_CODE_ID)) {
-                  adjustAcceptedValues(field, statisticalCodes);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private static void adjustAcceptedValues(MappingRule field, HashMap<String, String> statisticalCodes) {
-    if (field.getAcceptedValues() != null) {
-      if (!field.getAcceptedValues().containsValue(field.getValue().replace("\"", ""))) {
-        field.getAcceptedValues().putAll(statisticalCodes);
-      }
-    } else {
-      field.withAcceptedValues(statisticalCodes);
-    }
-  }
-
   private static HashMap<String, String> getLocationsFromMappingParameters(MappingParameters mappingParameters) {
     HashMap<String, String> locations = new HashMap<>();
     for (Location location : mappingParameters.getLocations()) {
@@ -189,24 +148,6 @@ public final class MappingManager {
       organizations.put(organization.getId(), String.valueOf(organizationValue));
     }
     return organizations;
-  }
-
-  private static HashMap<String, String> getStatisticalCodesFromMappingParameters(MappingParameters mappingParameters) {
-    HashMap<String, String> statisticalCodes = new HashMap<>();
-    if (mappingParameters.getStatisticalCodes() == null) return statisticalCodes;
-    for (StatisticalCode statisticalCode : mappingParameters.getStatisticalCodes()) {
-      StringBuilder statisticalCodeValue = new StringBuilder();
-      if (!statisticalCode.getName().contains("(" + statisticalCode.getCode() + ")")) {
-        statisticalCodeValue.append(statisticalCode.getName())
-          .append(" (")
-          .append(statisticalCode.getCode())
-          .append(")");
-      } else {
-        statisticalCodeValue.append(statisticalCode.getName());
-      }
-      statisticalCodes.put(statisticalCode.getId(), statisticalCodeValue.toString());
-    }
-    return statisticalCodes;
   }
 
   /**
