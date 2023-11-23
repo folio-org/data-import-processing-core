@@ -1312,13 +1312,13 @@ public class MarcRecordReaderUnitTest {
 
     // then
     assertNotNull(valueVendor);
-    assertEquals(valueVendor.getType(), ValueType.MISSING);
+    assertEquals(ValueType.MISSING, valueVendor.getType());
 
     assertNotNull(valueMaterialSupplier);
-    assertEquals(valueMaterialSupplier.getType(), ValueType.MISSING);
+    assertEquals(ValueType.MISSING, valueMaterialSupplier.getType());
 
     assertNotNull(valueAccessProvider);
-    assertEquals(valueAccessProvider.getType(), ValueType.MISSING);
+    assertEquals(ValueType.MISSING, valueAccessProvider.getType());
   }
 
   @Test
@@ -1362,13 +1362,13 @@ public class MarcRecordReaderUnitTest {
 
     // then
     assertNotNull(valueVendor);
-    assertEquals(valueVendor.getValue(), uuid);
+    assertEquals(uuid, valueVendor.getValue());
 
     assertNotNull(valueMaterialSupplier);
-    assertEquals(valueMaterialSupplier.getValue(), uuid);
+    assertEquals(uuid, valueMaterialSupplier.getValue());
 
     assertNotNull(valueAccessProvider);
-    assertEquals(valueAccessProvider.getValue(), uuid);
+    assertEquals(uuid, valueAccessProvider.getValue());
   }
 
   @Test
