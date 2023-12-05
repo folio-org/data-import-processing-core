@@ -1,11 +1,27 @@
 package org.folio.processing.mapping;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.IntStream;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import org.folio.ContributorNameType;
 import org.folio.ContributorType;
 import org.folio.Identifier;
@@ -16,7 +32,6 @@ import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -24,21 +39,6 @@ import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.Record;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.IntStream;
 
 @RunWith(JUnit4.class)
 public class InstanceMappingTest {
@@ -69,6 +69,7 @@ public class InstanceMappingTest {
   private static final String TXT_INSTANCE_TYPE_ID = "6312d172-f0cf-40f6-b27d-9fa8feaf332f";
   private static final String UNSPECIFIED_INSTANCE_TYPE_ID = "30fffe0e-e985-4144-b2e2-1e8179bdb41f";
   private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/instance/856_missing_uri.mrc";
+  private static final String BIB_WITH_MISSING_SUBFIELD_A = "src/test/resources/org/folio/processing/mapping/instance/100_missing_subfield_a.mrc";
 
   @Test
   public void testMarcToInstance() throws IOException {
@@ -294,6 +295,28 @@ public class InstanceMappingTest {
       instance.getElectronicAccess()
         .forEach(electronicAccess ->
           assertNotNull(electronicAccess.getUri()));
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstance100requiredSubfield() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_SUBFIELD_A).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      instance.getContributors()
+        .forEach(contributor ->
+          assertNull(contributor.getName()));
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
