@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -218,7 +219,8 @@ public class MarcRecordReader implements Reader {
   }
 
   private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
-    AcceptedValuesMatcher acceptedValuesMatcher = acceptedValuesMatchers.get(ruleExpression.getName());
+    AcceptedValuesMatcher acceptedValuesMatcher = Objects.isNull(ruleExpression.getName()) ? null
+      : acceptedValuesMatchers.get(ruleExpression.getName());
 
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
