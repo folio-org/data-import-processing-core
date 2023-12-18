@@ -243,7 +243,7 @@ public class MarcRecordReaderUnitTest {
     // then
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
-    assertEquals(Arrays.asList("test", "value"), value.getValue());
+    assertEquals(List.of("test value"), value.getValue());
   }
 
   @Test
@@ -381,8 +381,7 @@ public class MarcRecordReaderUnitTest {
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
     List<String> result = new ArrayList<>();
-    result.add("pcc");
-    result.add("pcc");
+    result.add("pcc pcc");
     assertEquals(result, value.getValue());
   }
 
@@ -793,11 +792,54 @@ public class MarcRecordReaderUnitTest {
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
+
+    MappingRule dateRule1 = new MappingRule()
+      .withName("testField")
+      .withPath("[]")
+      .withEnabled("true")
+      .withValue("902$a");
+
+    MappingRule dateRule2 = new MappingRule()
+      .withName("testField")
+      .withPath("[]")
+      .withEnabled("true")
+      .withValue("902$b");
+
+    MappingRule dateRule3 = new MappingRule()
+      .withName("testField")
+      .withPath("[]")
+      .withEnabled("true")
+      .withValue("902$c");
+
+    MappingRule dateRule4 = new MappingRule()
+      .withName("testField")
+      .withPath("[]")
+      .withEnabled("true")
+      .withValue("902$d");
+
     // when
     Value value = reader.read(new MappingRule()
       .withName("testField")
       .withPath("[]")
-      .withValue("902$a 902$b 902$c 902$d"));
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("[]")
+          .withFields(List.of(dateRule1)),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("[]")
+          .withFields(List.of(dateRule2)),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("[]")
+          .withFields(List.of(dateRule3)),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("[]")
+          .withFields(List.of(dateRule4)))));
+
     // then
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
