@@ -36,7 +36,8 @@
       ]
     },
     "selectable": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Selectable field"
     },
     "hridManagement": {
       "description": "Identifies HRID management properties",
