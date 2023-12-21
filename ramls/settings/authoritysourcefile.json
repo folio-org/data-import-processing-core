@@ -35,6 +35,18 @@
         "local"
       ]
     },
+    "selectable" : {
+      "type": "boolean"
+    },
+    "hridManagement" : {
+      "description": "Identifies HRID management properties",
+      "type": "object",
+      "properties": {
+        "startNumber" : {
+          "type": "integer"
+        }
+      }
+    },
     "metadata": {
       "type": "object",
       "$ref": "../raml-storage/raml-util/schemas/metadata.schema",
