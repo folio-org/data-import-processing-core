@@ -12,7 +12,7 @@
       "description": "name of the authority source file"
     },
     "codes": {
-      "type" : "array",
+      "type": "array",
       "description": "array of codes",
       "items": {
         "type": "string",
@@ -35,14 +35,14 @@
         "local"
       ]
     },
-    "selectable" : {
+    "selectable": {
       "type": "boolean"
     },
-    "hridManagement" : {
+    "hridManagement": {
       "description": "Identifies HRID management properties",
       "type": "object",
       "properties": {
-        "startNumber" : {
+        "startNumber": {
           "type": "integer"
         }
       }
