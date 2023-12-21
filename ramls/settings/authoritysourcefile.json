@@ -35,6 +35,17 @@
         "local"
       ]
     },
+    "selectable": {
+      "type": "boolean"
+    },
+    "hridManagement": {
+      "type": "object",
+      "properties": {
+        "startNumber": {
+          "type": "integer"
+        }
+      }
+    },
     "metadata": {
       "type": "object",
       "$ref": "../raml-storage/raml-util/schemas/metadata.schema",
