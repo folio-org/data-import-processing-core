@@ -340,6 +340,9 @@ public class MarcRecordReader implements Reader {
             repeatableStrings.add(readRepeatableStringField(mappingRule));
           } else {
             retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
+            if (repeatableStrings.isEmpty()) {
+              repeatableObjectItems.remove(object);
+            }
           }
         } else {
           Value value = mappingRule.getBooleanFieldAction() != null

@@ -3,6 +3,7 @@
 * [MODDICORE-382](https://issues.folio.org/browse/MODDICORE-382) Remove from the payload extra key after Multiple Optimistic Locking error reveals
 * [MODSOURMAN-1022](https://issues.folio.org/browse/MODSOURMAN-1022) Remove step of initial saving of incoming records to SRS
 * [MODDICORE-370](https://issues.folio.org/browse/MODDICORE-370) Mapped administrative notes creates multiple notes properties instead of one note property
+* [MODINV-906](https://issues.folio.org/browse/MODINV-906) Create Item action discards when stat codes are in field mapping but not incoming MARC file
 
 ## 2023-XX-XX v4.1.3-SANPSHOT
 * [MODDICORE-368](https://issues.folio.org/browse/MODDICORE-368) 'else' statement in Field Mapping Profile for Statistical Code is ignored
