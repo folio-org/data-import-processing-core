@@ -664,6 +664,30 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldStatisticalCodeIds() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    MappingRule mappingRule = new MappingRule()
+      .withName("statisticalCodeIds").withPath("item.statisticalCodeIds[]").withValue("")
+      .withEnabled("true").withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(
+        List.of(new RepeatableSubfieldMapping().withOrder(0).withPath("item.statisticalCodeIds[]")
+          .withFields(
+            List.of(new MappingRule().withName("statisticalCodeId").withEnabled("true").withPath("item.statisticalCodeIds[]")
+              .withEnabled("true").withValue("949$s").withAcceptedValues(new HashMap<>())))));
+    Value value = reader.read(mappingRule);
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertTrue(((RepeatableFieldValue) value).getValue().isEmpty());
+  }
+
+  @Test
   public void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsEmpty() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
