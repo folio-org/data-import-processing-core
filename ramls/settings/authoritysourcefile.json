@@ -32,7 +32,8 @@
       "description": "label indicating where the authority source file entry originates from, i.e. 'folio' or 'local'",
       "enum": [
         "folio",
-        "local"
+        "local",
+        "consortium"
       ]
     },
     "selectable": {
