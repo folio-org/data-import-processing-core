@@ -50,6 +50,10 @@
         }
       }
     },
+    "_version": {
+      "type": "integer",
+      "description": "Record version for optimistic locking"
+    },
     "metadata": {
       "type": "object",
       "$ref": "../raml-storage/raml-util/schemas/metadata.schema",
