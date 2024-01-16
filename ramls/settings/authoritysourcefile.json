@@ -60,7 +60,6 @@
       "readonly": true
     }
   },
-  "additionalProperties": false,
   "required": [
     "name",
     "code",
