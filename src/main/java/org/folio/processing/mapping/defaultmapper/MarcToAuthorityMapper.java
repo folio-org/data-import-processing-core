@@ -8,7 +8,10 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.folio.Authority;
 import org.folio.AuthoritySourceFile;
 import org.folio.processing.mapping.defaultmapper.processor.Processor;
@@ -68,7 +71,7 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     }
 
     authority.setSourceFileId(sourceFileId);
-    authority.setNaturalId(cleanupNaturalId(naturalId));
+    authority.setNaturalId(sanitizedAlphaNumericValue(naturalId));
   }
 
   private List<String> getTag010ASubfieldValues(Record marcRecord) {
@@ -76,7 +79,7 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
       .map(tag -> tag.getSubfields('a'))
       .flatMap(List::stream)
       .map(Subfield::getData)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   private String getTag001Value(Record marcRecord) {
@@ -90,6 +93,13 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     if (value == null) {
       return null;
     }
+    var sanitizedTagValue = sanitizedAlphaNumericValue(value);
+    var matcher = Pattern.compile("[a-zA-Z]+").matcher(sanitizedTagValue);
+    if (!matcher.lookingAt()) {
+      // tag value does not start with alphabet letters
+      return null;
+    }
+    var sourceFilePrefix = sanitizedTagValue.substring(matcher.start(), matcher.end());
 
     var codeIdsMap = sourceFiles.stream().map(file -> {
         var id = file.getId();
@@ -101,13 +111,13 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
         LinkedHashMap::new));
 
     return codeIdsMap.entrySet().stream()
-      .filter(codeIdEntry -> value.startsWith(codeIdEntry.getKey()))
+      .filter(codeIdEntry -> StringUtils.equals(codeIdEntry.getKey(), sourceFilePrefix))
       .map(Map.Entry::getValue)
       .findFirst()
       .orElse(null);
   }
 
-  private static String cleanupNaturalId(String str) {
+  private static String sanitizedAlphaNumericValue(String str) {
     return str == null ? null : str.replaceAll("[^0-9a-zA-Z]", "");
   }
 
