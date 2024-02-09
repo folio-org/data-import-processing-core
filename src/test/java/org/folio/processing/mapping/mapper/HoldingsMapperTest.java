@@ -391,6 +391,7 @@ public class HoldingsMapperTest {
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(1));
     assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", holdingsIdentifier.getString(2));
   }
+
   @Test
   public void shouldCreateMultipleHoldingsButIfLocationMappingRuleContainsElseStatement() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -493,6 +494,7 @@ public class HoldingsMapperTest {
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(1));
     assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", holdingsIdentifier.getString(2));
   }
+
   @Test
   public void shouldCreateMultipleHoldingsUsingMappingRuleWithElseStatement() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -593,6 +595,91 @@ public class HoldingsMapperTest {
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(0));
     assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", holdingsIdentifier.getString(1));
     assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", holdingsIdentifier.getString(2));
+  }
+
+  @Test
+  public void shouldCreateOneHoldingIfNoLocationMarcField() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    Record record = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
+    HashMap<String, String> context = new HashMap<>();
+    context.put(HOLDINGS.value(), new JsonArray().toString());
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    eventPayload.setContext(context);
+
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
+    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
+    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
+
+    MappingDetail mappingDetails = new MappingDetail()
+      .withName("holdings")
+      .withRecordType(HOLDINGS)
+      .withMappingFields(Lists.newArrayList(new MappingRule()
+          .withName("permanentLocationId")
+          .withEnabled("true")
+          .withPath("holdings.permanentLocationId")
+          .withValue("945$h; else \"Online (E)\"")
+          .withAcceptedValues(acceptedValues),
+        new MappingRule()
+          .withName("temporaryLocationId")
+          .withEnabled("true")
+          .withPath("holdings.temporaryLocationId")
+          .withValue("945$a")
+          .withAcceptedValues(acceptedValues),
+        new MappingRule()
+          .withName("statisticalCodeIds")
+          .withEnabled("true")
+          .withPath("holdings.statisticalCodeIds[]")
+          .withValue("")
+          .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+          .withSubfields(List.of(
+            new RepeatableSubfieldMapping()
+              .withOrder(0)
+              .withPath("holdings.statisticalCodeIds[]")
+              .withFields(List.of(new MappingRule()
+                .withName("statisticalCodeId")
+                .withEnabled("true")
+                .withPath("holdings.statisticalCodeIds[]")
+                .withValue("\"Testing\""))),
+            new RepeatableSubfieldMapping()
+              .withOrder(1)
+              .withPath("holdings.statisticalCodeIds[]")
+              .withFields(List.of(new MappingRule()
+                .withName("statisticalCodeId")
+                .withEnabled("true")
+                .withPath("holdings.statisticalCodeIds[]")
+                .withValue("945$s")))))));
+
+    MappingProfile profile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withName("Create testing Holdings")
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(HOLDINGS)
+      .withMappingDetails(mappingDetails);
+
+    MappingContext mappingContext = new MappingContext()
+      .withMappingParameters(new MappingParameters()
+        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
+          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+          .withName("Main Library")
+          .withCode("KU/CC/DI/M")))));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+    JsonBasedWriter writer = new JsonBasedWriter(EntityType.HOLDINGS);
+    Mapper mapper = new HoldingsMapper(reader, writer);
+    mapper.initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
+    DataImportEventPayload mappedPayload = mapper.map(profile, eventPayload, mappingContext);
+    assertNotNull(mappedPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
+    assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
+    JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
+    assertEquals(1, holdings.size());
+    JsonObject firstHoldings = holdings.getJsonObject(0);
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertNull(firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
   }
 
   @Test

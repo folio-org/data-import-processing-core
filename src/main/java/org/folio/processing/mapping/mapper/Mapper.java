@@ -81,6 +81,10 @@ public interface Mapper {
       else nonMultipleFields.add(new JsonObject(field.toString()));
     });
 
+    if (multipleEntityFields.isEmpty()) {
+      multipleEntityFields.add(new JsonObject());
+    }
+
     for (JsonObject field : multipleEntityFields) {
       List<JsonObject> singleEntityFields = new ArrayList<>(nonMultipleFields);
       singleEntityFields.add(field);
