@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.EXPRESSIONS_DIVIDER;
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
-import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.WHITESPACE_DIVIDER;
 
 public class HoldingsMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
@@ -68,7 +68,7 @@ public class HoldingsMapper implements Mapper {
         writer.initialize(eventPayload);
         holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
       } else {
-        String expressionPart = permanentLocationMappingRule.get().getValue().split(WHITESPACE_DIVIDER)[0];
+        String expressionPart = permanentLocationMappingRule.get().getValue().split(EXPRESSIONS_DIVIDER)[0];
         String marcField = retrieveMarcFieldName(expressionPart)
           .orElseThrow(() -> new MappingException(String.format("Invalid value for mapping rule: %s", PERMANENT_LOCATION_ID)));
         eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
@@ -121,7 +121,7 @@ public class HoldingsMapper implements Mapper {
   }
 
   private boolean isStaredWithMarcField(String value) {
-    String[] expressionsParts = value.split(WHITESPACE_DIVIDER);
+    String[] expressionsParts = value.split(EXPRESSIONS_DIVIDER);
     return expressionsParts.length > 0 && MARC_PATTERN.matcher(expressionsParts[0]).matches();
   }
 

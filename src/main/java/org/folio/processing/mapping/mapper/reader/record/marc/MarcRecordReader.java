@@ -67,7 +67,7 @@ public class MarcRecordReader implements Reader {
   private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
   public final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
   public final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
-  private final static String EXPRESSIONS_DIVIDER = "; else ";
+  public final static String EXPRESSIONS_DIVIDER = "; else ";
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
   private final static String MARC_SPLITTER = "/";
