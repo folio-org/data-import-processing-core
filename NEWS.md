@@ -1,3 +1,7 @@
+## 2024-02-29 v4.1.4
+* [MODDICORE-394](https://folio-org.atlassian.net/browse/MODDICORE-394) Allow to use conditional mapping for location during multiple Holdings logic
+* [MODINV-944](https://folio-org.atlassian.net/browse/MODINV-944) Close open Kafka producers
+
 ## 2023-12-06 v4.1.3
 * [MODDICORE-368](https://issues.folio.org/browse/MODDICORE-368) 'else' statement in Field Mapping Profile for Statistical Code is ignored
 
