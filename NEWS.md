@@ -1,4 +1,4 @@
-## 2023-XX-XX v4.2.0-SANPSHOT
+## 2024-03-18 v4.2.0
 * [MODDICORE-398](https://issues.folio.org/browse/MODDICORE-398) Update RMB v35.2.0, Vertx 4.5.4
 * [MODSOURMAN-1085](https://issues.folio.org/browse/MODSOURMAN-1085) MARC record with a 100 tag without a $a is being discarded on import.
 * [MODDICORE-382](https://issues.folio.org/browse/MODDICORE-382) Remove from the payload extra key after Multiple Optimistic Locking error reveals
@@ -6,9 +6,10 @@
 * [MODDICORE-370](https://issues.folio.org/browse/MODDICORE-370) Mapped administrative notes creates multiple notes properties instead of one note property
 * [MODINV-906](https://issues.folio.org/browse/MODINV-906) Create Item action discards when stat codes are in field mapping but not incoming MARC file
 * [MODINV-944](https://folio-org.atlassian.net/browse/MODINV-944) OOM issue in mod-inventory
-
-## 2023-XX-XX v4.1.3-SANPSHOT
 * [MODDICORE-368](https://issues.folio.org/browse/MODDICORE-368) 'else' statement in Field Mapping Profile for Statistical Code is ignored
+* [MODDICORE-395](https://folio-org.atlassian.net/browse/MODDICORE-395) Allow creating multiple holdings/items when conditional mapping is used in field mapping profiles
+* [MODDICORE-392](https://folio-org.atlassian.net/browse/MODDICORE-392) "MARC authority" record is assigned to authority file if record's prefix includes prefix of authority file
+* [MODDICORE-390](https://folio-org.atlassian.net/browse/MODDICORE-390) Create Item action discards when stat codes are in field mapping but not incoming MARC file
 
 ## 2023-10-11 v4.1.0
 * [MODDICORE-360](https://issues.folio.org/browse/MODDICORE-360) Migrate to folio-kafka-wrapper 3.0.0 version
