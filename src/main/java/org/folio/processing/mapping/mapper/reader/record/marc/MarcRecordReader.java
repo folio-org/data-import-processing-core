@@ -258,11 +258,28 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveStringWithBracketsFromLastOne(String mappingParameter) {
+    if (mappingParameter.indexOf(FIRST_BRACKET) > mappingParameter.indexOf(SECOND_BRACKET))
+      return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.lastIndexOf(SECOND_BRACKET) + 1);
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
   private String retrieveNameWithoutCode(String mappingParameter) {
-    return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
+    mappingParameter = mappingParameter.trim();
+    int start = 0, end = mappingParameter.length();
+
+    if (mappingParameter.startsWith(FIRST_BRACKET)) {
+      start++;
+    }
+
+    for (int i = start; i < end; i++) {
+      char c = mappingParameter.charAt(i);
+      if (c == FIRST_BRACKET.charAt(0) || c == SECOND_BRACKET.charAt(0)) {
+        end = i;
+        break;
+      }
+    }
+
+    return mappingParameter.substring(start, end).trim();
   }
 
   /**
