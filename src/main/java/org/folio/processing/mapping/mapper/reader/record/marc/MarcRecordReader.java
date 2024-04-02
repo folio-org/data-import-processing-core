@@ -245,7 +245,7 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutCode(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       }
       return false;
@@ -258,11 +258,36 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveStringWithBracketsFromLastOne(String mappingParameter) {
+    if (mappingParameter.indexOf(FIRST_BRACKET) > mappingParameter.indexOf(SECOND_BRACKET))
+      return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.lastIndexOf(SECOND_BRACKET) + 1);
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
-  private String retrieveNameWithoutCode(String mappingParameter) {
-    return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
+  private String retrieveNameWithoutBrackets(String mappingParameter) {
+    mappingParameter = mappingParameter.trim();
+
+    int startIndex = mappingParameter.startsWith(FIRST_BRACKET) ? 1 : 0;
+
+    int endIndex = findFirstParenthesesIndex(mappingParameter, startIndex);
+
+    return mappingParameter.substring(startIndex, endIndex).trim();
+  }
+
+  /**
+   * Finds the index of the first occurrence of either bracket starting from the given index.
+   * Returns the input string's length if no brackets are found.
+   * @param input             mapping parameter
+   * @param startIndex        start index of code without parentheses
+   * @return index of first occured parentheses in mapping parameter
+   */
+  private int findFirstParenthesesIndex(String input, int startIndex) {
+    for (int i = startIndex; i < input.length(); i++) {
+      char c = input.charAt(i);
+      if (c == FIRST_BRACKET.charAt(0) || c == SECOND_BRACKET.charAt(0)) {
+        return i;
+      }
+    }
+    return input.length();
   }
 
   /**
