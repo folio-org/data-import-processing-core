@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class KafkaEventPublisherTest {
-  private static final String KAFKA_ENV = "test-env";
+  private static final String KAFKA_ENV = "folio";
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";

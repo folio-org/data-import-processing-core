@@ -245,7 +245,7 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutCode(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       }
       return false;
@@ -263,23 +263,31 @@ public class MarcRecordReader implements Reader {
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
-  private String retrieveNameWithoutCode(String mappingParameter) {
+  private String retrieveNameWithoutBrackets(String mappingParameter) {
     mappingParameter = mappingParameter.trim();
-    int start = 0, end = mappingParameter.length();
 
-    if (mappingParameter.startsWith(FIRST_BRACKET)) {
-      start++;
-    }
+    int startIndex = mappingParameter.startsWith(FIRST_BRACKET) ? 1 : 0;
 
-    for (int i = start; i < end; i++) {
-      char c = mappingParameter.charAt(i);
+    int endIndex = findFirstParenthesesIndex(mappingParameter, startIndex);
+
+    return mappingParameter.substring(startIndex, endIndex).trim();
+  }
+
+  /**
+   * Finds the index of the first occurrence of either bracket starting from the given index.
+   * Returns the input string's length if no brackets are found.
+   * @param input             mapping parameter
+   * @param startIndex        start index of code without parentheses
+   * @return index of first occured parentheses in mapping parameter
+   */
+  private int findFirstParenthesesIndex(String input, int startIndex) {
+    for (int i = startIndex; i < input.length(); i++) {
+      char c = input.charAt(i);
       if (c == FIRST_BRACKET.charAt(0) || c == SECOND_BRACKET.charAt(0)) {
-        end = i;
-        break;
+        return i;
       }
     }
-
-    return mappingParameter.substring(start, end).trim();
+    return input.length();
   }
 
   /**
