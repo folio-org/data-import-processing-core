@@ -1440,6 +1440,37 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldRead_IfVendorCodeContainsParenthesis() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    String uuid = "UUID";
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put(uuid, String.format("(CODE) (%s)", uuid));
+
+    MappingRule vendorRule = new MappingRule()
+      .withName("vendor")
+      .withPath("order.po.vendor")
+      .withEnabled("true")
+      .withValue("\"CODE\"")
+      .withAcceptedValues(acceptedValues);
+
+    // when
+    Value valueVendor = reader.read(vendorRule);
+
+    // then
+    assertNotNull(valueVendor);
+    assertEquals(uuid, valueVendor.getValue());
+  }
+
+
+  @Test
   public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldProductId() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
