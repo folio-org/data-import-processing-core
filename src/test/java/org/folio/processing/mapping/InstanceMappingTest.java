@@ -71,6 +71,7 @@ public class InstanceMappingTest {
   private static final String UNSPECIFIED_INSTANCE_TYPE_ID = "30fffe0e-e985-4144-b2e2-1e8179bdb41f";
   private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/instance/856_missing_uri.mrc";
   private static final String BIB_WITH_MISSING_SUBFIELD_A = "src/test/resources/org/folio/processing/mapping/instance/100_missing_subfield_a.mrc";
+  private static final String BIB_WITH_010Z_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/Record_with_010$z.mrc";
 
   @Test
   public void testMarcToInstance() throws IOException {
@@ -747,6 +748,40 @@ public class InstanceMappingTest {
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstanceForInstanceTypeIds() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_010Z_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
+    List<InstanceType> instanceTypes = List.of(new ObjectMapper().readValue(rawInstanceTypes, InstanceType[].class));
+    String expected010SubfieldZ = "3025698745";
+    int expectedSizeOfIdentifiers = 7;
+
+    try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+      List<Instance> mappedInstances = new ArrayList<>();
+      while (reader.hasNext()) {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        MarcJsonWriter writer = new MarcJsonWriter(os);
+        Record record = reader.next();
+        writer.write(record);
+        JsonObject marc = new JsonObject(os.toString());
+        Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
+        mappedInstances.add(instance);
+        Validator validator = factory.getValidator();
+        Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+        assertTrue(violations.isEmpty());
+      }
+      assertFalse(mappedInstances.isEmpty());
+      assertEquals(1, mappedInstances.size());
+      assertEquals(expectedSizeOfIdentifiers, mappedInstances.get(0).getIdentifiers().size());
+      mappedInstances.get(0).getIdentifiers().forEach(Assert::assertNotNull);
+
+      var identifiers = mappedInstances.get(0).getIdentifiers();
+      assertTrue(identifiers.stream().map(Identifier::getValue).anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
+
     }
   }
 }
