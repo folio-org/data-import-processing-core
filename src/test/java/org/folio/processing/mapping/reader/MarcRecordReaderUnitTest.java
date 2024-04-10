@@ -71,6 +71,7 @@ public class MarcRecordReaderUnitTest {
 
   private final String RECORD_WITH_THE_SAME_SUBFIELDS_IN_MULTIPLE_028_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aT90028\"},{\"b\":\"Verve\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aV-4061\"},{\"b\":\"Verve\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
   private final String RECORD_WITH_MULTIPLE_SUBFIELDS_IN_MULTIPLE_050_FIELD = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"Z2013.5.W6\"}, {\"b\": \"K46 2018\"}, {\"a\": \"PR1286.W6\"}]}}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"a2-val\"}, {\"b\": \"b2-val\"}, {\"a\": \"a2-val\"}]}}, {\"245\": \"American Bar Association journal\"}]}";
+  private final String RECORD_WITHOUT_949_N = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"3\":\"test\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"},{\"949\":{\"subfields\":[{\"b\":\"Bugfest Special\"},{\"f\":\"electronic resource\"},{\"r\":\"ebooks\"},{\"s\":\"ebooks\"},{\"a\":\"LF3282024004\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
   private MappingContext mappingContext = new MappingContext();
 
@@ -1744,6 +1745,46 @@ public class MarcRecordReaderUnitTest {
       assertEquals(((StringValue) electronicResource.get("holdings.electronicAccess[].uri")).getValue(), urlIterator.next());
       assertEquals(((StringValue) electronicResource.get("holdings.electronicAccess[].linkText")).getValue(), linkTextIterator.next());
     }
+  }
+
+  @Test
+  public void shouldNotHaveEmptyBracketsIfSpecificSubfieldDoesNotExist() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD_WITHOUT_949_N))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+    // when
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put("04a6a8d2-f902-4774-b15f-d8bd885dc804", "autobiography");
+    MappingRule mappingRule = new MappingRule()
+      .withName("natureOfContentTermId")
+      .withEnabled("true")
+      .withRequired(false)
+      .withPath("instance.natureOfContentTermIds[]")
+      .withValue("949$n")
+      .withSubfields(new ArrayList<>())
+      .withAcceptedValues(acceptedValues);
+    RepeatableSubfieldMapping repeatableSubfieldMapping = new RepeatableSubfieldMapping()
+      .withOrder(0)
+      .withPath("instance.natureOfContentTermIds[]")
+      .withFields(Lists.newArrayList(mappingRule));
+    MappingRule rule = new MappingRule()
+      .withName("natureOfContentTermIds")
+      .withPath("instance.natureOfContentTermIds[]")
+      .withValue("")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withSubfields(Lists.newArrayList(repeatableSubfieldMapping));
+    Value value = reader.read(rule);
+    // then
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("instance.natureOfContentTermIds[]", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Lists.newArrayList(), EXTEND_EXISTING, "instance.natureOfContentTermIds[]")), JsonObject.mapFrom(value));
   }
 
   private JsonObject createSubField(String name, String value) {
