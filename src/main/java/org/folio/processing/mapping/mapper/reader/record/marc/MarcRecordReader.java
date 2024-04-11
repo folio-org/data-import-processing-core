@@ -359,6 +359,7 @@ public class MarcRecordReader implements Reader {
         }
       }
       fillInRepeatableFieldItemsWithMissedProperties(repeatableObjectItems);
+      repeatableObjectItems.removeIf(Map::isEmpty);
       repeatableObject.addAll(repeatableObjectItems);
     }
     return repeatableStrings.isEmpty() ? RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath())
