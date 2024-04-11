@@ -1,3 +1,6 @@
+## 2024-XX-XX v4.1.5-SNAPSHOT
+* [MODDICORE-402](https://folio-org.atlassian.net/browse/MODDICORE-402) Empty values created in JSON when no fallback value is provided in Instance field mapping for Nature of Content term (Poppy CSP)
+
 ## 2024-02-29 v4.1.4
 * [MODDICORE-394](https://folio-org.atlassian.net/browse/MODDICORE-394) Allow to use conditional mapping for location during multiple Holdings logic
 * [MODINV-944](https://folio-org.atlassian.net/browse/MODINV-944) Close open Kafka producers
