@@ -245,7 +245,7 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
         return true;
       }
       return false;
