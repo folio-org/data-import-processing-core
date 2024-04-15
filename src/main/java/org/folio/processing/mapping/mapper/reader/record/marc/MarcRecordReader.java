@@ -225,7 +225,7 @@ public class MarcRecordReader implements Reader {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
         if ((acceptedValuesMatcher != null && acceptedValuesMatcher.matches(entry.getValue(), value))
-          || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
+          || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(ruleExpression.getName(), entry.getValue(), value)) {
           value = entry.getKey();
         }
       }
@@ -239,13 +239,15 @@ public class MarcRecordReader implements Reader {
     return value;
   }
 
-  private boolean equalsBasedOnBrackets(String mappingParameter, String value) {
+  private boolean equalsBasedOnBrackets(String ruleName, String mappingParameter, String value) {
     if (mappingParameter.contains(FIRST_BRACKET) && mappingParameter.contains(SECOND_BRACKET)) {
       if (retrieveStringFromLastBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
+      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
+        return true;
+      } else if (ruleName.equalsIgnoreCase("vendor") && retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
         return true;
       }
       return false;
