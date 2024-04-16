@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.folio.processing.mapping.MappingManager.VENDOR_ID;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 
@@ -247,7 +248,7 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (ruleName.equalsIgnoreCase("vendor") && retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
+      } else if (ruleName.equalsIgnoreCase(VENDOR_ID) && retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
         return true;
       }
       return false;
