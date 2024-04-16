@@ -1458,7 +1458,7 @@ public class MarcRecordReaderUnitTest {
       .withName("vendor")
       .withPath("order.po.vendor")
       .withEnabled("true")
-      .withValue("\"CODE\"")
+      .withValue("\"CODE)\"")
       .withAcceptedValues(acceptedValues);
 
     // when
