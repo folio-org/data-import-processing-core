@@ -1,4 +1,4 @@
-## 2024-xx-xx v4.3.0
+## 2024-04-19 v4.2.1
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
 
 ## 2024-03-18 v4.2.0
