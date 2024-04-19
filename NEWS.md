@@ -1,4 +1,4 @@
-## 2024-XX-XX v4.1.5-SNAPSHOT
+## 2024-04-19 v4.1.5
 * [MODDICORE-402](https://folio-org.atlassian.net/browse/MODDICORE-402) Empty values created in JSON when no fallback value is provided in Instance field mapping for Nature of Content term (Poppy CSP)
 
 ## 2024-02-29 v4.1.4
