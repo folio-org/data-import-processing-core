@@ -4,7 +4,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.vertx.core.json.JsonObject;
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,9 @@ import org.marc4j.marc.Subfield;
 public class MarcToAuthorityMapper implements RecordMapper<Authority> {
 
   private static final String MARC_FORMAT = "MARC_AUTHORITY";
+  private static final Pattern ALPHABETIC_PREFIX_PATTERN = Pattern.compile("[a-zA-Z]+");
+
+  private final HashMap<String, String> sourceFileIdsByPrefix = new HashMap<>();
 
   @Override
   public Authority mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules) {
@@ -32,6 +37,24 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     linkSourceFile(parsedRecord, mappingParameters, authority);
 
     return authority;
+  }
+
+  @Override
+  public List<Authority> mapRecords(List<JsonObject> parsedRecords,
+                                    MappingParameters mappingParameters,
+                                    JsonObject mappingRules) {
+    List<Authority> authorities = new ArrayList<>();
+    for (var parsedRecord : parsedRecords) {
+      var reader = new MarcJsonReader(new ByteArrayInputStream(parsedRecord.toString().getBytes(UTF_8)));
+      if (reader.hasNext()) {
+        var marcRecord = reader.next();
+        var authority = new Processor<Authority>().process(marcRecord, mappingParameters, mappingRules, Authority.class);
+        linkSourceFile(parsedRecord, mappingParameters, authority);
+        authorities.add(authority);
+      }
+    }
+
+    return authorities;
   }
 
   @Override
@@ -93,13 +116,13 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     if (value == null) {
       return null;
     }
-    var sanitizedTagValue = sanitizedAlphaNumericValue(value);
-    var matcher = Pattern.compile("[a-zA-Z]+").matcher(sanitizedTagValue);
-    if (!matcher.lookingAt()) {
-      // tag value does not start with alphabet letters
+    var sourceFilePrefix = getSanitizedAlphaNumericPrefix(value);
+    if (sourceFilePrefix == null) {
       return null;
     }
-    var sourceFilePrefix = sanitizedTagValue.substring(matcher.start(), matcher.end());
+    if (sourceFileIdsByPrefix.containsKey(sourceFilePrefix)) {
+      return sourceFileIdsByPrefix.get(sourceFilePrefix);
+    }
 
     var codeIdsMap = sourceFiles.stream().map(file -> {
         var id = file.getId();
@@ -110,11 +133,30 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
         (v1, v2) -> v2,
         LinkedHashMap::new));
 
-    return codeIdsMap.entrySet().stream()
+    var sourceFileId = codeIdsMap.entrySet().stream()
       .filter(codeIdEntry -> StringUtils.equals(codeIdEntry.getKey(), sourceFilePrefix))
       .map(Map.Entry::getValue)
       .findFirst()
       .orElse(null);
+
+    if (sourceFileId != null) {
+      sourceFileIdsByPrefix.put(sourceFilePrefix, sourceFileId);
+    }
+
+    return sourceFileId;
+  }
+
+  private String getSanitizedAlphaNumericPrefix(String value) {
+    if (value == null) {
+      return null;
+    }
+    var sanitizedTagValue = sanitizedAlphaNumericValue(value);
+    var matcher = ALPHABETIC_PREFIX_PATTERN.matcher(sanitizedTagValue);
+    if (!matcher.lookingAt()) {
+      // tag value does not start with alphabet letters
+      return null;
+    }
+    return sanitizedTagValue.substring(matcher.start(), matcher.end());
   }
 
   private static String sanitizedAlphaNumericValue(String str) {

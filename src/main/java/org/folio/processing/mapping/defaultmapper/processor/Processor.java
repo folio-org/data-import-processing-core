@@ -85,6 +85,17 @@ public class Processor<T> {
     return entity;
   }
 
+  public T process(Record marcRecord, MappingParameters mappingParameters, JsonObject mappingRules, Class<T> entityClass) {
+    entity = null;
+    try {
+      this.mappingRules = checkNotNull(mappingRules);
+      entity = processSingleEntry(marcRecord, mappingParameters, entityClass);
+    } catch (Exception e) {
+      LOGGER.warn("process:: Error mapping Marc record: {}", marcRecord, e);
+    }
+    return entity;
+  }
+
   private T processSingleEntry(Record record, MappingParameters mappingParameters, Class<T> entityClass) {
     try {
       var entityClassConstructor = entityClass.getConstructor();
