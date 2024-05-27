@@ -15,6 +15,7 @@ import org.folio.processing.events.services.publisher.KafkaEventPublisher;
 import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.processing.exceptions.EventHandlerNotFoundException;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
+import org.folio.rest.jaxrs.model.ReactToType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,10 +31,10 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.JOB_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 
 /**
  * The central class to use for handlers registration and event handling.
@@ -134,9 +135,9 @@ public final class EventManager {
     String eventType = eventPayload.getEventType();
     ProfileSnapshotWrapper currentNode = eventPayload.getCurrentNode();
     if (currentNode.getContentType() == MATCH_PROFILE) {
-      ProfileSnapshotWrapper.ReactTo targetReactTo = eventType.endsWith("NOT_MATCHED")
-        ? ProfileSnapshotWrapper.ReactTo.NON_MATCH
-        : ProfileSnapshotWrapper.ReactTo.MATCH;
+      ReactToType targetReactTo = eventType.endsWith("NOT_MATCHED")
+        ? ReactToType.NON_MATCH
+        : ReactToType.MATCH;
 
       Optional<ProfileSnapshotWrapper> optionalNext = currentNode.getChildSnapshotWrappers()
         .stream()

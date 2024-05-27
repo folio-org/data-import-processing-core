@@ -1,6 +1,6 @@
 package org.folio.processing.matching;
 
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 
 import java.util.Map;
 

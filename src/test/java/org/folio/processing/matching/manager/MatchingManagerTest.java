@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MATCH_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 
 @RunWith(VertxUnitRunner.class)
 public class MatchingManagerTest {

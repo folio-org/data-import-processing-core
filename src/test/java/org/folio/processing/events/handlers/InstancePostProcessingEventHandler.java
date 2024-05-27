@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.folio.ActionProfile.FolioRecord.INSTANCE;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 
 public class InstancePostProcessingEventHandler implements EventHandler {
 
