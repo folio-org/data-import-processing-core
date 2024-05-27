@@ -23,7 +23,7 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 
 /**
  * MappingManager is the entry point to work with mapping.

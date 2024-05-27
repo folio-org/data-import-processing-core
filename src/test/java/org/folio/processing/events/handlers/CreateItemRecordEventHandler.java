@@ -7,7 +7,7 @@ import org.folio.processing.events.services.handler.EventHandler;
 
 import java.util.concurrent.CompletableFuture;
 
-import static org.folio.rest.jaxrs.model.ProfileSnapshotWrapper.ContentType.ACTION_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 
 /**
  * Test event handler. Handles event context with event DI_HOLDINGS_RECORD_CREATED
