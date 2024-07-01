@@ -1,5 +1,6 @@
 package org.folio.processing.events.services.publisher;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.kafka.client.producer.KafkaHeader;
@@ -79,8 +80,11 @@ public class KafkaEventPublisher implements EventPublisher {
       KafkaProducer<String, String> producer = producerManager.createShared(eventType);
       producer.send(record)
         .<Void>mapEmpty()
-        .eventually(v -> producer.flush())
-        .eventually(v -> producer.close())
+        .eventually(() -> {
+          Vertx.currentContext().owner()
+            .setTimer(3000, t -> producer.flush().eventually(() -> producer.close()));
+          return Future.succeededFuture();
+        })
         .onSuccess(ar -> {
           LOGGER.info("publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ",
             eventType, jobExecutionId, recordId, chunkId, topicName);

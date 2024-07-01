@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -51,6 +53,9 @@ public class Processor<T> {
   private static final String IND_2 = "ind2";
   private static final String WILDCARD_INDICATOR = "*";
   private static final String TARGET = "target";
+  private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Map<String, Method>> METHOD_CACHE = new ConcurrentHashMap<>();
+  private static final Map<Field, ParameterizedType> PARAM_TYPE_CACHE = new ConcurrentHashMap<>();
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
 
   private JsonObject mappingRules;
@@ -761,10 +766,10 @@ public class Processor<T> {
     Class<?> type = Integer.TYPE;
     for (String pathSegment : path) {
       try {
-        Field field = object.getClass().getDeclaredField(pathSegment);
+        Field field = getField(object.getClass(), pathSegment);
         type = field.getType();
         if (type.isAssignableFrom(List.class) || type.isAssignableFrom(Set.class)) {
-          ParameterizedType listType = (ParameterizedType) field.getGenericType();
+          ParameterizedType listType = getParameterizedType(field);
           type = (Class<?>) listType.getActualTypeArguments()[0];
           object = type.newInstance();
         }
@@ -802,16 +807,15 @@ public class Processor<T> {
    */
   static boolean buildObject(Object object, String[] path, boolean newComp, Object val,
                              Object[] complexPreviouslyCreated) {
-    Class<?> type;
     for (String pathSegment : path) {
       try {
-        Field field = object.getClass().getDeclaredField(pathSegment);
-        type = field.getType();
+        Field field = getField(object.getClass(), pathSegment);
+        Class<?> type = field.getType();
         if (type.isAssignableFrom(List.class) || type.isAssignableFrom(Set.class)) {
-
-          Method method = object.getClass().getMethod(columnNametoCamelCaseWithget(pathSegment));
+          // handle collection field
+          Method method = getMethod(object.getClass(), columnNametoCamelCaseWithget(pathSegment));
           Collection<Object> coll = setColl(method, object);
-          ParameterizedType listType = (ParameterizedType) field.getGenericType();
+          ParameterizedType listType = getParameterizedType(field);
           Class<?> listTypeClass = (Class<?>) listType.getActualTypeArguments()[0];
           if (isPrimitiveOrPrimitiveWrapperOrString(listTypeClass)) {
             coll.add(val);
@@ -824,11 +828,10 @@ public class Processor<T> {
           //currently not needed for instances, may be needed in the future
           //non primitive member in instance object but represented as a list or set of non
           //primitive objects
-          Method method = object.getClass().getMethod(columnNametoCamelCaseWithget(pathSegment));
-          object = method.invoke(object);
+          object = getMethod(object.getClass(), columnNametoCamelCaseWithget(pathSegment)).invoke(object);
         } else { // primitive
-          object.getClass().getMethod(columnNametoCamelCaseWithset(pathSegment),
-            val.getClass()).invoke(object, val);
+          getMethod(object.getClass(), columnNametoCamelCaseWithset(pathSegment), val.getClass())
+            .invoke(object, val);
         }
       } catch (Exception e) {
         LOGGER.warn(e.getMessage(), e);
@@ -838,6 +841,36 @@ public class Processor<T> {
     return true;
   }
 
+  private static Field getField(Class<?> clazz, String fieldName) {
+    return FIELD_CACHE.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
+      .computeIfAbsent(fieldName, k -> {
+        try {
+          Field field = clazz.getDeclaredField(fieldName);
+          field.setAccessible(true);
+          return field;
+        } catch (NoSuchFieldException e) {
+          throw new RuntimeException(e);
+        }
+      });
+  }
+
+  private static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+    return METHOD_CACHE.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
+      .computeIfAbsent(methodName + Arrays.toString(parameterTypes), k -> {
+        try {
+          Method method = clazz.getMethod(methodName, parameterTypes);
+          method.setAccessible(true);
+          return method;
+        } catch (NoSuchMethodException e) {
+          throw new RuntimeException(e);
+        }
+      });
+  }
+
+  private static ParameterizedType getParameterizedType(Field field) {
+    return PARAM_TYPE_CACHE.computeIfAbsent(field, (fieldobj) -> (ParameterizedType)fieldobj.getGenericType());
+  }
+
   private static Object setObjectCorrectly(boolean newComp, Class<?> listTypeClass, Class<?> type, String pathSegment,
                                            Collection<Object> coll, Object object, Object complexPreviouslyCreated)
     throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
@@ -845,7 +878,7 @@ public class Processor<T> {
     if (newComp) {
       Object o = listTypeClass.newInstance();
       coll.add(o);
-      object.getClass().getMethod(columnNametoCamelCaseWithset(pathSegment), type).invoke(object, coll);
+      getMethod(object.getClass(), columnNametoCamelCaseWithset(pathSegment), type).invoke(object, coll);
       return o;
     } else if ((complexPreviouslyCreated != null) &&
       (complexPreviouslyCreated.getClass().isAssignableFrom(listTypeClass))) {
