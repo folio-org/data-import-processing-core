@@ -34,8 +34,8 @@ public class LoaderHelper {
       // something like - marc.identifier -> identifierObject.idField
       if (type.isAssignableFrom(java.util.List.class)
         || type.isAssignableFrom(java.util.Set.class)) {
-        Class<?> listTypeClass = LIST_TYPE_CLASS_CACHE.computeIfAbsent(field, field1 -> {
-          ParameterizedType listType = (ParameterizedType) field.getGenericType();
+        Class<?> listTypeClass = LIST_TYPE_CLASS_CACHE.computeIfAbsent(field, newField -> {
+          ParameterizedType listType = (ParameterizedType) newField.getGenericType();
           return (Class<?>) listType.getActualTypeArguments()[0];
         });
         object = listTypeClass.newInstance();

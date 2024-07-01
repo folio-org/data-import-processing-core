@@ -868,7 +868,7 @@ public class Processor<T> {
   }
 
   private static ParameterizedType getParameterizedType(Field field) {
-    return PARAM_TYPE_CACHE.computeIfAbsent(field, (fieldobj) -> (ParameterizedType)fieldobj.getGenericType());
+    return PARAM_TYPE_CACHE.computeIfAbsent(field, (fieldObj) -> (ParameterizedType)fieldObj.getGenericType());
   }
 
   private static Object setObjectCorrectly(boolean newComp, Class<?> listTypeClass, Class<?> type, String pathSegment,
