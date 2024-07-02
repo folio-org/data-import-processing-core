@@ -2,11 +2,14 @@ package org.folio.processing.mapping.defaultmapper.processor;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.regex.Pattern;
+
 /**
  * Escape text so that it is valid json as well as valid postgres jsonb data
  *
  */
 public class Escaper {
+  private static final Pattern ESCAPED_DOUBLE_QUOTES = Pattern.compile("\\\"");
 
   private static String removeEscapedChars(String text) {
     int len = text.length();
@@ -71,7 +74,7 @@ public class Escaper {
     if (!keepTrailingBackslash && data.endsWith("\\")) {
       data = data.substring(0, data.length() - 1);
     }
-    data = removeEscapedChars(data).replaceAll("\\\"", "\\\\\"");
+    data = ESCAPED_DOUBLE_QUOTES.matcher(removeEscapedChars(data)).replaceAll("\\\\\"");
     return data;
   }
 
