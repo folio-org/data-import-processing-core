@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
-import org.folio.kafka.KafkaProducerManager;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.kafka.SimpleKafkaProducerManager;
 import org.folio.kafka.services.KafkaProducerRecordBuilder;
@@ -36,13 +35,11 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final AtomicLong indexer = new AtomicLong();
 
   private final KafkaConfig kafkaConfig;
-  private final Vertx vertx;
   private final Integer maxDistributionNum;
   private final KafkaProducer<String, String> producer;
 
   public KafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
     this.kafkaConfig = kafkaConfig;
-    this.vertx = vertx;
     this.maxDistributionNum = maxDistributionNum;
     this.producer = new SimpleKafkaProducerManager(vertx, kafkaConfig)
       .createShared(KafkaEventPublisher.class.getName());

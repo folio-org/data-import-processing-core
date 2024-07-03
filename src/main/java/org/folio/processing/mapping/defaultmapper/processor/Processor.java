@@ -849,7 +849,8 @@ public class Processor<T> {
           field.setAccessible(true);
           return field;
         } catch (NoSuchFieldException e) {
-          throw new RuntimeException(e);
+          LOGGER.error("Couldn't find field: {}", fieldName, e);
+          return null;
         }
       });
   }
@@ -862,13 +863,14 @@ public class Processor<T> {
           method.setAccessible(true);
           return method;
         } catch (NoSuchMethodException e) {
-          throw new RuntimeException(e);
+          LOGGER.error("Couldn't find method: {}", methodName, e);
+          return null;
         }
       });
   }
 
   private static ParameterizedType getParameterizedType(Field field) {
-    return PARAM_TYPE_CACHE.computeIfAbsent(field, (fieldObj) -> (ParameterizedType)fieldObj.getGenericType());
+    return PARAM_TYPE_CACHE.computeIfAbsent(field, fieldObj -> (ParameterizedType)fieldObj.getGenericType());
   }
 
   private static Object setObjectCorrectly(boolean newComp, Class<?> listTypeClass, Class<?> type, String pathSegment,
