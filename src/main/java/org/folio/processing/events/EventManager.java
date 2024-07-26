@@ -54,6 +54,10 @@ public final class EventManager {
   private EventManager() {
   }
 
+  static List<EventPublisher> getEventPublishers() {
+    return Collections.unmodifiableList(eventPublisher);
+  }
+
   /**
    * Handles the given payload of event.
    * If there are handlers found to handle event then the EventManager calls EventProcessor passing event payload.
