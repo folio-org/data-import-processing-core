@@ -41,7 +41,6 @@ public class KafkaEventPublisherTest {
 
   private static KafkaConfig kafkaConfig;
   private Vertx vertx = Vertx.vertx();
-  private KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100);
 
   @BeforeClass
   public static void setUpClass() {
@@ -54,83 +53,93 @@ public class KafkaEventPublisherTest {
   }
 
   @Test
-  public void shouldPublishPayload() throws InterruptedException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_COMPLETED.value())
-      .withOkapiUrl(OKAPI_URL)
-      .withTenant(TENANT_ID)
-      .withToken(TOKEN)
-      .withContext(new HashMap<>() {{
-        put("recordId", UUID.randomUUID().toString());
-        put("chunkId", UUID.randomUUID().toString());
-      }});
+  public void shouldPublishPayload() throws Exception {
+    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+      DataImportEventPayload eventPayload = new DataImportEventPayload()
+        .withEventType(DI_COMPLETED.value())
+        .withOkapiUrl(OKAPI_URL)
+        .withTenant(TENANT_ID)
+        .withToken(TOKEN)
+        .withContext(new HashMap<>() {{
+          put("recordId", UUID.randomUUID().toString());
+          put("chunkId", UUID.randomUUID().toString());
+        }});
 
-    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+      CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
 
-    String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), TENANT_ID, DI_COMPLETED.value());
-    List<String> observedValues = kafkaCluster.observeValues(ObserveKeyValues.on(topicToObserve, 1)
-      .observeFor(30, TimeUnit.SECONDS)
-      .build());
+      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), TENANT_ID, DI_COMPLETED.value());
+      List<String> observedValues = kafkaCluster.observeValues(ObserveKeyValues.on(topicToObserve, 1)
+        .observeFor(30, TimeUnit.SECONDS)
+        .build());
 
-    Event obtainedEvent = Json.decodeValue(observedValues.get(0), Event.class);
-    DataImportEventPayload actualPayload = Json.decodeValue(obtainedEvent.getEventPayload(), DataImportEventPayload.class);
-    assertEquals(eventPayload, actualPayload);
+      Event obtainedEvent = Json.decodeValue(observedValues.get(0), Event.class);
+      DataImportEventPayload actualPayload = Json.decodeValue(obtainedEvent.getEventPayload(), DataImportEventPayload.class);
+      assertEquals(eventPayload, actualPayload);
 
-    assertFalse(future.isCompletedExceptionally());
+      assertFalse(future.isCompletedExceptionally());
+    }
   }
 
   @Test(expected = ExecutionException.class)
-  public void shouldReturnFailedFutureWhenPayloadIsNull() throws ExecutionException, InterruptedException {
-    CompletableFuture<Event> future = eventPublisher.publish(null);
-    assertTrue(future.isCompletedExceptionally());
-    future.get();
+  public void shouldReturnFailedFutureWhenPayloadIsNull() throws Exception {
+    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+      CompletableFuture<Event> future = eventPublisher.publish(null);
+      assertTrue(future.isCompletedExceptionally());
+      future.get();
+    }
   }
 
   @Test(expected = ExecutionException.class)
-  public void shouldReturnFailedFutureWhenPayloadParameterIsNull() throws ExecutionException, InterruptedException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_COMPLETED.value())
-      .withOkapiUrl(OKAPI_URL)
-      .withTenant(TENANT_ID)
-      .withToken(null)
-      .withContext(new HashMap<>() {{
-        put("recordId", UUID.randomUUID().toString());
-      }});
+  public void shouldReturnFailedFutureWhenPayloadParameterIsNull() throws Exception {
+    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+      DataImportEventPayload eventPayload = new DataImportEventPayload()
+        .withEventType(DI_COMPLETED.value())
+        .withOkapiUrl(OKAPI_URL)
+        .withTenant(TENANT_ID)
+        .withToken(null)
+        .withContext(new HashMap<>() {{
+          put("recordId", UUID.randomUUID().toString());
+        }});
 
-    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
-    assertTrue(future.isCompletedExceptionally());
-    future.get();
+      CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+      assertTrue(future.isCompletedExceptionally());
+      future.get();
+    }
   }
 
   @Test
-  public void shouldReturnFailedFutureWhenRecordIdIsNull() throws ExecutionException, InterruptedException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_COMPLETED.value())
-      .withOkapiUrl(OKAPI_URL)
-      .withTenant(TENANT_ID)
-      .withToken(TOKEN)
-      .withContext(new HashMap<>() {{
-        put("chunkId", UUID.randomUUID().toString());
-      }});
+  public void shouldReturnFailedFutureWhenRecordIdIsNull() throws Exception {
+    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+      DataImportEventPayload eventPayload = new DataImportEventPayload()
+        .withEventType(DI_COMPLETED.value())
+        .withOkapiUrl(OKAPI_URL)
+        .withTenant(TENANT_ID)
+        .withToken(TOKEN)
+        .withContext(new HashMap<>() {{
+          put("chunkId", UUID.randomUUID().toString());
+        }});
 
-    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
-    assertFalse(future.isCompletedExceptionally());
-    future.get();
+      CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+      assertFalse(future.isCompletedExceptionally());
+      future.get();
+    }
   }
 
   @Test
-  public void shouldReturnFailedFutureWhenChunkIdIsNull() throws ExecutionException, InterruptedException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withEventType(DI_COMPLETED.value())
-      .withOkapiUrl(OKAPI_URL)
-      .withTenant(TENANT_ID)
-      .withToken(TOKEN)
-      .withContext(new HashMap<>() {{
-        put("recordId", UUID.randomUUID().toString());
-      }});
+  public void shouldReturnFailedFutureWhenChunkIdIsNull() throws Exception {
+    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+      DataImportEventPayload eventPayload = new DataImportEventPayload()
+        .withEventType(DI_COMPLETED.value())
+        .withOkapiUrl(OKAPI_URL)
+        .withTenant(TENANT_ID)
+        .withToken(TOKEN)
+        .withContext(new HashMap<>() {{
+          put("recordId", UUID.randomUUID().toString());
+        }});
 
-    CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
-    assertFalse(future.isCompletedExceptionally());
-    future.get();
+      CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+      assertFalse(future.isCompletedExceptionally());
+      future.get();
+    }
   }
 }

@@ -214,6 +214,15 @@ public final class EventManager {
    * @param vertx       - vertx instance
    */
   public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
+    eventPublisher.forEach(p -> {
+      if(p instanceof KafkaEventPublisher) {
+        try {
+          ((KafkaEventPublisher)p).close();
+        } catch (Exception e) {
+          LOGGER.error(e.getMessage(), e);
+        }
+      }
+    });
     eventPublisher.clear();
     eventPublisher.add(new KafkaEventPublisher(kafkaConfig, vertx, maxDistributionNum));
   }
