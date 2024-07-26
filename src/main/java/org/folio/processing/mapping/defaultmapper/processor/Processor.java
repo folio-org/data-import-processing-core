@@ -875,7 +875,7 @@ public class Processor<T> {
 
   private static Object setObjectCorrectly(boolean newComp, Class<?> listTypeClass, Class<?> type, String pathSegment,
                                            Collection<Object> coll, Object object, Object complexPreviouslyCreated)
-    throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    throws IllegalAccessException, InstantiationException, InvocationTargetException {
 
     if (newComp) {
       Object o = listTypeClass.newInstance();
