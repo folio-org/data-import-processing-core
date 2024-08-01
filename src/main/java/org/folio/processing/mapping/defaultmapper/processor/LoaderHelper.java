@@ -8,10 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LoaderHelper {
 
   private static final Logger LOGGER = LogManager.getLogger(LoaderHelper.class);
+  private static final Map<Field, Class<?>> LIST_TYPE_CLASS_CACHE = new ConcurrentHashMap<>();
   private LoaderHelper() {}
 
   public static boolean isMappingValid(Object object, String[] path)
@@ -31,8 +34,10 @@ public class LoaderHelper {
       // something like - marc.identifier -> identifierObject.idField
       if (type.isAssignableFrom(java.util.List.class)
         || type.isAssignableFrom(java.util.Set.class)) {
-        ParameterizedType listType = (ParameterizedType) field.getGenericType();
-        Class<?> listTypeClass = (Class<?>) listType.getActualTypeArguments()[0];
+        Class<?> listTypeClass = LIST_TYPE_CLASS_CACHE.computeIfAbsent(field, newField -> {
+          ParameterizedType listType = (ParameterizedType) newField.getGenericType();
+          return (Class<?>) listType.getActualTypeArguments()[0];
+        });
         object = listTypeClass.newInstance();
         if (isPrimitiveOrPrimitiveWrapperOrString(listTypeClass) && i == path.length - 1) {
           // we are here if the last entry in the path is an array / set of primitives, that is ok

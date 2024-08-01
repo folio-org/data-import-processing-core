@@ -10,7 +10,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
-import org.folio.kafka.KafkaProducerManager;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.kafka.SimpleKafkaProducerManager;
 import org.folio.kafka.services.KafkaProducerRecordBuilder;
@@ -28,7 +27,7 @@ import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
 
-public class KafkaEventPublisher implements EventPublisher {
+public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
   public static final String RECORD_ID_HEADER = "recordId";
   public static final String CHUNK_ID_HEADER = "chunkId";
@@ -36,15 +35,14 @@ public class KafkaEventPublisher implements EventPublisher {
   private static final AtomicLong indexer = new AtomicLong();
 
   private final KafkaConfig kafkaConfig;
-  private final Vertx vertx;
   private final Integer maxDistributionNum;
-  private final KafkaProducerManager producerManager;
+  private final KafkaProducer<String, String> producer;
 
   public KafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
     this.kafkaConfig = kafkaConfig;
-    this.vertx = vertx;
     this.maxDistributionNum = maxDistributionNum;
-    this.producerManager = new SimpleKafkaProducerManager(vertx, kafkaConfig);
+    this.producer = new SimpleKafkaProducerManager(vertx, kafkaConfig)
+      .createShared(KafkaEventPublisher.class.getName());
   }
 
   @Override
@@ -76,11 +74,8 @@ public class KafkaEventPublisher implements EventPublisher {
       var record = buildRecord(eventPayload, event, topicName);
       record.addHeaders(getHeaders(eventPayload, recordId, chunkId, jobExecutionId));
 
-      KafkaProducer<String, String> producer = producerManager.createShared(eventType);
       producer.send(record)
         .<Void>mapEmpty()
-        .eventually(v -> producer.flush())
-        .eventually(v -> producer.close())
         .onSuccess(ar -> {
           LOGGER.info("publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ",
             eventType, jobExecutionId, recordId, chunkId, topicName);
@@ -127,5 +122,10 @@ public class KafkaEventPublisher implements EventPublisher {
     } else {
       headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    producer.flush().eventually(() -> producer.close());
   }
 }
