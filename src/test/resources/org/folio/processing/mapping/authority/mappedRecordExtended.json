@@ -1,0 +1,56 @@
+{
+  "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
+  "sftPersonalName": [ ],
+  "saftPersonalName": [ ],
+  "personalNameTitle": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
+  "sftPersonalNameTitle": [ "v. 25 cm." ],
+  "saftPersonalNameTitle": [ "Editor:   C. W. Dugmore." ],
+  "sftCorporateName": [],
+  "saftCorporateName": [ ],
+  "corporateNameTitle": "BR140 .J6",
+  "sftCorporateNameTitle": [ "Quarterly, 1970-" ],
+  "saftCorporateNameTitle": [ "Church history" ],
+  "sftMeetingName": [ ],
+  "saftMeetingName": [ ],
+  "meetingNameTitle": "270.05",
+  "sftMeetingNameTitle": [ "Semiannual, 1950-69" ],
+  "saftMeetingNameTitle": [ "Church history","Broader-earlier - 511"],
+  "uniformTitle": "The Journal of ecclesiastical history",
+  "sftUniformTitle": [ "v. 1-   Apr. 1950-", "History," ],
+  "saftUniformTitle": [ "Periodicals" ],
+  "topicalTerm": "The Journal of ecclesiastical history.",
+  "sftTopicalTerm": [ "note$a note$5", "note$aa note$bb" ],
+  "saftTopicalTerm": [ "Dugmore, C. W." ],
+  "subjectHeadings": "a",
+  "geographicName": "London,",
+  "sftGeographicName": [ "note$a note$5" ],
+  "saftGeographicName": [ "callNumber2" ],
+  "genreTerm": "32 East 57th St., New York, 10022",
+  "sftGenreTerm": [ "note$a note$i note$x note$z note$5" ],
+  "saftGenreTerm": [ "linkText publicNote" ],
+  "broaderTerm": [ "History,", "Broader - 485", "Broader-earlier - 511","Some broader term - 547" ],
+  "narrowerTerm": [ "Church history, 1950-1960", "Later-narrower - 481", "Some narrower term - 548" ],
+  "earlierHeading": [ "note$aa note$bb", "Earlier - 482", "Broader-earlier - 511", "Dugmore, C. W.","Earlier - 562", "Earlier - 582" ],
+  "laterHeading": [ "Later-narrower - 481", "Periodicals", "Later - 580" ],
+  "sftTerm": [ "v. 25 cm.", "Quarterly, 1970-", "Semiannual, 1950-69", "v. 1-   Apr. 1950-", "Sft: 448", "note$a note$5", "note$a note$5", "note$a note$i note$x note$z note$5", "Sft - 462", "Sft - 485"],
+  "saftTerm": [ "Editor:   C. W. Dugmore.","Church history","Church history", "callNumber2","linkText publicNote", "Saft - 581", "Saft - 582", "Saft - 585" ],
+  "identifiers": [
+    {
+      "value": "1000649",
+      "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+    },
+    {
+      "value": "n   58020553",
+      "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+    },
+    {
+      "value": "0022-0469",
+      "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+    },
+    {
+      "value": "(CStRLIN)NYCX1604275S",
+      "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
+    }
+  ],
+  "notes": [ ]
+}

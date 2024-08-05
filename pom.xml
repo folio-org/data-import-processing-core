@@ -3,7 +3,7 @@
 
   <groupId>org.folio</groupId>
   <artifactId>data-import-processing-core</artifactId>
-  <version>4.3.0-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>jar</packaging>
   <name>data-import-processing-core</name>
   <organization>
@@ -19,6 +19,7 @@
   </licenses>
 
   <properties>
+    <revision>4.3.0-SNAPSHOT</revision>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <commons.lang.version>2.6</commons.lang.version>
     <logger.version>2.0.6</logger.version>
@@ -32,6 +33,7 @@
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
     <sonar.exclusions>**/schemas/*</sonar.exclusions>
+    <authority.source.path>${basedir}/ramls/authority.json</authority.source.path>
   </properties>
 
   <repositories>
@@ -156,6 +158,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>5.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <version>5.9.2</version>
@@ -270,7 +278,7 @@
                 <path>${basedir}/ramls/event.json</path>
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/holdings.json</path>
-                <path>${basedir}/ramls/authority.json</path>
+                <path>${authority.source.path}</path>
                 <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
                 <path>${basedir}/ramls/settings/classificationtypes.json</path>
                 <path>${basedir}/ramls/settings/contributornametypes.json</path>
@@ -378,9 +386,18 @@
               io.vertx.core.logging.Log4j2LogDelegateFactory
             </vertx.logger-delegate-factory-class-name>
           </systemPropertyVariables>
+          <excludes>
+            <exclude>**/AuthorityExtendedMappingTest.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 
   <distributionManagement>
@@ -399,4 +416,34 @@
       <layout>default</layout>
     </snapshotRepository>
   </distributionManagement>
+
+  <profiles>
+    <profile>
+      <id>asa-extended</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <revision>4.3.0-SNAPSHOT-ASA-EXTENDED</revision>
+        <profile.active>asa-extended</profile.active>
+        <authority.source.path>${basedir}/ramls/authorityExtended.json</authority.source.path>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/AuthorityMappingTest.java</exclude>
+              </excludes>
+              <systemPropertyVariables>
+                <profile.active>asa-extended</profile.active>
+              </systemPropertyVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
