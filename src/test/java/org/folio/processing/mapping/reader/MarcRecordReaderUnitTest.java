@@ -539,6 +539,70 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
+  public void shouldLeftAnEmptyIfRelationShipIdIsInvalid() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
+    eventPayload.setContext(context);
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext);
+
+
+    String uuid = "UUID";
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put(uuid, String.format("Resource (%s)", uuid));
+
+    List<MappingRule> listRules = new ArrayList<>();
+
+    listRules.add(new MappingRule()
+      .withName("uri")
+      .withPath("holdings.electronicAccess[].uri")
+      .withEnabled("true")
+      .withValue("856$u")
+      .withAcceptedValues(acceptedValues));
+    listRules.add(new MappingRule()
+      .withName("relationshipId")
+      .withPath("holdings.electronicAccess[].relationshipId")
+      .withEnabled("true")
+      .withValue("\"Resourcce\"")
+      .withAcceptedValues(acceptedValues));
+    listRules.add(new MappingRule()
+      .withName("linkText")
+      .withPath("holdings.electronicAccess[].linkText")
+      .withEnabled("true")
+      .withValue("856$z")
+      .withAcceptedValues(acceptedValues));
+
+    Value value = reader.read(new MappingRule()
+      .withName("electronicAccess")
+      .withPath("holdings")
+      .withRepeatableFieldAction(EXTEND_EXISTING)
+      .withAcceptedValues(acceptedValues)
+      .withSubfields(singletonList(new RepeatableSubfieldMapping()
+        .withOrder(0)
+        .withPath("holdings.electronicAccess[]")
+        .withFields(listRules))));
+
+    assertNotNull(value);
+    assertEquals(ValueType.REPEATABLE, value.getType());
+    assertEquals("holdings", ((RepeatableFieldValue) value).getRootPath());
+    assertEquals(EXTEND_EXISTING, ((RepeatableFieldValue) value).getRepeatableFieldAction());
+
+    Map<String, Value> object1 = new HashMap<>();
+    object1.put("holdings.electronicAccess[].uri", StringValue.of("https://fod.infobase.com"));
+    object1.put("holdings.electronicAccess[].relationshipId", StringValue.of("Resourcce"));
+    object1.put("holdings.electronicAccess[].linkText", StringValue.of("image"));
+
+    Map<String, Value> object2 = new HashMap<>();
+    object2.put("holdings.electronicAccess[].uri", StringValue.of("https://cfvod.kaltura.com"));
+    object2.put("holdings.electronicAccess[].relationshipId", StringValue.of("Resourcce"));
+    object2.put("holdings.electronicAccess[].linkText", StringValue.of("films collection"));
+
+    assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "holdings")), JsonObject.mapFrom(value));
+  }
+
+  @Test
   public void shouldReadRepeatableFieldWithAcceptedValues() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();

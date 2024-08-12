@@ -1,6 +1,8 @@
 ## 2024-xx-xx v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
 * [MODSOURMAN-1120](https://folio-org.atlassian.net/browse/MODSOURMAN-1120) Update default mapping to include mapping for Cancelled LCCN
+* [MODDICORE-406](https://folio-org.atlassian.net/browse/MODDICORE-406) Relationship ID incorrect mapping
+
 
 ## 2024-03-18 v4.2.0
 * [MODDICORE-398](https://issues.folio.org/browse/MODDICORE-398) Update RMB v35.2.0, Vertx 4.5.4
