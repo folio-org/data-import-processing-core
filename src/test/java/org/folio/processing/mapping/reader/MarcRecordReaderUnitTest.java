@@ -494,23 +494,31 @@ public class MarcRecordReaderUnitTest {
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
+
+    String uuid = "f5d0068e-6272-458e-8a81-b85e7b9a14aa";
+    HashMap<String, String> acceptedValues = new HashMap<>();
+    acceptedValues.put(uuid, String.format("Resource (%s)", uuid));
+
     List<MappingRule> listRules = new ArrayList<>();
 
     listRules.add(new MappingRule()
       .withName("uri")
       .withPath("holdings.electronicAccess[].uri")
       .withEnabled("true")
-      .withValue("856$u"));
+      .withValue("856$u")
+      .withAcceptedValues(acceptedValues));
     listRules.add(new MappingRule()
       .withName("relationshipId")
       .withPath("holdings.electronicAccess[].relationshipId")
       .withEnabled("true")
-      .withValue("\"f5d0068e-6272-458e-8a81-b85e7b9a14aa\""));
+      .withValue("\"f5d0068e-6272-458e-8a81-b85e7b9a14aa\"")
+      .withAcceptedValues(acceptedValues));
     listRules.add(new MappingRule()
       .withName("linkText")
       .withPath("holdings.electronicAccess[].linkText")
       .withEnabled("true")
-      .withValue("856$z"));
+      .withValue("856$z")
+      .withAcceptedValues(acceptedValues));
 
     Value value = reader.read(new MappingRule()
       .withName("electronicAccess")
