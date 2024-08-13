@@ -15,6 +15,7 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.record.marc.MarcBibReaderFactory;
 import org.folio.processing.value.BooleanValue;
 import org.folio.processing.value.ListValue;
+import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
@@ -539,7 +540,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldLeftAnEmptyIfRelationShipIdIsInvalid() throws IOException {
+  public void shouldLeftAnEmptyValueIfRelationShipIdIsInvalid() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -591,12 +592,12 @@ public class MarcRecordReaderUnitTest {
 
     Map<String, Value> object1 = new HashMap<>();
     object1.put("holdings.electronicAccess[].uri", StringValue.of("https://fod.infobase.com"));
-    object1.put("holdings.electronicAccess[].relationshipId", StringValue.of("Resourcce"));
+    object1.put("holdings.electronicAccess[].relationshipId", MissingValue.getInstance());
     object1.put("holdings.electronicAccess[].linkText", StringValue.of("image"));
 
     Map<String, Value> object2 = new HashMap<>();
     object2.put("holdings.electronicAccess[].uri", StringValue.of("https://cfvod.kaltura.com"));
-    object2.put("holdings.electronicAccess[].relationshipId", StringValue.of("Resourcce"));
+    object2.put("holdings.electronicAccess[].relationshipId", MissingValue.getInstance());
     object2.put("holdings.electronicAccess[].linkText", StringValue.of("films collection"));
 
     assertEquals(JsonObject.mapFrom(RepeatableFieldValue.of(Arrays.asList(object1, object2), EXTEND_EXISTING, "holdings")), JsonObject.mapFrom(value));
