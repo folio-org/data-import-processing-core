@@ -54,10 +54,6 @@ public final class EventManager {
   private EventManager() {
   }
 
-  static List<EventPublisher> getEventPublishers() {
-    return Collections.unmodifiableList(eventPublisher);
-  }
-
   /**
    * Handles the given payload of event.
    * If there are handlers found to handle event then the EventManager calls EventProcessor passing event payload.
@@ -218,15 +214,6 @@ public final class EventManager {
    * @param vertx       - vertx instance
    */
   public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
-    eventPublisher.forEach(p -> {
-      if(p instanceof KafkaEventPublisher publisher) {
-        try {
-          publisher.close();
-        } catch (Exception e) {
-          LOGGER.error(e.getMessage(), e);
-        }
-      }
-    });
     eventPublisher.clear();
     eventPublisher.add(new KafkaEventPublisher(kafkaConfig, vertx, maxDistributionNum));
   }
