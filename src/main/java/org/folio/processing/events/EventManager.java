@@ -159,7 +159,11 @@ public final class EventManager {
         .flatMap(mappingParent -> findParent(mappingParent.getId(), jobProfileSnapshot)
           .flatMap(actionParent -> getNextChildProfile(mappingParent, actionParent)
             .or(() -> findParent(actionParent.getId(), jobProfileSnapshot)
-              .flatMap(matchParent -> getNextChildProfile(actionParent, matchParent)))));
+              .flatMap(matchParent -> getNextChildProfile(actionParent, matchParent)
+                .or(() -> findParent(matchParent.getId(), jobProfileSnapshot)
+                  .flatMap(parentMatchParent -> getNextChildProfile(matchParent, parentMatchParent)))
+              )
+            )));
     }
     if (currentNode.getContentType() == ACTION_PROFILE) {
       if (isNotEmpty(currentNode.getChildSnapshotWrappers())) {
