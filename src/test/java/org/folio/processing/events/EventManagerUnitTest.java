@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static org.folio.ActionProfile.Action.CREATE;
 import static org.folio.ActionProfile.Action.UPDATE;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
@@ -384,6 +385,148 @@ public class EventManagerUnitTest extends AbstractRestTest {
     });
   }
 
+  @Test
+  public void shouldHandleAndSwitchNodes(TestContext testContext) {
+    Async async = testContext.async();
+    // given
+    EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
+    Mockito.doAnswer(invocationOnMock -> {
+
+      DataImportEventPayload payload = invocationOnMock.getArgument(0);
+      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().get(0));
+      return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_UPDATED.value()));
+
+    }).when(updateInstanceHandler).handle(any(DataImportEventPayload.class));
+    Mockito.when(updateInstanceHandler.isEligible(any(DataImportEventPayload.class))).thenReturn(true);
+
+    EventManager.registerEventHandler(updateInstanceHandler);
+
+    // update instance
+    ProfileSnapshotWrapper instanceUpdateMappingWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MAPPING_PROFILE)
+      .withContent(JsonObject.mapFrom(new MappingProfile()
+        .withName("instanceUpdateMappingWrapper")
+        .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+        .withExistingRecordType(INSTANCE)));
+
+    ProfileSnapshotWrapper instanceUpdateActionWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(MATCH)
+      .withOrder(0)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(UPDATE)))
+      .withChildSnapshotWrappers(Collections.singletonList(instanceUpdateMappingWrapper));
+
+    ProfileSnapshotWrapper instanceUpdateActionWrapper2 = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(MATCH)
+      .withOrder(0)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceUpdateActionWrapper2").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(UPDATE)))
+      .withChildSnapshotWrappers(Collections.singletonList(instanceUpdateMappingWrapper));
+
+    // create instance
+    ProfileSnapshotWrapper instanceCreateMappingWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MAPPING_PROFILE)
+      .withContent(JsonObject.mapFrom(new MappingProfile().withName("instanceCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+
+    ProfileSnapshotWrapper instanceCreateActionWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(NON_MATCH)
+      .withOrder(0)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(CREATE)))
+      .withChildSnapshotWrappers(Collections.singletonList(instanceCreateMappingWrapper));
+
+    ProfileSnapshotWrapper instanceChildMatchWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MATCH_PROFILE)
+      .withReactTo(NON_MATCH)
+      .withContent(JsonObject.mapFrom(new MatchProfile().withName("instanceChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
+      .withChildSnapshotWrappers(List.of(instanceUpdateActionWrapper2, instanceCreateActionWrapper));
+
+    ProfileSnapshotWrapper instanceParentMatchWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MATCH_PROFILE)
+      .withContent(JsonObject.mapFrom(new MatchProfile().withName("instanceParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)))
+      .withChildSnapshotWrappers(List.of(instanceChildMatchWrapper, instanceUpdateActionWrapper));
+
+    // update holdings
+    ProfileSnapshotWrapper holdingsUpdateMappingWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MAPPING_PROFILE)
+      .withContent(JsonObject.mapFrom(new MappingProfile().withName("holdingsUpdateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+
+    ProfileSnapshotWrapper holdingsUpdateActionWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(MATCH)
+      .withOrder(0)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(new ActionProfile().withName("holdingsUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS).withAction(UPDATE)))
+      .withChildSnapshotWrappers(Collections.singletonList(holdingsUpdateMappingWrapper));
+
+    // create holdings
+    ProfileSnapshotWrapper holdingsCreateMappingWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(0)
+      .withContentType(MAPPING_PROFILE)
+      .withContent(JsonObject.mapFrom(new MappingProfile().withName("holdingsCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+
+    ProfileSnapshotWrapper holdingsCreateActionWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(NON_MATCH)
+      .withOrder(0)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(new ActionProfile().withName("holdingsCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS).withAction(CREATE)))
+      .withChildSnapshotWrappers(Collections.singletonList(holdingsCreateMappingWrapper));
+
+    ProfileSnapshotWrapper holdingsChildMatchWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(1)
+      .withContentType(MATCH_PROFILE)
+      .withReactTo(NON_MATCH)
+      .withContent(JsonObject.mapFrom(new MatchProfile().withName("holdingsChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
+      .withChildSnapshotWrappers(List.of(holdingsUpdateActionWrapper, holdingsCreateActionWrapper));
+
+    ProfileSnapshotWrapper holdingsParentMatchWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(1)
+      .withContentType(MATCH_PROFILE)
+      .withContent(JsonObject.mapFrom(new MatchProfile().withName("holdingsParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
+      .withChildSnapshotWrappers(List.of(holdingsChildMatchWrapper, holdingsUpdateActionWrapper));
+
+    ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withContentType(JOB_PROFILE)
+      .withContent(JsonObject.mapFrom(new JobProfile().withName("jobProfileWrapper")))
+      .withChildSnapshotWrappers(List.of(instanceParentMatchWrapper, holdingsParentMatchWrapper));
+
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withEventType(DI_INVENTORY_INSTANCE_UPDATED.value())
+      .withTenant(TENANT_ID)
+      .withOkapiUrl(OKAPI_URL)
+      .withToken(TOKEN)
+      .withContext(new HashMap<>())
+      .withCurrentNode(instanceUpdateActionWrapper2);
+
+    // when
+    EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
+      // then
+      testContext.assertNull(throwable);
+      testContext.assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
+      testContext.assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+      async.complete();
+    });
+  }
+
+  //
   @Test
   public void shouldHandleAndSetToCurrentNodeMatchWrapper2(TestContext testContext) {
     Async async = testContext.async();
