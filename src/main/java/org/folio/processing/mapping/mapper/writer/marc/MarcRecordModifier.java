@@ -29,6 +29,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import java.util.stream.Stream;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +66,7 @@ public class MarcRecordModifier {
   private static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
   private static final String PAYLOAD_HAS_NO_DATA_MSG =
     "Cannot initialize MarcRecordModifier - event payload context does not contain required data";
-  private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[] {'0', '1', '2', '3', '9'};
+  private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
   private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
     Set.of("001", "002", "003", "004", "005", "008", "009");
   public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
@@ -89,6 +90,8 @@ public class MarcRecordModifier {
   private List<MarcFieldProtectionSetting> applicableProtectionSettings = new ArrayList<>();
   private DataField fieldToRemove = null;
   private List<DataField> updatedFields = new ArrayList<>();
+  private List<DataField> updatedFieldsForDeduplication = new ArrayList<>();
+
   private EntityType marcType;
 
   public void initialize(DataImportEventPayload eventPayload, MappingParameters mappingParameters,
@@ -169,7 +172,7 @@ public class MarcRecordModifier {
    * Non-repeatable fields: 001, 002, 003, 004, 005, 008, 009, 010, 018, 036, 038, 040, 042, 044, 045, 066, 073,
    * all 1xx fields, 240, 243, 245, 254, 256, 263, 306, 357, 378, 384, 507, 514, 663, 664, 665, 666, 675, 682, 788,
    * 841, 842, 844, 882, and 999 with indicators = ff. Repeatable fields: all other MARC fields.
-   *
+   * <p>
    * Record update logic is described by following conditions:
    * if field of {@code recordToUpdate} is not protected and there is incoming field with same tag, then delete
    * field from target record and add incoming field with from the {@code srcRecord};
@@ -747,13 +750,21 @@ public class MarcRecordModifier {
       clearDataField(fieldReplacement);
     }
 
-    if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
+    if (dataFieldsContain(updatedFieldsForDeduplication, fieldReplacement)) {
       addNewUpdatedField(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
+    } else {
+      if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
+        addNewUpdatedField(fieldReplacement);
+        addDataFieldInNumericalOrder(fieldReplacement);
+      }
     }
+
+
   }
 
   protected void addNewUpdatedField(DataField fieldReplacement) {
+    updatedFieldsForDeduplication.add(fieldReplacement);
     updatedFields.add(fieldReplacement);
   }
 
@@ -829,6 +840,8 @@ public class MarcRecordModifier {
       }
     }
     updatedFields = new ArrayList<>();
+    updatedFieldsForDeduplication = new ArrayList<>();
+
     marcRecordToChange.getDataFields().removeAll(tmpFields);
   }
 
@@ -861,7 +874,7 @@ public class MarcRecordModifier {
 
   private boolean isControlFieldsContains(List<ControlField> controlFields, ControlField controlField) {
     return controlFields.stream().anyMatch(field ->
-        field.getTag().equals(controlField.getTag())
+      field.getTag().equals(controlField.getTag())
         && field.getData().equals(controlField.getData()));
   }
 
