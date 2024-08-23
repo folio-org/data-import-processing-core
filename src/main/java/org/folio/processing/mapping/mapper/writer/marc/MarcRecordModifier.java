@@ -90,7 +90,7 @@ public class MarcRecordModifier {
   private List<MarcFieldProtectionSetting> applicableProtectionSettings = new ArrayList<>();
   private DataField fieldToRemove = null;
   private List<DataField> updatedFields = new ArrayList<>();
-  private List<DataField> updatedFieldsForDeduplication = new ArrayList<>();
+  private List<DataField> processedFields = new ArrayList<>();
 
   private EntityType marcType;
 
@@ -729,28 +729,45 @@ public class MarcRecordModifier {
     List<DataField> dataFields = marcRecordToChange.getDataFields();
     List<DataField> tmpFields = new ArrayList<>();
 
-    if (fieldToRemove == null || !fieldMatches(fieldReplacement, fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+    if (shouldRemoveField(fieldReplacement, fieldTag, ind1, ind2, subfieldCode)) {
       fieldToRemove = fieldReplacement;
       for (DataField fieldToUpdate : dataFields) {
         if (fieldMatches(fieldReplacement, fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
-          if (isNotProtected(fieldToUpdate)) {
-            ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
-          } else {
-            if (isNonRepeatableField(fieldToUpdate)) {
-              ifNewDataShouldBeAdded = false;
-            }
-            LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
-            doAdditionalProtectedFieldAction(fieldToUpdate);
-          }
+          ifNewDataShouldBeAdded = updateFieldIfNeeded(fieldReplacement, subfieldCode, fieldToUpdate, ifNewDataShouldBeAdded, tmpFields);
         }
       }
-      tmpFields.removeAll(updatedFields);
-      dataFields.removeAll(tmpFields);
+      cleanUpFields(tmpFields, dataFields);
     } else {
       clearDataField(fieldReplacement);
     }
 
-    if (dataFieldsContain(updatedFieldsForDeduplication, fieldReplacement)) {
+    executeDeduplicationIfNeeded(fieldReplacement, ifNewDataShouldBeAdded);
+  }
+
+  private boolean updateFieldIfNeeded(DataField fieldReplacement, String subfieldCode, DataField fieldToUpdate, boolean ifNewDataShouldBeAdded, List<DataField> tmpFields) {
+    if (isNotProtected(fieldToUpdate)) {
+      ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
+    } else {
+      if (isNonRepeatableField(fieldToUpdate)) {
+        ifNewDataShouldBeAdded = false;
+      }
+      LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
+      doAdditionalProtectedFieldAction(fieldToUpdate);
+    }
+    return ifNewDataShouldBeAdded;
+  }
+
+  private boolean shouldRemoveField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
+    return fieldToRemove == null || !fieldMatches(fieldReplacement, fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0));
+  }
+
+  private void cleanUpFields(List<DataField> tmpFields, List<DataField> dataFields) {
+    tmpFields.removeAll(updatedFields);
+    dataFields.removeAll(tmpFields);
+  }
+
+  private void executeDeduplicationIfNeeded(DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
+    if (dataFieldsContain(processedFields, fieldReplacement)) {
       addNewUpdatedField(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
     } else {
@@ -759,12 +776,10 @@ public class MarcRecordModifier {
         addDataFieldInNumericalOrder(fieldReplacement);
       }
     }
-
-
   }
 
   protected void addNewUpdatedField(DataField fieldReplacement) {
-    updatedFieldsForDeduplication.add(fieldReplacement);
+    processedFields.add(fieldReplacement);
     updatedFields.add(fieldReplacement);
   }
 
@@ -840,7 +855,7 @@ public class MarcRecordModifier {
       }
     }
     updatedFields = new ArrayList<>();
-    updatedFieldsForDeduplication = new ArrayList<>();
+    processedFields = new ArrayList<>();
 
     marcRecordToChange.getDataFields().removeAll(tmpFields);
   }
