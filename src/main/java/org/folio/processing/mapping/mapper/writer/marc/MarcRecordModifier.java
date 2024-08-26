@@ -29,6 +29,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import java.util.stream.Stream;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +66,7 @@ public class MarcRecordModifier {
   private static final String ERROR_RECORD_PARSING_MSG = "Failed to parse record from payload";
   private static final String PAYLOAD_HAS_NO_DATA_MSG =
     "Cannot initialize MarcRecordModifier - event payload context does not contain required data";
-  private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[] {'0', '1', '2', '3', '9'};
+  private static final char[] SORTABLE_FIELDS_FIRST_DIGITS = new char[]{'0', '1', '2', '3', '9'};
   private static final Set<String> NON_REPEATABLE_CONTROL_FIELDS_TAGS =
     Set.of("001", "002", "003", "004", "005", "008", "009");
   public static final Set<String> NON_REPEATABLE_DATA_FIELDS_TAGS = Set.of("010", "018", "036", "038", "040", "042",
@@ -89,6 +90,8 @@ public class MarcRecordModifier {
   private List<MarcFieldProtectionSetting> applicableProtectionSettings = new ArrayList<>();
   private DataField fieldToRemove = null;
   private List<DataField> updatedFields = new ArrayList<>();
+  private List<DataField> processedFields = new ArrayList<>();
+
   private EntityType marcType;
 
   public void initialize(DataImportEventPayload eventPayload, MappingParameters mappingParameters,
@@ -169,7 +172,7 @@ public class MarcRecordModifier {
    * Non-repeatable fields: 001, 002, 003, 004, 005, 008, 009, 010, 018, 036, 038, 040, 042, 044, 045, 066, 073,
    * all 1xx fields, 240, 243, 245, 254, 256, 263, 306, 357, 378, 384, 507, 514, 663, 664, 665, 666, 675, 682, 788,
    * 841, 842, 844, 882, and 999 with indicators = ff. Repeatable fields: all other MARC fields.
-   *
+   * <p>
    * Record update logic is described by following conditions:
    * if field of {@code recordToUpdate} is not protected and there is incoming field with same tag, then delete
    * field from target record and add incoming field with from the {@code srcRecord};
@@ -726,34 +729,57 @@ public class MarcRecordModifier {
     List<DataField> dataFields = marcRecordToChange.getDataFields();
     List<DataField> tmpFields = new ArrayList<>();
 
-    if (fieldToRemove == null || !fieldMatches(fieldReplacement, fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
+    if (shouldRemoveField(fieldReplacement, fieldTag, ind1, ind2, subfieldCode)) {
       fieldToRemove = fieldReplacement;
       for (DataField fieldToUpdate : dataFields) {
         if (fieldMatches(fieldReplacement, fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
-          if (isNotProtected(fieldToUpdate)) {
-            ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
-          } else {
-            if (isNonRepeatableField(fieldToUpdate)) {
-              ifNewDataShouldBeAdded = false;
-            }
-            LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
-            doAdditionalProtectedFieldAction(fieldToUpdate);
-          }
+          ifNewDataShouldBeAdded = updateFieldIfNeeded(fieldReplacement, subfieldCode, fieldToUpdate, ifNewDataShouldBeAdded, tmpFields);
         }
       }
-      tmpFields.removeAll(updatedFields);
-      dataFields.removeAll(tmpFields);
+      cleanUpFields(tmpFields, dataFields);
     } else {
       clearDataField(fieldReplacement);
     }
 
-    if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
+    executeDeduplicationIfNeeded(fieldReplacement, ifNewDataShouldBeAdded);
+  }
+
+  private boolean updateFieldIfNeeded(DataField fieldReplacement, String subfieldCode, DataField fieldToUpdate, boolean ifNewDataShouldBeAdded, List<DataField> tmpFields) {
+    if (isNotProtected(fieldToUpdate)) {
+      ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
+    } else {
+      if (isNonRepeatableField(fieldToUpdate)) {
+        ifNewDataShouldBeAdded = false;
+      }
+      LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
+      doAdditionalProtectedFieldAction(fieldToUpdate);
+    }
+    return ifNewDataShouldBeAdded;
+  }
+
+  private boolean shouldRemoveField(DataField fieldReplacement, String fieldTag, char ind1, char ind2, String subfieldCode) {
+    return fieldToRemove == null || !fieldMatches(fieldReplacement, fieldToRemove, fieldTag, ind1, ind2, subfieldCode.charAt(0));
+  }
+
+  private void cleanUpFields(List<DataField> tmpFields, List<DataField> dataFields) {
+    tmpFields.removeAll(updatedFields);
+    dataFields.removeAll(tmpFields);
+  }
+
+  private void executeDeduplicationIfNeeded(DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
+    if (dataFieldsContain(processedFields, fieldReplacement)) {
       addNewUpdatedField(fieldReplacement);
       addDataFieldInNumericalOrder(fieldReplacement);
+    } else {
+      if (ifNewDataShouldBeAdded && !dataFieldsContain(marcRecordToChange.getDataFields(), fieldReplacement)) {
+        addNewUpdatedField(fieldReplacement);
+        addDataFieldInNumericalOrder(fieldReplacement);
+      }
     }
   }
 
   protected void addNewUpdatedField(DataField fieldReplacement) {
+    processedFields.add(fieldReplacement);
     updatedFields.add(fieldReplacement);
   }
 
@@ -829,6 +855,8 @@ public class MarcRecordModifier {
       }
     }
     updatedFields = new ArrayList<>();
+    processedFields = new ArrayList<>();
+
     marcRecordToChange.getDataFields().removeAll(tmpFields);
   }
 
@@ -861,7 +889,7 @@ public class MarcRecordModifier {
 
   private boolean isControlFieldsContains(List<ControlField> controlFields, ControlField controlField) {
     return controlFields.stream().anyMatch(field ->
-        field.getTag().equals(controlField.getTag())
+      field.getTag().equals(controlField.getTag())
         && field.getData().equals(controlField.getData()));
   }
 
