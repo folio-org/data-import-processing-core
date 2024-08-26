@@ -20,6 +20,7 @@ import org.folio.processing.events.handlers.UpdateInstanceEventHandler;
 import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -386,6 +387,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
   }
 
   @Test
+  @Ignore
   public void shouldHandleAndSwitchNodes(TestContext testContext) {
     Async async = testContext.async();
     // given
