@@ -2,6 +2,7 @@
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
 * [MODSOURMAN-1120](https://folio-org.atlassian.net/browse/MODSOURMAN-1120) Update default mapping to include mapping for Cancelled LCCN
 * [MODDICORE-406](https://folio-org.atlassian.net/browse/MODDICORE-406) Relationship ID incorrect mapping
+* [MODINV-709](https://folio-org.atlassian.net/browse/MODINV-709) Job profile with POL/VRN match cascade does not finish properly
 * [MODDICORE-408](https://folio-org.atlassian.net/browse/MODDICORE-408) Data Import removes duplicate 856s in SRS
 
 
