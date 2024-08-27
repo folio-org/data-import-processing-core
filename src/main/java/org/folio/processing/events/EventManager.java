@@ -223,6 +223,7 @@ public final class EventManager {
    */
   public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
     eventPublisher.forEach(p -> {
+      LOGGER.info("registerKafkaEventPublisher {}", p.toString());
       if(p instanceof KafkaEventPublisher publisher) {
         try {
           publisher.close();
