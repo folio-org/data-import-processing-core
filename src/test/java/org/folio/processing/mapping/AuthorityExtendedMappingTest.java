@@ -7,13 +7,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import org.folio.Authority;
-import org.folio.processing.configuration.ProfileManager;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -31,13 +29,7 @@ public class AuthorityExtendedMappingTest {
   private static final String PARSED_AUTHORITY_RECORD_EXTENDED =
     "src/test/resources/org/folio/processing/mapping/authority/parsedRecordExtended.json";
 
-  private final RecordMapper<Authority> mapper = RecordMapperBuilder.buildMapper("MARC_AUTHORITY");
-
-  @Before
-  public void setUp() {
-    System.setProperty("profile.active", "asa-extended");
-    ProfileManager.reload();
-  }
+  private final RecordMapper<Authority> mapper = RecordMapperBuilder.buildMapper("MARC_AUTHORITY_EXTENDED");
 
   @Test
   public void testMarcToAuthorityExtendedMapping() throws IOException {

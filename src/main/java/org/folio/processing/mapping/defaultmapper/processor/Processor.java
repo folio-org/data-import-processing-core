@@ -7,8 +7,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.folio.Authority;
-import org.folio.processing.configuration.ProfileManager;
+import org.folio.AuthorityExtended;
 import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
@@ -161,7 +160,7 @@ public class Processor<T> {
 
   private JsonArray getDataFieldMapping(DataField dataField) {
     JsonArray mappingArray = mappingRules.getJsonArray(dataField.getTag());
-    if (entity instanceof Authority && isAuthorityExtendedProfileActive()) {
+    if (entity instanceof AuthorityExtended) {
       return addExtraMappingsForAuthorities(dataField, mappingArray);
     }
     return mappingArray;
@@ -857,7 +856,7 @@ public class Processor<T> {
     return FIELD_CACHE.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>())
       .computeIfAbsent(fieldName, k -> {
         try {
-          Field field = clazz.getDeclaredField(fieldName);
+          Field field = LoaderHelper.getField(clazz, fieldName);
           field.setAccessible(true);
           return field;
         } catch (NoSuchFieldException e) {
@@ -934,36 +933,24 @@ public class Processor<T> {
     return subFieldsSet.isEmpty() || subFieldsSet.contains(Character.toString(subfield.getCode()));
   }
 
-  private boolean isAuthorityExtendedProfileActive() {
-    return "asa-extended".equals(ProfileManager.getActiveProfile());
-  }
-
   /**
-   * Replaces regular entity mapping by extended one according to the following rules:
+   * Extends regular entity mapping with one according to the following rules:
    * For 4xx and 5xx field additionally to the regular mapping adds the mapping for targets:
    * Broader term,  when the control subfield $w has "g" value
    * Narrower term, when the control subfield $w has "h" value
    * Earlier heading, when the control subfield $w has "a" value
    * Later heading, when the control subfield $w has "b" value
-   * See from tracings term, when $w is not specified or has value other than ["g","h","a","b"] for 4xx fields
-   * See also from tracings term, when $w is not specified or has value other than ["g","h","a","b"] for 5xx fields
    */
   private JsonArray addExtraMappingsForAuthorities(final DataField dataField, final JsonArray regularMapping) {
     boolean is4XXField = dataField.getTag().startsWith("4");
     boolean is5XXField = dataField.getTag().startsWith("5");
-    if (!is4XXField && !is5XXField) {
+    if ((!is4XXField && !is5XXField) || dataField.getSubfield('w') == null) {
       return regularMapping;
     }
     final JsonArray extendedMapping = new JsonArray();
     final List<String> defaultSubFields = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
       "m", "n", "o", "p", "r", "q", "s", "t", "v", "x", "y", "z", "4", "5");
-    List<String> targets;
-    if (dataField.getSubfield('w') == null) {
-      targets = List.of(is4XXField ? "sftTerm" : "saftTerm");
-    }
-    else {
-      targets = retrieveTargetsFromControlSubfield(dataField, is4XXField);
-    }
+    List<String> targets = retrieveTargetsFromControlSubfield(dataField, is4XXField);
     if (regularMapping == null || regularMapping.isEmpty()) {
       targets.forEach(target ->  extendedMapping.add(Map.of(TARGET, target, SUBFIELD, defaultSubFields)));
       return extendedMapping;
@@ -978,20 +965,16 @@ public class Processor<T> {
     List<String> targets = new ArrayList<>();
     String subfieldData = dataField.getSubfield('w').getData();
     if (subfieldData.contains("g")) {
-      targets.add("broaderTerm");
+      targets.add(is4XXField ? "sftBroaderTerm" : "saftBroaderTerm");
     }
     if (subfieldData.contains("h")) {
-      targets.add("narrowerTerm");
+      targets.add(is4XXField ? "sftNarrowerTerm" : "saftNarrowerTerm");
     }
     if (subfieldData.contains("a")) {
-      targets.add("earlierHeading");
+      targets.add(is4XXField ? "sftEarlierHeading" : "saftEarlierHeading");
     }
     if (subfieldData.contains("b")) {
-      targets.add("laterHeading");
-    }
-    if (!subfieldData.contains("a") && !subfieldData.contains("b") && !subfieldData.contains("g")
-      && !subfieldData.contains("h")) {
-      targets.add(is4XXField ? "sftTerm" : "saftTerm");
+      targets.add(is4XXField ? "sftLaterHeading" : "saftLaterHeading");
     }
     return targets;
   }

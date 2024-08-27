@@ -152,16 +152,5 @@ There is an extended Authority Mapping introduced to support advanced references
 * narrower terms (`$wh` tag)
 * earlier headings (`$wa` tag)
 * later headings (`$wb` tag)
-* see from tracing terms (other `$w` tags or missing `$w` tag in 4xx fields)
-* see also from tracing terms (other `$w` tags or missing `$w` tag in 5xx fields)
 
-Including this functionality requires activating "asa-extended" profile.
-
-`mvn clean build -P asa-extended`
-
-To package jar-file with the profile
-
-`mvn package -P asa-extended`
-
-Related jar-file includes SNAPSHOT-ASA-EXTENDED postfix.
-
+To support this functionality `AuthorityExtended` is used together with `MarkToAuthorityExtendedMapper`.
