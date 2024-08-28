@@ -577,6 +577,11 @@ public class MarcRecordModifier {
       fieldReplacement, fieldToUpdate);
   }
 
+  private boolean isFieldShouldBeReordered(String fieldTag, char ind1, char ind2, String subfieldCode, DataField fieldToUpdate) {
+    return fieldMatches(fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0)) && !isNotProtected(fieldToUpdate)
+      && !isNonRepeatableField(fieldToUpdate);
+  }
+
   protected boolean fieldsDeepMatch(List<DataField> fieldReplacements, List<DataField> fieldsToUpdate,
                                     DataField fieldReplacement, DataField fieldToUpdate) {
     return true;
@@ -733,8 +738,11 @@ public class MarcRecordModifier {
     if (shouldRemoveField(fieldReplacement, fieldTag, ind1, ind2, subfieldCode)) {
       fieldToRemove = fieldReplacement;
       for (DataField fieldToUpdate : dataFields) {
+        if (isFieldShouldBeReordered(fieldTag, ind1, ind2, subfieldCode, fieldToUpdate)) {
+          fieldsToReorder.add(fieldToUpdate);
+        }
         if (fieldMatches(fieldReplacement, fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
-          ifNewDataShouldBeAdded = updateFieldIfNeeded(fieldReplacement, subfieldCode, fieldToUpdate, ifNewDataShouldBeAdded, tmpFields, fieldsToReorder);
+          ifNewDataShouldBeAdded = updateFieldIfNeeded(fieldReplacement, subfieldCode, fieldToUpdate, ifNewDataShouldBeAdded, tmpFields);
         }
       }
       cleanUpFields(tmpFields, dataFields);
@@ -746,15 +754,13 @@ public class MarcRecordModifier {
     executeDeduplicationIfNeeded(fieldReplacement, ifNewDataShouldBeAdded);
   }
 
-  private boolean updateFieldIfNeeded(DataField fieldReplacement, String subfieldCode, DataField fieldToUpdate, boolean ifNewDataShouldBeAdded,
-                                      List<DataField> tmpFields, List<DataField> fieldsToReorder) {
+  private boolean updateFieldIfNeeded(DataField fieldReplacement, String subfieldCode, DataField fieldToUpdate,
+                                      boolean ifNewDataShouldBeAdded,  List<DataField> tmpFields) {
     if (isNotProtected(fieldToUpdate)) {
       ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
     } else {
       if (isNonRepeatableField(fieldToUpdate)) {
         ifNewDataShouldBeAdded = false;
-      } else {
-        fieldsToReorder.add(fieldToUpdate);
       }
       LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
       doAdditionalProtectedFieldAction(fieldToUpdate);
