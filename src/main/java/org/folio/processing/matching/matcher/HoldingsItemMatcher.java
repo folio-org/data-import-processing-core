@@ -38,6 +38,8 @@ public class HoldingsItemMatcher extends AbstractMatcher {
         if (throwable == null) {
           String entityType = matchDetail.getExistingRecordType().value();
           String entityAsJsonString = eventPayload.getContext().get(entityType);
+          if (entityAsJsonString == null || entityAsJsonString.isBlank())
+            return;
           String jsonArrayOfEntitiesAsString = getJsonArrayOfEntities(entityAsJsonString);
           eventPayload.getContext().put(entityType, jsonArrayOfEntitiesAsString);
         }
