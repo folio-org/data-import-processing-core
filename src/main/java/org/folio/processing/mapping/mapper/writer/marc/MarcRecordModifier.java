@@ -728,15 +728,17 @@ public class MarcRecordModifier {
 
     List<DataField> dataFields = marcRecordToChange.getDataFields();
     List<DataField> tmpFields = new ArrayList<>();
+    List<DataField> fieldsToReorder = new ArrayList<>();
 
     if (shouldRemoveField(fieldReplacement, fieldTag, ind1, ind2, subfieldCode)) {
       fieldToRemove = fieldReplacement;
       for (DataField fieldToUpdate : dataFields) {
         if (fieldMatches(fieldReplacement, fieldToUpdate, fieldTag, ind1, ind2, subfieldCode.charAt(0))) {
-          ifNewDataShouldBeAdded = updateFieldIfNeeded(fieldReplacement, subfieldCode, fieldToUpdate, ifNewDataShouldBeAdded, tmpFields);
+          ifNewDataShouldBeAdded = updateFieldIfNeeded(fieldReplacement, subfieldCode, fieldToUpdate, ifNewDataShouldBeAdded, tmpFields, fieldsToReorder);
         }
       }
       cleanUpFields(tmpFields, dataFields);
+      reorderFields(fieldsToReorder, dataFields);
     } else {
       clearDataField(fieldReplacement);
     }
@@ -744,12 +746,15 @@ public class MarcRecordModifier {
     executeDeduplicationIfNeeded(fieldReplacement, ifNewDataShouldBeAdded);
   }
 
-  private boolean updateFieldIfNeeded(DataField fieldReplacement, String subfieldCode, DataField fieldToUpdate, boolean ifNewDataShouldBeAdded, List<DataField> tmpFields) {
+  private boolean updateFieldIfNeeded(DataField fieldReplacement, String subfieldCode, DataField fieldToUpdate, boolean ifNewDataShouldBeAdded,
+                                      List<DataField> tmpFields, List<DataField> fieldsToReorder) {
     if (isNotProtected(fieldToUpdate)) {
       ifNewDataShouldBeAdded = updateSubfields(subfieldCode, tmpFields, fieldToUpdate, fieldReplacement, ifNewDataShouldBeAdded);
     } else {
       if (isNonRepeatableField(fieldToUpdate)) {
         ifNewDataShouldBeAdded = false;
+      } else {
+        fieldsToReorder.add(fieldToUpdate);
       }
       LOGGER.info("replaceDataField:: Field {} was not updated, because it is protected", fieldToUpdate);
       doAdditionalProtectedFieldAction(fieldToUpdate);
@@ -764,6 +769,11 @@ public class MarcRecordModifier {
   private void cleanUpFields(List<DataField> tmpFields, List<DataField> dataFields) {
     tmpFields.removeAll(updatedFields);
     dataFields.removeAll(tmpFields);
+  }
+
+  private void reorderFields(List<DataField> fieldsToReorder, List<DataField> dataFields) {
+    dataFields.removeAll(fieldsToReorder);
+    fieldsToReorder.forEach(this::addDataFieldInNumericalOrder);
   }
 
   private void executeDeduplicationIfNeeded(DataField fieldReplacement, boolean ifNewDataShouldBeAdded) {
