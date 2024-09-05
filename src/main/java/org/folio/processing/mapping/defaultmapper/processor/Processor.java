@@ -60,6 +60,8 @@ public class Processor<T> {
   private static final Map<Class<?>, Map<String, Method>> METHOD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Field, ParameterizedType> PARAM_TYPE_CACHE = new ConcurrentHashMap<>();
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
+  private static final List<String> DEFAULT_SUBFIELDS = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i",
+    "j", "k", "l", "m", "n", "o", "p", "r", "q", "s", "t", "v", "x", "y", "z", "4", "5");
 
   private JsonObject mappingRules;
 
@@ -309,7 +311,7 @@ public class Processor<T> {
 
     //push into a set so that we can do a lookup for each subfield in the marc instead
     //of looping over the array
-    Set<String> subFieldsSet = jObj.getJsonArray("subfield").stream()
+    Set<String> subFieldsSet = jObj.getJsonArray(SUBFIELD).stream()
       .filter(o -> o instanceof String)
       .map(o -> (String) o)
       .collect(Collectors.toCollection(HashSet::new));
@@ -948,11 +950,9 @@ public class Processor<T> {
       return regularMapping;
     }
     final JsonArray extendedMapping = new JsonArray();
-    final List<String> defaultSubFields = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l",
-      "m", "n", "o", "p", "r", "q", "s", "t", "v", "x", "y", "z", "4", "5");
     List<String> targets = retrieveTargetsFromControlSubfield(dataField, is4XXField);
     if (regularMapping == null || regularMapping.isEmpty()) {
-      targets.forEach(target ->  extendedMapping.add(Map.of(TARGET, target, SUBFIELD, defaultSubFields)));
+      targets.forEach(target ->  extendedMapping.add(Map.of(TARGET, target, SUBFIELD, DEFAULT_SUBFIELDS)));
       return extendedMapping;
     }
     List<LinkedHashMap<String, Object>> mappingList = regularMapping.getList();
