@@ -4,6 +4,7 @@
 * [MODDICORE-406](https://folio-org.atlassian.net/browse/MODDICORE-406) Relationship ID incorrect mapping
 * [MODINV-709](https://folio-org.atlassian.net/browse/MODINV-709) Job profile with POL/VRN match cascade does not finish properly
 * [MODDICORE-408](https://folio-org.atlassian.net/browse/MODDICORE-408) Data Import removes duplicate 856s in SRS
+* [MODINV-1071](https://folio-org.atlassian.net/browse/MODINV-1071) Extend Authority with Additional fields
 
 
 ## 2024-03-18 v4.2.0
