@@ -271,7 +271,6 @@
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/holdings.json</path>
                 <path>${basedir}/ramls/authority.json</path>
-                <path>${basedir}/ramls/authorityExtended.json</path>
                 <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
                 <path>${basedir}/ramls/settings/classificationtypes.json</path>
                 <path>${basedir}/ramls/settings/contributornametypes.json</path>
@@ -300,6 +299,8 @@
                 <path>${basedir}/ramls/settings/authoritysourcefiles.json</path>
                 <path>${basedir}/ramls/settings/organization.json</path>
                 <path>${basedir}/ramls/settings/organization_collection.json</path>
+                <path>${basedir}/ramls/settings/subjectSources.json</path>
+                <path>${basedir}/ramls/settings/subjectTypes.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>
