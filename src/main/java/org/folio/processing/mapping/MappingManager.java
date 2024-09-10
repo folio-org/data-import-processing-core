@@ -42,6 +42,7 @@ public final class MappingManager {
   public static final String VENDOR_ID = "vendor";
   private static final String MATERIAL_SUPPLIER = "materialSupplier";
   private static final String ACCESS_PROVIDER = "accessProvider";
+  private static final String DONOR_ORGANIZATION_IDS = "donorOrganizationIds";
 
   private MappingManager() {
   }
@@ -112,11 +113,14 @@ public final class MappingManager {
   private static void updateOrganizationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
     if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
       HashMap<String, String> organizations = getOrganizationsFromMappingParameters(mappingParameters);
+      HashMap<String, String> donorOrganizations = getDonorOrganizationsFromMappingParameters(mappingParameters);
       if (!organizations.isEmpty()) {
         for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
           if ((mappingRule.getName() != null) && (mappingRule.getName().equals(VENDOR_ID)
             || mappingRule.getName().equals(MATERIAL_SUPPLIER) || mappingRule.getName().equals(ACCESS_PROVIDER))) {
             mappingRule.setAcceptedValues(organizations);
+          } else if (mappingRule.getName().equals(DONOR_ORGANIZATION_IDS)) {
+            populateDonorOrganizations(mappingRule, donorOrganizations);
           }
         }
       }
@@ -148,6 +152,31 @@ public final class MappingManager {
       organizations.put(organization.getId(), String.valueOf(organizationValue));
     }
     return organizations;
+  }
+
+  private static HashMap<String, String> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
+    HashMap<String, String> organizations = new HashMap<>();
+    if (mappingParameters.getOrganizations() == null) {
+      return organizations;
+    }
+
+    for (Organization organization : mappingParameters.getOrganizations()) {
+      if (Boolean.TRUE.equals(organization.getIsDonor())) {
+        StringBuilder organizationValue = new StringBuilder()
+          .append(organization.getCode())
+          .append(" (")
+          .append(organization.getId())
+          .append(")");
+        organizations.put(organization.getId(), organizationValue.toString());
+      }
+    }
+    return organizations;
+  }
+
+  private static void populateDonorOrganizations(MappingRule mappingRule, HashMap<String, String> donorOrganizations) {
+    mappingRule.getSubfields().stream()
+      .flatMap(subfieldMapping -> subfieldMapping.getFields().stream())
+      .forEach(rule -> rule.setAcceptedValues(donorOrganizations));
   }
 
   /**
