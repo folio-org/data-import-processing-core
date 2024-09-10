@@ -936,56 +936,65 @@ public class Processor<T> {
   }
 
   /**
-   * Extends regular entity mapping with one according to the following rules:
-   * For 4xx and 5xx field additionally to the regular mapping adds the mapping for targets:
-   * Broader term,  when the control subfield $w has "g" value
-   * Narrower term, when the control subfield $w has "h" value
-   * Earlier heading, when the control subfield $w has "a" value
-   * Later heading, when the control subfield $w has "b" value
+   * Extends regular entity mapping for 5xx field with one according to the following rules:
+   * additionally to the regular mapping adds the mapping for targets:
+   * saftBroaderTerm,  when the control subfield $w has "g" value
+   * saftNarrowerTerm, when the control subfield $w has "h" value
+   * saftEarlierHeading, when the control subfield $w has "a" value
+   * saftLaterHeading, when the control subfield $w has "b" value.
    */
   private JsonArray addExtraMappingsForAuthorities(final DataField dataField, final JsonArray regularMapping) {
-    boolean is4XXField = dataField.getTag().startsWith("4");
     boolean is5XXField = dataField.getTag().startsWith("5");
-    if ((!is4XXField && !is5XXField) || dataField.getSubfield('w') == null) {
+    if (!is5XXField || dataField.getSubfield('w') == null || regularMapping == null || regularMapping.isEmpty()) {
       return regularMapping;
     }
     final JsonArray extendedMapping = new JsonArray();
-    List<String> targets = retrieveTargetsFromControlSubfield(dataField, is4XXField);
-    if (regularMapping == null || regularMapping.isEmpty()) {
-      targets.forEach(target ->  extendedMapping.add(Map.of(TARGET, target, SUBFIELD, DEFAULT_SUBFIELDS)));
-      return extendedMapping;
-    }
+    List<String> targets = retrieveTargetsFromControlSubfield(dataField);
     List<LinkedHashMap<String, Object>> mappingList = regularMapping.getList();
     targets.forEach(target ->  extendedMapping.addAll(createAdditionalMappingsForTarget(target, mappingList)));
     extendedMapping.addAll(regularMapping);
     return extendedMapping;
   }
 
-  private List<String> retrieveTargetsFromControlSubfield(DataField dataField, boolean is4XXField) {
+  private List<String> retrieveTargetsFromControlSubfield(DataField dataField) {
     List<String> targets = new ArrayList<>();
     String subfieldData = dataField.getSubfield('w').getData();
     if (subfieldData.contains("g")) {
-      targets.add(is4XXField ? "sftBroaderTerm" : "saftBroaderTerm");
+      targets.add("saftBroaderTerm");
     }
     if (subfieldData.contains("h")) {
-      targets.add(is4XXField ? "sftNarrowerTerm" : "saftNarrowerTerm");
+      targets.add("saftNarrowerTerm");
     }
     if (subfieldData.contains("a")) {
-      targets.add(is4XXField ? "sftEarlierHeading" : "saftEarlierHeading");
+      targets.add("saftEarlierHeading");
     }
     if (subfieldData.contains("b")) {
-      targets.add(is4XXField ? "sftLaterHeading" : "saftLaterHeading");
+      targets.add("saftLaterHeading");
     }
     return targets;
   }
 
-  private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> mappingList) {
-    return mappingList.stream()
-      .map(existingMap -> {
-        Map<String, Object> additionalMap = new LinkedHashMap<>(existingMap);
-        additionalMap.put(TARGET, target);
-        return additionalMap;
-      })
-      .collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+  private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
+    JsonArray additionalMappings = new JsonArray();
+    existingMappingList.forEach(existingMap -> {
+
+      Map<String, Object> headingRefMapping = new LinkedHashMap<>(existingMap);
+      headingRefMapping.put(TARGET, target + ".headingRef");
+      headingRefMapping.put("description", existingMap.get(TARGET));
+
+      Map<String, Object>  headingTypeMapping = new LinkedHashMap<>(existingMap);
+      headingTypeMapping.put(TARGET, target + ".headingType");
+      headingTypeMapping.put("description", existingMap.get(TARGET));
+      headingTypeMapping.put("applyRulesOnConcatenatedData", true);
+      JsonArray entityRules = JsonArray.of(new JsonObject(Map.of("conditions",
+        JsonArray.of(JsonObject.of("type", "set_heading_type_by_name",
+          "parameter", JsonObject.of("name", existingMap.get(TARGET)))))));
+      headingTypeMapping.put("rules", entityRules);
+
+      JsonObject additionalMapping = JsonObject.of("entityPerRepeatedSubfield", false,
+        "entity", JsonArray.of(headingRefMapping, headingTypeMapping));
+      additionalMappings.add(additionalMapping);
+    });
+    return additionalMappings;
   }
 }

@@ -1,12 +1,36 @@
 {
-  "sftBroaderTerm": [ "History,"],
-  "sftNarrowerTerm": [ "Later-narrower - 455"],
-  "sftEarlierHeading": [ "note$aa note$bb", "Earlier - 455" ],
-  "sftLaterHeading": [ "Later-narrower - 455"],
-  "saftBroaderTerm": [ "Broader-earlier - 511" ],
-  "saftNarrowerTerm": [ "Some narrower term - 511" ],
-  "saftEarlierHeading": ["Broader-earlier - 511", "Dugmore, C. W.","Earlier - 551" ],
-  "saftLaterHeading": [ "Periodicals" ],
+  "saftBroaderTerm": [
+    {
+      "headingRef": "Broader-earlier - 511",
+      "headingType": "saftMeetingNameTitle"
+    }
+  ],
+  "saftNarrowerTerm": [
+    {
+      "headingRef": "Some narrower term - 511",
+      "headingType":  "saftMeetingName"
+    }
+  ],
+  "saftEarlierHeading": [
+    {
+      "headingRef": "Broader-earlier - 511",
+      "headingType": "saftMeetingNameTitle"
+    },
+    {
+      "headingRef": "Dugmore, C. W.",
+      "headingType": "saftTopicalTerm"
+    },
+    {
+      "headingRef": "Earlier - 551",
+      "headingType": "saftGeographicName"
+    }
+  ],
+  "saftLaterHeading": [
+    {
+      "headingRef": "Periodicals",
+      "headingType": "saftUniformTitle"
+    }
+  ],
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
   "sftPersonalName": [ ],
   "saftPersonalName": [ ],

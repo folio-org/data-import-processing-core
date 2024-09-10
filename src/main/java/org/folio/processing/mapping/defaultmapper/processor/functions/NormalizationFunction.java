@@ -496,6 +496,15 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     }
   },
 
+  SET_HEADING_TYPE_BY_NAME() {
+    private static final String NAME_PARAMETER = "name";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      return context.getRuleParameter().getString(NAME_PARAMETER);
+    }
+  },
+
   SET_ALTERNATIVE_TITLE_TYPE_ID() {
     private static final String NAME_PARAMETER = "name";
 
