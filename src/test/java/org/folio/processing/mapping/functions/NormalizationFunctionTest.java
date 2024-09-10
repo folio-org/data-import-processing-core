@@ -17,6 +17,7 @@ import org.folio.IssuanceMode;
 import org.folio.HoldingsType;
 import org.folio.CallNumberType;
 import org.folio.SubjectSource;
+import org.folio.SubjectType;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Test;
@@ -939,6 +940,65 @@ public class NormalizationFunctionTest {
     var actualSubjectSource = runFunction("set_subject_source_id", context);
     // then
     assertEquals(STUB_FIELD_TYPE_ID, actualSubjectSource);
+  }
+
+  @Test
+  public void SET_SUBJECT_TYPE_ID_shouldReturnExpectedResult() {
+    // given
+    var expectedSubjectTypeId = UUID.randomUUID().toString();
+    var subjectType = new SubjectType()
+      .withId(expectedSubjectTypeId)
+      .withName("Personal name");
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withSubjectTypes(Collections.singletonList(subjectType)));
+    context.setRuleParameter(new JsonObject().put("name", "Personal name"));
+    // when
+    var actualInstanceSubjectTypeId = runFunction("set_subject_type_id", context);
+    // then
+    assertEquals(expectedSubjectTypeId, actualInstanceSubjectTypeId);
+  }
+
+  @Test
+  public void SET_SUBJECT_TYPE_ID_shouldReturnStubIfNoMappingsSpecified() {
+    // given
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    context.setRuleParameter(new JsonObject().put("name", "Personal name"));
+    // when
+    var actualSubjectTypeId = runFunction("set_subject_type_id", context);
+    // then
+    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectTypeId);
+  }
+
+  @Test
+  public void SET_SUBJECT_TYPE_ID_shouldReturnStubIfNoNameSpecified() {
+    // given
+    var expectedSubjectTypeId = UUID.randomUUID().toString();
+    var subjectType = new SubjectType()
+      .withId(expectedSubjectTypeId)
+      .withName("Personal name");
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withSubjectTypes(Collections.singletonList(subjectType)));
+    context.setRuleParameter(new JsonObject());
+    // when
+    var actualSubjectTypeId = runFunction("set_subject_type_id", context);
+    // then
+    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectTypeId);
+  }
+
+  @Test
+  public void SET_SUBJECT_TYPE_ID_shouldReturnStubIfNoMatchingMappingSpecified() {
+    // given
+    var subjectType = new SubjectType()
+      .withId(UUID.randomUUID().toString())
+      .withName("Personal name");
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters().withSubjectTypes(Collections.singletonList(subjectType)));
+    context.setRuleParameter(new JsonObject().put("name", "General Type"));
+    // when
+    var actualSubjectType = runFunction("set_subject_type_id", context);
+    // then
+    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectType);
   }
 
   private List<HoldingsType> getHoldingsMappingParameter() {

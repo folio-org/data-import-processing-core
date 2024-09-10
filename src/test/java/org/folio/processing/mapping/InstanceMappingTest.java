@@ -473,19 +473,35 @@ public class InstanceMappingTest {
 
   @Test
   public void testMarcToInstanceWithRepeatableSubects() throws IOException {
-    final String FIRST_LIBRARY = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
-    final String INVALID_SUBJECT_SOURCE_ID = "fcca2643-406a-482a-b760-7a7f8aec640e";
+    final String FIRST_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
+    final String SECOND_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
+    final String THIRD_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
+    final String FOURTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d43";
+    final String FIFTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d44";
+    final String SIXTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d45";
+    final String SEVENTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d46";
+    final String EIGHTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d47";
 
-    final String SUBJECT_TYPE_ID = "b92313a7-26b2-442a-a116-9e8809b48273";
-    final String INVALID_SUBJECT_TYPE_ID = "4261c7a1-5c30-49a4-91ca-3a96c73c7e99";
+    final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
+    final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
+    final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
+    final String FOURTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
+    final String FIFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
+    final String SIXTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
+    final String SEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
+    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
 
-    final List<Map.Entry<String, String>> expectedResults = List.of(
-      Map.entry("Library of Congress Subject Headings", FIRST_LIBRARY),
-      Map.entry("0471725331 (electronic bk.)", FIRST_LIBRARY),
-      Map.entry("9780471725336 (electronic bk.)", INVALID_SUBJECT_SOURCE_ID),
-      Map.entry("0471725323 (electronic bk.)", INVALID_SUBJECT_SOURCE_ID),
-      Map.entry("9780471725329 (electronic bk.)", FIRST_LIBRARY),
-      Map.entry("0471622672 (acid-free paper)", INVALID_SUBJECT_SOURCE_ID));
+    final List<Subject> expectedResults = List.of(
+      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 600.2 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 610 subject").withSourceId(THIRD_LIBRARY_SOURCE_ID).withTypeId(SECOND_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 611 subject").withSourceId(FOURTH_LIBRARY_SOURCE_ID).withTypeId(THIRD_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 630 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FOURTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 647 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(FIFTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(SIXTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID).withTypeId(SEVENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 655 subject").withSourceId(EIGHTH_LIBRARY_SOURCE_ID).withTypeId(EIGHTH_SUBJECT_TYPE_ID)
+      );
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -527,8 +543,9 @@ public class InstanceMappingTest {
     Iterator<Subject> iterator = subjects.iterator();
     expectedResults.forEach(expected -> {
       Subject actual = iterator.next();
-      assertEquals(expected.getValue(), actual.getSourceId());
-      assertEquals(expected.getKey(), actual.getValue());
+      assertEquals(expected.getValue(), actual.getValue());
+      assertEquals(expected.getSourceId(), actual.getSourceId());
+      assertEquals(expected.getTypeId(), actual.getTypeId());
     });
   }
 
