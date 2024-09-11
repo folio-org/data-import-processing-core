@@ -1856,6 +1856,28 @@ public class MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldKeepOrderOfProtectedFieldsDuringUpdate() {
+    // 010 is non-repeatable field
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00135nam  22000851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withId(UUID.randomUUID().toString())
+        .withField("541")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("*")
+        .withData("*")
+    );
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
   public void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
     // 010 is non-repeatable field
     String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
