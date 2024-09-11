@@ -407,14 +407,7 @@ public class MarcRecordReader implements Reader {
 
   private String readRepeatableStringField(MappingRule mappingRule) {
     String value = mappingRule.getValue().replace(EXPRESSIONS_QUOTE, EMPTY);
-    if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
-      for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equals(value)) {
-          value = entry.getKey();
-        }
-      }
-    }
-    return value;
+    return getFromAcceptedValues(mappingRule, value);
   }
 
   private boolean shouldCreateItemPerRepeatedMarcField(Value.ValueType valueType, MappingRule mappingRule) {
