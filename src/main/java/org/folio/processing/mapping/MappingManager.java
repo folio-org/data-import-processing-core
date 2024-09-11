@@ -22,6 +22,7 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 
@@ -111,6 +112,10 @@ public final class MappingManager {
    * @param mappingParameters - mapping parameters
    */
   private static void updateOrganizationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
+    if (mappingParameters.getOrganizations() == null) {
+      return;
+    }
+
     if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
       HashMap<String, String> organizations = getOrganizationsFromMappingParameters(mappingParameters);
       HashMap<String, String> donorOrganizations = getDonorOrganizationsFromMappingParameters(mappingParameters);
@@ -142,35 +147,25 @@ public final class MappingManager {
 
   private static HashMap<String, String> getOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
     HashMap<String, String> organizations = new HashMap<>();
-    if (mappingParameters.getOrganizations() == null) return organizations;
     for (Organization organization : mappingParameters.getOrganizations()) {
-      StringBuilder organizationValue = new StringBuilder()
-        .append(organization.getCode())
-        .append(" (")
-        .append(organization.getId())
-        .append(")");
-      organizations.put(organization.getId(), String.valueOf(organizationValue));
+      organizations.put(organization.getId(), formatOrganizationValue(organization));
     }
     return organizations;
   }
 
   private static HashMap<String, String> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
-    HashMap<String, String> organizations = new HashMap<>();
-    if (mappingParameters.getOrganizations() == null) {
-      return organizations;
-    }
+    return mappingParameters.getOrganizations().stream()
+      .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor()))
+      .collect(Collectors.toMap(Organization::getId, MappingManager::formatOrganizationValue, (a, b) -> b, HashMap::new));
+  }
 
-    for (Organization organization : mappingParameters.getOrganizations()) {
-      if (Boolean.TRUE.equals(organization.getIsDonor())) {
-        StringBuilder organizationValue = new StringBuilder()
-          .append(organization.getCode())
-          .append(" (")
-          .append(organization.getId())
-          .append(")");
-        organizations.put(organization.getId(), organizationValue.toString());
-      }
-    }
-    return organizations;
+  private static String formatOrganizationValue(Organization organization) {
+    return new StringBuilder()
+      .append(organization.getCode())
+      .append(" (")
+      .append(organization.getId())
+      .append(")")
+      .toString();
   }
 
   private static void populateDonorOrganizations(MappingRule mappingRule, HashMap<String, String> donorOrganizations) {
