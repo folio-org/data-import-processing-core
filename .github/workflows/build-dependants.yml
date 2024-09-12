@@ -28,7 +28,7 @@ jobs:
           key: data-import-processing-core-${{ hashFiles('**/pom.xml') }}
           restore-keys: data-import-processing-core-
       - run: mvn -B clean install -DskipTests
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: data-import-processing-core
           path: ~/.m2/repository/org/folio/data-import-processing-core
