@@ -3,6 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -974,6 +975,38 @@ public class Processor<T> {
     return targets;
   }
 
+  /**
+   * Constructs the list of rules to map relations like:
+   *  {
+   *     "entityPerRepeatedSubfield": false,
+   *     "entity": [
+   *       {
+   *         "target": "saftBroaderTerm.headingRef",
+   *         "description": "saftMeetingName",
+   *         "subfield": ["a","c","d","n","q","g"],
+   *         "exclusiveSubfield": ["t"],
+   *         "rules": []
+   *       },
+   *       {
+   *         "target": "saftBroaderTerm.headingType",
+   *         "description": "meetingName",
+   *         "subfield": ["a","c","d","n","q","g"],
+   *         "exclusiveSubfield": ["t"],
+   *         "rules": [
+   *           {
+   *             "conditions": [
+   *               {
+   *                 "type": "set_heading_type_by_name",
+   *                 "parameter": {"name": "meetingName"}
+   *               }
+   *             ]
+   *           }
+   *         ],
+   *         "applyRulesOnConcatenatedData": true
+   *       }
+   *     ]
+   *   }
+   */
   private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
     JsonArray additionalMappings = new JsonArray();
     existingMappingList.forEach(existingMap -> {
@@ -984,11 +1017,11 @@ public class Processor<T> {
 
       Map<String, Object>  headingTypeMapping = new LinkedHashMap<>(existingMap);
       headingTypeMapping.put(TARGET, target + ".headingType");
-      headingTypeMapping.put("description", existingMap.get(TARGET));
+      headingTypeMapping.put("description", getHeadingType(existingMap.get(TARGET)));
       headingTypeMapping.put("applyRulesOnConcatenatedData", true);
       JsonArray entityRules = JsonArray.of(new JsonObject(Map.of("conditions",
         JsonArray.of(JsonObject.of("type", "set_heading_type_by_name",
-          "parameter", JsonObject.of("name", existingMap.get(TARGET)))))));
+          "parameter", JsonObject.of("name", getHeadingType(existingMap.get(TARGET))))))));
       headingTypeMapping.put("rules", entityRules);
 
       JsonObject additionalMapping = JsonObject.of("entityPerRepeatedSubfield", false,
@@ -996,5 +1029,10 @@ public class Processor<T> {
       additionalMappings.add(additionalMapping);
     });
     return additionalMappings;
+  }
+
+  private static Object getHeadingType(Object headingField) {
+    String headingRType = headingField.toString().replace("saft", "");
+    return Character.toLowerCase(headingRType.charAt(0)) + headingRType.substring(1);
   }
 }
