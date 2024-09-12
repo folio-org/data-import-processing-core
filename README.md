@@ -147,7 +147,7 @@ at the [FOLIO issue tracker](https://dev.folio.org/guidelines/issue-tracker).
 * Other FOLIO Developer documentation is at [dev.folio.org](https://dev.folio.org/)
 
 ## Extended Authority Mapping
-There is an extended Authority Mapping introduced to support advanced references classification in 4xx-5xx fields:
+There is an extended Authority Mapping introduced to support advanced references classification in 5xx fields:
 * broader terms (`$wg` tag)
 * narrower terms (`$wh` tag)
 * earlier headings (`$wa` tag)
