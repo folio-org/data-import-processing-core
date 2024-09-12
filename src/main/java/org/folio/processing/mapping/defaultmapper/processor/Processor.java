@@ -3,7 +3,6 @@ package org.folio.processing.mapping.defaultmapper.processor;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.util.LinkedHashMap;
-import java.util.Objects;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
