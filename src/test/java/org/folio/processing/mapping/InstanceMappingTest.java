@@ -62,7 +62,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
   private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
   private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
-  private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/subjects.mrc";
+  private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
 
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
@@ -472,9 +472,9 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithRepeatableSubects() throws IOException {
+  public void testMarcToInstanceWithRepeatableSubjects() throws IOException {
     final String FIRST_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
-    final String SECOND_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
+    final String SECOND_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
     final String THIRD_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
     final String FOURTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d43";
     final String FIFTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d44";
@@ -489,7 +489,8 @@ public class InstanceMappingTest {
     final String FIFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
     final String SIXTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
     final String SEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
-    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
+    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
+    final String NINTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
 
     final List<Subject> expectedResults = List.of(
       new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
@@ -500,7 +501,8 @@ public class InstanceMappingTest {
       new Subject().withValue("Test 647 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(FIFTH_SUBJECT_TYPE_ID),
       new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(SIXTH_SUBJECT_TYPE_ID),
       new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID).withTypeId(SEVENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 655 subject").withSourceId(EIGHTH_LIBRARY_SOURCE_ID).withTypeId(EIGHTH_SUBJECT_TYPE_ID)
+      new Subject().withValue("Test 651 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(EIGHTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 655 subject").withSourceId(EIGHTH_LIBRARY_SOURCE_ID).withTypeId(NINTH_SUBJECT_TYPE_ID)
       );
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
@@ -527,18 +529,9 @@ public class InstanceMappingTest {
     }
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
-/*    Set<Subject> subjects = mappedInstances.get(0).getSubjects();
-    assertEquals(6, subjects.size());
-    IntStream.range(0, expectedResults.size()).forEach(index -> {
-      Map.Entry<String, String> expected = expectedResults.get(index);
-      Identifier actual = subjects.get(index);
-      assertEquals(expected.getValue(), actual.getIdentifierTypeId());
-      assertEquals(expected.getKey(), actual.getValue());
-    });*/
-
 
     Set<Subject> subjects = mappedInstances.get(0).getSubjects();
-    assertEquals(9, subjects.size());
+    assertEquals(10, subjects.size());
 
     Iterator<Subject> iterator = subjects.iterator();
     expectedResults.forEach(expected -> {
