@@ -10,84 +10,28 @@
       "type": "array",
       "description": "See also from tracing term that represents broader, more general concepts related to the authority record",
       "items": {
-        "type": "object",
-        "properties": {
-          "headingRef": {
-            "type": "string",
-            "description": "HeadingRef"
-          },
-          "headingType": {
-            "type": "string",
-            "description": "Heading type"
-          }
-        },
-        "required": [
-          "headingRef",
-          "headingType"
-        ]
+        "$ref": "relatedHeading.json"
       }
     },
     "saftNarrowerTerm": {
       "type": "array",
       "description": "See also from tracing term that represents narrower, more specific concepts derived from the authority record",
       "items": {
-        "type": "object",
-        "properties": {
-          "headingRef": {
-            "type": "string",
-            "description": "HeadingRef"
-          },
-          "headingType": {
-            "type": "string",
-            "description": "Heading type"
-          }
-        },
-        "required": [
-          "headingRef",
-          "headingType"
-        ]
+        "$ref": "relatedHeading.json"
       }
     },
     "saftEarlierHeading": {
       "type": "array",
       "description": "See also from tracing heading that was previously used to represent the concept or entity described by the authority record. This field is used to track the evolution of terms or headings over time, facilitating the linking of historical and current data.",
       "items": {
-        "type": "object",
-        "properties": {
-          "headingRef": {
-            "type": "string",
-            "description": "HeadingRef"
-          },
-          "headingType": {
-            "type": "string",
-            "description": "Heading type"
-          }
-        },
-        "required": [
-          "headingRef",
-          "headingType"
-        ]
+        "$ref": "relatedHeading.json"
       }
     },
     "saftLaterHeading": {
       "type": "array",
       "description": "See also from tracing heading that replaced the current heading used in the authority record. This field helps in maintaining the continuity of catalog records by linking past headings to their more current versions.",
       "items": {
-        "type": "object",
-        "properties": {
-          "headingRef": {
-            "type": "string",
-            "description": "HeadingRef"
-          },
-          "headingType": {
-            "type": "string",
-            "description": "Heading type"
-          }
-        },
-        "required": [
-          "headingRef",
-          "headingType"
-        ]
+        "$ref": "relatedHeading.json"
       }
     }
   }
