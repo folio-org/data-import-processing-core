@@ -815,7 +815,7 @@ public class MarcRecordReaderUnitTest {
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
-    String expectedDateString = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    String expectedDateString = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC).format(Instant.now());
 
     Value value = reader.read(new MappingRule()
       .withPath("")
