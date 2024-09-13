@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,10 @@ import org.folio.Identifier;
 import org.folio.IdentifierType;
 import org.folio.Instance;
 import org.folio.InstanceType;
+import org.folio.Subject;
+import org.folio.SubjectSource;
+import org.folio.SubjectSources;
+import org.folio.SubjectType;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
@@ -57,6 +62,8 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
   private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
   private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
+  private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
+
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
@@ -66,6 +73,9 @@ public class InstanceMappingTest {
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
   private static final String DEFAULT_INSTANCE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instanceTypes.json";
   private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/resourceIdentifiers.json";
+  private static final String DEFAULT_SUBJECT_SOURCES_PATH = "src/test/resources/org/folio/processing/mapping/instance/subjectSources.json";
+  private static final String DEFAULT_SUBJECT_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/subjectTypes.json";
+
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
   private static final String TXT_INSTANCE_TYPE_ID = "6312d172-f0cf-40f6-b27d-9fa8feaf332f";
   private static final String UNSPECIFIED_INSTANCE_TYPE_ID = "30fffe0e-e985-4144-b2e2-1e8179bdb41f";
@@ -458,6 +468,77 @@ public class InstanceMappingTest {
       Identifier actual = identifierTypes.get(index);
       assertEquals(expected.getValue(), actual.getIdentifierTypeId());
       assertEquals(expected.getKey(), actual.getValue());
+    });
+  }
+
+  @Test
+  public void testMarcToInstanceWithRepeatableSubjects() throws IOException {
+    final String FIRST_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
+    final String SECOND_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
+    final String THIRD_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
+    final String FOURTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d43";
+    final String FIFTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d44";
+    final String SIXTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d45";
+    final String SEVENTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d46";
+    final String EIGHTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d47";
+
+    final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
+    final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
+    final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
+    final String FOURTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
+    final String FIFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
+    final String SIXTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
+    final String SEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
+    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
+    final String NINTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
+
+    final List<Subject> expectedResults = List.of(
+      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 600.2 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 610 subject").withSourceId(THIRD_LIBRARY_SOURCE_ID).withTypeId(SECOND_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 611 subject").withSourceId(FOURTH_LIBRARY_SOURCE_ID).withTypeId(THIRD_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 630 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FOURTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 647 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(FIFTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(SIXTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID).withTypeId(SEVENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 651 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(EIGHTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 655 subject").withSourceId(EIGHTH_LIBRARY_SOURCE_ID).withTypeId(NINTH_SUBJECT_TYPE_ID)
+      );
+
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
+    String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
+    List<SubjectSource> subjectSources = List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
+    List<SubjectType> subjectTypes = List.of(new ObjectMapper().readValue(rawSubjectTypes, SubjectType[].class));
+
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    List<Instance> mappedInstances = new ArrayList<>();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
+      mappedInstances.add(instance);
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+    assertFalse(mappedInstances.isEmpty());
+    assertEquals(1, mappedInstances.size());
+
+    Set<Subject> subjects = mappedInstances.get(0).getSubjects();
+    assertEquals(10, subjects.size());
+
+    Iterator<Subject> iterator = subjects.iterator();
+    expectedResults.forEach(expected -> {
+      Subject actual = iterator.next();
+      assertEquals(expected.getValue(), actual.getValue());
+      assertEquals(expected.getSourceId(), actual.getSourceId());
+      assertEquals(expected.getTypeId(), actual.getTypeId());
     });
   }
 

@@ -214,7 +214,18 @@
             "type": "string",
             "description": "UUID of authority record that controls a subject heading",
             "$ref": "raml-storage/raml-util/schemas/uuid.schema"
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "UUID of subject source",
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
+          },
+          "typeId": {
+            "type": "string",
+            "description": "UUID of subject type",
+            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
           }
+
         },
         "additionalProperties": false,
         "required": [

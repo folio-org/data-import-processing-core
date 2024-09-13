@@ -29,6 +29,8 @@ import org.folio.NatureOfContentTerm;
 import org.folio.StatisticalCode;
 import org.folio.StatisticalCodeType;
 import org.folio.Organization;
+import org.folio.SubjectSource;
+import org.folio.SubjectType;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 
 import java.util.ArrayList;
@@ -69,6 +71,11 @@ public class MappingParameters {
   private String tenantConfiguration;
   private List<AuthorityNoteType> authorityNoteTypes;
   private List<AuthoritySourceFile> authoritySourceFiles;
+  private List<SubjectSource> subjectSources;
+  private List<SubjectType> subjectTypes;
+
+
+
   private List<Organization> organizations;
 
   private List<LinkingRuleDto> linkingRules;
@@ -472,6 +479,32 @@ public class MappingParameters {
 
   public MappingParameters withLinkingRules(List<LinkingRuleDto> linkingRules) {
     this.linkingRules = new UnmodifiableList<>(linkingRules);
+    return this;
+  }
+
+  public List<SubjectSource> getSubjectSources() {
+    return subjectSources;
+  }
+
+  public void setSubjectSources(List<SubjectSource> subjectSources) {
+    this.subjectSources = subjectSources;
+  }
+
+  public List<SubjectType> getSubjectTypes() {
+    return subjectTypes;
+  }
+
+  public void setSubjectTypes(List<SubjectType> subjectTypes) {
+    this.subjectTypes = subjectTypes;
+  }
+
+  public MappingParameters withSubjectSources(List<SubjectSource> subjectSources) {
+    this.subjectSources = new UnmodifiableList<>(subjectSources);
+    return this;
+  }
+
+  public MappingParameters withSubjectTypes(List<SubjectType> subjectTypes) {
+    this.subjectTypes = new UnmodifiableList<>(subjectTypes);
     return this;
   }
 }

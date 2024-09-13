@@ -19,6 +19,8 @@ import org.folio.InstanceNoteType;
 import org.folio.InstanceType;
 import org.folio.IssuanceMode;
 import org.folio.Location;
+import org.folio.SubjectSource;
+import org.folio.SubjectType;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
 import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
@@ -419,6 +421,42 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .findFirst()
         .map(ElectronicAccessRelationship::getId)
         .orElse(STUB_FIELD_TYPE_ID);
+    }
+  },
+
+  SET_SUBJECT_SOURCE_ID() {
+    private static final String NAME_PARAMETER = "name";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String typeName = context.getRuleParameter().getString(NAME_PARAMETER);
+      List<SubjectSource> subjectSources = context.getMappingParameters().getSubjectSources();
+      if (subjectSources == null || typeName == null) {
+        return StringUtils.EMPTY;
+      }
+      return subjectSources.stream()
+        .filter(subjectSource -> subjectSource.getName().trim().equalsIgnoreCase(typeName))
+        .findFirst()
+        .map(SubjectSource::getId)
+        .orElse(StringUtils.EMPTY);
+    }
+  },
+
+  SET_SUBJECT_TYPE_ID() {
+    private static final String NAME_PARAMETER = "name";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String typeName = context.getRuleParameter().getString(NAME_PARAMETER);
+      List<SubjectType> subjectTypes = context.getMappingParameters().getSubjectTypes();
+      if (subjectTypes == null || typeName == null) {
+        return StringUtils.EMPTY;
+      }
+      return subjectTypes.stream()
+        .filter(subjectType -> subjectType.getName().trim().equalsIgnoreCase(typeName))
+        .findFirst()
+        .map(SubjectType::getId)
+        .orElse(StringUtils.EMPTY);
     }
   },
 

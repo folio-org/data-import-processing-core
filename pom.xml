@@ -301,6 +301,8 @@
                 <path>${basedir}/ramls/settings/authoritysourcefiles.json</path>
                 <path>${basedir}/ramls/settings/organization.json</path>
                 <path>${basedir}/ramls/settings/organization_collection.json</path>
+                <path>${basedir}/ramls/settings/subjectSources.json</path>
+                <path>${basedir}/ramls/settings/subjectTypes.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>
