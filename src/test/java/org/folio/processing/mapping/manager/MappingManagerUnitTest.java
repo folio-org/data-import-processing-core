@@ -190,6 +190,82 @@ public class MappingManagerUnitTest {
     }
   }
 
+  @Test
+  public void shouldMap_MarcBibliographicToOrder_checkDonorOrganizationsProvision() {
+    // given
+    MappingRule donorsMappingRule = new MappingRule()
+      .withName("donorOrganizationIds")
+      .withEnabled("true")
+      .withPath("order.poLine.donorOrganizationIds[]")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("\"CODE-1\""))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("\"CODE-2\"")))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(ORDER)
+      .withMappingDetails(new MappingDetail()
+        .withMappingFields(List.of(donorsMappingRule)));
+
+    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper()
+      .withContentType(MAPPING_PROFILE)
+      .withContent(mappingProfile);
+
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()));
+    context.put(ORDER.value(), new JsonObject().encode());
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withCurrentNode(mappingProfileWrapper)
+      .withContext(context);
+
+    String expectedOrganizationId = UUID.randomUUID().toString();
+    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
+      .withOrganizations(List.of(
+        new Organization()
+          .withId(expectedOrganizationId)
+          .withIsDonor(true)
+          .withName("NAME-1")
+          .withCode("CODE-1"),
+        new Organization()
+          .withId(UUID.randomUUID().toString())
+          .withName("NAME-2")
+          .withCode("CODE-2"))
+      ));
+
+    // when
+    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+    MappingManager.registerWriterFactory(new TestOrderWriterFactory());
+    MappingManager.map(eventPayload, mappingContext);
+
+    // then
+    assertEquals(2, donorsMappingRule.getSubfields().size());
+
+    for (RepeatableSubfieldMapping subfieldMapping : donorsMappingRule.getSubfields()) {
+      assertEquals(1, subfieldMapping.getFields().size());
+      MappingRule mappingRule = subfieldMapping.getFields().get(0);
+      assertEquals(1, mappingRule.getAcceptedValues().size());
+      assertTrue(mappingRule.getAcceptedValues().containsKey(expectedOrganizationId));
+      String expectedAcceptedValue = String.format("CODE-1 (%s)", expectedOrganizationId);
+      assertEquals(expectedAcceptedValue, mappingRule.getAcceptedValues().get(expectedOrganizationId));
+    }
+  }
+
   @Test(expected = RuntimeException.class)
   public void shouldThrowException_ifNoReaderEligible() {
     // given

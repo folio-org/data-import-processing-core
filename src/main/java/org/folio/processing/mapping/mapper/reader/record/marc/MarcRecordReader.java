@@ -83,7 +83,7 @@ public class MarcRecordReader implements Reader {
   private static final String TIMEZONE_PROPERTY = "timezone";
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
-  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider","relationshipId");
+  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider","relationshipId", "donorOrganizationIds");
   private static final String STATISTICAL_CODE_ID_FIELD = "statisticalCodeId";
   private static final String BLANK = "";
 
@@ -407,14 +407,7 @@ public class MarcRecordReader implements Reader {
 
   private String readRepeatableStringField(MappingRule mappingRule) {
     String value = mappingRule.getValue().replace(EXPRESSIONS_QUOTE, EMPTY);
-    if (MapUtils.isNotEmpty(mappingRule.getAcceptedValues())) {
-      for (Map.Entry<String, String> entry : mappingRule.getAcceptedValues().entrySet()) {
-        if (entry.getValue().equals(value)) {
-          value = entry.getKey();
-        }
-      }
-    }
-    return value;
+    return getFromAcceptedValues(mappingRule, value);
   }
 
   private boolean shouldCreateItemPerRepeatedMarcField(Value.ValueType valueType, MappingRule mappingRule) {
