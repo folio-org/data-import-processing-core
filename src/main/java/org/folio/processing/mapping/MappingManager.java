@@ -22,6 +22,7 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 
@@ -42,6 +43,7 @@ public final class MappingManager {
   public static final String VENDOR_ID = "vendor";
   private static final String MATERIAL_SUPPLIER = "materialSupplier";
   private static final String ACCESS_PROVIDER = "accessProvider";
+  private static final String DONOR_ORGANIZATION_IDS = "donorOrganizationIds";
 
   private MappingManager() {
   }
@@ -110,13 +112,19 @@ public final class MappingManager {
    * @param mappingParameters - mapping parameters
    */
   private static void updateOrganizationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
+    if (mappingParameters.getOrganizations() == null) {
+      return;
+    }
+
     if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
       HashMap<String, String> organizations = getOrganizationsFromMappingParameters(mappingParameters);
+      HashMap<String, String> donorOrganizations = getDonorOrganizationsFromMappingParameters(mappingParameters);
       if (!organizations.isEmpty()) {
         for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
-          if ((mappingRule.getName() != null) && (mappingRule.getName().equals(VENDOR_ID)
-            || mappingRule.getName().equals(MATERIAL_SUPPLIER) || mappingRule.getName().equals(ACCESS_PROVIDER))) {
+          if (isOrganizationsAcceptedValuesNeeded(mappingRule)) {
             mappingRule.setAcceptedValues(organizations);
+          } else if (DONOR_ORGANIZATION_IDS.equals(mappingRule.getName())) {
+            populateDonorOrganizations(mappingRule, donorOrganizations);
           }
         }
       }
@@ -138,16 +146,36 @@ public final class MappingManager {
 
   private static HashMap<String, String> getOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
     HashMap<String, String> organizations = new HashMap<>();
-    if (mappingParameters.getOrganizations() == null) return organizations;
     for (Organization organization : mappingParameters.getOrganizations()) {
-      StringBuilder organizationValue = new StringBuilder()
-        .append(organization.getCode())
-        .append(" (")
-        .append(organization.getId())
-        .append(")");
-      organizations.put(organization.getId(), String.valueOf(organizationValue));
+      organizations.put(organization.getId(), formatOrganizationValue(organization));
     }
     return organizations;
+  }
+
+  private static HashMap<String, String> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
+    return mappingParameters.getOrganizations().stream()
+      .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor()))
+      .collect(Collectors.toMap(Organization::getId, MappingManager::formatOrganizationValue, (a, b) -> b, HashMap::new));
+  }
+
+  private static String formatOrganizationValue(Organization organization) {
+    return new StringBuilder()
+      .append(organization.getCode())
+      .append(" (")
+      .append(organization.getId())
+      .append(")")
+      .toString();
+  }
+
+  private static boolean isOrganizationsAcceptedValuesNeeded(MappingRule mappingRule) {
+    return (mappingRule.getName() != null) && (mappingRule.getName().equals(VENDOR_ID)
+      || mappingRule.getName().equals(MATERIAL_SUPPLIER) || mappingRule.getName().equals(ACCESS_PROVIDER));
+  }
+
+  private static void populateDonorOrganizations(MappingRule mappingRule, HashMap<String, String> donorOrganizations) {
+    mappingRule.getSubfields().stream()
+      .flatMap(subfieldMapping -> subfieldMapping.getFields().stream())
+      .forEach(rule -> rule.setAcceptedValues(donorOrganizations));
   }
 
   /**
