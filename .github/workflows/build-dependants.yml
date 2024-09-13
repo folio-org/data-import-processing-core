@@ -28,7 +28,7 @@ jobs:
           key: data-import-processing-core-${{ hashFiles('**/pom.xml') }}
           restore-keys: data-import-processing-core-
       - run: mvn -B clean install -DskipTests
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: data-import-processing-core
           path: ~/.m2/repository/org/folio/data-import-processing-core
@@ -53,7 +53,7 @@ jobs:
             !~/.m2/repository/org/folio/data-import-processing-core
           key: mod-inventory-${{ hashFiles('**/pom.xml') }}
           restore-keys: mod-inventory-
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: data-import-processing-core
           path: ~/.m2/repository/org/folio/data-import-processing-core
@@ -77,7 +77,7 @@ jobs:
             !~/.m2/repository/org/folio/data-import-processing-core
           key: mod-source-record-manager-${{ hashFiles('**/pom.xml') }}
           restore-keys: mod-source-record-manager-
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: data-import-processing-core
           path: ~/.m2/repository/org/folio/data-import-processing-core

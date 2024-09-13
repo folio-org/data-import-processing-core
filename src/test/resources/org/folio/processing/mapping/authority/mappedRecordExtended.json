@@ -2,33 +2,33 @@
   "saftBroaderTerm": [
     {
       "headingRef": "Broader-earlier - 511",
-      "headingType": "saftMeetingNameTitle"
+      "headingType": "meetingNameTitle"
     }
   ],
   "saftNarrowerTerm": [
     {
       "headingRef": "Some narrower term - 511",
-      "headingType":  "saftMeetingName"
+      "headingType":  "meetingName"
     }
   ],
   "saftEarlierHeading": [
     {
       "headingRef": "Broader-earlier - 511",
-      "headingType": "saftMeetingNameTitle"
+      "headingType": "meetingNameTitle"
     },
     {
       "headingRef": "Dugmore, C. W.",
-      "headingType": "saftTopicalTerm"
+      "headingType": "topicalTerm"
     },
     {
       "headingRef": "Earlier - 551",
-      "headingType": "saftGeographicName"
+      "headingType": "geographicName"
     }
   ],
   "saftLaterHeading": [
     {
       "headingRef": "Periodicals",
-      "headingType": "saftUniformTitle"
+      "headingType": "uniformTitle"
     }
   ],
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
