@@ -432,13 +432,13 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       String typeName = context.getRuleParameter().getString(NAME_PARAMETER);
       List<SubjectSource> subjectSources = context.getMappingParameters().getSubjectSources();
       if (subjectSources == null || typeName == null) {
-        return STUB_FIELD_TYPE_ID;
+        return StringUtils.EMPTY;
       }
       return subjectSources.stream()
-        .filter(identifierType -> identifierType.getName().trim().equalsIgnoreCase(typeName))
+        .filter(subjectSource -> subjectSource.getName().trim().equalsIgnoreCase(typeName))
         .findFirst()
         .map(SubjectSource::getId)
-        .orElse(STUB_FIELD_TYPE_ID);
+        .orElse(StringUtils.EMPTY);
     }
   },
 
@@ -450,13 +450,13 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       String typeName = context.getRuleParameter().getString(NAME_PARAMETER);
       List<SubjectType> subjectTypes = context.getMappingParameters().getSubjectTypes();
       if (subjectTypes == null || typeName == null) {
-        return STUB_FIELD_TYPE_ID;
+        return StringUtils.EMPTY;
       }
       return subjectTypes.stream()
         .filter(subjectType -> subjectType.getName().trim().equalsIgnoreCase(typeName))
         .findFirst()
         .map(SubjectType::getId)
-        .orElse(STUB_FIELD_TYPE_ID);
+        .orElse(StringUtils.EMPTY);
     }
   },
 

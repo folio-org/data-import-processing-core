@@ -900,7 +900,7 @@ public class NormalizationFunctionTest {
   }
 
   @Test
-  public void SET_SUBJECT_SOURCE_ID_shouldReturnStubIfNoMappingsSpecified() {
+  public void SET_SUBJECT_SOURCE_ID_shouldReturnEmptyIfNoMappingsSpecified() {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -908,11 +908,11 @@ public class NormalizationFunctionTest {
     // when
     var actualSubjectSourceId = runFunction("set_subject_source_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectSourceId);
+    assertEquals(EMPTY_STRING, actualSubjectSourceId);
   }
 
   @Test
-  public void SET_SUBJECT_SOURCE_ID_shouldReturnStubIfNoNameSpecified() {
+  public void SET_SUBJECT_SOURCE_ID_shouldReturnEmptyIfNoNameSpecified() {
     // given
     var expectedSubjectSourceId = UUID.randomUUID().toString();
     var subjectSource = new SubjectSource()
@@ -924,11 +924,11 @@ public class NormalizationFunctionTest {
     // when
     var actualSubjectSourceId = runFunction("set_subject_source_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectSourceId);
+    assertEquals(EMPTY_STRING, actualSubjectSourceId);
   }
 
   @Test
-  public void SET_SUBJECT_SOURCE_ID_shouldReturnStubIfNoMatchingMappingSpecified() {
+  public void SET_SUBJECT_SOURCE_ID_shouldReturnEmptyIfNoMatchingMappingSpecified() {
     // given
     var subjectSource = new SubjectSource()
       .withId(UUID.randomUUID().toString())
@@ -939,7 +939,7 @@ public class NormalizationFunctionTest {
     // when
     var actualSubjectSource = runFunction("set_subject_source_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectSource);
+    assertEquals(EMPTY_STRING, actualSubjectSource);
   }
 
   @Test
@@ -959,7 +959,7 @@ public class NormalizationFunctionTest {
   }
 
   @Test
-  public void SET_SUBJECT_TYPE_ID_shouldReturnStubIfNoMappingsSpecified() {
+  public void SET_SUBJECT_TYPE_ID_shouldReturnEmptyIfNoMappingsSpecified() {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -967,11 +967,11 @@ public class NormalizationFunctionTest {
     // when
     var actualSubjectTypeId = runFunction("set_subject_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectTypeId);
+    assertEquals(EMPTY_STRING, actualSubjectTypeId);
   }
 
   @Test
-  public void SET_SUBJECT_TYPE_ID_shouldReturnStubIfNoNameSpecified() {
+  public void SET_SUBJECT_TYPE_ID_shouldReturnEmptyIfNoNameSpecified() {
     // given
     var expectedSubjectTypeId = UUID.randomUUID().toString();
     var subjectType = new SubjectType()
@@ -983,11 +983,11 @@ public class NormalizationFunctionTest {
     // when
     var actualSubjectTypeId = runFunction("set_subject_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectTypeId);
+    assertEquals(EMPTY_STRING, actualSubjectTypeId);
   }
 
   @Test
-  public void SET_SUBJECT_TYPE_ID_shouldReturnStubIfNoMatchingMappingSpecified() {
+  public void SET_SUBJECT_TYPE_ID_shouldReturnEmptyIfNoMatchingMappingSpecified() {
     // given
     var subjectType = new SubjectType()
       .withId(UUID.randomUUID().toString())
@@ -998,7 +998,7 @@ public class NormalizationFunctionTest {
     // when
     var actualSubjectType = runFunction("set_subject_type_id", context);
     // then
-    assertEquals(STUB_FIELD_TYPE_ID, actualSubjectType);
+    assertEquals(EMPTY_STRING, actualSubjectType);
   }
 
   private List<HoldingsType> getHoldingsMappingParameter() {
