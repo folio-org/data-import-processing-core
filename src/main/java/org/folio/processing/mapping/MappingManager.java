@@ -4,11 +4,8 @@ import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
-import org.folio.Location;
 import org.folio.MappingProfile;
-import org.folio.Organization;
 import org.folio.processing.exceptions.MappingException;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.FactoryRegistry;
 import org.folio.processing.mapping.mapper.Mapper;
 import org.folio.processing.mapping.mapper.MappingContext;
@@ -17,12 +14,9 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
-import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 
@@ -38,12 +32,6 @@ import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 public final class MappingManager {
   private static final Logger LOGGER = LogManager.getLogger(MappingManager.class);
   private static final FactoryRegistry FACTORY_REGISTRY = new FactoryRegistry();
-  public static final String PERMANENT_LOCATION_ID = "permanentLocationId";
-  public static final String TEMPORARY_LOCATION_ID = "temporaryLocationId";
-  public static final String VENDOR_ID = "vendor";
-  private static final String MATERIAL_SUPPLIER = "materialSupplier";
-  private static final String ACCESS_PROVIDER = "accessProvider";
-  private static final String DONOR_ORGANIZATION_IDS = "donorOrganizationIds";
 
   private MappingManager() {
   }
@@ -71,10 +59,6 @@ public final class MappingManager {
         mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
       }
 
-      //Fix MODDICORE-128 (The system doesn't update acceptedLocation in mapping profiles after the location list is changed)
-      updateLocationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
-      updateOrganizationsInMappingProfile(mappingProfile, mappingContext.getMappingParameters());
-
       Reader reader = FACTORY_REGISTRY.createReader(mappingProfile.getIncomingRecordType());
       Writer writer = FACTORY_REGISTRY.createWriter(mappingProfile.getExistingRecordType());
 
@@ -84,98 +68,6 @@ public final class MappingManager {
       LOGGER.warn("map:: Failed to perform mapping", e);
       throw new MappingException(e);
     }
-  }
-
-  /**
-   * Fill Permanent and Temporary Locations in MappingProfile from {@code mappingParameters}
-   *
-   * @param mappingProfile - MappingProfile
-   * @param mappingParameters - mapping parameters
-   */
-  private static void updateLocationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
-    if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
-      HashMap<String, String> locations = getLocationsFromMappingParameters(mappingParameters);
-      if (!locations.isEmpty()) {
-        for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
-          if ((mappingRule.getName() != null) && (mappingRule.getName().equals(PERMANENT_LOCATION_ID) || mappingRule.getName().equals(TEMPORARY_LOCATION_ID))) {
-            mappingRule.setAcceptedValues(locations);
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Fill {@link Organization} accepted values in MappingProfile from {@code mappingParameters}
-   *
-   * @param mappingProfile - MappingProfile
-   * @param mappingParameters - mapping parameters
-   */
-  private static void updateOrganizationsInMappingProfile(MappingProfile mappingProfile, MappingParameters mappingParameters) {
-    if (mappingParameters.getOrganizations() == null) {
-      return;
-    }
-
-    if ((mappingProfile.getMappingDetails() != null) && (mappingProfile.getMappingDetails().getMappingFields() != null)) {
-      HashMap<String, String> organizations = getOrganizationsFromMappingParameters(mappingParameters);
-      HashMap<String, String> donorOrganizations = getDonorOrganizationsFromMappingParameters(mappingParameters);
-      if (!organizations.isEmpty()) {
-        for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
-          if (isOrganizationsAcceptedValuesNeeded(mappingRule)) {
-            mappingRule.setAcceptedValues(organizations);
-          } else if (DONOR_ORGANIZATION_IDS.equals(mappingRule.getName())) {
-            populateDonorOrganizations(mappingRule, donorOrganizations);
-          }
-        }
-      }
-    }
-  }
-
-  private static HashMap<String, String> getLocationsFromMappingParameters(MappingParameters mappingParameters) {
-    HashMap<String, String> locations = new HashMap<>();
-    for (Location location : mappingParameters.getLocations()) {
-      StringBuilder locationValue = new StringBuilder()
-        .append(location.getName())
-        .append(" (")
-        .append(location.getCode())
-        .append(")");
-      locations.put(location.getId(), String.valueOf(locationValue));
-    }
-    return locations;
-  }
-
-  private static HashMap<String, String> getOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
-    HashMap<String, String> organizations = new HashMap<>();
-    for (Organization organization : mappingParameters.getOrganizations()) {
-      organizations.put(organization.getId(), formatOrganizationValue(organization));
-    }
-    return organizations;
-  }
-
-  private static HashMap<String, String> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
-    return mappingParameters.getOrganizations().stream()
-      .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor()))
-      .collect(Collectors.toMap(Organization::getId, MappingManager::formatOrganizationValue, (a, b) -> b, HashMap::new));
-  }
-
-  private static String formatOrganizationValue(Organization organization) {
-    return new StringBuilder()
-      .append(organization.getCode())
-      .append(" (")
-      .append(organization.getId())
-      .append(")")
-      .toString();
-  }
-
-  private static boolean isOrganizationsAcceptedValuesNeeded(MappingRule mappingRule) {
-    return (mappingRule.getName() != null) && (mappingRule.getName().equals(VENDOR_ID)
-      || mappingRule.getName().equals(MATERIAL_SUPPLIER) || mappingRule.getName().equals(ACCESS_PROVIDER));
-  }
-
-  private static void populateDonorOrganizations(MappingRule mappingRule, HashMap<String, String> donorOrganizations) {
-    mappingRule.getSubfields().stream()
-      .flatMap(subfieldMapping -> subfieldMapping.getFields().stream())
-      .forEach(rule -> rule.setAcceptedValues(donorOrganizations));
   }
 
   /**

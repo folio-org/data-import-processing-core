@@ -2,7 +2,6 @@ package org.folio.processing.mapping.mapper.reader.record.marc;
 
 import io.vertx.core.json.JsonObject;
 
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,7 +54,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.folio.processing.mapping.MappingManager.VENDOR_ID;
+import static org.folio.processing.mapping.mapper.util.AcceptedValuesUtil.getAcceptedValues;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 
@@ -86,6 +85,7 @@ public class MarcRecordReader implements Reader {
   private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider","relationshipId", "donorOrganizationIds");
   private static final String STATISTICAL_CODE_ID_FIELD = "statisticalCodeId";
   private static final String BLANK = "";
+  private static final String VENDOR_ID = "vendor";
 
   private EntityType entityType;
   private Map<String, AcceptedValuesMatcher> acceptedValuesMatchers;
@@ -200,7 +200,7 @@ public class MarcRecordReader implements Reader {
     List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
       if (!resultList.isEmpty() && marcValues.size() == resultList.size()) {
-        List<String> collectedValues = marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList());
+        List<String> collectedValues = marcValues.stream().map(value -> getFromMappingParameters(ruleExpression, value)).collect(Collectors.toList());
         List<String> tmpResultList = new ArrayList<>(resultList);
         String concatenator = multipleStringBuilder.toString();
         for (int i = 0; i < tmpResultList.size(); i++) {
@@ -209,22 +209,24 @@ public class MarcRecordReader implements Reader {
         }
       } else {
         // TODO This todo for cases where first subfields count not equals second subfields count
-        List<String> collectedValues = marcValues.stream().map(value -> getFromAcceptedValues(ruleExpression, value)).collect(Collectors.toList());
+        List<String> collectedValues = marcValues.stream().map(value -> getFromMappingParameters(ruleExpression, value)).collect(Collectors.toList());
         resultList.addAll(collectedValues);
       }
     } else {
       if (!marcValues.isEmpty()) {
-        sb.append(getFromAcceptedValues(ruleExpression, marcValues.get(0)));
+        sb.append(getFromMappingParameters(ruleExpression, marcValues.get(0)));
       }
     }
   }
 
-  private String getFromAcceptedValues(MappingRule ruleExpression, String value) {
+  private String getFromMappingParameters(MappingRule ruleExpression, String value) {
     AcceptedValuesMatcher acceptedValuesMatcher = Objects.isNull(ruleExpression.getName()) ? null
       : acceptedValuesMatchers.get(ruleExpression.getName());
 
-    if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
-      for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
+    HashMap<String, String> acceptedValues = getAcceptedValues(ruleExpression.getName(), mappingParameters);
+
+    if (!acceptedValues.isEmpty()) {
+      for (Map.Entry<String, String> entry : acceptedValues.entrySet()) {
         if ((acceptedValuesMatcher != null && acceptedValuesMatcher.matches(entry.getValue(), value))
           || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(ruleExpression.getName(), entry.getValue(), value)) {
           value = entry.getKey();
@@ -233,7 +235,7 @@ public class MarcRecordReader implements Reader {
     }
     boolean needsValidationByAcceptedValues = NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
 
-    if (needsValidationByAcceptedValues && !ruleExpression.getAcceptedValues().containsKey(value)) {
+    if (needsValidationByAcceptedValues && !acceptedValues.containsKey(value)) {
       return BLANK;
     }
 
@@ -306,7 +308,7 @@ public class MarcRecordReader implements Reader {
    */
   private StringBuilder processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart) {
     String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
-    value = getFromAcceptedValues(ruleExpression, value);
+    value = getFromMappingParameters(ruleExpression, value);
     if (isNotEmpty(value)) {
       if (arrayValue && resultList.isEmpty()) {
         resultList.add(value);
@@ -407,7 +409,7 @@ public class MarcRecordReader implements Reader {
 
   private String readRepeatableStringField(MappingRule mappingRule) {
     String value = mappingRule.getValue().replace(EXPRESSIONS_QUOTE, EMPTY);
-    return getFromAcceptedValues(mappingRule, value);
+    return getFromMappingParameters(mappingRule, value);
   }
 
   private boolean shouldCreateItemPerRepeatedMarcField(Value.ValueType valueType, MappingRule mappingRule) {
