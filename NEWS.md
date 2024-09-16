@@ -1,3 +1,6 @@
+## 2024-xx-xx v4.2.2
+* [MODDICORE-413](https://folio-org.atlassian.net/browse/MODDICORE-413) Adjust mapping of order to fill in donor information
+
 ## 2024-04-19 v4.2.1
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
 
