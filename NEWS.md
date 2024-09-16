@@ -1,4 +1,4 @@
-## 2024-xx-xx v4.2.2
+## 2024-09-16 v4.2.2
 * [MODDICORE-413](https://folio-org.atlassian.net/browse/MODDICORE-413) Adjust mapping of order to fill in donor information
 
 ## 2024-04-19 v4.2.1
