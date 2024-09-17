@@ -1,6 +1,8 @@
 package org.folio.processing.mapping.defaultmapper.processor.parameters;
 
 import org.apache.commons.collections4.list.UnmodifiableList;
+import org.folio.AcquisitionMethod;
+import org.folio.AcquisitionsUnit;
 import org.folio.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
 import org.folio.AuthoritySourceFile;
@@ -9,6 +11,8 @@ import org.folio.ClassificationType;
 import org.folio.ContributorNameType;
 import org.folio.ContributorType;
 import org.folio.ElectronicAccessRelationship;
+import org.folio.ExpenseClass;
+import org.folio.Fund;
 import org.folio.HoldingsNoteType;
 import org.folio.HoldingsType;
 import org.folio.IdentifierType;
@@ -68,17 +72,18 @@ public class MappingParameters {
   private List<Loantype> loanTypes = new ArrayList<>();
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
   private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
-  private String tenantConfiguration;
+  private String tenantConfigurationZone;
   private List<AuthorityNoteType> authorityNoteTypes;
   private List<AuthoritySourceFile> authoritySourceFiles;
   private List<SubjectSource> subjectSources;
   private List<SubjectType> subjectTypes;
-
-
-
   private List<Organization> organizations;
-
   private List<LinkingRuleDto> linkingRules;
+  private List<AcquisitionsUnit> acquisitionsUnits;
+  private List<AcquisitionMethod> acquisitionMethods;
+  private List<Fund> funds;
+  private List<ExpenseClass> expenseClasses;
+  private List<String> tenantConfigurationAddresses;
 
   public MappingParameters withInitializedState(boolean initialized) {
     this.initialized = initialized;
@@ -349,12 +354,12 @@ public class MappingParameters {
     return marcFieldProtectionSettings;
   }
 
-  public String getTenantConfiguration() {
-    return tenantConfiguration;
+  public String getTenantConfigurationZone() {
+    return tenantConfigurationZone;
   }
 
-  public void setTenantConfiguration(String tenantConfiguration) {
-    this.tenantConfiguration = tenantConfiguration;
+  public void setTenantConfigurationZone(String tenantConfigurationZone) {
+    this.tenantConfigurationZone = tenantConfigurationZone;
   }
 
   public void setMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
@@ -437,8 +442,8 @@ public class MappingParameters {
     return this;
   }
 
-  public MappingParameters withTenantConfiguration(String tenantConfiguration) {
-    this.tenantConfiguration = tenantConfiguration;
+  public MappingParameters withTenantConfigurationZone(String tenantConfigurationZone) {
+    this.tenantConfigurationZone = tenantConfigurationZone;
     return this;
   }
 
@@ -505,6 +510,71 @@ public class MappingParameters {
 
   public MappingParameters withSubjectTypes(List<SubjectType> subjectTypes) {
     this.subjectTypes = new UnmodifiableList<>(subjectTypes);
+    return this;
+  }
+
+  public List<AcquisitionsUnit> getAcquisitionsUnits() {
+    return acquisitionsUnits;
+  }
+
+  public void setAcquisitionsUnits(List<AcquisitionsUnit> acquisitionsUnits) {
+    this.acquisitionsUnits = acquisitionsUnits;
+  }
+
+  public MappingParameters withAcquisitionsUnits(List<AcquisitionsUnit> acquisitionsUnits) {
+    this.acquisitionsUnits = acquisitionsUnits;
+    return this;
+  }
+
+  public List<AcquisitionMethod> getAcquisitionMethods() {
+    return acquisitionMethods;
+  }
+
+  public void setAcquisitionMethods(List<AcquisitionMethod> acquisitionMethods) {
+    this.acquisitionMethods = acquisitionMethods;
+  }
+
+  public MappingParameters withAcquisitionMethods(List<AcquisitionMethod> acquisitionMethods) {
+    this.acquisitionMethods = acquisitionMethods;
+    return this;
+  }
+
+  public List<Fund> getFunds() {
+    return funds;
+  }
+
+  public void setFunds(List<Fund> funds) {
+    this.funds = funds;
+  }
+
+  public MappingParameters withFunds(List<Fund> funds) {
+    this.funds = funds;
+    return this;
+  }
+
+  public List<ExpenseClass> getExpenseClasses() {
+    return expenseClasses;
+  }
+
+  public void setExpenseClasses(List<ExpenseClass> expenseClasses) {
+    this.expenseClasses = expenseClasses;
+  }
+
+  public MappingParameters withExpenseClasses(List<ExpenseClass> expenseClasses) {
+    this.expenseClasses = expenseClasses;
+    return this;
+  }
+
+  public List<String> getTenantConfigurationAddresses() {
+    return tenantConfigurationAddresses;
+  }
+
+  public void setTenantConfigurationAddresses(List<String> tenantConfigurationAddresses) {
+    this.tenantConfigurationAddresses = tenantConfigurationAddresses;
+  }
+
+  public MappingParameters withTenantConfigurationAddresses(List<String> tenantConfigurationAddresses) {
+    this.tenantConfigurationAddresses = tenantConfigurationAddresses;
     return this;
   }
 }
