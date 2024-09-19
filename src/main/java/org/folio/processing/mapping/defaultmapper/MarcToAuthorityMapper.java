@@ -39,7 +39,7 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     return MARC_FORMAT;
   }
 
-  private void linkSourceFile(JsonObject parsedRecord, MappingParameters mappingParameters, Authority authority) {
+  protected void linkSourceFile(JsonObject parsedRecord, MappingParameters mappingParameters, Authority authority) {
     var sourceFiles = mappingParameters.getAuthoritySourceFiles();
     if (sourceFiles == null || sourceFiles.isEmpty()) {
       return;

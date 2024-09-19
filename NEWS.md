@@ -16,6 +16,7 @@
 * [MODDICORE-395](https://folio-org.atlassian.net/browse/MODDICORE-395) Allow creating multiple holdings/items when conditional mapping is used in field mapping profiles
 * [MODDICORE-392](https://folio-org.atlassian.net/browse/MODDICORE-392) "MARC authority" record is assigned to authority file if record's prefix includes prefix of authority file
 * [MODDICORE-390](https://folio-org.atlassian.net/browse/MODDICORE-390) Create Item action discards when stat codes are in field mapping but not incoming MARC file
+  [MODINV-1071](https://folio-org.atlassian.net/browse/MODINV-1071) Extend Authority with Additional fields
 
 ## 2023-10-11 v4.1.0
 * [MODDICORE-360](https://issues.folio.org/browse/MODDICORE-360) Migrate to folio-kafka-wrapper 3.0.0 version
