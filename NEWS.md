@@ -1,3 +1,9 @@
+## 2024-09-16 v4.2.2
+* [MODDICORE-413](https://folio-org.atlassian.net/browse/MODDICORE-413) Adjust mapping of order to fill in donor information
+
+## 2024-04-19 v4.2.1
+* [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
+
 ## 2024-03-18 v4.2.0
 * [MODDICORE-398](https://issues.folio.org/browse/MODDICORE-398) Update RMB v35.2.0, Vertx 4.5.4
 * [MODSOURMAN-1085](https://issues.folio.org/browse/MODSOURMAN-1085) MARC record with a 100 tag without a $a is being discarded on import.

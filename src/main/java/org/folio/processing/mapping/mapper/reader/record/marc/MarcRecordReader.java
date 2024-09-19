@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.folio.processing.mapping.MappingManager.VENDOR_ID;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 
@@ -82,7 +83,7 @@ public class MarcRecordReader implements Reader {
   private static final String TIMEZONE_PROPERTY = "timezone";
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
-  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider");
+  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider", "donorOrganizationIds");
   private static final String STATISTICAL_CODE_ID_FIELD = "statisticalCodeId";
   private static final String BLANK = "";
 
@@ -225,7 +226,7 @@ public class MarcRecordReader implements Reader {
     if (ruleExpression.getAcceptedValues() != null && !ruleExpression.getAcceptedValues().isEmpty()) {
       for (Map.Entry<String, String> entry : ruleExpression.getAcceptedValues().entrySet()) {
         if ((acceptedValuesMatcher != null && acceptedValuesMatcher.matches(entry.getValue(), value))
-          || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(entry.getValue(), value)) {
+          || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(ruleExpression.getName(), entry.getValue(), value)) {
           value = entry.getKey();
         }
       }
@@ -239,13 +240,15 @@ public class MarcRecordReader implements Reader {
     return value;
   }
 
-  private boolean equalsBasedOnBrackets(String mappingParameter, String value) {
+  private boolean equalsBasedOnBrackets(String ruleName, String mappingParameter, String value) {
     if (mappingParameter.contains(FIRST_BRACKET) && mappingParameter.contains(SECOND_BRACKET)) {
       if (retrieveStringFromLastBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutCode(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
+        return true;
+      } else if (ruleName.equalsIgnoreCase(VENDOR_ID) && retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
         return true;
       }
       return false;
@@ -258,11 +261,36 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveStringWithBracketsFromLastOne(String mappingParameter) {
+    if (mappingParameter.indexOf(FIRST_BRACKET) > mappingParameter.indexOf(SECOND_BRACKET))
+      return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.lastIndexOf(SECOND_BRACKET) + 1);
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
-  private String retrieveNameWithoutCode(String mappingParameter) {
-    return mappingParameter.substring(0, mappingParameter.trim().indexOf(FIRST_BRACKET) - 1);
+  private String retrieveNameWithoutBrackets(String mappingParameter) {
+    mappingParameter = mappingParameter.trim();
+
+    int startIndex = mappingParameter.startsWith(FIRST_BRACKET) ? 1 : 0;
+
+    int endIndex = findFirstParenthesesIndex(mappingParameter, startIndex);
+
+    return mappingParameter.substring(startIndex, endIndex).trim();
+  }
+
+  /**
+   * Finds the index of the first occurrence of either bracket starting from the given index.
+   * Returns the input string's length if no brackets are found.
+   * @param input             mapping parameter
+   * @param startIndex        start index of code without parentheses
+   * @return index of first occured parentheses in mapping parameter
+   */
+  private int findFirstParenthesesIndex(String input, int startIndex) {
+    for (int i = startIndex; i < input.length(); i++) {
+      char c = input.charAt(i);
+      if (c == FIRST_BRACKET.charAt(0) || c == SECOND_BRACKET.charAt(0)) {
+        return i;
+      }
+    }
+    return input.length();
   }
 
   /**
