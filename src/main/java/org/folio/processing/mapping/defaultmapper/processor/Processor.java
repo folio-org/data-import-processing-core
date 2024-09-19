@@ -2,10 +2,12 @@ package org.folio.processing.mapping.defaultmapper.processor;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.LinkedHashMap;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.folio.AuthorityExtended;
 import org.folio.processing.mapping.defaultmapper.processor.functions.NormalizationFunctionRunner;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.defaultmapper.processor.util.ExtraFieldUtil;
@@ -51,7 +53,10 @@ public class Processor<T> {
   private static final String IND_2 = "ind2";
   private static final String WILDCARD_INDICATOR = "*";
   private static final String TARGET = "target";
+  private static final String SUBFIELD = "subfield";
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
+  private static final List<String> DEFAULT_SUBFIELDS = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i",
+    "j", "k", "l", "m", "n", "o", "p", "r", "q", "s", "t", "v", "x", "y", "z", "4", "5");
 
   private JsonObject mappingRules;
 
@@ -119,7 +124,7 @@ public class Processor<T> {
     DataField dataField = ruleExecutionContext.getDataField();
     createNewComplexObj = true; // each rule will generate a new instance in an array , for an array data member
     Object[] rememberComplexObj = new Object[]{null};
-    JsonArray mappingEntry = mappingRules.getJsonArray(dataField.getTag());
+    JsonArray mappingEntry = getDataFieldMapping(dataField);
     if (mappingEntry == null) {
       return;
     }
@@ -148,6 +153,14 @@ public class Processor<T> {
         processSubFieldMapping(subFieldMapping, rememberComplexObj, ruleExecutionContext);
       }
     }
+  }
+
+  private JsonArray getDataFieldMapping(DataField dataField) {
+    JsonArray mappingArray = mappingRules.getJsonArray(dataField.getTag());
+    if (entity instanceof AuthorityExtended) {
+      return addExtraMappingsForAuthorities(dataField, mappingArray);
+    }
+    return mappingArray;
   }
 
   private boolean canProcessSubFieldMapping(JsonObject subFieldMapping, DataField dataField) {
@@ -293,7 +306,7 @@ public class Processor<T> {
 
     //push into a set so that we can do a lookup for each subfield in the marc instead
     //of looping over the array
-    Set<String> subFieldsSet = jObj.getJsonArray("subfield").stream()
+    Set<String> subFieldsSet = jObj.getJsonArray(SUBFIELD).stream()
       .filter(o -> o instanceof String)
       .map(o -> (String) o)
       .collect(Collectors.toCollection(HashSet::new));
@@ -761,7 +774,7 @@ public class Processor<T> {
     Class<?> type = Integer.TYPE;
     for (String pathSegment : path) {
       try {
-        Field field = object.getClass().getDeclaredField(pathSegment);
+        Field field = LoaderHelper.getField(object.getClass(), pathSegment);
         type = field.getType();
         if (type.isAssignableFrom(List.class) || type.isAssignableFrom(Set.class)) {
           ParameterizedType listType = (ParameterizedType) field.getGenericType();
@@ -805,7 +818,7 @@ public class Processor<T> {
     Class<?> type;
     for (String pathSegment : path) {
       try {
-        Field field = object.getClass().getDeclaredField(pathSegment);
+        Field field = LoaderHelper.getField(object.getClass(), pathSegment);
         type = field.getType();
         if (type.isAssignableFrom(List.class) || type.isAssignableFrom(Set.class)) {
 
@@ -887,4 +900,103 @@ public class Processor<T> {
     return subFieldsSet.isEmpty() || subFieldsSet.contains(Character.toString(subfield.getCode()));
   }
 
+  /**
+   * Extends regular entity mapping for 5xx field with one according to the following rules:
+   * additionally to the regular mapping adds the mapping for targets:
+   * saftBroaderTerm,  when the control subfield $w has "g" value
+   * saftNarrowerTerm, when the control subfield $w has "h" value
+   * saftEarlierHeading, when the control subfield $w has "a" value
+   * saftLaterHeading, when the control subfield $w has "b" value.
+   */
+  private JsonArray addExtraMappingsForAuthorities(final DataField dataField, final JsonArray regularMapping) {
+    boolean is5XXField = dataField.getTag().startsWith("5");
+    if (!is5XXField || dataField.getSubfield('w') == null || regularMapping == null || regularMapping.isEmpty()) {
+      return regularMapping;
+    }
+    final JsonArray extendedMapping = new JsonArray();
+    List<String> targets = retrieveTargetsFromControlSubfield(dataField);
+    List<LinkedHashMap<String, Object>> mappingList = regularMapping.getList();
+    targets.forEach(target ->  extendedMapping.addAll(createAdditionalMappingsForTarget(target, mappingList)));
+    extendedMapping.addAll(regularMapping);
+    return extendedMapping;
+  }
+
+  private List<String> retrieveTargetsFromControlSubfield(DataField dataField) {
+    List<String> targets = new ArrayList<>();
+    String subfieldData = dataField.getSubfield('w').getData();
+    if (subfieldData.contains("g")) {
+      targets.add("saftBroaderTerm");
+    }
+    if (subfieldData.contains("h")) {
+      targets.add("saftNarrowerTerm");
+    }
+    if (subfieldData.contains("a")) {
+      targets.add("saftEarlierHeading");
+    }
+    if (subfieldData.contains("b")) {
+      targets.add("saftLaterHeading");
+    }
+    return targets;
+  }
+
+  /**
+   * Constructs the list of rules to map relations like:
+   *  {
+   *     "entityPerRepeatedSubfield": false,
+   *     "entity": [
+   *       {
+   *         "target": "saftBroaderTerm.headingRef",
+   *         "description": "saftMeetingName",
+   *         "subfield": ["a","c","d","n","q","g"],
+   *         "exclusiveSubfield": ["t"],
+   *         "rules": []
+   *       },
+   *       {
+   *         "target": "saftBroaderTerm.headingType",
+   *         "description": "meetingName",
+   *         "subfield": ["a","c","d","n","q","g"],
+   *         "exclusiveSubfield": ["t"],
+   *         "rules": [
+   *           {
+   *             "conditions": [
+   *               {
+   *                 "type": "set_heading_type_by_name",
+   *                 "parameter": {"name": "meetingName"}
+   *               }
+   *             ]
+   *           }
+   *         ],
+   *         "applyRulesOnConcatenatedData": true
+   *       }
+   *     ]
+   *   }
+   */
+  private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
+    JsonArray additionalMappings = new JsonArray();
+    existingMappingList.forEach(existingMap -> {
+
+      Map<String, Object> headingRefMapping = new LinkedHashMap<>(existingMap);
+      headingRefMapping.put(TARGET, target + ".headingRef");
+      headingRefMapping.put("description", existingMap.get(TARGET));
+
+      Map<String, Object>  headingTypeMapping = new LinkedHashMap<>(existingMap);
+      headingTypeMapping.put(TARGET, target + ".headingType");
+      headingTypeMapping.put("description", getHeadingType(existingMap.get(TARGET)));
+      headingTypeMapping.put("applyRulesOnConcatenatedData", true);
+      JsonArray entityRules = JsonArray.of(new JsonObject(Map.of("conditions",
+        JsonArray.of(JsonObject.of("type", "set_heading_type_by_name",
+          "parameter", JsonObject.of("name", getHeadingType(existingMap.get(TARGET))))))));
+      headingTypeMapping.put("rules", entityRules);
+
+      JsonObject additionalMapping = JsonObject.of("entityPerRepeatedSubfield", false,
+        "entity", JsonArray.of(headingRefMapping, headingTypeMapping));
+      additionalMappings.add(additionalMapping);
+    });
+    return additionalMappings;
+  }
+
+  private static Object getHeadingType(Object headingField) {
+    String headingRType = headingField.toString().replace("saft", "");
+    return Character.toLowerCase(headingRType.charAt(0)) + headingRType.substring(1);
+  }
 }

@@ -145,3 +145,12 @@ MappingManager calls Mapper to perform the mapping itself. Steps:
 at the [FOLIO issue tracker](https://dev.folio.org/guidelines/issue-tracker).
 
 * Other FOLIO Developer documentation is at [dev.folio.org](https://dev.folio.org/)
+
+## Extended Authority Mapping
+There is an extended Authority Mapping introduced to support advanced references classification in 5xx fields:
+* broader terms (`$wg` tag)
+* narrower terms (`$wh` tag)
+* earlier headings (`$wa` tag)
+* later headings (`$wb` tag)
+
+To support this functionality `AuthorityExtended` is used together with `MarkToAuthorityExtendedMapper`.

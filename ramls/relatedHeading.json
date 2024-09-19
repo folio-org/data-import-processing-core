@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "Related heading for BroaderTerm/NarrowerTerm/LaterHeading/EarlierHeading",
+  "type": "object",
+  "properties": {
+    "headingRef": {
+      "type": "string",
+      "description": "HeadingRef value"
+    },
+    "headingType": {
+      "type": "string",
+      "description": "Heading type"
+    }
+  },
+  "required": [
+    "headingRef",
+    "headingType"
+  ]
+}
