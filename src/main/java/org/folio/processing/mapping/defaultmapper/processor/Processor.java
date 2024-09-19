@@ -53,6 +53,7 @@ public class Processor<T> {
   private static final String IND_2 = "ind2";
   private static final String WILDCARD_INDICATOR = "*";
   private static final String TARGET = "target";
+  private static final String DESCRIPTION = "description";
   private static final String SUBFIELD = "subfield";
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
   private static final List<String> DEFAULT_SUBFIELDS = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i",
@@ -977,11 +978,11 @@ public class Processor<T> {
 
       Map<String, Object> headingRefMapping = new LinkedHashMap<>(existingMap);
       headingRefMapping.put(TARGET, target + ".headingRef");
-      headingRefMapping.put("description", existingMap.get(TARGET));
+      headingRefMapping.put(DESCRIPTION, existingMap.get(TARGET));
 
       Map<String, Object>  headingTypeMapping = new LinkedHashMap<>(existingMap);
       headingTypeMapping.put(TARGET, target + ".headingType");
-      headingTypeMapping.put("description", getHeadingType(existingMap.get(TARGET)));
+      headingTypeMapping.put(DESCRIPTION, getHeadingType(existingMap.get(TARGET)));
       headingTypeMapping.put("applyRulesOnConcatenatedData", true);
       JsonArray entityRules = JsonArray.of(new JsonObject(Map.of("conditions",
         JsonArray.of(JsonObject.of("type", "set_heading_type_by_name",
