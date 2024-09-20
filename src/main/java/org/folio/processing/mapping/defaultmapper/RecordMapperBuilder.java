@@ -8,8 +8,8 @@ import java.util.List;
 public final class RecordMapperBuilder {
 
   @SuppressWarnings("rawtypes")
-  private static final List<RecordMapper> mappers = List.of(new MarcToInstanceMapper(), new MarcToHoldingsMapper(),
-    new MarcToAuthorityMapper(), new MarkToAuthorityExtendedMapper());
+  private static final List<RecordMapper> mappers = List.of(new MarcToInstanceMapper(), new MarcToHoldingsMapper(), new MarcToAuthorityMapper());
+
   private RecordMapperBuilder() {
   }
 

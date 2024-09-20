@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import org.folio.AuthorityExtended;
 
 public class LoaderHelper {
 
@@ -21,7 +20,7 @@ public class LoaderHelper {
     for (int i = 0; i < path.length; i++) {
       Field field;
       try {
-        field = getField(object.getClass(), path[i]);
+        field = object.getClass().getDeclaredField(path[i]);
       } catch (NoSuchFieldException e) {
         return false;
       }
@@ -60,17 +59,5 @@ public class LoaderHelper {
     } catch (IOException e) {
       LOGGER.error(e.getMessage(), e);
     }
-  }
-
-  public static Field getField(Class<?> clazz, String fieldName) throws NoSuchFieldException {
-    if (clazz == AuthorityExtended.class) {
-      try {
-        return clazz.getDeclaredField(fieldName);
-      }
-      catch (NoSuchFieldException e) {
-        return clazz.getSuperclass().getDeclaredField(fieldName);
-      }
-    }
-    return clazz.getDeclaredField(fieldName);
   }
 }
