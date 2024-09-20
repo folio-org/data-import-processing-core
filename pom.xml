@@ -303,6 +303,14 @@
                 <path>${basedir}/ramls/settings/organization_collection.json</path>
                 <path>${basedir}/ramls/settings/subjectSources.json</path>
                 <path>${basedir}/ramls/settings/subjectTypes.json</path>
+                <path>${basedir}/ramls/settings/acquisitions_unit.json</path>
+                <path>${basedir}/ramls/settings/acquisitions_unit_collection.json</path>
+                <path>${basedir}/ramls/settings/acquisition_method.json</path>
+                <path>${basedir}/ramls/settings/acquisition_method_collection.json</path>
+                <path>${basedir}/ramls/settings/fund.json</path>
+                <path>${basedir}/ramls/settings/fund_collection.json</path>
+                <path>${basedir}/ramls/settings/expense_class.json</path>
+                <path>${basedir}/ramls/settings/expense_class_collection.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>
