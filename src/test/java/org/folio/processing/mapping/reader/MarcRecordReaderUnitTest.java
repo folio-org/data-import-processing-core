@@ -832,7 +832,7 @@ public class MarcRecordReaderUnitTest {
     MappingContext mappingContext = new MappingContext();
     mappingContext.setMappingParameters(new MappingParameters()
       .withInitializedState(true)
-      .withTenantConfiguration("{\"locale\":\"en-US\",\"timezone\":\"Pacific/Kiritimati\",\"currency\":\"USD\"}"));
+      .withTenantConfigurationZone("{\"locale\":\"en-US\",\"timezone\":\"Pacific/Kiritimati\",\"currency\":\"USD\"}"));
 
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -863,7 +863,7 @@ public class MarcRecordReaderUnitTest {
     eventPayload.setContext(context);
 
     MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withTenantConfiguration("{\"locale\":\"en-US\",\"timezone\":\"asdas/sadas\",\"currency\":\"USD\"}")
+      .withTenantConfigurationZone("{\"locale\":\"en-US\",\"timezone\":\"asdas/sadas\",\"currency\":\"USD\"}")
       .withInitializedState(true));
 
     Reader reader = new MarcBibReaderFactory().createReader();

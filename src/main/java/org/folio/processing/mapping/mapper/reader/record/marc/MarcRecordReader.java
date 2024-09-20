@@ -331,12 +331,12 @@ public class MarcRecordReader implements Reader {
   private void processTodayExpression(StringBuilder sb, StringBuilder multipleStringBuilder) {
     try {
       DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
-      String tenantConfiguration = this.mappingParameters.getTenantConfiguration();
+      String tenantConfigurationZone = this.mappingParameters.getTenantConfigurationZone();
       String tenantTimezone;
-      if (isTimezoneParameterIsEmpty(tenantConfiguration)) {
+      if (isTimezoneParameterIsEmpty(tenantConfigurationZone)) {
         tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
       } else {
-        tenantTimezone = new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY);
+        tenantTimezone = new JsonObject(tenantConfigurationZone).getString(TIMEZONE_PROPERTY);
       }
       ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
       sb.append(isoFormatter.format(utcZonedDateTime));
