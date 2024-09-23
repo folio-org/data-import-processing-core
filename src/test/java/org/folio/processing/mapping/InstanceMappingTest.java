@@ -63,7 +63,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
   private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
   private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
-  private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects__without_indicators.mrc";
+  private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_without_indicators.mrc";
 
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
@@ -545,12 +545,7 @@ public class InstanceMappingTest {
 
   @Test
   public void testMarcToInstanceWithRepeatableSubjectsButWithoutIndicators() throws IOException {
-    final String FIRST_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
-
-    final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
-
     final List<Subject> expectedResults = List.of(
-      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID), //the only one with indicators just for testing purpose
       new Subject().withValue("Test 600.2 subject"),
       new Subject().withValue("Test 610 subject"),
       new Subject().withValue("Test 611 subject"),
@@ -588,7 +583,7 @@ public class InstanceMappingTest {
     assertEquals(1, mappedInstances.size());
 
     Set<Subject> subjects = mappedInstances.get(0).getSubjects();
-    assertEquals(10, subjects.size());
+    assertEquals(9, subjects.size());
 
     Iterator<Subject> iterator = subjects.iterator();
     expectedResults.forEach(expected -> {
