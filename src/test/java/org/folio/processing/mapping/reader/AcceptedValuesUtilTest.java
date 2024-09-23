@@ -46,7 +46,7 @@ public class AcceptedValuesUtilTest {
             "temporaryLoanType.id", "permanentLocation.id", "temporaryLocation.id");
   private static final List<String> ORDER_ACCEPTED_VALUES_RULES =
     List.of("acqUnitIds", "billTo", "shipTo", "contributorNameTypeId", "productIdType",
-      "acquisitionMethod", "fundId", "expenseClassId", "locationId", "materialType", "accessProvider", "vendor", "donorOrganizationIds");
+      "acquisitionMethod", "fundId", "expenseClassId", "locationId", "materialType", "accessProvider", "vendor", "materialSupplier", "donorOrganizationIds");
   private static final String TEST_NAME = "testName";
   public static final String TEST_ADDRESS_TEMPLATE = "{\"id\":\"%s\", \"name\":\"%s\",\"address\":\"Test2\"}";
 
@@ -110,9 +110,26 @@ public class AcceptedValuesUtilTest {
       .withMaterialTypes(List.of(new Mtype().withId(testUUID + "materialType").withName(TEST_NAME)))
       .withOrganizations(List.of(new Organization().withId(testUUID + "accessProvider").withName(TEST_NAME),
         new Organization().withId(testUUID + "vendor").withName(TEST_NAME),
-        new Organization().withId(testUUID + "donorOrganizationIds").withIsDonor(true).withName(TEST_NAME)));
+        new Organization().withId(testUUID + "donorOrganizationIds").withIsDonor(true).withName(TEST_NAME),
+        new Organization().withId(testUUID + "materialSupplier").withName(TEST_NAME)));
 
     testAcceptedValues(ORDER_ACCEPTED_VALUES_RULES, mappingParameters, testUUID);
+  }
+
+  @Test
+  public void shouldReturnEmptyAcceptedValuesIfIdIsNull() {
+    Map<String, String> map = AcceptedValuesUtil.getAcceptedValues("billTo",
+      new MappingParameters().withTenantConfigurationAddresses(List.of("{\"name\":\"test\",\"address\":\"Test2\"}")));
+
+    assertTrue(map.isEmpty());
+  }
+
+  @Test
+  public void shouldReturnEmptyAcceptedValuesIfNameIsNull() {
+    Map<String, String> map = AcceptedValuesUtil.getAcceptedValues("billTo",
+      new MappingParameters().withTenantConfigurationAddresses(List.of("{\"id\":\"test\",\"address\":\"Test2\"}")));
+
+    assertTrue(map.isEmpty());
   }
 
   private void testAcceptedValues(List<String> acceptedValuesRules, MappingParameters mappingParameters, String uuid) {
