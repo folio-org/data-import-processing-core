@@ -98,7 +98,7 @@ public class AcceptedValuesUtil {
     List<?> mappingParameter = ruleNameToMappingParameter.get(ruleName).apply(mappingParameters);
 
     mappingParameter.forEach(o -> {
-      JsonObject jsonObject = o instanceof String ? new JsonObject((String) o) : JsonObject.mapFrom(o);
+      JsonObject jsonObject = o instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(o);
 
       String idField = jsonObject.getString(ID_PROPERTY);
       String nameField = jsonObject.getString(NAME_PROPERTY);
