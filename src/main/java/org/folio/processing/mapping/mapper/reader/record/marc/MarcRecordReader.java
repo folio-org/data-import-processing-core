@@ -223,7 +223,7 @@ public class MarcRecordReader implements Reader {
     AcceptedValuesMatcher acceptedValuesMatcher = Objects.isNull(ruleExpression.getName()) ? null
       : acceptedValuesMatchers.get(ruleExpression.getName());
 
-    HashMap<String, String> acceptedValues = getAcceptedValues(ruleExpression.getName(), mappingParameters);
+    Map<String, String> acceptedValues = getAcceptedValues(ruleExpression.getName(), mappingParameters);
 
     if (!acceptedValues.isEmpty()) {
       for (Map.Entry<String, String> entry : acceptedValues.entrySet()) {

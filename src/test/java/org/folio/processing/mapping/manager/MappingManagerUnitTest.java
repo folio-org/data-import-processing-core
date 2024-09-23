@@ -6,9 +6,7 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.Holdings;
 import org.folio.Instance;
-import org.folio.Location;
 import org.folio.MappingProfile;
-import org.folio.Organization;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.StatisticalCode;
@@ -40,11 +38,9 @@ import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.EntityType.ORDER;
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class MappingManagerUnitTest {

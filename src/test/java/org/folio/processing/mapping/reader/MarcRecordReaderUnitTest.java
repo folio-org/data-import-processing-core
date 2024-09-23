@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.folio.AcquisitionsUnit;
 import org.folio.DataImportEventPayload;
 import org.folio.ElectronicAccessRelationship;
 import org.folio.Holdings;
@@ -27,7 +28,6 @@ import org.folio.processing.value.Value;
 import org.folio.processing.value.Value.ValueType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -46,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -1325,8 +1326,6 @@ public class MarcRecordReaderUnitTest {
     assertEquals("K)U/CC(/D)I/M)", value.getValue());
   }
 
-  //TODO After adding PO mapping parameters
-  @Ignore
   @Test
   public void shouldRead_OrderComplexField() throws IOException {
     // given
@@ -1334,28 +1333,24 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
+    String addressId = UUID.randomUUID().toString();
+    String address = String.format("{\"id\":\"%s\", \"name\":\"Test1\",\"address\":\"Test2\"}", addressId);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withTenantConfigurationAddresses(List.of(address))));
     // when
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc084", "suf");
-    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", "pref");
 
     Value value = reader.read(new MappingRule()
-      .withName("prefix")
-      .withPath("order.po.poNumberPrefix")
+      .withName("billTo")
+      .withPath("order.po.billTo")
       .withEnabled("true")
-      .withValue("\"pref\"")
-      .withAcceptedValues(acceptedValues));
+      .withValue("\"Test1\""));
 
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
-    assertEquals("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", value.getValue());
+    assertEquals(addressId, value.getValue());
   }
 
-  //TODO After adding PO mapping parameters
-  @Ignore
   @Test
   public void shouldRead_OrderArrayNonRepeatableField() throws IOException {
     // given
@@ -1363,12 +1358,12 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
-    List<Organization> organizations = List.of(
-      new Organization().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc042").withName("online"),
-      new Organization().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc041").withName("main"));
+    List<AcquisitionsUnit> acqUnits = List.of(
+      new AcquisitionsUnit().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc042").withName("online"),
+      new AcquisitionsUnit().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc041").withName("main"));
 
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withAcquisitionsUnits(acqUnits)));
     // when
     Value value = reader.read(new MappingRule()
       .withName("acqUnitIds")

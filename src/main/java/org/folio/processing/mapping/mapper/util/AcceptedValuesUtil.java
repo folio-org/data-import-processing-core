@@ -1,21 +1,21 @@
 package org.folio.processing.mapping.mapper.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import io.vertx.core.json.JsonObject;
 import org.folio.Organization;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.Map.entry;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.CODE_PROPERTY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.ID_PROPERTY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAME_PROPERTY;
 
 public class AcceptedValuesUtil {
-  private static final Logger LOGGER = LogManager.getLogger(AcceptedValuesUtil.class);
+  private static final String VALUE_PROPERTY = "value";
 
   private static final String HOLDINGS_PERMANENT_LOCATION_ID = "permanentLocationId";
   private static final String HOLDINGS_TEMPORARY_LOCATION_ID = "temporaryLocationId";
@@ -37,12 +37,19 @@ public class AcceptedValuesUtil {
   private static final String ITEM_TEMPORARY_LOCATION_ID = "temporaryLocation.id";
   private static final String ITEM_DAMAGED_STATUS_ID = "itemDamagedStatusId";
   private static final String CONTRIBUTOR_NAME_TYPE_ID = "contributorNameTypeId";
-  private static final String ORDER_LOCATION = "locationId";
-  private static final String ORDER_MATERIAL_TYPE = "materialType";
   private static final String VENDOR = "vendor";
   private static final String MATERIAL_SUPPLIER = "materialSupplier";
   private static final String ACCESS_PROVIDER = "accessProvider";
   private static final String DONOR_ORGANIZATION_IDS = "donorOrganizationIds";
+  private static final String ORDER_LOCATION = "locationId";
+  private static final String ORDER_MATERIAL_TYPE = "materialType";
+  private static final String ACQUISITION_UNIT_IDS = "acqUnitIds";
+  private static final String BILL_TO = "billTo";
+  private static final String SHIP_TO = "shipTo";
+  private static final String PRODUCT_ID_TYPE = "productIdType";
+  private static final String ACQUISITION_METHOD = "acquisitionMethod";
+  private static final String FUND_ID = "fundId";
+  private static final String EXPENSE_CLASS_ID = "expenseClassId";
 
   private static final Map<String, Function<MappingParameters, List<?>>> ruleNameToMappingParameter = Map.ofEntries(
     entry(HOLDINGS_PERMANENT_LOCATION_ID, MappingParameters::getLocations),
@@ -70,9 +77,18 @@ public class AcceptedValuesUtil {
     entry(VENDOR, MappingParameters::getOrganizations),
     entry(MATERIAL_SUPPLIER, MappingParameters::getOrganizations),
     entry(ACCESS_PROVIDER, MappingParameters::getOrganizations),
-    entry(DONOR_ORGANIZATION_IDS, AcceptedValuesUtil::getDonorOrganizationsFromMappingParameters));
+    entry(DONOR_ORGANIZATION_IDS, AcceptedValuesUtil::getDonorOrganizationsFromMappingParameters),
+    entry(ACQUISITION_UNIT_IDS, MappingParameters::getAcquisitionsUnits),
+    entry(BILL_TO, MappingParameters::getTenantConfigurationAddresses),
+    entry(SHIP_TO, MappingParameters::getTenantConfigurationAddresses),
+    entry(PRODUCT_ID_TYPE, MappingParameters::getIdentifierTypes),
+    entry(ACQUISITION_METHOD, MappingParameters::getAcquisitionMethods),
+    entry(FUND_ID, MappingParameters::getFunds),
+    entry(EXPENSE_CLASS_ID, MappingParameters::getExpenseClasses));
 
-  public static HashMap<String, String> getAcceptedValues(String ruleName, MappingParameters mappingParameters) {
+  private AcceptedValuesUtil() {}
+
+  public static Map<String, String> getAcceptedValues(String ruleName, MappingParameters mappingParameters) {
     HashMap<String, String> acceptedValues = new HashMap<>();
 
     if (!ruleNameToMappingParameter.containsKey(ruleName)) {
@@ -82,42 +98,27 @@ public class AcceptedValuesUtil {
     List<?> mappingParameter = ruleNameToMappingParameter.get(ruleName).apply(mappingParameters);
 
     mappingParameter.forEach(o -> {
-      Class<?> paramClass = o.getClass();
+      JsonObject jsonObject = o instanceof String ? new JsonObject((String) o) : JsonObject.mapFrom(o);
 
-      Optional<Object> id = invokeClassMethod(paramClass, "getId", null, o, null);
-      Optional<Object> name = invokeClassMethod(paramClass, "getName", null, o, null);
-      Optional<Object> code = invokeClassMethod(paramClass, "getCode", null, o, null);
+      String idField = jsonObject.getString(ID_PROPERTY);
+      String nameField = jsonObject.getString(NAME_PROPERTY);
+      String valueField = jsonObject.getString(VALUE_PROPERTY);
+      String codeField = jsonObject.getString(CODE_PROPERTY);
 
-      if (id.isPresent() && name.isPresent()) {
+      if (idField != null && (nameField != null || valueField != null)) {
         StringBuilder value = new StringBuilder()
-          .append(name.get());
+          .append(nameField != null ? nameField : valueField);
 
-        code.ifPresent(object ->
+        if (codeField != null) {
           value.append(" (")
-            .append(object)
-            .append(")"));
-        acceptedValues.put(id.get().toString(), String.valueOf(value));
+            .append(codeField)
+            .append(")");
+        }
+        acceptedValues.put(idField, String.valueOf(value));
       }
     });
 
     return acceptedValues;
-  }
-
-  private static Optional<Object> invokeClassMethod(Class<?> objectClass, String methodName, Object[] args, Object o, Class<?>[] parameterTypes) {
-    try {
-      if (isClassContainsMethod(methodName, objectClass)) {
-        return Optional.ofNullable(objectClass.getMethod(methodName, parameterTypes).invoke(o, args));
-      }
-      return Optional.empty();
-    } catch (Exception e) {
-      String errorMessage = String.format("Error during invoke of class method, class: %s, method: %s", objectClass, methodName);
-      LOGGER.warn("invokeClassMethod:: " + errorMessage, e);
-      throw new IllegalArgumentException(errorMessage, e);
-    }
-  }
-
-  private static boolean isClassContainsMethod(String methodName, Class<?> objectClass) {
-    return Arrays.stream(objectClass.getMethods()).anyMatch(method -> methodName.equals(method.getName()));
   }
 
   private static List<Organization> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
