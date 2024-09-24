@@ -2,11 +2,14 @@ package org.folio.processing.mapping.mapper.util;
 
 import io.vertx.core.json.JsonObject;
 import org.folio.Organization;
+import org.folio.StatisticalCodeType;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 import static java.util.Map.entry;
@@ -16,6 +19,7 @@ import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAM
 
 public class AcceptedValuesUtil {
   private static final String VALUE_PROPERTY = "value";
+  private static final String STATISTICAL_CODE_TEMPLATE = "%s: %s - %s";
 
   private static final String HOLDINGS_PERMANENT_LOCATION_ID = "permanentLocationId";
   private static final String HOLDINGS_TEMPORARY_LOCATION_ID = "temporaryLocationId";
@@ -60,7 +64,7 @@ public class AcceptedValuesUtil {
     entry(HOLDINGS_TYPE_ID, MappingParameters::getHoldingsTypes),
     entry(CALL_NUMBER_TYPE_ID, MappingParameters::getCallNumberTypes),
     entry(ILL_POLICY_ID, MappingParameters::getIllPolicies),
-    entry(STATISTICAL_CODE_ID, MappingParameters::getStatisticalCodes),
+    entry(STATISTICAL_CODE_ID, AcceptedValuesUtil::getStatisticalCode),
     entry(NOTE_TYPE, MappingParameters::getHoldingsNoteTypes),
     entry(RELATIONSHIP_ID, MappingParameters::getElectronicAccessRelationships),
     entry(MATERIAL_TYPE_ID, MappingParameters::getMaterialTypes),
@@ -124,5 +128,21 @@ public class AcceptedValuesUtil {
   private static List<Organization> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
     return mappingParameters.getOrganizations().stream()
             .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor())).toList();
+  }
+
+  private static List<JsonObject> getStatisticalCode(MappingParameters mappingParameters) {
+    return mappingParameters.getStatisticalCodes().stream()
+      .map(statCode -> {
+        Optional<StatisticalCodeType> statCodeType = mappingParameters
+          .getStatisticalCodeTypes().stream()
+          .filter(codeType -> codeType.getId().equals(statCode.getStatisticalCodeTypeId())).findAny();
+        if (statCodeType.isPresent()) {
+          String formattedStatCode = String.format(STATISTICAL_CODE_TEMPLATE, statCodeType.get().getName(), statCode.getCode(),
+            statCode.getName());
+
+          return new JsonObject().put(ID_PROPERTY, statCode.getId()).put(VALUE_PROPERTY, formattedStatCode);
+        }
+        return null;
+      }).filter(Objects::nonNull).toList();
   }
 }

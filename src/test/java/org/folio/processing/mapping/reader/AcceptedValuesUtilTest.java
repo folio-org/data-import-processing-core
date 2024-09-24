@@ -21,6 +21,7 @@ import org.folio.Mtype;
 import org.folio.NatureOfContentTerm;
 import org.folio.Organization;
 import org.folio.StatisticalCode;
+import org.folio.StatisticalCodeType;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.util.AcceptedValuesUtil;
 import org.junit.Test;
@@ -38,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JUnit4.class)
 public class AcceptedValuesUtilTest {
   private static final List<String> INSTANCE_ACCEPTED_VALUES_RULES =
-    List.of("statusId", "statisticalCodeId", "natureOfContentTermId", "instanceRelationshipTypeId");
+    List.of("statusId", "natureOfContentTermId", "instanceRelationshipTypeId");
   private static final List<String> HOLDINGS_ACCEPTED_VALUES_RULES =
     List.of("holdingsTypeId", "permanentLocationId", "temporaryLocationId", "callNumberTypeId", "illPolicyId", "noteType", "relationshipId");
   private static final List<String> ITEM_ACCEPTED_VALUES_RULES =
@@ -56,7 +57,6 @@ public class AcceptedValuesUtilTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withInstanceStatuses(List.of(new InstanceStatus().withId(testUUID + "statusId").withName(TEST_NAME)))
-      .withStatisticalCodes(List.of(new StatisticalCode().withId(testUUID + "statisticalCodeId").withName(TEST_NAME)))
       .withNatureOfContentTerms(List.of(new NatureOfContentTerm().withId(testUUID + "natureOfContentTermId").withName(TEST_NAME)))
       .withInstanceRelationshipTypes(List.of(new InstanceRelationshipType().withId(testUUID + "instanceRelationshipTypeId").withName(TEST_NAME)));
 
@@ -130,6 +130,22 @@ public class AcceptedValuesUtilTest {
       new MappingParameters().withTenantConfigurationAddresses(List.of("{\"id\":\"test\",\"address\":\"Test2\"}")));
 
     assertTrue(map.isEmpty());
+  }
+
+  @Test
+  public void testStatisticalCodeFormation() {
+    String statCodeUUID = UUID.randomUUID().toString();
+    String statCodeTypeUUID = UUID.randomUUID().toString();
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withStatisticalCodes(List.of(new StatisticalCode().withId(statCodeUUID).withName("Test Code").withCode("test").withStatisticalCodeTypeId(statCodeTypeUUID)))
+      .withStatisticalCodeTypes(List.of(new StatisticalCodeType().withId(statCodeTypeUUID).withName("TEST (testing)")));
+
+    Map<String, String> acceptedValues = AcceptedValuesUtil.getAcceptedValues("statisticalCodeId", mappingParameters);
+
+    assertFalse(acceptedValues.isEmpty());
+    assertTrue(acceptedValues.containsKey(statCodeUUID));
+    assertEquals("TEST (testing): test - Test Code", acceptedValues.get(statCodeUUID));
   }
 
   private void testAcceptedValues(List<String> acceptedValuesRules, MappingParameters mappingParameters, String uuid) {
