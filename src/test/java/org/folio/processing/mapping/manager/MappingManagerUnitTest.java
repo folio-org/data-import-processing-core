@@ -10,6 +10,7 @@ import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.StatisticalCode;
+import org.folio.StatisticalCodeType;
 import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
@@ -191,12 +192,19 @@ public class MappingManagerUnitTest {
     List<StatisticalCode> statisticalCodes = List.of(
       new StatisticalCode()
         .withId("uuid1")
-        .withName("TEST (test code type): abc - abd"),
+        .withCode("abc")
+        .withName("abd")
+        .withStatisticalCodeTypeId("uuid1"),
       new StatisticalCode()
         .withId("uuid2")
         .withCode("bbc")
-        .withName("TEST (test code type): bbc - bbd")
-    );
+        .withName("bbd")
+        .withStatisticalCodeTypeId("uuid1"));
+
+    List<StatisticalCodeType> statisticalCodeTypes = List.of(
+      new StatisticalCodeType()
+        .withId("uuid1")
+        .withName("TEST (test code type)"));
 
 
     MappingProfile mappingProfile = new MappingProfile()
@@ -251,7 +259,7 @@ public class MappingManagerUnitTest {
     eventPayload.setCurrentNode(mappingProfileWrapper);
 
     MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withStatisticalCodes(statisticalCodes));
+      .withStatisticalCodes(statisticalCodes).withStatisticalCodeTypes(statisticalCodeTypes));
 
     MappingManager.registerReaderFactory(new MarcBibReaderFactory());
     MappingManager.registerWriterFactory(new WriterFactory() {
