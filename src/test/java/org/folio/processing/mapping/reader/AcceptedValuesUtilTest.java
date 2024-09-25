@@ -133,6 +133,13 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
+  public void shouldReturnEmptyAcceptedValuesIfRuleNameIsNull() {
+    Map<String, String> map = AcceptedValuesUtil.getAcceptedValues(null, new MappingParameters());
+
+    assertTrue(map.isEmpty());
+  }
+
+  @Test
   public void testStatisticalCodeFormation() {
     String statCodeUUID = UUID.randomUUID().toString();
     String statCodeTypeUUID = UUID.randomUUID().toString();

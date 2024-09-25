@@ -95,7 +95,7 @@ public class AcceptedValuesUtil {
   public static Map<String, String> getAcceptedValues(String ruleName, MappingParameters mappingParameters) {
     HashMap<String, String> acceptedValues = new HashMap<>();
 
-    if (!ruleNameToMappingParameter.containsKey(ruleName)) {
+    if (ruleName == null || !ruleNameToMappingParameter.containsKey(ruleName)) {
       return acceptedValues;
     }
 

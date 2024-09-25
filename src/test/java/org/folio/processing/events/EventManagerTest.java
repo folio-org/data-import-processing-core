@@ -5,7 +5,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.mguenther.kafka.junit.EmbeddedKafkaCluster;
-import net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig;
 import org.folio.kafka.KafkaConfig;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -14,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static net.mguenther.kafka.junit.EmbeddedKafkaCluster.provisionWith;
+import static net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig.defaultClusterConfig;
 
 @RunWith(VertxUnitRunner.class)
 public class EventManagerTest {
@@ -22,7 +22,7 @@ public class EventManagerTest {
   @Rule
   public RunTestOnContext rule = new RunTestOnContext();
   @ClassRule
-  public static EmbeddedKafkaCluster kafkaCluster = provisionWith(EmbeddedKafkaClusterConfig.useDefaults());
+  public static EmbeddedKafkaCluster kafkaCluster = provisionWith(defaultClusterConfig());
   private static KafkaConfig kafkaConfig;
 
   @BeforeClass
