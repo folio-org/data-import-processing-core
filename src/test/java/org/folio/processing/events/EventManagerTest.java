@@ -21,12 +21,13 @@ public class EventManagerTest {
 
   @Rule
   public RunTestOnContext rule = new RunTestOnContext();
-  @ClassRule
-  public static EmbeddedKafkaCluster kafkaCluster = provisionWith(defaultClusterConfig());
+  public static EmbeddedKafkaCluster kafkaCluster;
   private static KafkaConfig kafkaConfig;
 
   @BeforeClass
   public static void setUpClass() {
+    kafkaCluster = provisionWith(defaultClusterConfig());
+    kafkaCluster.start();
     String[] hostAndPort = kafkaCluster.getBrokerList().split(":");
     kafkaConfig = KafkaConfig.builder()
       .kafkaHost(hostAndPort[0])
