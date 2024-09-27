@@ -175,6 +175,7 @@ public final class MappingManager {
   private static void populateDonorOrganizations(MappingRule mappingRule, HashMap<String, String> donorOrganizations) {
     mappingRule.getSubfields().stream()
       .flatMap(subfieldMapping -> subfieldMapping.getFields().stream())
+      .filter(rule -> !rule.getValue().isEmpty())
       .forEach(rule -> rule.setAcceptedValues(donorOrganizations));
   }
 

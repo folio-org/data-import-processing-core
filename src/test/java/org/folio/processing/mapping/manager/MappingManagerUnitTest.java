@@ -44,6 +44,7 @@ import static org.folio.rest.jaxrs.model.EntityType.ORDER;
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
@@ -264,6 +265,83 @@ public class MappingManagerUnitTest {
       String expectedAcceptedValue = String.format("CODE-1 (%s)", expectedOrganizationId);
       assertEquals(expectedAcceptedValue, mappingRule.getAcceptedValues().get(expectedOrganizationId));
     }
+  }
+
+  @Test
+  public void shouldNotMap_inValidDonorOrganizations() {
+    // given
+    MappingRule donorsMappingRule = new MappingRule()
+      .withName("donorOrganizationIds")
+      .withEnabled("true")
+      .withPath("order.poLine.donorOrganizationIds[]")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("\"CODE-1\""))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("\"CODE-2\""))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("")))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(ORDER)
+      .withMappingDetails(new MappingDetail()
+        .withMappingFields(List.of(donorsMappingRule)));
+
+    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper()
+      .withContentType(MAPPING_PROFILE)
+      .withContent(mappingProfile);
+
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()));
+    context.put(ORDER.value(), new JsonObject().encode());
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
+      .withCurrentNode(mappingProfileWrapper)
+      .withContext(context);
+
+    String expectedOrganizationId = UUID.randomUUID().toString();
+    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
+      .withOrganizations(List.of(
+        new Organization()
+          .withId(expectedOrganizationId)
+          .withIsDonor(true)
+          .withName("NAME-1")
+          .withCode("CODE-1"),
+        new Organization()
+          .withId(UUID.randomUUID().toString())
+          .withName("NAME-2")
+          .withCode("CODE-2"))
+      ));
+
+    // when
+    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+    MappingManager.registerWriterFactory(new TestOrderWriterFactory());
+    MappingManager.map(eventPayload, mappingContext);
+
+    // then
+    assertEquals(3, donorsMappingRule.getSubfields().size());
+    MappingRule mappingRule = donorsMappingRule.getSubfields().get(2).getFields().get(0);
+    assertNull(mappingRule.getAcceptedValues());
   }
 
   @Test(expected = RuntimeException.class)
