@@ -17,6 +17,9 @@ import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.COD
 import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.ID_PROPERTY;
 import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAME_PROPERTY;
 
+/**
+ * Retrieves accepted values from MappingParameters
+ */
 public class AcceptedValuesUtil {
   private static final String VALUE_PROPERTY = "value";
   private static final String STATISTICAL_CODE_TEMPLATE = "%s: %s - %s";
@@ -101,8 +104,8 @@ public class AcceptedValuesUtil {
 
     List<?> mappingParameter = ruleNameToMappingParameter.get(ruleName).apply(mappingParameters);
 
-    mappingParameter.forEach(o -> {
-      JsonObject jsonObject = o instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(o);
+    mappingParameter.forEach(parameter -> {
+      JsonObject jsonObject = parameter instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(parameter);
 
       String idField = jsonObject.getString(ID_PROPERTY);
       String nameField = jsonObject.getString(NAME_PROPERTY);
@@ -110,19 +113,23 @@ public class AcceptedValuesUtil {
       String codeField = jsonObject.getString(CODE_PROPERTY);
 
       if (idField != null && (nameField != null || valueField != null)) {
-        StringBuilder value = new StringBuilder()
-          .append(nameField != null ? nameField : valueField);
-
-        if (codeField != null) {
-          value.append(" (")
-            .append(codeField)
-            .append(")");
-        }
-        acceptedValues.put(idField, String.valueOf(value));
+        acceptedValues.put(idField, formAcceptedValue(nameField, valueField, codeField));
       }
     });
 
     return acceptedValues;
+  }
+
+  private static String formAcceptedValue(String nameField, String valueField, String codeField) {
+    StringBuilder value = new StringBuilder()
+      .append(nameField != null ? nameField : valueField);
+
+    if (codeField != null) {
+      value.append(" (")
+        .append(codeField)
+        .append(")");
+    }
+    return String.valueOf(value);
   }
 
   private static List<Organization> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
