@@ -15,9 +15,9 @@ public final class MatchIdProcessorUtil {
 
   public static final String MAPPING_PARAMS_KEY = "MAPPING_PARAMS";
   public static final String RELATIONS_KEY = "MATCHING_PARAMETERS_RELATIONS";
-  private static final String NAME_PROPERTY = "name";
-  private static final String ID_PROPERTY = "id";
-  private static final String CODE_PROPERTY = "code";
+  public static final String NAME_PROPERTY = "name";
+  public static final String ID_PROPERTY = "id";
+  public static final String CODE_PROPERTY = "code";
   private static final String LOCATIONS_PROPERTY = "locations";
 
   private MatchIdProcessorUtil() {
