@@ -453,7 +453,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       }
 
       return subjectSources.stream()
-        .filter(subjectSource -> subjectSource.getCode() != null && subjectSource.getCode().equalsIgnoreCase(sourceCode))
+        .filter(subjectSource -> sourceCode.equalsIgnoreCase(subjectSource.getCode()))
         .findFirst()
         .map(SubjectSource::getId)
         .orElse(StringUtils.EMPTY);
