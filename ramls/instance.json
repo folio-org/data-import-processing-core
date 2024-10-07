@@ -306,6 +306,23 @@
         "$ref": "electronicAccess.json"
       }
     },
+    "dates": {
+      "type": "object",
+      "description": "Instance Dates",
+      "properties": {
+        "date1": {
+          "type": "string",
+          "description": "Date 1",
+          "maxLength": 4
+        },
+        "date2": {
+          "type": "string",
+          "description": "Date 2",
+          "maxLength": 4
+        }
+      },
+      "additionalProperties": false
+    },
     "instanceTypeId": {
       "type": "string",
       "description": "The unique term for the resource type whether it's from the RDA content term list of locally defined"

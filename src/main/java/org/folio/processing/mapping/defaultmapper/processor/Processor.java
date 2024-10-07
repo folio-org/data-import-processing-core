@@ -2,7 +2,9 @@ package org.folio.processing.mapping.defaultmapper.processor;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import java.util.LinkedHashMap;
+
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -201,7 +203,7 @@ public class Processor<T> {
   }
 
   private boolean checkOnIndicatorsMatches(JsonArray fieldMappingIndicators, String dataFieldInd1, String dataFieldInd2) {
-    for (int i=0; i < fieldMappingIndicators.size(); i++) {
+    for (int i = 0; i < fieldMappingIndicators.size(); i++) {
       JsonObject indicatorsObj = fieldMappingIndicators.getJsonObject(i);
       String subFieldMappingInd1 = indicatorsObj.getString(IND_1);
       String subFieldMappingInd2 = indicatorsObj.getString(IND_2);
@@ -530,6 +532,17 @@ public class Processor<T> {
         continue;
       }
 
+      if (BooleanUtils.isTrue(cfRule.getBoolean("createSingleObject"))) {
+        String target = cfRule.getString(TARGET);
+        String[] embeddedFields = target.split("\\.");
+        try {
+          buildSimpleJsonObject(entity, embeddedFields, data);
+        } catch (NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
+          LOGGER.warn("Error:", rules.encode());
+        }
+        createNewComplexObj = false;
+      }
+      else{
       //if conditionsMet = true, then all conditions of a specific rule were met
       //and we can set the target to the rule's value
       String target = cfRule.getString(TARGET);
@@ -542,6 +555,43 @@ public class Processor<T> {
       } else {
         LOGGER.debug("handleControlFieldRules:: bad mapping {}", rules.encode());
       }
+    }}
+  }
+
+  private void buildSimpleJsonObject(Object entity, String[] embeddedFields, String value)
+    throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+    Object currentObject = entity;
+    for (int i = 0; i < embeddedFields.length - 1; i++) {
+      Field field = currentObject.getClass().getDeclaredField(embeddedFields[i]);
+      field.setAccessible(true);
+      Object nextObject = field.get(currentObject);
+      if (nextObject == null) {
+        // If the next object in the path is null, instantiate it assuming it has a no-arg constructor
+        nextObject = field.getType().getDeclaredConstructor().newInstance();
+        field.set(currentObject, nextObject);
+      }
+      currentObject = nextObject;
+    }
+
+    // Set the value on the final field
+    Field targetField = currentObject.getClass().getDeclaredField(embeddedFields[embeddedFields.length - 1]);
+    targetField.setAccessible(true);
+    // Convert the string value to the appropriate type of the target field
+    Object convertedValue = convertStringToFieldType(value, targetField.getType());
+    targetField.set(currentObject, convertedValue);
+  }
+
+  private Object convertStringToFieldType(String value, Class<?> fieldType) throws IllegalArgumentException {
+    if (fieldType == String.class) {
+      return value;
+    } else if (fieldType == int.class || fieldType == Integer.class) {
+      return Integer.parseInt(value);
+    } else if (fieldType == double.class || fieldType == Double.class) {
+      return Double.parseDouble(value);
+    } else if (fieldType == boolean.class || fieldType == Boolean.class) {
+      return Boolean.parseBoolean(value);
+    } else {
+      throw new IllegalArgumentException("Unsupported field type for conversion: " + fieldType);
     }
   }
 
@@ -883,7 +933,7 @@ public class Processor<T> {
   }
 
   private static ParameterizedType getParameterizedType(Field field) {
-    return PARAM_TYPE_CACHE.computeIfAbsent(field, fieldObj -> (ParameterizedType)fieldObj.getGenericType());
+    return PARAM_TYPE_CACHE.computeIfAbsent(field, fieldObj -> (ParameterizedType) fieldObj.getGenericType());
   }
 
   private static Object setObjectCorrectly(boolean newComp, Class<?> listTypeClass, Class<?> type, String pathSegment,
@@ -951,7 +1001,7 @@ public class Processor<T> {
     final JsonArray extendedMapping = new JsonArray();
     List<String> targets = retrieveTargetsFromControlSubfield(dataField);
     List<LinkedHashMap<String, Object>> mappingList = regularMapping.getList();
-    targets.forEach(target ->  extendedMapping.addAll(createAdditionalMappingsForTarget(target, mappingList)));
+    targets.forEach(target -> extendedMapping.addAll(createAdditionalMappingsForTarget(target, mappingList)));
     extendedMapping.addAll(regularMapping);
     return extendedMapping;
   }
@@ -976,35 +1026,35 @@ public class Processor<T> {
 
   /**
    * Constructs the list of rules to map relations like:
-   *  {
-   *     "entityPerRepeatedSubfield": false,
-   *     "entity": [
-   *       {
-   *         "target": "saftBroaderTerm.headingRef",
-   *         "description": "saftMeetingName",
-   *         "subfield": ["a","c","d","n","q","g"],
-   *         "exclusiveSubfield": ["t"],
-   *         "rules": []
-   *       },
-   *       {
-   *         "target": "saftBroaderTerm.headingType",
-   *         "description": "meetingName",
-   *         "subfield": ["a","c","d","n","q","g"],
-   *         "exclusiveSubfield": ["t"],
-   *         "rules": [
-   *           {
-   *             "conditions": [
-   *               {
-   *                 "type": "set_heading_type_by_name",
-   *                 "parameter": {"name": "meetingName"}
-   *               }
-   *             ]
-   *           }
-   *         ],
-   *         "applyRulesOnConcatenatedData": true
-   *       }
-   *     ]
-   *   }
+   * {
+   * "entityPerRepeatedSubfield": false,
+   * "entity": [
+   * {
+   * "target": "saftBroaderTerm.headingRef",
+   * "description": "saftMeetingName",
+   * "subfield": ["a","c","d","n","q","g"],
+   * "exclusiveSubfield": ["t"],
+   * "rules": []
+   * },
+   * {
+   * "target": "saftBroaderTerm.headingType",
+   * "description": "meetingName",
+   * "subfield": ["a","c","d","n","q","g"],
+   * "exclusiveSubfield": ["t"],
+   * "rules": [
+   * {
+   * "conditions": [
+   * {
+   * "type": "set_heading_type_by_name",
+   * "parameter": {"name": "meetingName"}
+   * }
+   * ]
+   * }
+   * ],
+   * "applyRulesOnConcatenatedData": true
+   * }
+   * ]
+   * }
    */
   private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
     JsonArray additionalMappings = new JsonArray();
@@ -1014,7 +1064,7 @@ public class Processor<T> {
       headingRefMapping.put(TARGET, target + ".headingRef");
       headingRefMapping.put("description", existingMap.get(TARGET));
 
-      Map<String, Object>  headingTypeMapping = new LinkedHashMap<>(existingMap);
+      Map<String, Object> headingTypeMapping = new LinkedHashMap<>(existingMap);
       headingTypeMapping.put(TARGET, target + ".headingType");
       headingTypeMapping.put("description", getHeadingType(existingMap.get(TARGET)));
       headingTypeMapping.put("applyRulesOnConcatenatedData", true);

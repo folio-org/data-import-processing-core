@@ -544,6 +544,37 @@ public class InstanceMappingTest {
   }
 
   @Test
+  public void testMarcToInstanceWith008Date() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
+    String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
+    List<SubjectSource> subjectSources = List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
+    List<SubjectType> subjectTypes = List.of(new ObjectMapper().readValue(rawSubjectTypes, SubjectType[].class));
+
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    List<Instance> mappedInstances = new ArrayList<>();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
+      mappedInstances.add(instance);
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+    assertFalse(mappedInstances.isEmpty());
+    assertEquals(1, mappedInstances.size());
+
+    Instance mappedInstance = mappedInstances.get(0);
+    assertNotNull(mappedInstance.getId());
+  }
+
+  @Test
   public void testMarcToInstanceWithRepeatableSubjectsButWithoutIndicators() throws IOException {
     final List<Subject> expectedResults = List.of(
       new Subject().withValue("Test 600.2 subject"),
