@@ -6,12 +6,11 @@ import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.Holdings;
 import org.folio.Instance;
-import org.folio.Location;
 import org.folio.MappingProfile;
-import org.folio.Organization;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.StatisticalCode;
+import org.folio.StatisticalCodeType;
 import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
@@ -40,11 +39,9 @@ import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.EntityType.ORDER;
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class MappingManagerUnitTest {
@@ -89,181 +86,6 @@ public class MappingManagerUnitTest {
     TestInstance mappedInstance = new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
     assertNotNull(mappedInstance.getId());
     assertNotNull(mappedInstance.getIndexTitle());
-  }
-
-  @Test
-  public void shouldMap_MarcBibliographicToInstance_checkCopyingLocations() throws IOException {
-    // given
-    MappingProfile mappingProfile = new MappingProfile()
-      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(INSTANCE)
-      .withMappingDetails(new MappingDetail()
-        .withMappingFields(singletonList(new MappingRule().withName("permanentLocationId")
-          .withPath("indexTitle").withValue("949$l").withEnabled("true"))));
-    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
-    mappingProfileWrapper.setContent(mappingProfile);
-    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
-
-    String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
-
-    String givenInstance = new ObjectMapper().writeValueAsString(new TestInstance(UUID.randomUUID().toString()));
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
-    context.put(INSTANCE.value(), givenInstance);
-    eventPayload.setContext(context);
-    eventPayload.setCurrentNode(mappingProfileWrapper);
-
-    String locationId = UUID.randomUUID().toString();
-    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withLocations(List.of(new Location()
-        .withId(locationId)
-        .withCode("CODE"))));
-
-    // when
-    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
-    MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventPayload, mappingContext);
-
-    // then
-    assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
-    assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
-
-    assertNotNull(mappingProfile.getMappingDetails().getMappingFields().get(0));
-    assertTrue(mappingProfile.getMappingDetails().getMappingFields().get(0).getAcceptedValues().containsKey(locationId));
-
-    TestInstance mappedInstance = new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
-    assertNotNull(mappedInstance.getId());
-    assertNotNull(mappedInstance.getIndexTitle());
-  }
-
-  @Test
-  public void shouldMap_MarcBibliographicToOrder_checkOrganizations() throws IOException {
-    // given
-    MappingProfile mappingProfile = new MappingProfile()
-      .withId(UUID.randomUUID().toString())
-      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(ORDER)
-      .withMappingDetails(new MappingDetail()
-        .withMappingFields(new ArrayList<>(List.of(
-          new MappingRule().withName("vendor").withPath("order.po.vendor").withValue("\"CODE\"").withEnabled("true"),
-          new MappingRule().withName("materialSupplier").withPath("order.poLine.physical.materialSupplier").withValue("\"CODE\"").withEnabled("true"),
-          new MappingRule().withName("accessProvider").withPath("order.poLine.eresource.accessProvider").withValue("\"CODE\"").withEnabled("true")
-        ))));
-
-    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
-    mappingProfileWrapper.setContent(mappingProfile);
-    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
-
-    String givenMarcRecord = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ { \"001\":\"ybp7406411\" } ] }";
-
-    String givenOrder = new ObjectMapper().writeValueAsString(new TestOrder(UUID.randomUUID().toString()));
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
-    context.put(ORDER.value(), givenOrder);
-    eventPayload.setContext(context);
-    eventPayload.setCurrentNode(mappingProfileWrapper);
-
-    String organizationId = UUID.randomUUID().toString();
-    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withOrganizations(List.of(new Organization()
-        .withId(organizationId)
-        .withName("NAME")
-        .withCode("CODE")
-      )));
-
-    // when
-    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
-    MappingManager.registerWriterFactory(new TestOrderWriterFactory());
-    MappingManager.map(eventPayload, mappingContext);
-
-    // then
-    assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
-    assertNotNull(eventPayload.getContext().get(ORDER.value()));
-
-    for (MappingRule mappingRule : mappingProfile.getMappingDetails().getMappingFields()) {
-      assertNotNull(mappingRule);
-      assertTrue(mappingRule.getAcceptedValues().containsKey(organizationId));
-      String expectedAcceptedValue = String.format("%s (%s)", mappingRule.getValue().replaceAll("\"", ""), organizationId);
-      assertEquals(expectedAcceptedValue, mappingRule.getAcceptedValues().get(organizationId));
-    }
-  }
-
-  @Test
-  public void shouldMap_MarcBibliographicToOrder_checkDonorOrganizationsProvision() {
-    // given
-    MappingRule donorsMappingRule = new MappingRule()
-      .withName("donorOrganizationIds")
-      .withEnabled("true")
-      .withPath("order.poLine.donorOrganizationIds[]")
-      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
-      .withSubfields(List.of(
-        new RepeatableSubfieldMapping()
-          .withOrder(0)
-          .withPath("order.poLine.donorOrganizationIds[]")
-          .withFields(List.of(new MappingRule()
-            .withName("donorOrganizationIds")
-            .withEnabled("true")
-            .withPath("order.poLine.donorOrganizationIds[]")
-            .withValue("\"CODE-1\""))),
-        new RepeatableSubfieldMapping()
-          .withOrder(1)
-          .withPath("order.poLine.donorOrganizationIds[]")
-          .withFields(List.of(new MappingRule()
-            .withName("donorOrganizationIds")
-            .withEnabled("true")
-            .withPath("order.poLine.donorOrganizationIds[]")
-            .withValue("\"CODE-2\"")))));
-
-    MappingProfile mappingProfile = new MappingProfile()
-      .withId(UUID.randomUUID().toString())
-      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(ORDER)
-      .withMappingDetails(new MappingDetail()
-        .withMappingFields(List.of(donorsMappingRule)));
-
-    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper()
-      .withContentType(MAPPING_PROFILE)
-      .withContent(mappingProfile);
-
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()));
-    context.put(ORDER.value(), new JsonObject().encode());
-    DataImportEventPayload eventPayload = new DataImportEventPayload()
-      .withCurrentNode(mappingProfileWrapper)
-      .withContext(context);
-
-    String expectedOrganizationId = UUID.randomUUID().toString();
-    MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withOrganizations(List.of(
-        new Organization()
-          .withId(expectedOrganizationId)
-          .withIsDonor(true)
-          .withName("NAME-1")
-          .withCode("CODE-1"),
-        new Organization()
-          .withId(UUID.randomUUID().toString())
-          .withName("NAME-2")
-          .withCode("CODE-2"))
-      ));
-
-    // when
-    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
-    MappingManager.registerWriterFactory(new TestOrderWriterFactory());
-    MappingManager.map(eventPayload, mappingContext);
-
-    // then
-    assertEquals(2, donorsMappingRule.getSubfields().size());
-
-    for (RepeatableSubfieldMapping subfieldMapping : donorsMappingRule.getSubfields()) {
-      assertEquals(1, subfieldMapping.getFields().size());
-      MappingRule mappingRule = subfieldMapping.getFields().get(0);
-      assertEquals(1, mappingRule.getAcceptedValues().size());
-      assertTrue(mappingRule.getAcceptedValues().containsKey(expectedOrganizationId));
-      String expectedAcceptedValue = String.format("CODE-1 (%s)", expectedOrganizationId);
-      assertEquals(expectedAcceptedValue, mappingRule.getAcceptedValues().get(expectedOrganizationId));
-    }
   }
 
   @Test(expected = RuntimeException.class)
@@ -371,16 +193,19 @@ public class MappingManagerUnitTest {
       new StatisticalCode()
         .withId("uuid1")
         .withCode("abc")
-        .withName("abd"),
+        .withName("abd")
+        .withStatisticalCodeTypeId("uuid1"),
       new StatisticalCode()
         .withId("uuid2")
         .withCode("bbc")
-        .withName("bbd (bbc)")
-    );
+        .withName("bbd")
+        .withStatisticalCodeTypeId("uuid1"));
 
-    HashMap<String, String> acceptedValues = new HashMap<>(Map.of(
-      "uuid1", "TEST (test code type): abc - abd",
-      "uuid2", "TEST (test code type): bbc - bbd (bbc)"));
+    List<StatisticalCodeType> statisticalCodeTypes = List.of(
+      new StatisticalCodeType()
+        .withId("uuid1")
+        .withName("TEST (test code type)"));
+
 
     MappingProfile mappingProfile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -401,7 +226,6 @@ public class MappingManagerUnitTest {
                     .withPath("instance.statisticalCodeIds[]")
                     .withValue(value == null ? "971" : value)
                     .withEnabled("true")
-                    .withAcceptedValues(acceptedValues)
                 ))
             )))
         ))));
@@ -435,7 +259,7 @@ public class MappingManagerUnitTest {
     eventPayload.setCurrentNode(mappingProfileWrapper);
 
     MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withStatisticalCodes(statisticalCodes));
+      .withStatisticalCodes(statisticalCodes).withStatisticalCodeTypes(statisticalCodeTypes));
 
     MappingManager.registerReaderFactory(new MarcBibReaderFactory());
     MappingManager.registerWriterFactory(new WriterFactory() {
