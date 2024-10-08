@@ -14,6 +14,7 @@ import org.folio.ElectronicAccessRelationship;
 import org.folio.HoldingsNoteType;
 import org.folio.HoldingsType;
 import org.folio.IdentifierType;
+import org.folio.InstanceDateType;
 import org.folio.InstanceFormat;
 import org.folio.InstanceNoteType;
 import org.folio.InstanceType;
@@ -196,6 +197,38 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
           .forEach(result -> concatenationResult.append(" ").append(result.getData()));
       }
       return concatenationResult.toString();
+    }
+  },
+
+  SET_DATE_TYPE_ID() {
+    private static final String DEFAULT_DATE_TYPE = "No attempt to code";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String subFieldValue = context.getSubFieldValue();
+      char sixthChar = subFieldValue.charAt(6);
+      List<InstanceDateType> dateTypes = context.getMappingParameters().getInstanceDateTypes();
+      if (dateTypes == null || dateTypes.isEmpty()) {
+        return StringUtils.EMPTY;
+      }
+      String defaultDateTypeId = findDateTypeId(dateTypes, StringUtils.EMPTY);
+      return matchInstanceDateTypeViaCode(sixthChar, dateTypes, defaultDateTypeId);
+    }
+
+    private String findDateTypeId(List<InstanceDateType> dates, String defaultId) {
+      return dates.stream()
+        .filter(date -> date.getName().equalsIgnoreCase(DEFAULT_DATE_TYPE))
+        .findFirst()
+        .map(InstanceDateType::getId)
+        .orElse(defaultId);
+    }
+
+    private String matchInstanceDateTypeViaCode(char sixthChar, List<InstanceDateType> instanceDateTypes, String defaultId) {
+      return instanceDateTypes.stream()
+        .filter(instanceFormat -> instanceFormat.getCode().equalsIgnoreCase(String.valueOf(sixthChar)))
+        .findFirst()
+        .map(InstanceDateType::getId)
+        .orElse(defaultId);
     }
   },
 

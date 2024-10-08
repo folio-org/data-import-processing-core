@@ -17,6 +17,7 @@ import org.folio.HoldingsNoteType;
 import org.folio.HoldingsType;
 import org.folio.IdentifierType;
 import org.folio.IllPolicy;
+import org.folio.InstanceDateType;
 import org.folio.InstanceFormat;
 import org.folio.InstanceNoteType;
 import org.folio.InstanceRelationshipType;
@@ -57,6 +58,7 @@ public class MappingParameters {
   private List<InstanceNoteType> instanceNoteTypes = new ArrayList<>();
   private List<AlternativeTitleType> alternativeTitleTypes = new ArrayList<>();
   private List<IssuanceMode> issuanceModes = new ArrayList<>();
+  private List<InstanceDateType> instanceDateTypes = new ArrayList<>();
   private List<InstanceStatus> instanceStatuses = new ArrayList<>();
   private List<NatureOfContentTerm> natureOfContentTerms = new ArrayList<>();
   private List<InstanceRelationshipType> instanceRelationshipTypes = new ArrayList<>();
@@ -177,6 +179,15 @@ public class MappingParameters {
 
   public MappingParameters withIssuanceModes(List<IssuanceMode> issuanceModes) {
     this.issuanceModes = new UnmodifiableList<>(issuanceModes);
+    return this;
+  }
+
+  public List<InstanceDateType> getInstanceDateTypes() {
+    return instanceDateTypes;
+  }
+
+  public MappingParameters withInstanceDateTypes(List<InstanceDateType> instanceDateTypes) {
+    this.instanceDateTypes = new UnmodifiableList<>(instanceDateTypes);
     return this;
   }
 

@@ -310,6 +310,11 @@
       "type": "object",
       "description": "Instance Dates",
       "properties": {
+        "dateTypeId": {
+          "type": "string",
+          "description": "Date type ID",
+          "$ref": "raml-storage/raml-util/schemas/uuid.schema"
+        },
         "date1": {
           "type": "string",
           "description": "Date 1",
