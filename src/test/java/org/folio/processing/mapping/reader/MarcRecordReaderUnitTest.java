@@ -4,8 +4,14 @@ import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.folio.AcquisitionsUnit;
 import org.folio.DataImportEventPayload;
+import org.folio.ElectronicAccessRelationship;
 import org.folio.Holdings;
+import org.folio.ItemNoteType;
+import org.folio.Location;
+import org.folio.NatureOfContentTerm;
+import org.folio.Organization;
 import org.folio.ParsedRecord;
 import org.folio.Record;
 import org.folio.processing.mapping.MappingManager;
@@ -40,6 +46,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -292,16 +299,16 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("randomUUID", "value");
-    acceptedValues.put("randomUUID2", "noValue");
+    List<Location> locations = List.of(
+      new Location().withName("value").withId("randomUUID"),
+      new Location().withName("noValue").withId("randomUUID2"));
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
+
     // when
     Value value = reader.read(new MappingRule()
-      .withName("testField")
+      .withName("permanentLocationId")
       .withPath("")
-      .withValue("\"test\" \" \" \"value\" \" \"")
-      .withAcceptedValues(acceptedValues));
+      .withValue("\"test\" \" \" \"value\" \" \""));
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
@@ -495,12 +502,12 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-
     String uuid = "f5d0068e-6272-458e-8a81-b85e7b9a14aa";
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("Resource (%s)", uuid));
+    List<ElectronicAccessRelationship> electronicAccessRelationships = List.of(
+      new ElectronicAccessRelationship().withId(uuid).withName("Resource"));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withElectronicAccessRelationships(electronicAccessRelationships)));
 
     List<MappingRule> listRules = new ArrayList<>();
 
@@ -508,20 +515,17 @@ public class MarcRecordReaderUnitTest {
       .withName("uri")
       .withPath("holdings.electronicAccess[].uri")
       .withEnabled("true")
-      .withValue("856$u")
-      .withAcceptedValues(acceptedValues));
+      .withValue("856$u"));
     listRules.add(new MappingRule()
       .withName("relationshipId")
       .withPath("holdings.electronicAccess[].relationshipId")
       .withEnabled("true")
-      .withValue("\"f5d0068e-6272-458e-8a81-b85e7b9a14aa\"")
-      .withAcceptedValues(acceptedValues));
+      .withValue("\"f5d0068e-6272-458e-8a81-b85e7b9a14aa\""));
     listRules.add(new MappingRule()
       .withName("linkText")
       .withPath("holdings.electronicAccess[].linkText")
       .withEnabled("true")
-      .withValue("856$z")
-      .withAcceptedValues(acceptedValues));
+      .withValue("856$z"));
 
     Value value = reader.read(new MappingRule()
       .withName("electronicAccess")
@@ -557,13 +561,12 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-
-
     String uuid = "UUID";
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("Resource (%s)", uuid));
+    List<ElectronicAccessRelationship> electronicAccessRelationships = List.of(
+      new ElectronicAccessRelationship().withId(uuid).withName("Resource"));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withElectronicAccessRelationships(electronicAccessRelationships)));
 
     List<MappingRule> listRules = new ArrayList<>();
 
@@ -571,26 +574,22 @@ public class MarcRecordReaderUnitTest {
       .withName("uri")
       .withPath("holdings.electronicAccess[].uri")
       .withEnabled("true")
-      .withValue("856$u")
-      .withAcceptedValues(acceptedValues));
+      .withValue("856$u"));
     listRules.add(new MappingRule()
       .withName("relationshipId")
       .withPath("holdings.electronicAccess[].relationshipId")
       .withEnabled("true")
-      .withValue("\"Resourcce\"")
-      .withAcceptedValues(acceptedValues));
+      .withValue("\"Resourcce\""));
     listRules.add(new MappingRule()
       .withName("linkText")
       .withPath("holdings.electronicAccess[].linkText")
       .withEnabled("true")
-      .withValue("856$z")
-      .withAcceptedValues(acceptedValues));
+      .withValue("856$z"));
 
     Value value = reader.read(new MappingRule()
       .withName("electronicAccess")
       .withPath("holdings")
       .withRepeatableFieldAction(EXTEND_EXISTING)
-      .withAcceptedValues(acceptedValues)
       .withSubfields(singletonList(new RepeatableSubfieldMapping()
         .withOrder(0)
         .withPath("holdings.electronicAccess[]")
@@ -615,18 +614,17 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableFieldWithAcceptedValues() throws IOException {
+  public void shouldReadRepeatableField() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_876))).encode());
     eventPayload.setContext(context);
+    List<ItemNoteType> itemNoteTypes = List.of(
+      new ItemNoteType().withId("UUID1").withName("Binding"),
+      new ItemNoteType().withId("UUID2").withName("Electronic bookplate"));
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("UUID1", "Binding");
-    acceptedValues.put("UUID2", "Electronic bookplate");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withItemNoteTypes(itemNoteTypes)));
 
     List<MappingRule> listRules = new ArrayList<>();
 
@@ -634,8 +632,7 @@ public class MarcRecordReaderUnitTest {
       .withName("itemNoteTypeId")
       .withPath("item.notes[].itemNoteTypeId")
       .withEnabled("true")
-      .withValue("876$t")
-      .withAcceptedValues(acceptedValues));
+      .withValue("876$t"));
     listRules.add(new MappingRule()
       .withName("note")
       .withPath("item.notes[].note")
@@ -755,7 +752,7 @@ public class MarcRecordReaderUnitTest {
         List.of(new RepeatableSubfieldMapping().withOrder(0).withPath("item.statisticalCodeIds[]")
           .withFields(
             List.of(new MappingRule().withName("statisticalCodeId").withEnabled("true").withPath("item.statisticalCodeIds[]")
-              .withEnabled("true").withValue("949$s").withAcceptedValues(new HashMap<>())))));
+              .withEnabled("true").withValue("949$s")))));
     Value value = reader.read(mappingRule);
 
     assertNotNull(value);
@@ -957,26 +954,23 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
+    List<NatureOfContentTerm> natureOfContentTerms = List.of(
+      new NatureOfContentTerm().withId("UUID1").withName("website"),
+      new NatureOfContentTerm().withId("UUID2").withName("school program"),
+      new NatureOfContentTerm().withId("UUID3").withName("literature report"));
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("UUID1", "website");
-    acceptedValues.put("UUID2", "school program");
-    acceptedValues.put("UUID3", "literature report");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withNatureOfContentTerms(natureOfContentTerms)));
 
     MappingRule fieldRule1 = new MappingRule()
-      .withName("natureOfContentTermIds")
+      .withName("natureOfContentTermId")
       .withPath("instance.natureOfContentTermIds[]")
       .withEnabled("true")
-      .withValue("\"school program\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"school program\"");
     MappingRule fieldRule2 = new MappingRule()
-      .withName("natureOfContentTermIds")
+      .withName("natureOfContentTermId")
       .withPath("instance.natureOfContentTermIds[]")
       .withEnabled("true")
-      .withValue("\"literature report\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"literature report\"");
 
     MappingRule mappingRule = new MappingRule()
       .withPath("instance.natureOfContentTermIds[]")
@@ -1004,7 +998,7 @@ public class MarcRecordReaderUnitTest {
   @Test
   public void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValue_FromRules() throws IOException {
     // given
-    List<String> expectedFields = Arrays.asList("pcc", "UUID3");
+    List<String> expectedFields = Arrays.asList("pcc", "literature report");
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1013,35 +1007,28 @@ public class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("UUID1", "website");
-    acceptedValues.put("UUID2", "school program");
-    acceptedValues.put("UUID3", "literature report");
-
     MappingRule fieldRule1 = new MappingRule()
       .withName("formerIds")
-      .withPath("instance.formerIds[]")
+      .withPath("holdings.formerIds[]")
       .withEnabled("true")
-      .withValue("042$a")
-      .withAcceptedValues(acceptedValues);
+      .withValue("042$a");
     MappingRule fieldRule2 = new MappingRule()
       .withName("formerIds")
-      .withPath("instance.formerIds[]")
+      .withPath("holdings.formerIds[]")
       .withEnabled("true")
-      .withValue("\"literature report\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"literature report\"");
 
     MappingRule mappingRule = new MappingRule()
-      .withPath("instance.formerIds[]")
+      .withPath("holdings.formerIds[]")
       .withRepeatableFieldAction(EXTEND_EXISTING)
       .withSubfields(Arrays.asList(
         new RepeatableSubfieldMapping()
           .withOrder(0)
-          .withPath("instance.formerIds[]")
+          .withPath("holdings.formerIds[]")
           .withFields(singletonList(fieldRule1)),
         new RepeatableSubfieldMapping()
           .withOrder(0)
-          .withPath("instance.formerIds[]")
+          .withPath("holdings.formerIds[]")
           .withFields(singletonList(fieldRule2))));
 
     // when
@@ -1079,20 +1066,20 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
     String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-    acceptedValues.put(expectedId, "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/O)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/2)");
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("E"),
+      new Location().withId(expectedId).withName("Main Library").withCode("KU/CC/DI/M"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("ORWIG ETHNO CD").withCode("KU/CC/DI/O"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/2"));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1106,20 +1093,20 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
     String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
-    acceptedValues.put(expectedId, "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/MU)");
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("E"),
+      new Location().withId(expectedId).withName("Main Library").withCode("KU/CC/DI/M"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("ORWIG ETHNO CD").withCode("KU/CC/DI/O"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/2"));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1133,19 +1120,19 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Main Library").withCode("KU/CC/DI/MK"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("ORWIG ETHNO CD").withCode("KU/CC/DI/MO"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/MK)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1160,19 +1147,19 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Main Library").withCode("KU/CC/DI/MK"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("ORWIG ETHNO CD").withCode("KU/CC/DI/MO"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library KU/CC/DI/M");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1186,19 +1173,19 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_BRACKETS))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Main Library").withCode("KU/CC/DI/M"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("ORWIG ETHNO CD").withCode("KU/CC/DI/MO"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1212,20 +1199,20 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Ils ali (Oli)").withCode("oli,ils"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Oli als (Oli)").withCode("oli,als"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("Oli (Oli)").withCode("oli"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (oli,ils)");
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli)(oli,als)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withName("permanentLocationId")
       .withPath("holdings.permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1239,20 +1226,20 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_ALS_LOCATION))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"),
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Ils ali (Oli)").withCode("oli,ils"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("Oli (Oli)").withCode("oli"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Oli als (Oli)").withCode("oli,als"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (oli,ils)");
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli) (oli,als)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
       .withName("permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1266,20 +1253,20 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"),
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Ils ali (Oli)").withCode("oli,ils"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("Oli (Oli)").withCode("oli"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Oli als (Oli)").withCode("oli,als"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss) (oli) (ollll) (olls)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (oli))");
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli)(oli,als)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
       .withName("permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1293,20 +1280,20 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OL_LOCATION))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"),
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Ils ali (Oli) (ol)").withCode("oli,ils"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("Oli (Oli)").withCode("oli"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Oli als (Oli)").withCode("oli,als"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822fff", "Oliss (oliss)");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Ils ali (Oli) (ol) (oli,ils)");
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "Oli (Oli) (oli)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Oli als (Oli) (oli,als)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
       .withName("permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1320,19 +1307,19 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_INVALID_BRACKETS))).encode());
     eventPayload.setContext(context);
+    List<Location> locations = List.of(
+      new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
+      new Location().withId("fcd64ce1-6995-48f0-840e-89ffa2288371").withName("Main Library").withCode("KU/CC/DI/M"),
+      new Location().withId("758258bc-ecc1-41b8-abca-f7b610822ffd").withName("ORWIG ETHNO CD").withCode("KU/CC/DI/MO"),
+      new Location().withId("f34d27c6-a8eb-461b-acd6-5dea81771e70").withName("SECOND FLOOR").withCode("KU/CC/DI/VU"));
+
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("758258bc-ecc1-41b8-abca-f7b610822ffd", "ORWIG ETHNO CD (KU/CC/DI/MO)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (KU/CC/DI/MI)");
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library KU/CC/DI/M");
-    acceptedValues.put("f34d27c6-a8eb-461b-acd6-5dea81771e70", "SECOND FLOOR (KU/CC/DI/VU)");
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withLocations(locations)));
 
     Value value = reader.read(new MappingRule()
       .withPath("holdings.permanentLocationId")
       .withName("permanentLocationId")
-      .withValue("049$a")
-      .withAcceptedValues(acceptedValues));
+      .withValue("049$a"));
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
@@ -1346,24 +1333,22 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
+    String addressId = UUID.randomUUID().toString();
+    String address = String.format("{\"id\":\"%s\", \"name\":\"Test1\",\"address\":\"Test2\"}", addressId);
     Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withTenantConfigurationAddresses(List.of(address))));
     // when
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc084", "suf");
-    acceptedValues.put("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", "pref");
 
     Value value = reader.read(new MappingRule()
-      .withName("prefix")
-      .withPath("order.po.poNumberPrefix")
+      .withName("billTo")
+      .withPath("order.po.billTo")
       .withEnabled("true")
-      .withValue("\"pref\"")
-      .withAcceptedValues(acceptedValues));
+      .withValue("\"Test1\""));
 
     // then
     assertNotNull(value);
     assertEquals(ValueType.STRING, value.getType());
-    assertEquals("db9f5d17-0ca3-4d14-ae49-16b63c8fc083", value.getValue());
+    assertEquals(addressId, value.getValue());
   }
 
   @Test
@@ -1373,19 +1358,18 @@ public class MarcRecordReaderUnitTest {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-    // when
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("0ebb1f7d-983f-3026-8a4c-5318e0ebc042", "online");
-    acceptedValues.put("0ebb1f7d-983f-3026-8a4c-5318e0ebc041", "main");
+    List<AcquisitionsUnit> acqUnits = List.of(
+      new AcquisitionsUnit().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc042").withName("online"),
+      new AcquisitionsUnit().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc041").withName("main"));
 
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withAcquisitionsUnits(acqUnits)));
+    // when
     Value value = reader.read(new MappingRule()
       .withName("acqUnitIds")
       .withPath("order.po.acqUnitIds[]")
       .withEnabled("true")
-      .withValue("\"main\"")
-      .withAcceptedValues(acceptedValues));
+      .withValue("\"main\""));
 
     // then
     assertNotNull(value);
@@ -1416,7 +1400,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByAcceptedValuesAndIsNotValid() throws IOException {
+  public void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByMappingParametersAndIsNotValid() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1424,30 +1408,26 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
 
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
     String uuid = "UUID";
+    List<Organization> organizations = List.of(new Organization().withId(uuid).withName("(CODE)").withCode(uuid));
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("CODE (%s)", uuid));
     MappingRule vendorRule = new MappingRule()
       .withName("vendor")
       .withPath("order.po.vendor")
       .withEnabled("true")
-      .withValue("\"RANDOM\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"RANDOM\"");
     MappingRule materialSupplierRule = new MappingRule()
       .withName("materialSupplier")
       .withPath("order.poLine.physical.materialSupplier")
       .withEnabled("true")
-      .withValue("\"RANDOM\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"RANDOM\"");
     MappingRule accessProviderRule = new MappingRule()
       .withName("accessProvider")
       .withPath("order.poLine.eresource.accessProvider")
       .withEnabled("true")
-      .withValue("\"RANDOM\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"RANDOM\"");
 
     // when
     Value valueVendor = reader.read(vendorRule);
@@ -1466,7 +1446,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByAcceptedValuesAndIsValid() throws IOException {
+  public void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByMappingParametersAndIsValid() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1474,30 +1454,26 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
 
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
     String uuid = "UUID";
+    List<Organization> organizations = List.of(new Organization().withId(uuid).withName("(CODE)").withCode(uuid));
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("CODE (%s)", uuid));
     MappingRule vendorRule = new MappingRule()
       .withName("vendor")
       .withPath("order.po.vendor")
       .withEnabled("true")
-      .withValue("\"CODE\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"CODE\"");
     MappingRule materialSupplierRule = new MappingRule()
       .withName("materialSupplier")
       .withPath("order.poLine.physical.materialSupplier")
       .withEnabled("true")
-      .withValue("\"CODE\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"CODE\"");
     MappingRule accessProviderRule = new MappingRule()
       .withName("accessProvider")
       .withPath("order.poLine.eresource.accessProvider")
       .withEnabled("true")
-      .withValue("\"CODE\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"CODE\"");
 
     // when
     Value valueVendor = reader.read(vendorRule);
@@ -1523,19 +1499,16 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
     eventPayload.setContext(context);
-
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
     String uuid = "UUID";
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(uuid, String.format("(CODE) (%s)", uuid));
+    List<Organization> organizations = List.of(new Organization().withId(uuid).withName("(CODE)").withCode(uuid));
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
 
     MappingRule vendorRule = new MappingRule()
       .withName("vendor")
       .withPath("order.po.vendor")
       .withEnabled("true")
-      .withValue("\"CODE)\"")
-      .withAcceptedValues(acceptedValues);
+      .withValue("\"CODE)\"");
 
     // when
     Value valueVendor = reader.read(vendorRule);
@@ -2004,14 +1977,14 @@ public class MarcRecordReaderUnitTest {
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload().withContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
-
     String expectedId1 = "UUID1";
     String expectedId2 = "UUID2";
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put(expectedId1, "(CODE-1) " + expectedId1);
-    acceptedValues.put(expectedId2, "(CODE-2) " + expectedId2);
+    List<Organization> organizations = List.of(
+      new Organization().withId(expectedId1).withCode("CODE-1").withName(expectedId1).withIsDonor(true),
+      new Organization().withId(expectedId2).withCode("CODE-2").withName(expectedId2).withIsDonor(true));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
 
     MappingRule donorsMappingRule = new MappingRule()
       .withName("donorOrganizationIds")
@@ -2026,8 +1999,7 @@ public class MarcRecordReaderUnitTest {
             .withName("donorOrganizationIds")
             .withEnabled("true")
             .withPath("order.poLine.donorOrganizationIds[]")
-            .withValue("900$a")
-            .withAcceptedValues(acceptedValues))),
+            .withValue("900$a"))),
         new RepeatableSubfieldMapping()
           .withOrder(1)
           .withPath("order.poLine.donorOrganizationIds[]")
@@ -2035,8 +2007,7 @@ public class MarcRecordReaderUnitTest {
             .withName("donorOrganizationIds")
             .withEnabled("true")
             .withPath("order.poLine.donorOrganizationIds[]")
-            .withValue("900$b")
-            .withAcceptedValues(acceptedValues)))
+            .withValue("900$b")))
       ));
 
     Value<?> value = reader.read(donorsMappingRule);
@@ -2056,11 +2027,10 @@ public class MarcRecordReaderUnitTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
     eventPayload.setContext(context);
-    Reader reader = new MarcBibReaderFactory().createReader();
-    reader.initialize(eventPayload, mappingContext);
+    List<Organization> organizations = List.of(new Organization().withId("UUID3").withCode("CODE-3").withName("UUID3").withIsDonor(true));
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("UUID3", "(CODE-3) UUID3");
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
 
     MappingRule donorsMappingRule = new MappingRule()
       .withName("donorOrganizationIds")
@@ -2074,8 +2044,7 @@ public class MarcRecordReaderUnitTest {
           .withName("donorOrganizationIds")
           .withEnabled("true")
           .withPath("order.poLine.donorOrganizationIds[]")
-          .withValue("900$a")
-          .withAcceptedValues(acceptedValues)))));
+          .withValue("900$a")))));
 
     Value<?> value = reader.read(donorsMappingRule);
 
