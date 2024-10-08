@@ -182,6 +182,10 @@ public class MappingParameters {
     return this;
   }
 
+  public void setInstanceDateTypes(List<InstanceDateType> instanceDateTypes) {
+    this.instanceDateTypes = instanceDateTypes;
+  }
+
   public List<InstanceDateType> getInstanceDateTypes() {
     return instanceDateTypes;
   }
