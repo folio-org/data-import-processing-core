@@ -635,8 +635,8 @@ public class InstanceMappingTest {
     assertTrue(reader.hasNext());
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     MarcJsonWriter writer = new MarcJsonWriter(os);
-    Record record = reader.next();
-    writer.write(record);
+    Record marcRecord = reader.next();
+    writer.write(marcRecord);
     JsonObject marc = new JsonObject(os.toString());
     Instance instance = mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources), mappingRules);
 
@@ -662,56 +662,55 @@ public class InstanceMappingTest {
       new ContributorNameType().withName("Personal name").withId("1"),
       new ContributorNameType().withName("Corporate name").withId("2"));
 
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    MarcJsonWriter writer = new MarcJsonWriter(os);
+    assertTrue(reader.hasNext());
+    Record marcRecord = reader.next();
+    writer.write(marcRecord);
+    JsonObject marc = new JsonObject(os.toString());
+    Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
+    assertNotNull(instance.getSource());
+    assertEquals(6, instance.getContributors().size());
+    // 720 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
+    assertEquals("Boguslawski, Pawel", instance.getContributors().get(0).getName());
+    assertEquals("1", instance.getContributors().get(0).getContributorTypeId());
+    assertNull(instance.getContributors().get(0).getContributorTypeText());
+    assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
+
+    // 720  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
+    assertEquals("CHUJO, T.", instance.getContributors().get(1).getName());
+    assertEquals("2", instance.getContributors().get(1).getContributorTypeId());
+    assertNull(instance.getContributors().get(1).getContributorTypeText());
+    assertEquals("1", instance.getContributors().get(1).getContributorNameTypeId());
+
+    // 720 \\$aAbdul Rahman, Alias$eeditor$4edt$4prf should match and set contributorTypeId by $e if all $4 don't match
+    assertEquals("Abdul Rahman, Alias", instance.getContributors().get(2).getName());
+    assertEquals("2", instance.getContributors().get(2).getContributorTypeId());
+    assertNull(instance.getContributors().get(2).getContributorTypeText());
+    assertEquals("1", instance.getContributors().get(2).getContributorNameTypeId());
+
+    // 720 \\$aGold, Christopher$eeditor$eauthor should match by $e case insensitively and set contributorTypeId
+    assertEquals("Gold, Christopher", instance.getContributors().get(3).getName());
+    assertEquals("2", instance.getContributors().get(3).getContributorTypeId());
+    assertNull(instance.getContributors().get(3).getContributorTypeText());
+    assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
+
+    // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if all $e don't match
+    assertEquals("KURIHARA, N.", instance.getContributors().get(4).getName());
+    assertNull(instance.getContributors().get(4).getContributorTypeId());
+    assertEquals("data contact", instance.getContributors().get(4).getContributorTypeText());
+    assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
+
+    // 720 2\$aLondon Symphony Orchestra.$eoth$4aut should set "getContributorNameTypeId" as Corporate name if ind1 == 2
+    assertEquals("London Symphony Orchestra", instance.getContributors().get(5).getName());
+    assertEquals("1", instance.getContributors().get(5).getContributorTypeId());
+    assertNull(instance.getContributors().get(5).getContributorTypeText());
+    assertEquals("2", instance.getContributors().get(5).getContributorNameTypeId());
+
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
-      assertNotNull(instance.getSource());
-      assertEquals(6, instance.getContributors().size());
-      // 720 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
-      assertEquals("Boguslawski, Pawel", instance.getContributors().get(0).getName());
-      assertEquals("1", instance.getContributors().get(0).getContributorTypeId());
-      assertNull(instance.getContributors().get(0).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
-
-      // 720  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
-      assertEquals("CHUJO, T.", instance.getContributors().get(1).getName());
-      assertEquals("2", instance.getContributors().get(1).getContributorTypeId());
-      assertNull(instance.getContributors().get(1).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(1).getContributorNameTypeId());
-
-      // 720 \\$aAbdul Rahman, Alias$eeditor$4edt$4prf should match and set contributorTypeId by $e if all $4 don't match
-      assertEquals("Abdul Rahman, Alias", instance.getContributors().get(2).getName());
-      assertEquals("2", instance.getContributors().get(2).getContributorTypeId());
-      assertNull(instance.getContributors().get(2).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(2).getContributorNameTypeId());
-
-      // 720 \\$aGold, Christopher$eeditor$eauthor should match by $e case insensitively and set contributorTypeId
-      assertEquals("Gold, Christopher", instance.getContributors().get(3).getName());
-      assertEquals("2", instance.getContributors().get(3).getContributorTypeId());
-      assertNull(instance.getContributors().get(3).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
-
-      // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if all $e don't match
-      assertEquals("KURIHARA, N.", instance.getContributors().get(4).getName());
-      assertNull(instance.getContributors().get(4).getContributorTypeId());
-      assertEquals("data contact", instance.getContributors().get(4).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
-
-      // 720 2\$aLondon Symphony Orchestra.$eoth$4aut should set "getContributorNameTypeId" as Corporate name if ind1 == 2
-      assertEquals("London Symphony Orchestra", instance.getContributors().get(5).getName());
-      assertEquals("1", instance.getContributors().get(5).getContributorTypeId());
-      assertNull(instance.getContributors().get(5).getContributorTypeText());
-      assertEquals("2", instance.getContributors().get(5).getContributorNameTypeId());
-
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    Validator validator = factory.getValidator();
+    Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+    assertTrue(violations.isEmpty());
   }
 
   @Test
