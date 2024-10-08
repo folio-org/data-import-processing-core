@@ -544,17 +544,27 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithRepeatableSubjectsButWithoutIndicators() throws IOException {
+  public void testMarcToInstanceWithRepeatableSubjectsMappedWithTypeButWithoutIndicators() throws IOException {
+    final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
+    final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
+    final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
+    final String FOURTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
+    final String FIFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
+    final String SIXTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
+    final String SEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
+    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
+    final String NINTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
+
     final List<Subject> expectedResults = List.of(
-      new Subject().withValue("Test 600.2 subject"),
-      new Subject().withValue("Test 610 subject"),
-      new Subject().withValue("Test 611 subject"),
-      new Subject().withValue("Test 630 subject"),
-      new Subject().withValue("Test 647 subject"),
-      new Subject().withValue("Test 648 subject"),
-      new Subject().withValue("Test 650 subject"),
-      new Subject().withValue("Test 651 subject"),
-      new Subject().withValue("Test 655 subject")
+      new Subject().withValue("Test 600.2 subject").withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 610 subject").withTypeId(SECOND_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 611 subject").withTypeId(THIRD_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 630 subject").withTypeId(FOURTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 647 subject").withTypeId(FIFTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 648 subject").withTypeId(SIXTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 650 subject").withTypeId(SEVENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 651 subject").withTypeId(EIGHTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 655 subject").withTypeId(NINTH_SUBJECT_TYPE_ID)
     );
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR).getBytes(StandardCharsets.UTF_8)));
