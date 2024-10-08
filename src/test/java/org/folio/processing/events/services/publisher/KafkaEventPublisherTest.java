@@ -2,18 +2,16 @@ package org.folio.processing.events.services.publisher;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import net.mguenther.kafka.junit.EmbeddedKafkaCluster;
-import net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig;
 import net.mguenther.kafka.junit.ObserveKeyValues;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.rest.jaxrs.model.Event;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.util.HashMap;
 import java.util.List;
@@ -23,27 +21,29 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static net.mguenther.kafka.junit.EmbeddedKafkaCluster.provisionWith;
+import static net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig.defaultClusterConfig;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(JUnit4.class)
+@RunWith(VertxUnitRunner.class)
 public class KafkaEventPublisherTest {
   private static final String KAFKA_ENV = "folio";
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
 
-  @ClassRule
-  public static EmbeddedKafkaCluster kafkaCluster = provisionWith(EmbeddedKafkaClusterConfig.useDefaults());
+  public static EmbeddedKafkaCluster kafkaCluster;
 
   private static KafkaConfig kafkaConfig;
   private Vertx vertx = Vertx.vertx();
 
   @BeforeClass
   public static void setUpClass() {
+    kafkaCluster = provisionWith(defaultClusterConfig());
+    kafkaCluster.start();
     String[] hostAndPort = kafkaCluster.getBrokerList().split(":");
     kafkaConfig = KafkaConfig.builder()
       .kafkaHost(hostAndPort[0])

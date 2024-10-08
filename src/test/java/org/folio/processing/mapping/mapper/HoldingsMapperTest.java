@@ -46,11 +46,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -58,8 +53,7 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("945$h")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$h"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -75,10 +69,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -111,11 +114,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -123,8 +121,7 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("\"KU/CC/DI/A\"; else 945$h")
-          .withAcceptedValues(acceptedValues)));
+          .withValue("\"KU/CC/DI/A\"; else 945$h")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -135,10 +132,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -179,11 +185,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -202,10 +203,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -243,11 +253,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -255,8 +260,7 @@ public class HoldingsMapperTest {
         .withName("permanentLocationId")
         .withEnabled("true")
         .withPath("holdings.permanentLocationId")
-        .withValue("\"KU/CC/DI/A\"; else 945$h")
-        .withAcceptedValues(acceptedValues)));
+        .withValue("\"KU/CC/DI/A\"; else 945$h")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -267,10 +271,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -302,11 +315,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -314,14 +322,12 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("945$h")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$h"),
         new MappingRule()
           .withName("temporaryLocationId")
           .withEnabled("true")
           .withPath("holdings.temporaryLocationId")
-          .withValue("945$a")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$a"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -355,10 +361,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -403,11 +418,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -415,14 +425,12 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("945$h; else \"KU/CC/DI/A\"")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$h; else \"KU/CC/DI/A\""),
         new MappingRule()
           .withName("temporaryLocationId")
           .withEnabled("true")
           .withPath("holdings.temporaryLocationId")
-          .withValue("945$a")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$a"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -456,10 +464,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -506,11 +523,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -518,14 +530,12 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("945$h")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$h"),
         new MappingRule()
           .withName("temporaryLocationId")
           .withEnabled("true")
           .withPath("holdings.temporaryLocationId")
-          .withValue("945$a")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$a"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -559,10 +569,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -608,11 +627,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -620,14 +634,12 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("945$h; else \"Online (E)\"")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$h; else \"Online (E)\""),
         new MappingRule()
           .withName("temporaryLocationId")
           .withEnabled("true")
           .withPath("holdings.temporaryLocationId")
-          .withValue("945$a")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$a"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -661,10 +673,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -693,11 +714,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -705,8 +721,7 @@ public class HoldingsMapperTest {
         .withName("permanentLocationId")
         .withEnabled("true")
         .withPath("holdings.permanentLocationId")
-        .withValue("945$h")
-        .withAcceptedValues(acceptedValues)));
+        .withValue("945$h")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -717,10 +732,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -754,11 +778,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = null;
 
     MappingProfile profile = new MappingProfile()
@@ -770,10 +789,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -831,11 +859,6 @@ public class HoldingsMapperTest {
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     eventPayload.setContext(context);
 
-    HashMap<String, String> acceptedValues = new HashMap<>();
-    acceptedValues.put("fcd64ce1-6995-48f0-840e-89ffa2288371", "Main Library (KU/CC/DI/M)");
-    acceptedValues.put("53cf956f-c1df-410b-8bea-27f712cca7c0", "Annex (KU/CC/DI/A)");
-    acceptedValues.put("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", "Online (E)");
-
     MappingDetail mappingDetails = new MappingDetail()
       .withName("holdings")
       .withRecordType(HOLDINGS)
@@ -843,14 +866,12 @@ public class HoldingsMapperTest {
           .withName("permanentLocationId")
           .withEnabled("true")
           .withPath("holdings.permanentLocationId")
-          .withValue("945$h")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$h"),
         new MappingRule()
           .withName("temporaryLocationId")
           .withEnabled("true")
           .withPath("holdings.temporaryLocationId")
-          .withValue("945$a")
-          .withAcceptedValues(acceptedValues),
+          .withValue("945$a"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -884,10 +905,19 @@ public class HoldingsMapperTest {
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
-        .withLocations(Lists.newArrayList(Lists.newArrayList(new Location()
-          .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
-          .withName("Main Library")
-          .withCode("KU/CC/DI/M")))));
+        .withLocations(List.of(
+          new Location()
+            .withId("fcd64ce1-6995-48f0-840e-89ffa2288371")
+            .withName("Main Library")
+            .withCode("KU/CC/DI/M"),
+          new Location()
+            .withId("53cf956f-c1df-410b-8bea-27f712cca7c0")
+            .withName("Annex")
+            .withCode("KU/CC/DI/A"),
+          new Location()
+            .withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5")
+            .withName("Online")
+            .withCode("E"))));
 
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
