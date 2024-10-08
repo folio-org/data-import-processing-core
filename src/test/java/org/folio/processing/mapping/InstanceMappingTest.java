@@ -64,6 +64,8 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
   private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
   private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_without_indicators.mrc";
+  private static final String BIB_WITH_008_DATE = "src/test/resources/org/folio/processing/mapping/instance/008_date.mrc";
+
 
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
@@ -545,7 +547,7 @@ public class InstanceMappingTest {
 
   @Test
   public void testMarcToInstanceWith008Date() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_008_DATE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
     String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
@@ -572,6 +574,9 @@ public class InstanceMappingTest {
 
     Instance mappedInstance = mappedInstances.get(0);
     assertNotNull(mappedInstance.getId());
+
+    assertEquals("1991", mappedInstances.get(0).getDates().getDate1());
+    assertEquals("0101", mappedInstances.get(0).getDates().getDate2());
   }
 
   @Test

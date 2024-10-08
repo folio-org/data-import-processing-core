@@ -58,6 +58,7 @@ public class Processor<T> {
   private static final String WILDCARD_INDICATOR = "*";
   private static final String TARGET = "target";
   private static final String SUBFIELD = "subfield";
+  private static final String CREATE_SINGLE_OBJECT_PROPERY = "createSingleObject";
   private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Class<?>, Map<String, Method>> METHOD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Field, ParameterizedType> PARAM_TYPE_CACHE = new ConcurrentHashMap<>();
@@ -532,53 +533,58 @@ public class Processor<T> {
         continue;
       }
 
-      if (BooleanUtils.isTrue(cfRule.getBoolean("createSingleObject"))) {
+      if (BooleanUtils.isTrue(cfRule.getBoolean(CREATE_SINGLE_OBJECT_PROPERY))) {
         String target = cfRule.getString(TARGET);
         String[] embeddedFields = target.split("\\.");
-        try {
-          buildSimpleJsonObject(entity, embeddedFields, data);
-        } catch (NoSuchFieldException | NoSuchMethodException | InvocationTargetException e) {
-          LOGGER.warn("Error:", rules.encode());
-        }
-        createNewComplexObj = false;
-      }
-      else{
-      //if conditionsMet = true, then all conditions of a specific rule were met
-      //and we can set the target to the rule's value
-      String target = cfRule.getString(TARGET);
-      String[] embeddedFields = target.split("\\.");
-
-      if (isMappingValid(entity, embeddedFields)) {
-        Object val = getValue(entity, embeddedFields, data);
-        buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
+        buildAndFillSimpleJsonObject(entity, embeddedFields, data);
         createNewComplexObj = false;
       } else {
-        LOGGER.debug("handleControlFieldRules:: bad mapping {}", rules.encode());
+        //if conditionsMet = true, then all conditions of a specific rule were met
+        //and we can set the target to the rule's value
+        String target = cfRule.getString(TARGET);
+        String[] embeddedFields = target.split("\\.");
+
+        if (isMappingValid(entity, embeddedFields)) {
+          Object val = getValue(entity, embeddedFields, data);
+          buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
+          createNewComplexObj = false;
+        } else {
+          LOGGER.debug("handleControlFieldRules:: bad mapping {}", rules.encode());
+        }
       }
-    }}
+    }
   }
 
-  private void buildSimpleJsonObject(Object entity, String[] embeddedFields, String value)
-    throws NoSuchFieldException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException {
+  private void buildAndFillSimpleJsonObject(Object entity, String[] embeddedFields, String value) {
     Object currentObject = entity;
+    try {
+      currentObject = getOrCreateNestedObject(embeddedFields, currentObject);
+      setFieldValueFromPath(embeddedFields, value, currentObject);
+    } catch (Exception e) {
+      LOGGER.warn("buildSimpleJsonObject:: Error in building simple JsonObject in the mapping process: ", e);
+    }
+  }
+
+  private void setFieldValueFromPath(String[] embeddedFields, String value, Object currentObject) throws NoSuchFieldException, IllegalAccessException {
+    // Setting the value on the final field
+    Field targetField = currentObject.getClass().getDeclaredField(embeddedFields[embeddedFields.length - 1]);
+    targetField.setAccessible(true);
+    Object convertedValue = convertStringToFieldType(value, targetField.getType());
+    targetField.set(currentObject, convertedValue);
+  }
+
+  private static Object getOrCreateNestedObject(String[] embeddedFields, Object currentObject) throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
     for (int i = 0; i < embeddedFields.length - 1; i++) {
       Field field = currentObject.getClass().getDeclaredField(embeddedFields[i]);
       field.setAccessible(true);
       Object nextObject = field.get(currentObject);
       if (nextObject == null) {
-        // If the next object in the path is null, instantiate it assuming it has a no-arg constructor
         nextObject = field.getType().getDeclaredConstructor().newInstance();
         field.set(currentObject, nextObject);
       }
       currentObject = nextObject;
     }
-
-    // Set the value on the final field
-    Field targetField = currentObject.getClass().getDeclaredField(embeddedFields[embeddedFields.length - 1]);
-    targetField.setAccessible(true);
-    // Convert the string value to the appropriate type of the target field
-    Object convertedValue = convertStringToFieldType(value, targetField.getType());
-    targetField.set(currentObject, convertedValue);
+    return currentObject;
   }
 
   private Object convertStringToFieldType(String value, Class<?> fieldType) throws IllegalArgumentException {
