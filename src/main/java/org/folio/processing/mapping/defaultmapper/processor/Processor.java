@@ -555,51 +555,6 @@ public class Processor<T> {
     }
   }
 
-  private void buildAndFillSimpleJsonObject(Object entity, String[] embeddedFields, String value) {
-    Object currentObject = entity;
-    try {
-      currentObject = getOrCreateNestedObject(embeddedFields, currentObject);
-      setFieldValueFromPath(embeddedFields, value, currentObject);
-    } catch (Exception e) {
-      LOGGER.warn("buildSimpleJsonObject:: Error in building simple JsonObject in the mapping process: ", e);
-    }
-  }
-
-  private void setFieldValueFromPath(String[] embeddedFields, String value, Object currentObject) throws NoSuchFieldException, IllegalAccessException {
-    // Setting the value on the final field
-    Field targetField = currentObject.getClass().getDeclaredField(embeddedFields[embeddedFields.length - 1]);
-    targetField.setAccessible(true);
-    Object convertedValue = convertStringToFieldType(value, targetField.getType());
-    targetField.set(currentObject, convertedValue);
-  }
-
-  private static Object getOrCreateNestedObject(String[] embeddedFields, Object currentObject) throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
-    for (int i = 0; i < embeddedFields.length - 1; i++) {
-      Field field = currentObject.getClass().getDeclaredField(embeddedFields[i]);
-      field.setAccessible(true);
-      Object nextObject = field.get(currentObject);
-      if (nextObject == null) {
-        nextObject = field.getType().getDeclaredConstructor().newInstance();
-        field.set(currentObject, nextObject);
-      }
-      currentObject = nextObject;
-    }
-    return currentObject;
-  }
-
-  private Object convertStringToFieldType(String value, Class<?> fieldType) throws IllegalArgumentException {
-    if (fieldType == String.class) {
-      return value;
-    } else if (fieldType == int.class || fieldType == Integer.class) {
-      return Integer.parseInt(value);
-    } else if (fieldType == double.class || fieldType == Double.class) {
-      return Double.parseDouble(value);
-    } else if (fieldType == boolean.class || fieldType == Boolean.class) {
-      return Boolean.parseBoolean(value);
-    } else {
-      throw new IllegalArgumentException("Unsupported field type for conversion: " + fieldType);
-    }
-  }
 
   private String processRules(RuleExecutionContext ruleExecutionContext) {
     if (rules == null) {
@@ -1028,6 +983,37 @@ public class Processor<T> {
       targets.add("saftLaterHeading");
     }
     return targets;
+  }
+
+  private void buildAndFillSimpleJsonObject(Object entity, String[] embeddedFields, String value) {
+    Object currentObject = entity;
+    try {
+      currentObject = getOrCreateNestedObject(embeddedFields, currentObject);
+      setFieldValueFromPath(embeddedFields, value, currentObject);
+    } catch (Exception e) {
+      LOGGER.warn("buildSimpleJsonObject:: Error in building simple JsonObject in the mapping process: ", e);
+    }
+  }
+
+  private void setFieldValueFromPath(String[] embeddedFields, String value, Object currentObject) throws NoSuchFieldException, IllegalAccessException {
+    Field targetField = currentObject.getClass().getDeclaredField(embeddedFields[embeddedFields.length - 1]);
+    targetField.setAccessible(true);
+    //Object convertedValue = convertStringToFieldType(value, targetField.getType());
+    targetField.set(currentObject, value);
+  }
+
+  private static Object getOrCreateNestedObject(String[] embeddedFields, Object currentObject) throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
+    for (int i = 0; i < embeddedFields.length - 1; i++) {
+      Field field = currentObject.getClass().getDeclaredField(embeddedFields[i]);
+      field.setAccessible(true);
+      Object nextObject = field.get(currentObject);
+      if (nextObject == null) {
+        nextObject = field.getType().getDeclaredConstructor().newInstance();
+        field.set(currentObject, nextObject);
+      }
+      currentObject = nextObject;
+    }
+    return currentObject;
   }
 
   /**
