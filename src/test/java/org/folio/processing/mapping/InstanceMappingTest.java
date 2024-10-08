@@ -544,7 +544,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithRepeatableSubjectsButWithoutIndicators() throws IOException {
+  public void testMarcToInstanceWithRepeatableSubjectsMappedWithTypeButWithoutIndicators() throws IOException {
     final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
     final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
     final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
