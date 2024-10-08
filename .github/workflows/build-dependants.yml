@@ -1,5 +1,5 @@
 name: build dependants
-# mod-inventory master and mod-source-record-manager master depend on the
+# mod-inventory master, mod-source-record-manager and mod-orders master depend on the
 # latest -SNAPSHOT of data-import-processing-core master.
 # Try to build them with the current master of data-import-processing-core.
 on:
@@ -82,4 +82,27 @@ jobs:
           name: data-import-processing-core
           path: ~/.m2/repository/org/folio/data-import-processing-core
       - run: cd mod-source-record-manager; mvn -B clean verify
-
+  mod-orders:
+    needs: data-import-processing-core
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    timeout-minutes: 20
+    steps:
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-orders
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            !~/.m2/repository/org/folio/data-import-processing-core
+          key: mod-orders-${{ hashFiles('**/pom.xml') }}
+          restore-keys: mod-orders-
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: data-import-processing-core
+          path: ~/.m2/repository/org/folio/data-import-processing-core
+      - run: cd mod-orders; mvn -B clean verify
