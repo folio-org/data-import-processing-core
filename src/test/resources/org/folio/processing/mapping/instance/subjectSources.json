@@ -1,14 +1,18 @@
-[ {
+[
+  {
     "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d40",
     "name" : "Library of Congress Subject Headings",
+    "code" : "lcsh",
     "source" : "folio"
   }, {
     "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d41",
     "name" : "Library of Congress Children's and Young Adults' Subject Headings",
+    "code" : "cyac",
     "source" : "folio"
   }, {
     "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d42",
     "name" : "Medical Subject Headings",
+    "code" : "mesh",
     "source" : "folio"
   }, {
     "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d43",
@@ -21,13 +25,12 @@
   }, {
     "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d45",
     "name" : "Canadian Subject Headings",
+    "code" : "cash",
     "source" : "folio"
   }, {
     "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d46",
     "name" : "Répertoire de vedettes-matière",
+    "code" : "rvm",
     "source" : "folio"
-  }, {
-    "id" : "e894d0dc-621d-4b1d-98f6-6f7120eb0d47",
-    "name" : "Source specified in subfield $2",
-    "source" : "folio"
-  } ]
+  }
+]
