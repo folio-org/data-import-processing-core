@@ -1019,6 +1019,32 @@ public class NormalizationFunctionTest {
   }
 
   @Test
+  public void SET_SUBJECT_SOURCE_ID_BY_CODE_shouldReturnEmptyStringIfMappingParametersHasNoSubjectSources() {
+    // given
+    var context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    // when
+    var actualSubjectSourceId = runFunction("set_subject_source_id_by_code", context);
+    //then
+    assertEquals(EMPTY_STRING, actualSubjectSourceId);
+  }
+
+  @Test
+  public void SET_SUBJECT_SOURCE_ID_BY_CODE_shouldReturnEmptyStringIfSubfieldValueDoesNotMatchNoSubjectSourceCode() {
+    // given
+    var subjectSource = new SubjectSource()
+      .withId(UUID.randomUUID().toString())
+      .withCode("lcsh");
+    var context = new RuleExecutionContext();
+    context.setSubFieldValue("nonExistingCode");
+    context.setMappingParameters(new MappingParameters().withSubjectSources(List.of(subjectSource)));
+    // when
+    var actualSubjectSourceId = runFunction("set_subject_source_id_by_code", context);
+    //then
+    assertEquals(EMPTY_STRING, actualSubjectSourceId);
+  }
+
+  @Test
   public void SET_SUBJECT_TYPE_ID_shouldReturnExpectedResult() {
     // given
     var expectedSubjectTypeId = UUID.randomUUID().toString();

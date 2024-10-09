@@ -10,6 +10,10 @@
       "description": "label for the subject source",
       "type": "string"
     },
+    "code": {
+      "description": "label for the subject source code",
+      "type": "string"
+    },
     "source": {
       "type": "string",
       "description": "label indicating where the subject source entry originates from, i.e. 'folio' or 'local'",
