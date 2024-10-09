@@ -7,7 +7,7 @@
 * [MODINV-1071](https://folio-org.atlassian.net/browse/MODINV-1071) Extend Authority with Additional fields
 * [MODDICORE-413](https://folio-org.atlassian.net/browse/MODDICORE-413) Adjust mapping of order to fill in donor information
 * [MODSOURMAN-1212](https://folio-org.atlassian.net/browse/MODSOURMAN-1212) Update MARC bib-instance default mapping for subject source and subject type
-
+* [MODDICORE-416](https://folio-org.atlassian.net/browse/MODDICORE-416) Donor names from mapping profile are not populated in the POL when at least one donor code does not exist in the system
 
 ## 2024-03-18 v4.2.0
 * [MODDICORE-398](https://issues.folio.org/browse/MODDICORE-398) Update RMB v35.2.0, Vertx 4.5.4

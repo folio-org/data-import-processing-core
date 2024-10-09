@@ -84,11 +84,7 @@ public class MarcRecordReaderUnitTest {
   private final String RECORD_WITH_MULTIPLE_SUBFIELDS_IN_MULTIPLE_050_FIELD = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"Z2013.5.W6\"}, {\"b\": \"K46 2018\"}, {\"a\": \"PR1286.W6\"}]}}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"a2-val\"}, {\"b\": \"b2-val\"}, {\"a\": \"a2-val\"}]}}, {\"245\": \"American Bar Association journal\"}]}";
   private final String RECORD_WITH_980_FIELD = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"245\": \"American Bar Association journal\"}, {\"980\": {\"ind1\": \"0\", \"ind2\": \"2\", \"subfields\": [{\"a\": \"00001\"}, {\"b\": \"Vendor order number\"}]}}]}";
   private final String RECORD_WITH_900_FIELD_DONORS_CODES = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"900\": {\"ind1\": \"0\", \"ind2\": \"2\", \"subfields\": [{\"a\": \"CODE-1\"}, {\"b\": \"CODE-2\"}]}}]}";
-  private final String RECORD_WITH_GOBI_DONOR = "{\"leader\": \"00554cam a22002053  4500\",  \"fields\": [   " +
-    "{\"001\": \"ocn898051021\"}, {\"003\": \"OCoLC\"}, {\"005\": \"20141218085132.5\"}, {\"008\": " +
-    "\"141211s2014 xx 000 0 eng d\"}, {\"035\": {\"subfields\": [{\"a\": \"(OCoLC)898051021\"}], \"ind1\": \" \", " +
-    "\"ind2\": \" \"}}, {\"100\": {\"subfields\": [{\"a\": \"Keriotis, Dimitri.\"}], \"ind1\": \"1\", \"ind2\": \" \"}}, " +
-    "{\"245\": {\"subfields\": [{\"a\": \"Quiet time.\"}], \"ind1\": \"1\", \"ind2\": \"0\"}}]}";
+
   private MappingContext mappingContext = new MappingContext();
 
   @Test
@@ -2062,7 +2058,7 @@ public class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_GOBI_DONOR))));
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
     eventPayload.setContext(context);
     List<Organization> organizations =
       List.of(new Organization().withId("UUID1").withCode("GOBI").withName("GOBI Libraries").withIsDonor(true));
