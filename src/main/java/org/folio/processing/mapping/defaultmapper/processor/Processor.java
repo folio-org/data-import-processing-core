@@ -998,7 +998,6 @@ public class Processor<T> {
   private void setFieldValueFromPath(String[] embeddedFields, String value, Object currentObject) throws NoSuchFieldException, IllegalAccessException {
     Field targetField = currentObject.getClass().getDeclaredField(embeddedFields[embeddedFields.length - 1]);
     targetField.setAccessible(true);
-    //Object convertedValue = convertStringToFieldType(value, targetField.getType());
     targetField.set(currentObject, value);
   }
 
