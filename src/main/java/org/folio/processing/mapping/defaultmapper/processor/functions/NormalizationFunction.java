@@ -442,6 +442,24 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     }
   },
 
+  SET_SUBJECT_SOURCE_ID_BY_CODE() {
+    @Override
+    public String apply(RuleExecutionContext context) {
+      List<SubjectSource> subjectSources = context.getMappingParameters().getSubjectSources();
+      String sourceCode = context.getSubFieldValue();
+
+      if (sourceCode == null || subjectSources == null) {
+        return StringUtils.EMPTY;
+      }
+
+      return subjectSources.stream()
+        .filter(subjectSource -> sourceCode.equalsIgnoreCase(subjectSource.getCode()))
+        .findFirst()
+        .map(SubjectSource::getId)
+        .orElse(StringUtils.EMPTY);
+    }
+  },
+
   SET_SUBJECT_TYPE_ID() {
     private static final String NAME_PARAMETER = "name";
 
