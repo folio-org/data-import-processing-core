@@ -367,7 +367,9 @@ public class MarcRecordReader implements Reader {
       for (MappingRule mappingRule : subfieldMapping.getFields()) {
         if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
           if (STRING_VALUE_PATTERN.matcher(mappingRule.getValue()).matches()) {
-            repeatableStrings.add(readRepeatableStringField(mappingRule));
+            var readRepeatableStringField = readRepeatableStringField(mappingRule);
+            if (!readRepeatableStringField.isBlank())
+              repeatableStrings.add(readRepeatableStringField);
           } else {
             retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
             if (repeatableStrings.isEmpty()) {
