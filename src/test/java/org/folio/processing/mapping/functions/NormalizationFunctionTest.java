@@ -300,7 +300,7 @@ public class NormalizationFunctionTest {
   }
 
   @Test
-  public void SET_DATE_TYPE_ID_shouldReturnUnspecifiedIssuanceModeIdIfNoMatchedExists() {
+  public void SET_DATE_TYPE_ID_shouldReturnNoAttemptToCodeIfNoMatchedExists() {
     // given
     String expectedInstanceDateTypeId = UUID.randomUUID().toString();
     InstanceDateType instanceDateType = new InstanceDateType()

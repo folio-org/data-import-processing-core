@@ -1017,35 +1017,35 @@ public class Processor<T> {
 
   /**
    * Constructs the list of rules to map relations like:
-   * {
-   * "entityPerRepeatedSubfield": false,
-   * "entity": [
-   * {
-   * "target": "saftBroaderTerm.headingRef",
-   * "description": "saftMeetingName",
-   * "subfield": ["a","c","d","n","q","g"],
-   * "exclusiveSubfield": ["t"],
-   * "rules": []
-   * },
-   * {
-   * "target": "saftBroaderTerm.headingType",
-   * "description": "meetingName",
-   * "subfield": ["a","c","d","n","q","g"],
-   * "exclusiveSubfield": ["t"],
-   * "rules": [
-   * {
-   * "conditions": [
-   * {
-   * "type": "set_heading_type_by_name",
-   * "parameter": {"name": "meetingName"}
-   * }
-   * ]
-   * }
-   * ],
-   * "applyRulesOnConcatenatedData": true
-   * }
-   * ]
-   * }
+   *  {
+   *     "entityPerRepeatedSubfield": false,
+   *     "entity": [
+   *       {
+   *         "target": "saftBroaderTerm.headingRef",
+   *         "description": "saftMeetingName",
+   *         "subfield": ["a","c","d","n","q","g"],
+   *         "exclusiveSubfield": ["t"],
+   *         "rules": []
+   *       },
+   *       {
+   *         "target": "saftBroaderTerm.headingType",
+   *         "description": "meetingName",
+   *         "subfield": ["a","c","d","n","q","g"],
+   *         "exclusiveSubfield": ["t"],
+   *         "rules": [
+   *           {
+   *             "conditions": [
+   *               {
+   *                 "type": "set_heading_type_by_name",
+   *                 "parameter": {"name": "meetingName"}
+   *               }
+   *             ]
+   *           }
+   *         ],
+   *         "applyRulesOnConcatenatedData": true
+   *       }
+   *     ]
+   *   }
    */
   private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
     JsonArray additionalMappings = new JsonArray();
