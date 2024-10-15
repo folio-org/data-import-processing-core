@@ -2053,6 +2053,58 @@ public class MarcRecordReaderUnitTest {
     assertTrue(((RepeatableFieldValue) value).getValue().isEmpty());
   }
 
+  @Test
+  public void shouldNotReturnEmptyDonorOrganizationIdIfAcceptedValueIsEmpty() throws IOException {
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
+    eventPayload.setContext(context);
+    List<Organization> organizations =
+      List.of(new Organization().withId("UUID1").withCode("GOBI").withName("GOBI Libraries").withIsDonor(true));
+
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
+
+    MappingRule donorsMappingRule = new MappingRule()
+      .withName("donorOrganizationIds")
+      .withEnabled("true")
+      .withPath("order.poLine.donorOrganizationIds[]")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withSubfields(List.of(
+        new RepeatableSubfieldMapping()
+          .withOrder(0)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("865$a"))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("\"UUID1\""))),
+        new RepeatableSubfieldMapping()
+          .withOrder(1)
+          .withPath("order.poLine.donorOrganizationIds[]")
+          .withFields(List.of(new MappingRule()
+            .withName("donorOrganizationIds")
+            .withEnabled("true")
+            .withPath("order.poLine.donorOrganizationIds[]")
+            .withValue("\"test\"")))
+      ));
+
+    Value<?> value = reader.read(donorsMappingRule);
+
+    assertNotNull(value);
+    assertEquals(ValueType.LIST, value.getType());
+    assertFalse(((List<?>) value.getValue()).contains(""));
+  }
+
   private JsonObject createSubField(String name, String value) {
     JsonObject subfield = new JsonObject();
     subfield.put(name, value);
