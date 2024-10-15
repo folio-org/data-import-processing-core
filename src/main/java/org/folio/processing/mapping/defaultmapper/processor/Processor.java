@@ -536,7 +536,7 @@ public class Processor<T> {
       if (BooleanUtils.isTrue(cfRule.getBoolean(CREATE_SINGLE_OBJECT_PROPERY))) {
         String target = cfRule.getString(TARGET);
         String[] embeddedFields = target.split("\\.");
-        buildAndFillSimpleJsonObject(entity, embeddedFields, data);
+        buildAndFillSimpleObject(entity, embeddedFields, data);
         createNewComplexObj = false;
       } else {
         //if conditionsMet = true, then all conditions of a specific rule were met
@@ -985,7 +985,7 @@ public class Processor<T> {
     return targets;
   }
 
-  private void buildAndFillSimpleJsonObject(Object entity, String[] embeddedFields, String value) {
+  private void buildAndFillSimpleObject(Object entity, String[] embeddedFields, String value) {
     Object currentObject = entity;
     try {
       currentObject = getOrCreateNestedObject(embeddedFields, currentObject);
@@ -1002,17 +1002,17 @@ public class Processor<T> {
   }
 
   private static Object getOrCreateNestedObject(String[] embeddedFields, Object currentObject) throws NoSuchFieldException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
+    Object nextObject = null;
     for (int i = 0; i < embeddedFields.length - 1; i++) {
       Field field = currentObject.getClass().getDeclaredField(embeddedFields[i]);
       field.setAccessible(true);
-      Object nextObject = field.get(currentObject);
+      nextObject = field.get(currentObject);
       if (nextObject == null) {
         nextObject = field.getType().getDeclaredConstructor().newInstance();
         field.set(currentObject, nextObject);
       }
-      currentObject = nextObject;
     }
-    return currentObject;
+    return nextObject;
   }
 
   /**
