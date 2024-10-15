@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.AuthorityNoteType;
 import org.folio.ClassificationType;
+import org.folio.InstanceDateType;
 import org.folio.InstanceType;
 import org.folio.ElectronicAccessRelationship;
 import org.folio.InstanceFormat;
@@ -268,6 +269,81 @@ public class NormalizationFunctionTest {
       // then
       assertEquals(expectedSubField, actualSubField);
     }
+  }
+
+  @Test
+  public void SET_DATE_TYPE_ID_shouldReturnExpectedResult() {
+    // given
+    String expectedInstanceDateTypeId = UUID.randomUUID().toString();
+    InstanceDateType firstInstanceDateType = new InstanceDateType()
+      .withId(UUID.randomUUID().toString())
+      .withName("No attempt to code")
+      .withCode("|");
+
+    InstanceDateType secondInstanceDateType = new InstanceDateType()
+      .withId(expectedInstanceDateTypeId)
+      .withName("Single known date/probable date")
+      .withCode("s");
+
+    InstanceDateType thirdInstanceDateType = new InstanceDateType()
+      .withId(UUID.randomUUID().toString())
+      .withName("Range of years of bulk of collection")
+      .withCode("k");
+
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setSubFieldValue("901214s19910101nyua");
+    context.setMappingParameters(new MappingParameters().withInstanceDateTypes(Arrays.asList(firstInstanceDateType, secondInstanceDateType, thirdInstanceDateType)));
+    // when
+    String actualInstanceDateTypeId = runFunction("set_date_type_id", context);
+    // then
+    assertEquals(expectedInstanceDateTypeId, actualInstanceDateTypeId);
+  }
+
+  @Test
+  public void SET_DATE_TYPE_ID_shouldReturnNoAttemptToCodeIfNoMatchedExists() {
+    // given
+    String expectedInstanceDateTypeId = UUID.randomUUID().toString();
+    InstanceDateType instanceDateType = new InstanceDateType()
+      .withId(expectedInstanceDateTypeId)
+      .withName("No attempt to code")
+      .withCode("|");
+
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setSubFieldValue("zzzzzzzzzz");
+    context.setMappingParameters(new MappingParameters().withInstanceDateTypes(Collections.singletonList(instanceDateType)));
+    // when
+    String actualInstanceDateTypeId = runFunction("set_date_type_id", context);
+    // then
+    assertEquals(expectedInstanceDateTypeId, actualInstanceDateTypeId);
+  }
+  @Test
+  public void SET_DATE_TYPE_ID_shouldReturnEmptyStringIfNoMatchedExistsAndUnspecifiedInstanceTypeIdNotExists() {
+    // given
+    String expectedInstanceDateTypeId = UUID.randomUUID().toString();
+    InstanceDateType instanceDateTypeId = new InstanceDateType()
+      .withId(expectedInstanceDateTypeId)
+      .withName("Detailed date")
+      .withCode("e");
+
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setSubFieldValue("zzzzzzzzzz");
+    context.setMappingParameters(new MappingParameters().withInstanceDateTypes(Collections.singletonList(instanceDateTypeId)));
+    // when
+    String actualInstanceDateTypeId = runFunction("set_date_type_id", context);
+    // then
+    assertEquals(StringUtils.EMPTY, actualInstanceDateTypeId);
+  }
+
+  @Test
+  public void SET_DATE_TYPE_MODE_ID_shouldReturnEmptyStringIfNoSettingsSpecified() {
+    // given
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters());
+    context.setSubFieldValue("901214s19910101nyua");
+    // when
+    String actualInstanceDateTypeId = runFunction("set_date_type_id", context);
+    // then
+    assertEquals(StringUtils.EMPTY, actualInstanceDateTypeId);
   }
 
   @Test
