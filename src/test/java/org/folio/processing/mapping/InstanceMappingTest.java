@@ -562,8 +562,8 @@ public class InstanceMappingTest {
     while (reader.hasNext()) {
       ByteArrayOutputStream os = new ByteArrayOutputStream();
       MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
+      Record targetRecord = reader.next();
+      writer.write(targetRecord);
       JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
       mappedInstances.add(instance);
