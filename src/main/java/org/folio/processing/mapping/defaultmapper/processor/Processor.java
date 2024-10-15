@@ -1012,7 +1012,7 @@ public class Processor<T> {
         field.set(currentObject, nextObject);
       }
     }
-    return nextObject;
+    return (nextObject == null) ? currentObject : nextObject;
   }
 
   /**
