@@ -14,7 +14,7 @@
     },
     "hrid": {
       "type": "string",
-      "description": "the human readable ID, also called eye readable ID"
+      "description": "the human readable ID, also called eye readable ID. A system-assigned sequential ID which maps to the Instance ID"
     },
     "holdingsTypeId": {
       "type": "string",
@@ -95,22 +95,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "properties": {
-          "holdingsNoteTypeId": {
-            "type": "string",
-            "description": "ID of the type of note",
-            "$ref": "raml-storage/raml-util/schemas/uuid.schema"
-          },
-          "note": {
-            "type": "string",
-            "description": "Text content of the note"
-          },
-          "staffOnly": {
-            "type": "boolean",
-            "description": "If true, determines that the note should not be visible for others than staff",
-            "default": false
-          }
-        }
+        "$ref": "settings/holdingsnotes.json"
       }
     },
     "illPolicyId": {
@@ -142,7 +127,7 @@
           },
           "staffNote": {
             "type": "string",
-            "description": "Private note attached to a holdings statment"
+            "description": "Private note attached to a holdings statement"
           }
         }
       }
@@ -163,7 +148,7 @@
           },
           "staffNote": {
             "type": "string",
-            "description": "Private note attached to a holdings statment"
+            "description": "Private note attached to a holdings statement"
           }
         }
       }
@@ -184,7 +169,7 @@
           },
           "staffNote": {
             "type": "string",
-            "description": "Private note attached to a holdings statment"
+            "description": "Private note attached to a holdings statement"
           }
         }
       }
@@ -232,6 +217,14 @@
       "type": "boolean",
       "description": "records the fact that the record should not be displayed in a discovery system"
     },
+    "administrativeNotes":{
+      "type": "array",
+      "description": "Administrative notes",
+      "minItems": 0,
+      "items": {
+        "type": "string"
+      }
+    },
     "statisticalCodeIds": {
       "type": "array",
       "description": "List of statistical code IDs",
@@ -240,6 +233,17 @@
         "$ref": "raml-storage/raml-util/schemas/uuid.schema"
       },
       "uniqueItems": true
+    },
+    "holdingsInstance": {
+      "description": "Holdings Instance",
+      "type": "object",
+      "folio:$ref": "instance.json",
+      "readonly": true,
+      "folio:isVirtual": true,
+      "folio:linkBase": "inventory/instances",
+      "folio:linkFromField": "instanceId",
+      "folio:linkToField": "id",
+      "folio:includedElement": "instances.0"
     },
     "tags": {
       "description": "arbitrary tags associated with this holding",

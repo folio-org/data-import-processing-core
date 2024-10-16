@@ -1,6 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "Electronic access",
+  "description": "Electronic access item",
+  "javaType": "org.folio.ElectronicAccess",
+  "additionalProperties": false,
   "type": "object",
   "properties": {
     "uri": {
@@ -24,7 +26,6 @@
       "description": "relationship between the electronic resource at the location identified and the item described in the record as a whole"
     }
   },
-  "additionalProperties": false,
   "required": [
     "uri"
   ]

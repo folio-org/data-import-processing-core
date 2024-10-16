@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "description": "A (shelf) location, the forth-level location unit below institution, campus, and library.",
+  "javaType": "org.folio.Location",
   "type": "object",
   "properties": {
     "id": {
@@ -32,7 +33,7 @@
       "type": "string"
     },
     "institution": {
-      "description": "Object of institution",
+      "description": "The institution, the first-level location unit, this (shelf) location belongs to.",
       "type": "object",
       "folio:$ref": "locinst.json",
       "readonly": true,
@@ -47,7 +48,7 @@
       "type": "string"
     },
     "campus": {
-      "description": "Object of campus",
+      "description": "The campus, the second-level location unit, this (shelf) location belongs to",
       "type": "object",
       "folio:$ref": "loccamp.json",
       "readonly": true,
@@ -62,7 +63,7 @@
       "type": "string"
     },
     "library": {
-      "description": "Object of library",
+      "description": "The library, the third-level location unit, this (shelf) location belongs to.",
       "type": "object",
       "folio:$ref": "locinst.json",
       "readonly": true,
@@ -78,7 +79,7 @@
     },
     "primaryServicePoint": {
       "description": "The UUID of the primary service point of this (shelf) location.",
-      "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+      "format": "uuid",
       "type": "string"
     },
     "primaryServicePointObject": {
@@ -98,11 +99,15 @@
       "items": {
         "description": "The UUID of a service point that belongs to this (shelf) location.",
         "type": "string",
-        "pattern": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+        "format": "uuid",
         "not": {
           "type": "null"
         }
       }
+    },
+    "isFloatingCollection": {
+      "description": "Items checked in/out from this location can be checked in/out to other locations with the same flag.",
+      "type": "boolean"
     },
     "servicePoints": {
       "type": "array",
