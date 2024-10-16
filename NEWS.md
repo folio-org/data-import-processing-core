@@ -9,6 +9,7 @@
 * [MODSOURMAN-1212](https://folio-org.atlassian.net/browse/MODSOURMAN-1212) Update MARC bib-instance default mapping for subject source and subject type
 * [MODDICORE-415](https://folio-org.atlassian.net/browse/MODDICORE-415) Adjust mapping of Subject source specified in subfield 2
 * [MODDICORE-416](https://folio-org.atlassian.net/browse/MODDICORE-416) Donor names from mapping profile are not populated in the POL when at least one donor code does not exist in the system
+* [MODSOURMAN-1228](https://folio-org.atlassian.net/browse/MODSOURMAN-1228) Update default mapping for Date type, Date 1, and Date 2 fields
 
 
 ## 2024-03-18 v4.2.0

@@ -303,6 +303,7 @@
                 <path>${basedir}/ramls/settings/organization_collection.json</path>
                 <path>${basedir}/ramls/settings/subjectSources.json</path>
                 <path>${basedir}/ramls/settings/subjectTypes.json</path>
+                <path>${basedir}/ramls/settings/instanceDateTypes.json</path>
                 <path>${basedir}/ramls/settings/acquisitions_unit.json</path>
                 <path>${basedir}/ramls/settings/acquisitions_unit_collection.json</path>
                 <path>${basedir}/ramls/settings/acquisition_method.json</path>
