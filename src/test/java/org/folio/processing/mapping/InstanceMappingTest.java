@@ -64,7 +64,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
   private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
   private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
-  private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
+  private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_extended.mrc";
   private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_without_indicators.mrc";
   private static final String BIB_WITH_008_DATE = "src/test/resources/org/folio/processing/mapping/instance/008_date.mrc";
 
@@ -499,6 +499,15 @@ public class InstanceMappingTest {
     final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
     final String NINTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
 
+    final String TENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b9";
+    final String ELEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff510";
+    final String TWELFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff512";
+    final String THIRTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff513";
+    final String FOURTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff514";
+    final String FIFTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff515";
+    final String SIXTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff516";
+
+
     final List<Subject> expectedResults = List.of(
       new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
       new Subject().withValue("Test 600.2 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
@@ -509,8 +518,15 @@ public class InstanceMappingTest {
       new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(SIXTH_SUBJECT_TYPE_ID),
       new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID).withTypeId(SEVENTH_SUBJECT_TYPE_ID),
       new Subject().withValue("Test 651 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(EIGHTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 655 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(NINTH_SUBJECT_TYPE_ID)
-    );
+      new Subject().withValue("Test 653 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(TENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 654 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(ELEVENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 655 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(NINTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 656 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(TWELFTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 657 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(THIRTEENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 658 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(FOURTEENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 662 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(FIFTEENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 688 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(SIXTEENTH_SUBJECT_TYPE_ID)
+      );
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -538,7 +554,7 @@ public class InstanceMappingTest {
     assertEquals(1, mappedInstances.size());
 
     Set<Subject> subjects = mappedInstances.get(0).getSubjects();
-    assertEquals(10, subjects.size());
+    assertEquals(17, subjects.size());
 
     Iterator<Subject> iterator = subjects.iterator();
     expectedResults.forEach(expected -> {
