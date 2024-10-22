@@ -7,7 +7,7 @@
       "type": "string"
     },
     "name": {
-      "description": "label for the subject source",
+      "description": "label for the subject source name",
       "type": "string"
     },
     "code": {
@@ -16,10 +16,11 @@
     },
     "source": {
       "type": "string",
-      "description": "label indicating where the subject source entry originates from, i.e. 'folio' or 'local'",
+      "description": "label indicating where the subject source entry originates from, i.e. 'folio', 'local' or 'consortium'",
       "enum": [
         "folio",
-        "local"
+        "local",
+        "consortium"
       ]
     },
     "metadata": {
@@ -29,6 +30,7 @@
     }
   },
   "required": [
-    "name"
+    "name",
+    "source"
   ]
 }
