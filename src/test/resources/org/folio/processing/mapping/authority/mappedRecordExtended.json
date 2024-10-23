@@ -2,64 +2,142 @@
   "saftBroaderTerm": [
     {
       "headingRef": "Broader-earlier - 511",
-      "headingType": "meetingNameTitle"
+      "headingType": "meetingNameTitleTrunc"
     }
   ],
   "saftNarrowerTerm": [
     {
       "headingRef": "Some narrower term - 511",
-      "headingType":  "meetingName"
+      "headingType": "meetingNameTrunc"
     }
   ],
   "saftEarlierHeading": [
     {
       "headingRef": "Broader-earlier - 511",
-      "headingType": "meetingNameTitle"
+      "headingType": "meetingNameTitleTrunc"
     },
     {
       "headingRef": "Dugmore, C. W.",
-      "headingType": "topicalTerm"
+      "headingType": "topicalTermTrunc"
     },
     {
       "headingRef": "Earlier - 551",
-      "headingType": "geographicName"
+      "headingType": "geographicNameTrunc"
     }
   ],
   "saftLaterHeading": [
     {
       "headingRef": "Periodicals",
-      "headingType": "uniformTitle"
+      "headingType": "uniformTitleTrunc"
     }
   ],
+  "saftPersonalNameTrunc": [
+
+  ],
+  "saftPersonalNameTitleTrunc": [
+    "Editor:   C. W. Dugmore."
+  ],
+  "saftCorporateNameTrunc": [
+
+  ],
+  "saftCorporateNameTitleTrunc": [
+    "Church history"
+  ],
+  "saftMeetingNameTrunc": [
+    "Some narrower term - 511"
+  ],
+  "saftMeetingNameTitleTrunc": [
+    "Church history",
+    "Broader-earlier - 511"
+  ],
+  "saftUniformTitleTrunc": [
+    "Periodicals"
+  ],
+  "saftTopicalTermTrunc": [
+    "Dugmore, C. W."
+  ],
+  "saftGeographicNameTrunc": [
+    "callNumber",
+    "Earlier - 551"
+  ],
+  "saftGenreTermTrunc": [
+    "linkText publicNote"
+  ],
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
-  "sftPersonalName": [ ],
-  "saftPersonalName": [ ],
+  "sftPersonalName": [
+
+  ],
+  "saftPersonalName": [
+
+  ],
   "personalNameTitle": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
-  "sftPersonalNameTitle": [ "v. 25 cm." ],
-  "saftPersonalNameTitle": [ "Editor:   C. W. Dugmore." ],
-  "sftCorporateName": [],
-  "saftCorporateName": [ ],
+  "sftPersonalNameTitle": [
+    "v. 25 cm."
+  ],
+  "saftPersonalNameTitle": [
+    "Editor:   C. W. Dugmore."
+  ],
+  "sftCorporateName": [
+
+  ],
+  "saftCorporateName": [
+
+  ],
   "corporateNameTitle": "BR140 .J6",
-  "sftCorporateNameTitle": [ "Quarterly, 1970-" ],
-  "saftCorporateNameTitle": [ "Church history" ],
-  "sftMeetingName": [ ],
-  "saftMeetingName": [ "Some narrower term - 511" ],
+  "sftCorporateNameTitle": [
+    "Quarterly, 1970-"
+  ],
+  "saftCorporateNameTitle": [
+    "Church history"
+  ],
+  "sftMeetingName": [
+
+  ],
+  "saftMeetingName": [
+    "Some narrower term - 511"
+  ],
   "meetingNameTitle": "270.05",
-  "sftMeetingNameTitle": [ "Semiannual, 1950-69" ],
-  "saftMeetingNameTitle": [ "Church history","Broader-earlier - 511"],
+  "sftMeetingNameTitle": [
+    "Semiannual, 1950-69"
+  ],
+  "saftMeetingNameTitle": [
+    "Church history",
+    "Broader-earlier - 511"
+  ],
   "uniformTitle": "The Journal of ecclesiastical history",
-  "sftUniformTitle": [ "v. 1-   Apr. 1950-", "History," ],
-  "saftUniformTitle": [ "Periodicals" ],
+  "sftUniformTitle": [
+    "v. 1-   Apr. 1950-",
+    "History,"
+  ],
+  "saftUniformTitle": [
+    "Periodicals"
+  ],
   "topicalTerm": "The Journal of ecclesiastical history.",
-  "sftTopicalTerm": [ "note$a note$5", "note$aa note$bb" ],
-  "saftTopicalTerm": [ "Dugmore, C. W." ],
+  "sftTopicalTerm": [
+    "note$a note$5",
+    "note$aa note$bb"
+  ],
+  "saftTopicalTerm": [
+    "Dugmore, C. W."
+  ],
   "subjectHeadings": "a",
   "geographicName": "London,",
-  "sftGeographicName": [ "note$a note$5" ],
-  "saftGeographicName": [ "callNumber2", "Earlier - 551" ],
+  "sftGeographicName": [
+    "note$a note$5"
+  ],
+  "saftGeographicName": [
+    "callNumber callNumber2",
+    "Earlier - 551 Successor: https://some/url"
+  ],
   "genreTerm": "32 East 57th St., New York, 10022",
-  "sftGenreTerm": [ "note$a note$i note$x note$z note$5", "Later-narrower - 455", "Earlier - 455"],
-  "saftGenreTerm": [ "linkText publicNote" ],
+  "sftGenreTerm": [
+    "note$a note$i note$x note$z note$5",
+    "Later-narrower - 455",
+    "Earlier - 455"
+  ],
+  "saftGenreTerm": [
+    "Narrator: linkText publicNote"
+  ],
   "identifiers": [
     {
       "value": "1000649",
