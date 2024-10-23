@@ -545,6 +545,9 @@
       "551": {
         "subfields": [
           {
+            "a": "callNumber"
+          },
+          {
             "k": "callNumberPrefix"
           },
           {
@@ -568,6 +571,9 @@
       "555": {
         "subfields": [
           {
+            "i": "Narrator:"
+          },
+          {
             "u": "uri"
           },
           {
@@ -578,6 +584,9 @@
           },
           {
             "z": "publicNote"
+          },
+          {
+            "0": "http://some/url"
           }
         ],
         "ind1": "0",
@@ -595,6 +604,12 @@
           },
           {
             "g": "- 551"
+          },
+          {
+            "i": "Successor:"
+          },
+          {
+            "4": "https://some/url"
           }
         ],
         "ind1": "0",
