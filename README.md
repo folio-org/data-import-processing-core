@@ -152,5 +152,6 @@ There is an extended Authority Mapping introduced to support advanced references
 * narrower terms (`$wh` tag)
 * earlier headings (`$wa` tag)
 * later headings (`$wb` tag)
+* saft*Trunc for every saft* field with "i" and numeric subfields excluded
 
 To support this functionality `AuthorityExtended` is used together with `MarkToAuthorityExtendedMapper`.
