@@ -10,7 +10,7 @@
 * [MODDICORE-415](https://folio-org.atlassian.net/browse/MODDICORE-415) Adjust mapping of Subject source specified in subfield 2
 * [MODDICORE-416](https://folio-org.atlassian.net/browse/MODDICORE-416) Donor names from mapping profile are not populated in the POL when at least one donor code does not exist in the system
 * [MODSOURMAN-1228](https://folio-org.atlassian.net/browse/MODSOURMAN-1228) Update default mapping for Date type, Date 1, and Date 2 fields
-
+* [MODDICORE-425](https://folio-org.atlassian.net/browse/MODDICORE-425) data-import-processing-core Ramsons 2024 R2 - RMB v35.3.x update
 
 ## 2024-03-18 v4.2.0
 * [MODDICORE-398](https://issues.folio.org/browse/MODDICORE-398) Update RMB v35.2.0, Vertx 4.5.4
