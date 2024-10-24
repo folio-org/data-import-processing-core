@@ -67,6 +67,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
   private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_without_indicators.mrc";
   private static final String BIB_WITH_008_DATE = "src/test/resources/org/folio/processing/mapping/instance/008_date.mrc";
+  private static final String BIB_WITHOUT_008_DATE = "src/test/resources/org/folio/processing/mapping/instance/008_empty_date.mrc";
 
 
   private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
@@ -596,6 +597,39 @@ public class InstanceMappingTest {
     assertEquals("1991", mappedInstances.get(0).getDates().getDate1());
     assertEquals("0101", mappedInstances.get(0).getDates().getDate2());
     assertEquals("24a506e8-2a92-4ecc-bd09-ff849321fd5a", mappedInstances.get(0).getDates().getDateTypeId());
+  }
+
+  @Test
+  public void testMarcToInstanceWithEmpty008Date() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITHOUT_008_DATE).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
+    List<InstanceDateType> instanceDateTypes = List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
+
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    List<Instance> mappedInstances = new ArrayList<>();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record targetRecord = reader.next();
+      writer.write(targetRecord);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
+      mappedInstances.add(instance);
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+    assertFalse(mappedInstances.isEmpty());
+    assertEquals(1, mappedInstances.size());
+
+    Instance mappedInstance = mappedInstances.get(0);
+    assertNotNull(mappedInstance.getId());
+
+    assertNull(mappedInstances.get(0).getDates().getDate1());
+    assertNull(mappedInstances.get(0).getDates().getDate2());
+    assertEquals("77a09c3c-37bd-4ad3-aae4-9d86fc1b33d8", mappedInstances.get(0).getDates().getDateTypeId());
   }
 
   @Test
