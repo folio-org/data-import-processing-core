@@ -534,6 +534,9 @@ public class Processor<T> {
       }
 
       if (BooleanUtils.isTrue(cfRule.getBoolean(CREATE_SINGLE_OBJECT_PROPERY))) {
+        if(data != null && data.isBlank()) {
+          data = null;
+        }
         String target = cfRule.getString(TARGET);
         String[] embeddedFields = target.split("\\.");
         buildAndFillSimpleObject(entity, embeddedFields, data);
