@@ -63,8 +63,8 @@ public class Processor<T> {
   private static final Map<Class<?>, Map<String, Method>> METHOD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Field, ParameterizedType> PARAM_TYPE_CACHE = new ConcurrentHashMap<>();
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
-  private static final List<String> DEFAULT_SUBFIELDS = List.of("a", "b", "c", "d", "e", "f", "g", "h", "i",
-    "j", "k", "l", "m", "n", "o", "p", "r", "q", "s", "t", "v", "x", "y", "z", "4", "5");
+  private static final String FIELDS_WITH_TRUNCATED_MAPPING_POSTFIX = "Trunc";
+  private static final String SAFT_FIELDS_PREFIX = "saft";
 
   private JsonObject mappingRules;
 
@@ -952,26 +952,63 @@ public class Processor<T> {
   /**
    * Extends regular entity mapping for 5xx field with one according to the following rules:
    * additionally to the regular mapping adds the mapping for targets:
+   *
    * saftBroaderTerm,  when the control subfield $w has "g" value
    * saftNarrowerTerm, when the control subfield $w has "h" value
    * saftEarlierHeading, when the control subfield $w has "a" value
    * saftLaterHeading, when the control subfield $w has "b" value.
+   *
+   * saft*Trunc for every saft* field with "i" and numeric subfields excluded
    */
   private JsonArray addExtraMappingsForAuthorities(final DataField dataField, final JsonArray regularMapping) {
     boolean is5XXField = dataField.getTag().startsWith("5");
-    if (!is5XXField || dataField.getSubfield('w') == null || regularMapping == null || regularMapping.isEmpty()) {
+    if (!is5XXField || regularMapping == null || regularMapping.isEmpty()) {
       return regularMapping;
     }
     final JsonArray extendedMapping = new JsonArray();
     List<String> targets = retrieveTargetsFromControlSubfield(dataField);
     List<LinkedHashMap<String, Object>> mappingList = regularMapping.getList();
-    targets.forEach(target -> extendedMapping.addAll(createAdditionalMappingsForTarget(target, mappingList)));
+    List<LinkedHashMap<String, Object>> truncatedMappingList = createTruncatedMappingList(mappingList);
+    targets.forEach(target ->  extendedMapping.addAll(createRelationsMappingForTarget(target, truncatedMappingList)));
     extendedMapping.addAll(regularMapping);
+    extendedMapping.addAll(new JsonArray(truncatedMappingList));
     return extendedMapping;
+  }
+
+  /**
+   * Creates a new mapping list from the original one
+   * where subfields "i" and numeric subfields are excluded
+   */
+  private List<LinkedHashMap<String, Object>> createTruncatedMappingList(
+    final List<LinkedHashMap<String, Object>> originalMappingList) {
+    List<LinkedHashMap<String, Object>> truncatedMappingList = new ArrayList<>();
+    originalMappingList.forEach(map -> {
+      LinkedHashMap<String, Object> truncatedMappingMap = new LinkedHashMap<>();
+      map.forEach((key, value) -> {
+        if (key.equals(TARGET)) {
+          truncatedMappingMap.put(TARGET, value + FIELDS_WITH_TRUNCATED_MAPPING_POSTFIX);
+          return;
+        }
+        if (key.equals(SUBFIELD)) {
+          List<String> subfieldList = (List) value;
+          List<String> truncatedSubfieldList = subfieldList.stream()
+            .filter(s -> !s.matches("[0-9i]"))
+            .toList();
+          truncatedMappingMap.put(SUBFIELD, truncatedSubfieldList);
+          return;
+        }
+        truncatedMappingMap.put(key, value);
+      });
+      truncatedMappingList.add(truncatedMappingMap);
+    });
+    return truncatedMappingList;
   }
 
   private List<String> retrieveTargetsFromControlSubfield(DataField dataField) {
     List<String> targets = new ArrayList<>();
+    if (dataField.getSubfield('w') == null) {
+      return targets;
+    }
     String subfieldData = dataField.getSubfield('w').getData();
     if (subfieldData.contains("g")) {
       targets.add("saftBroaderTerm");
@@ -1050,7 +1087,7 @@ public class Processor<T> {
    *     ]
    *   }
    */
-  private JsonArray createAdditionalMappingsForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
+  private JsonArray createRelationsMappingForTarget(String target, List<LinkedHashMap<String, Object>> existingMappingList) {
     JsonArray additionalMappings = new JsonArray();
     existingMappingList.forEach(existingMap -> {
 
@@ -1075,7 +1112,7 @@ public class Processor<T> {
   }
 
   private static Object getHeadingType(Object headingField) {
-    String headingRType = headingField.toString().replace("saft", "");
+    String headingRType = headingField.toString().replace(SAFT_FIELDS_PREFIX, "");
     return Character.toLowerCase(headingRType.charAt(0)) + headingRType.substring(1);
   }
 }
