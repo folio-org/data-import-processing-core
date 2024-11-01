@@ -1,4 +1,4 @@
-## 2024-xx-xx v4.3.0-SNAPSHOT
+## 2024-10-28 v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
 * [MODSOURMAN-1120](https://folio-org.atlassian.net/browse/MODSOURMAN-1120) Update default mapping to include mapping for Cancelled LCCN
 * [MODDICORE-406](https://folio-org.atlassian.net/browse/MODDICORE-406) Relationship ID incorrect mapping
@@ -10,7 +10,11 @@
 * [MODDICORE-415](https://folio-org.atlassian.net/browse/MODDICORE-415) Adjust mapping of Subject source specified in subfield 2
 * [MODDICORE-416](https://folio-org.atlassian.net/browse/MODDICORE-416) Donor names from mapping profile are not populated in the POL when at least one donor code does not exist in the system
 * [MODSOURMAN-1228](https://folio-org.atlassian.net/browse/MODSOURMAN-1228) Update default mapping for Date type, Date 1, and Date 2 fields
-
+* [MODDICORE-425](https://folio-org.atlassian.net/browse/MODDICORE-425) data-import-processing-core Ramsons 2024 R2 - RMB v35.3.x update
+* [MODDICORE-405](https://folio-org.atlassian.net/browse/MODDICORE-405) Optimize Processing of Records
+* [MODDICORE-358](https://folio-org.atlassian.net/browse/MODDICORE-358) Fix sorting of protected fields after update
+* [MODDICORE-411](https://folio-org.atlassian.net/browse/MODDICORE-411) Make changes in Mapping to map accepted values from Mapping params
+* [MODDICORE-420](https://folio-org.atlassian.net/browse/MODDICORE-420) Update schemas
 
 ## 2024-03-18 v4.2.0
 * [MODDICORE-398](https://issues.folio.org/browse/MODDICORE-398) Update RMB v35.2.0, Vertx 4.5.4
