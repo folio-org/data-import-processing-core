@@ -1,3 +1,6 @@
+## 2024-11-27 v4.3.1
+* [MODDICORE-430](https://folio-org.atlassian.net/browse/MODDICORE-430) Update Vert.x to v4.5.11 fixing snappy-java vulnerabilities
+
 ## 2024-10-28 v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
 * [MODSOURMAN-1120](https://folio-org.atlassian.net/browse/MODSOURMAN-1120) Update default mapping to include mapping for Cancelled LCCN
