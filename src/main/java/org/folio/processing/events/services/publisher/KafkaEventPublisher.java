@@ -19,6 +19,7 @@ import org.folio.rest.jaxrs.model.EventMetadata;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
@@ -104,9 +105,10 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
 
   private List<KafkaHeader> getHeaders(DataImportEventPayload eventPayload, String recordId, String chunkId, String jobExecutionId) {
     List<KafkaHeader> headers = new ArrayList<>();
+    Optional.ofNullable(eventPayload.getToken())
+      .ifPresent(token -> headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, token)));
     headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
     headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
-    headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, eventPayload.getToken()));
     checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
     return headers;
   }
