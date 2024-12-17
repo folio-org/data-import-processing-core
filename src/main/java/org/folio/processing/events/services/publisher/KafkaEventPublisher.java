@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.USER_ID_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
@@ -107,6 +108,10 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     List<KafkaHeader> headers = new ArrayList<>();
     Optional.ofNullable(eventPayload.getToken())
       .ifPresent(token -> headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, token)));
+    Optional.ofNullable(eventPayload.getContext())
+      .map(it -> it.get(USER_ID_HEADER))
+      .ifPresent(userId -> headers.add(KafkaHeader.header(USER_ID_HEADER, userId)));
+    
     headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
     headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
     checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
