@@ -80,6 +80,35 @@ public class KafkaEventPublisherTest {
     }
   }
 
+  @Test
+  public void shouldPublishPayloadIfTokenIsNull() throws Exception {
+    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+      DataImportEventPayload eventPayload = new DataImportEventPayload()
+        .withEventType(DI_COMPLETED.value())
+        .withOkapiUrl(OKAPI_URL)
+        .withTenant(TENANT_ID)
+        .withToken(null)
+        .withContext(new HashMap<>() {{
+          put("recordId", UUID.randomUUID().toString());
+          put("chunkId", UUID.randomUUID().toString());
+          put("userId", UUID.randomUUID().toString());
+        }});
+
+      CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+
+      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), TENANT_ID, DI_COMPLETED.value());
+      List<String> observedValues = kafkaCluster.observeValues(ObserveKeyValues.on(topicToObserve, 1)
+        .observeFor(30, TimeUnit.SECONDS)
+        .build());
+
+      Event obtainedEvent = Json.decodeValue(observedValues.get(observedValues.size() - 1), Event.class);
+      DataImportEventPayload actualPayload = Json.decodeValue(obtainedEvent.getEventPayload(), DataImportEventPayload.class);
+      assertEquals(eventPayload, actualPayload);
+
+      assertFalse(future.isCompletedExceptionally());
+    }
+  }
+
   @Test(expected = ExecutionException.class)
   public void shouldReturnFailedFutureWhenPayloadIsNull() throws Exception {
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
@@ -94,9 +123,9 @@ public class KafkaEventPublisherTest {
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
+        .withToken(TOKEN)
         .withOkapiUrl(OKAPI_URL)
-        .withTenant(TENANT_ID)
-        .withToken(null)
+        .withTenant(null)
         .withContext(new HashMap<>() {{
           put("recordId", UUID.randomUUID().toString());
         }});
