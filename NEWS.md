@@ -1,3 +1,6 @@
+## 2024-11-27 v4.3.2-SNAPSHOT
+* [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
+
 ## 2024-11-27 v4.3.1
 * [MODDICORE-430](https://folio-org.atlassian.net/browse/MODDICORE-430) Update Vert.x to v4.5.11 fixing snappy-java vulnerabilities
 

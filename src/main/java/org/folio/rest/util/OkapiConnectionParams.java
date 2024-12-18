@@ -8,6 +8,7 @@ public final class OkapiConnectionParams {
   public static final String OKAPI_URL_HEADER = "x-okapi-url";
   public static final String OKAPI_TENANT_HEADER = "x-okapi-tenant";
   public static final String OKAPI_TOKEN_HEADER = "x-okapi-token";
+  public static final String USER_ID_HEADER = "userId";
   private String okapiUrl;
   private String tenantId;
   private String token;
