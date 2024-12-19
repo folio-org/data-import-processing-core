@@ -1,4 +1,4 @@
-## 2024-11-27 v4.3.2-SNAPSHOT
+## 2024-12-20 v4.3.2
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 
 ## 2024-11-27 v4.3.1
