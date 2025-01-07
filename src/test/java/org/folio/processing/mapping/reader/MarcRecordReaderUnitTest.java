@@ -1492,7 +1492,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_IfVendorCodeContainsParenthesis() throws IOException {
+  public void shouldRead_IfVendorNameContainsParenthesis() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1509,6 +1509,35 @@ public class MarcRecordReaderUnitTest {
       .withPath("order.po.vendor")
       .withEnabled("true")
       .withValue("\"CODE)\"");
+
+    // when
+    Value valueVendor = reader.read(vendorRule);
+
+    // then
+    assertNotNull(valueVendor);
+    assertEquals(uuid, valueVendor.getValue());
+  }
+
+
+  @Test
+  public void shouldRead_IfVendorCodeContainsParenthesis() throws IOException {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+    eventPayload.setContext(context);
+    String uuid = "1234";
+    String code = "(CODE";
+    List<Organization> organizations = List.of(new Organization().withId(uuid).withName("NAME").withCode(code));
+    Reader reader = new MarcBibReaderFactory().createReader();
+    reader.initialize(eventPayload, mappingContext.withMappingParameters(new MappingParameters().withOrganizations(organizations)));
+
+    MappingRule vendorRule = new MappingRule()
+      .withName("vendor")
+      .withPath("order.po.vendor")
+      .withEnabled("true")
+      .withValue("\"(CODE\"");
 
     // when
     Value valueVendor = reader.read(vendorRule);
