@@ -248,11 +248,11 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       } else if (ruleName.equalsIgnoreCase(VENDOR_ID) &&
-        (retrieveCodeWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value)) ||
-        retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value)))) {
+        (retrieveCodeWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameOrValueWithoutBrackets(value)) ||
+        retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameOrValueWithoutBrackets(value)))) {
         return true;
       }
       return false;
@@ -270,7 +270,7 @@ public class MarcRecordReader implements Reader {
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
-  private String retrieveNameWithoutBrackets(String mappingParameter) {
+  private String retrieveNameOrValueWithoutBrackets(String mappingParameter) {
     mappingParameter = mappingParameter.trim();
 
     int startIndex = mappingParameter.startsWith(FIRST_BRACKET) ? 1 : 0;
