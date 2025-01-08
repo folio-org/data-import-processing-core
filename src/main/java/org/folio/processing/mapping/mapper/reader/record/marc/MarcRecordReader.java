@@ -248,9 +248,11 @@ public class MarcRecordReader implements Reader {
         return true;
       } else if (retrieveStringWithBracketsFromLastOne(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
+      } else if (retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
-      } else if (ruleName.equalsIgnoreCase(VENDOR_ID) && retrieveNameWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameWithoutBrackets(value))) {
+      } else if (ruleName.equalsIgnoreCase(VENDOR_ID) &&
+        (retrieveCodeWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameOrValueWithoutBrackets(value)) ||
+        retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameOrValueWithoutBrackets(value)))) {
         return true;
       }
       return false;
@@ -268,7 +270,7 @@ public class MarcRecordReader implements Reader {
     return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
-  private String retrieveNameWithoutBrackets(String mappingParameter) {
+  private String retrieveNameOrValueWithoutBrackets(String mappingParameter) {
     mappingParameter = mappingParameter.trim();
 
     int startIndex = mappingParameter.startsWith(FIRST_BRACKET) ? 1 : 0;
@@ -276,6 +278,31 @@ public class MarcRecordReader implements Reader {
     int endIndex = findFirstParenthesesIndex(mappingParameter, startIndex);
 
     return mappingParameter.substring(startIndex, endIndex).trim();
+  }
+
+  private String retrieveCodeWithoutBrackets(String mappingParameter) {
+    mappingParameter = mappingParameter.trim();
+
+    // Find the last opening bracket's index to handle nested brackets
+    int lastOpenBracketIndex = mappingParameter.lastIndexOf(FIRST_BRACKET);
+
+    // If there is no opening bracket, return an empty string or null
+    if (lastOpenBracketIndex == -1) {
+      return "";  // or return null;
+    }
+
+    // Find the first closing bracket index after the last opening bracket
+    int firstCloseBracketIndex = mappingParameter.indexOf(SECOND_BRACKET, lastOpenBracketIndex);
+
+    // If there is no closing bracket after the last opening bracket, return an empty string
+    if (firstCloseBracketIndex == -1) {
+      return "";
+    }
+
+    // Extract the substring between the last opening bracket and the first closing bracket after it
+    String codeWithoutBrackets = mappingParameter.substring(lastOpenBracketIndex + 1, firstCloseBracketIndex).trim();
+
+    return codeWithoutBrackets;
   }
 
   /**
