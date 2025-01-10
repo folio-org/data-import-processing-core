@@ -1,3 +1,6 @@
+## 2025-01-10 v4.3.3
+* [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
+
 ## 2024-12-20 v4.3.2
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
