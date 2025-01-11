@@ -65,6 +65,7 @@ public class Processor<T> {
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
   private static final String FIELDS_WITH_TRUNCATED_MAPPING_POSTFIX = "Trunc";
   private static final String SAFT_FIELDS_PREFIX = "saft";
+  public static final String DELIMITER_SUBFIELDS = "subfields";
 
   private JsonObject mappingRules;
 
@@ -166,6 +167,7 @@ public class Processor<T> {
   private JsonArray getDataFieldMapping(DataField dataField) {
     JsonArray mappingArray = mappingRules.getJsonArray(dataField.getTag());
     if (entity instanceof AuthorityExtended) {
+      addSubFieldDelimiterForAuthorities(dataField, mappingArray);
       return addExtraMappingsForAuthorities(dataField, mappingArray);
     }
     return mappingArray;
@@ -477,7 +479,7 @@ public class Processor<T> {
       for (int i = 0; i < delimiters.size(); i++) {
         JsonObject job = delimiters.getJsonObject(i);
         String delimiter = job.getString(VALUE);
-        JsonArray subFieldswithDel = job.getJsonArray("subfields");
+        JsonArray subFieldswithDel = job.getJsonArray(DELIMITER_SUBFIELDS);
         StringBuilder subFieldsStringBuilder = new StringBuilder();
         buffers2concat.add(subFieldsStringBuilder);
         if (subFieldswithDel.size() == 0) {
@@ -947,6 +949,53 @@ public class Processor<T> {
 
   public boolean checkIfSubfieldShouldBeHandled(Set<String> subFieldsSet, Subfield subfield) {
     return subFieldsSet.isEmpty() || subFieldsSet.contains(Character.toString(subfield.getCode()));
+  }
+
+  /**
+   * Extends regular entity mapping for 1xx, 4xx, 5xx field with "subFieldDelimiter"
+   * by adding the following structure to the mapping:
+   * "subFieldDelimiter": [
+   *             {
+   *               "value": " ",
+   *               "subfields": [
+   *                 "a","b","c","d","t","f","g",...
+   *               ]
+   *             },
+   *             {
+   *               "value": "--",
+   *               "subfields": [
+   *                 "x","y","z","v"
+   *               ]
+   *             },
+   *             {
+   *               "value": "--",
+   *               "subfields": []
+   *             }
+   *           ]
+   */
+  private void addSubFieldDelimiterForAuthorities(DataField dataField, JsonArray mappingArray) {
+    if (!dataField.getTag().startsWith("1")
+      && !dataField.getTag().startsWith("4")
+      && !dataField.getTag().startsWith("5")) {
+      return;
+    }
+    final List<String> doubleDashedSubfields = List.of("x", "y", "z", "v");
+    List<LinkedHashMap<String, Object>> mappingList = mappingArray.getList();
+    mappingList.forEach(mapping -> {
+      List<String> subfields = (List) mapping.get(SUBFIELD);
+      if (subfields == null || subfields.stream().noneMatch(doubleDashedSubfields::contains)) {
+        return;
+      }
+      List<LinkedHashMap<String, Object>> subFieldDelimiterList = new ArrayList<>();
+      LinkedHashMap<String, Object> spaceDelimiter = new LinkedHashMap<>(Map.of(VALUE, " ", DELIMITER_SUBFIELDS,
+        subfields.stream().filter(s -> !doubleDashedSubfields.contains(s)).toList()));
+      subFieldDelimiterList.add(spaceDelimiter);
+      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", DELIMITER_SUBFIELDS,
+        doubleDashedSubfields)));
+      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", DELIMITER_SUBFIELDS, List.of())));
+      mapping.put("subFieldDelimiter", subFieldDelimiterList);
+      }
+    );
   }
 
   /**
