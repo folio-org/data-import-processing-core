@@ -105,6 +105,9 @@
         "subfields": [
           {
             "a": "The Journal of ecclesiastical history"
+          },
+          {
+            "v": "linkText"
           }
         ],
         "ind1": "0",
@@ -438,6 +441,9 @@
           },
           {
             "t": "Church history"
+          },
+          {
+            "x": "linkText"
           }
         ],
         "ind1": " ",
@@ -492,6 +498,9 @@
           },
           {
             "0": "(OCoLC)fst01411641"
+          },
+          {
+            "x": "linkText"
           }
         ],
         "ind1": " ",
@@ -528,13 +537,16 @@
             "w": "a"
           },
           {
-            "a": "Dugmore, C. W."
+            "k": "Dugmore, C. W."
           },
           {
             "q": "(Clifford William),"
           },
           {
             "e": "ed."
+          },
+          {
+            "z": "linkText"
           }
         ],
         "ind1": "1",

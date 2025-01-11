@@ -166,6 +166,7 @@ public class Processor<T> {
   private JsonArray getDataFieldMapping(DataField dataField) {
     JsonArray mappingArray = mappingRules.getJsonArray(dataField.getTag());
     if (entity instanceof AuthorityExtended) {
+      addSubFieldDelimiterForAuthorities(dataField, mappingArray);
       return addExtraMappingsForAuthorities(dataField, mappingArray);
     }
     return mappingArray;
@@ -947,6 +948,52 @@ public class Processor<T> {
 
   public boolean checkIfSubfieldShouldBeHandled(Set<String> subFieldsSet, Subfield subfield) {
     return subFieldsSet.isEmpty() || subFieldsSet.contains(Character.toString(subfield.getCode()));
+  }
+
+  /**
+   * Extends regular entity mapping for 1xx, 4xx, 5xx field with "subFieldDelimiter"
+   * by adding the following structure to the mapping:
+   * "subFieldDelimiter": [
+   *             {
+   *               "value": " ",
+   *               "subfields": [
+   *                 "a","b","c","d","t","f","g",...
+   *               ]
+   *             },
+   *             {
+   *               "value": "--",
+   *               "subfields": [
+   *                 "x","y","z","v"
+   *               ]
+   *             },
+   *             {
+   *               "value": "--",
+   *               "subfields": []
+   *             }
+   *           ]
+   */
+  private void addSubFieldDelimiterForAuthorities(DataField dataField, JsonArray mappingArray) {
+    if (!dataField.getTag().startsWith("1")
+      && !dataField.getTag().startsWith("4")
+      && !dataField.getTag().startsWith("5")) {
+      return;
+    }
+    final List<String> doubleDashedSubfields = List.of("x", "y", "z", "v");
+    List<LinkedHashMap<String, Object>> mappingList = mappingArray.getList();
+    mappingList.forEach(mapping -> {
+      List<String> subfields = (List) mapping.get("subfield");
+      if (subfields == null || subfields.stream().noneMatch(doubleDashedSubfields::contains)) {
+        return;
+      }
+      List<LinkedHashMap<String, Object>> subFieldDelimiterList = new ArrayList<>();
+      LinkedHashMap<String, Object> spaceDelimiter = new LinkedHashMap<>(Map.of(VALUE, " ", "subfields",
+        subfields.stream().filter(s -> !doubleDashedSubfields.contains(s)).toList()));
+      subFieldDelimiterList.add(spaceDelimiter);
+      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", "subfields", doubleDashedSubfields)));
+      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", "subfields", List.of())));
+      mapping.put("subFieldDelimiter", subFieldDelimiterList);
+      }
+    );
   }
 
   /**
