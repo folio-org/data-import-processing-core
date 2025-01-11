@@ -17,7 +17,7 @@
       "headingType": "meetingNameTitleTrunc"
     },
     {
-      "headingRef": "Dugmore, C. W.",
+      "headingRef": "linkText",
       "headingType": "topicalTermTrunc"
     },
     {
@@ -27,7 +27,7 @@
   ],
   "saftLaterHeading": [
     {
-      "headingRef": "Periodicals",
+      "headingRef": "Periodicals--linkText",
       "headingType": "uniformTitleTrunc"
     }
   ],
@@ -51,17 +51,17 @@
     "Broader-earlier - 511"
   ],
   "saftUniformTitleTrunc": [
-    "Periodicals"
+    "Periodicals--linkText"
   ],
   "saftTopicalTermTrunc": [
-    "Dugmore, C. W."
+    "linkText"
   ],
   "saftGeographicNameTrunc": [
     "callNumber",
     "Earlier - 551"
   ],
   "saftGenreTermTrunc": [
-    "linkText publicNote"
+    "linkText--publicNote"
   ],
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
   "sftPersonalName": [
@@ -104,13 +104,13 @@
     "Church history",
     "Broader-earlier - 511"
   ],
-  "uniformTitle": "The Journal of ecclesiastical history",
+  "uniformTitle": "The Journal of ecclesiastical history--linkText",
   "sftUniformTitle": [
     "v. 1-   Apr. 1950-",
     "History,"
   ],
   "saftUniformTitle": [
-    "Periodicals"
+    "Periodicals--linkText"
   ],
   "topicalTerm": "The Journal of ecclesiastical history.",
   "sftTopicalTerm": [
@@ -118,7 +118,7 @@
     "note$aa note$bb"
   ],
   "saftTopicalTerm": [
-    "Dugmore, C. W."
+    "linkText"
   ],
   "subjectHeadings": "a",
   "geographicName": "London,",
@@ -131,12 +131,12 @@
   ],
   "genreTerm": "32 East 57th St., New York, 10022",
   "sftGenreTerm": [
-    "note$a note$i note$x note$z note$5",
+    "note$a note$i note$5--note$x--note$z",
     "Later-narrower - 455",
-    "Earlier - 455"
+    "Earlier--- 455"
   ],
   "saftGenreTerm": [
-    "Narrator: linkText publicNote"
+    "Narrator:--linkText--publicNote"
   ],
   "identifiers": [
     {

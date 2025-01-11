@@ -153,5 +153,6 @@ There is an extended Authority Mapping introduced to support advanced references
 * earlier headings (`$wa` tag)
 * later headings (`$wb` tag)
 * saft*Trunc for every saft* field with "i" and numeric subfields excluded
+* "subFieldDelimiter" to replace space by "--" before subfields $x,$y,$z,$v
 
 To support this functionality `AuthorityExtended` is used together with `MarkToAuthorityExtendedMapper`.
