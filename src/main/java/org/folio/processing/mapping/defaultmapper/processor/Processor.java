@@ -65,6 +65,7 @@ public class Processor<T> {
   public static final String ALTERNATIVE_MAPPING = "alternativeMapping";
   private static final String FIELDS_WITH_TRUNCATED_MAPPING_POSTFIX = "Trunc";
   private static final String SAFT_FIELDS_PREFIX = "saft";
+  public static final String DELIMITER_SUBFIELDS = "subfields";
 
   private JsonObject mappingRules;
 
@@ -478,7 +479,7 @@ public class Processor<T> {
       for (int i = 0; i < delimiters.size(); i++) {
         JsonObject job = delimiters.getJsonObject(i);
         String delimiter = job.getString(VALUE);
-        JsonArray subFieldswithDel = job.getJsonArray("subfields");
+        JsonArray subFieldswithDel = job.getJsonArray(DELIMITER_SUBFIELDS);
         StringBuilder subFieldsStringBuilder = new StringBuilder();
         buffers2concat.add(subFieldsStringBuilder);
         if (subFieldswithDel.size() == 0) {
@@ -981,16 +982,17 @@ public class Processor<T> {
     final List<String> doubleDashedSubfields = List.of("x", "y", "z", "v");
     List<LinkedHashMap<String, Object>> mappingList = mappingArray.getList();
     mappingList.forEach(mapping -> {
-      List<String> subfields = (List) mapping.get("subfield");
+      List<String> subfields = (List) mapping.get(SUBFIELD);
       if (subfields == null || subfields.stream().noneMatch(doubleDashedSubfields::contains)) {
         return;
       }
       List<LinkedHashMap<String, Object>> subFieldDelimiterList = new ArrayList<>();
-      LinkedHashMap<String, Object> spaceDelimiter = new LinkedHashMap<>(Map.of(VALUE, " ", "subfields",
+      LinkedHashMap<String, Object> spaceDelimiter = new LinkedHashMap<>(Map.of(VALUE, " ", DELIMITER_SUBFIELDS,
         subfields.stream().filter(s -> !doubleDashedSubfields.contains(s)).toList()));
       subFieldDelimiterList.add(spaceDelimiter);
-      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", "subfields", doubleDashedSubfields)));
-      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", "subfields", List.of())));
+      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", DELIMITER_SUBFIELDS,
+        doubleDashedSubfields)));
+      subFieldDelimiterList.add(new LinkedHashMap<>(Map.of(VALUE, "--", DELIMITER_SUBFIELDS, List.of())));
       mapping.put("subFieldDelimiter", subFieldDelimiterList);
       }
     );
