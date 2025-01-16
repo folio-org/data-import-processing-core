@@ -33,6 +33,76 @@
       "items": {
         "$ref": "relatedHeading.json"
       }
+    },
+    "saftPersonalNameTrunc": {
+      "type": "array",
+      "description": "See also from tracing personal name",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftPersonalNameTitleTrunc": {
+      "type": "array",
+      "description": "See also from tracing personal name title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftCorporateNameTrunc": {
+      "type": "array",
+      "description": "See also from tracing corporate name",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftCorporateNameTitleTrunc": {
+      "type": "array",
+      "description": "See also from tracing corporate name title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftMeetingNameTrunc": {
+      "type": "array",
+      "description": "See also from tracing meeting name",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftMeetingNameTitleTrunc": {
+      "type": "array",
+      "description": "See also from tracing meeting name title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftUniformTitleTrunc": {
+      "type": "array",
+      "description": "See also from tracing uniform title",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftTopicalTermTrunc": {
+      "type": "array",
+      "description": "See also from tracing topical term",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftGeographicNameTrunc": {
+      "type": "array",
+      "description": "See also from tracing geographic name",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftGenreTermTrunc": {
+      "type": "array",
+      "description": "See also from tracing genre/form term",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
