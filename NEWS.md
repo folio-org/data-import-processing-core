@@ -1,3 +1,7 @@
+## 2025-01-17 v4.3.4
+* [MODDICORE-426](https://folio-org.atlassian.net/browse/MODDICORE-426) Extend Authority with saft* fields having custom mapping
+* [MODDICORE-436](https://folio-org.atlassian.net/browse/MODDICORE-436) Apply "--" subFieldDelimiter to Authority fields in Extended version
+
 ## 2025-01-10 v4.3.3
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
 
