@@ -406,8 +406,7 @@
     },
     "deleted": {
       "type": "boolean",
-      "description": "Indicates whether the record was marked for deletion",
-      "default": false
+      "description": "Indicates whether the record was marked for deletion"
     },
     "statisticalCodeIds": {
       "type": "array",
