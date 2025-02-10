@@ -1103,6 +1103,30 @@ public class NormalizationFunctionTest {
     assertEquals(EMPTY_STRING, actualSubjectType);
   }
 
+  @Test
+  public void SET_SUPPRESS_shouldReturnTrueWhenFifthCharIsDeleted() {
+    // given
+    String givenSubField = "12345d7890";
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setSubFieldValue(givenSubField);
+    // when
+    String actualResult = runFunction("set_suppress", context);
+    // then
+    assertEquals("true", actualResult);
+  }
+
+  @Test
+  public void SET_SUPPRESS_shouldReturnFalseWhenFifthCharIsNotDeleted() {
+    // given
+    String givenSubField = "12345n7890";
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setSubFieldValue(givenSubField);
+    // when
+    String actualResult = runFunction("set_suppress", context);
+    // then
+    assertEquals("false", actualResult);
+  }
+
   private List<HoldingsType> getHoldingsMappingParameter() {
 
     HoldingsType serial = new HoldingsType()
