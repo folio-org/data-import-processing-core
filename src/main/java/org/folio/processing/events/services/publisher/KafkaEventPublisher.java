@@ -33,7 +33,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
   public static final String RECORD_ID_HEADER = "recordId";
   public static final String CHUNK_ID_HEADER = "chunkId";
-  public static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
+  private static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
 
   private static final AtomicLong indexer = new AtomicLong();
 
