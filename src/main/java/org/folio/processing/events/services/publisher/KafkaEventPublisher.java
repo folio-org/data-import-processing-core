@@ -33,6 +33,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
   public static final String RECORD_ID_HEADER = "recordId";
   public static final String CHUNK_ID_HEADER = "chunkId";
+  public static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
 
   private static final AtomicLong indexer = new AtomicLong();
 
@@ -111,7 +112,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     Optional.ofNullable(eventPayload.getContext())
       .map(it -> it.get(USER_ID_HEADER))
       .ifPresent(userId -> headers.add(KafkaHeader.header(USER_ID_HEADER, userId)));
-    
+
     headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
     headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
     checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
@@ -128,6 +129,11 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
       LOGGER.warn("checkAndAddHeaders:: ChunkId is empty for jobExecutionId: '{}' ", jobExecutionId);
     } else {
       headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
+    }
+    if (StringUtils.isBlank(jobExecutionId)) {
+      LOGGER.warn("checkAndAddHeaders:: jobExecutionId is empty");
+    } else {
+      headers.add(KafkaHeader.header(JOB_EXECUTION_ID_HEADER, jobExecutionId));
     }
   }
 
