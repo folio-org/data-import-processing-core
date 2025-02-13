@@ -1,6 +1,7 @@
 ## 202X-XX-XX 4.4.0-SNAPSHOT
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
+* [MODINVSTOR-1342](https://folio-org.atlassian.net/browse/MODINVSTOR-1342) Add "deleted" field to Instance schema
 
 ## 2024-10-28 v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
