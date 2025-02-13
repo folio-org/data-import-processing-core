@@ -13,14 +13,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.m2
@@ -41,12 +41,12 @@ jobs:
       fail-fast: false
     timeout-minutes: 5
     steps:
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-inventory
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.m2
@@ -65,12 +65,12 @@ jobs:
       fail-fast: false
     timeout-minutes: 20
     steps:
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-source-record-manager
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.m2
@@ -89,12 +89,12 @@ jobs:
       fail-fast: false
     timeout-minutes: 20
     steps:
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-orders
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.m2
