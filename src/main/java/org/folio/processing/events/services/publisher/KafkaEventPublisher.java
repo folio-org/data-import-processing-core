@@ -131,7 +131,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
       headers.add(KafkaHeader.header(CHUNK_ID_HEADER, chunkId));
     }
     if (StringUtils.isBlank(jobExecutionId)) {
-      LOGGER.warn("checkAndAddHeaders:: jobExecutionId is empty");
+      LOGGER.warn("checkAndAddHeaders:: jobExecutionId is empty recordId: {} chunkId: '{}'", recordId, chunkId);
     } else {
       headers.add(KafkaHeader.header(JOB_EXECUTION_ID_HEADER, jobExecutionId));
     }
