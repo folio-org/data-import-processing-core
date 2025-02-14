@@ -612,7 +612,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     }
   },
 
-  SET_SUPPRESS() {
+  SET_DELETED() {
     public static final char LEADER_05_DELETED = 'd';
     @Override
     public String apply(RuleExecutionContext context) {
