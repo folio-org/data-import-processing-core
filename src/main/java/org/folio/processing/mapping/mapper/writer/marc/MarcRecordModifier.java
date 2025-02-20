@@ -10,6 +10,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
+import static org.folio.processing.mapping.defaultmapper.processor.Processor.LDR_TAG;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
 
 import java.io.ByteArrayInputStream;
@@ -74,7 +75,6 @@ public class MarcRecordModifier {
     "378", "384", "507", "514", "663", "664", "665", "666", "675", "682", "788", "841", "842", "844", "882", "999");
   protected static final String ANY_STRING = "*";
   private static final char BLANK_SUBFIELD_CODE = ' ';
-  private static final String LDR_TAG = "LDR";
   private static final String TAG_100 = "100";
   private static final String TAG_199 = "199";
   private static final String TAG_999 = "999";
@@ -393,18 +393,15 @@ public class MarcRecordModifier {
     } else if (detail.getField().getSubfields().get(0).getSubfield().charAt(0) == ANY_CHAR) {
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
-        .collect(Collectors.toList())
+        .toList()
         .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
       char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
-        .map(targetField -> {
-          targetField.removeSubfield(targetField.getSubfield(subfieldCode));
-          return targetField;
-        })
+        .peek(targetField -> targetField.removeSubfield(targetField.getSubfield(subfieldCode)))
         .filter(field -> field.getSubfields().isEmpty())
-        .collect(Collectors.toList())
+        .toList()
         .forEach(targetField -> marcRecordToChange.removeVariableField(targetField));
     }
   }
@@ -448,7 +445,7 @@ public class MarcRecordModifier {
 
     List<DataField> fieldsToEdit = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, tag, ind1, ind2))
-      .collect(Collectors.toList());
+      .toList();
 
     char subfieldCode = ruleSubfield.getSubfield().charAt(0);
     for (DataField field : fieldsToEdit) {
@@ -473,7 +470,7 @@ public class MarcRecordModifier {
 
     if (LDR_TAG.equals(tag)) {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
-      if (positions.isOverlappedBy(Range.between(0, 4)) || positions.isOverlappedBy(Range.between(12, 16))) {
+      if (positions.isOverlappedBy(Range.of(0, 4)) || positions.isOverlappedBy(Range.of(12, 16))) {
         LOGGER.warn("processReplace:: Specified LEADER positions are not mappable LDR/{}-{}, REPLACE sub-action was skipped",
           positions.getMinimum(), positions.getMaximum());
         return;
@@ -540,7 +537,7 @@ public class MarcRecordModifier {
       startPosition = Integer.parseInt(StringUtils.substringAfter(fieldDataPath, "/"));
       endPosition = startPosition;
     }
-    return Range.between(startPosition, endPosition);
+    return Range.of(startPosition, endPosition);
   }
 
   private boolean controlFieldContainsDataAtPositions(ControlField field, String data, Range<Integer> dataPositions) {
@@ -656,7 +653,7 @@ public class MarcRecordModifier {
 
     List<DataField> existingFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, existingFieldTag, existingFieldInd1, existingFieldInd2))
-      .collect(Collectors.toList());
+      .toList();
 
     if (!existingFields.isEmpty()) {
       for (DataField sourceField : sourceFields) {
