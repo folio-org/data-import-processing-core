@@ -69,6 +69,7 @@ public class Processor<T> {
   public static final String LDR_TAG = "LDR";
 
   private JsonObject mappingRules;
+  private Leader leader;
   private String separator; //separator between subfields with different delimiters
   private JsonArray delimiters;
   private T entity;
@@ -104,7 +105,7 @@ public class Processor<T> {
       this.entity = entityClassConstructor.newInstance();
       var setIdMethod = entityClass.getMethod("setId", String.class);
       setIdMethod.invoke(entity, UUID.randomUUID().toString());
-      Leader leader = record.getLeader();
+      leader = record.getLeader();
       processLeaderField(leader, mappingParameters);
       processControlFieldSection(record.getControlFields().iterator(), mappingParameters);
       processDataFieldSection(record.getDataFields().iterator(), mappingParameters);
@@ -643,6 +644,13 @@ public class Processor<T> {
   private ProcessedSinglePlusConditionCheck processFunction(String function, RuleExecutionContext ruleExecutionContext, boolean isCustom,
                                                             String valueParam, JsonObject condition,
                                                             boolean conditionsMet, String ruleConstVal) {
+    if (leader != null && condition.getBoolean("LDR") != null) {
+
+      //the rule also has a condition on the leader field
+      //whose value also needs to be passed into any declared function
+      ruleExecutionContext.setSubFieldValue(leader.toString());
+    }
+
     ruleExecutionContext.setRuleParameter(condition.getJsonObject("parameter"));
     if (CUSTOM.equals(function.trim())) {
       try {
@@ -817,10 +825,10 @@ public class Processor<T> {
    * @param path                     - the target path - the field to place the value in
    * @param newComp                  - should a new object be created , if not, use the object passed into the
    *                                 complexPreviouslyCreated parameter and continue populating it.
-   * @param val
+   * @param val                      - target object
    * @param complexPreviouslyCreated - pass in a non primitive pojo that is already partially
    *                                 populated from previous subfield values
-   * @return
+   * @return                         - returns boolean based on if new object has been built
    */
   static boolean buildObject(Object object, String[] path, boolean newComp, Object val,
                              Object[] complexPreviouslyCreated) {
