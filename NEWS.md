@@ -3,6 +3,7 @@
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
 * [MODINVSTOR-1342](https://folio-org.atlassian.net/browse/MODINVSTOR-1342) Add "deleted" field to Instance schema
 * [MODDICORE-438](https://folio-org.atlassian.net/browse/MODDICORE-438) Additional 147/447/547 to authority schema
+* [MODDICORE-440](https://folio-org.atlassian.net/browse/MODDICORE-440) Mode of Issuance not being set with MARC to Instance Mapping
 
 ## 2024-10-28 v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
