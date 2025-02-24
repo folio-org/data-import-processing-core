@@ -160,7 +160,7 @@ public class Processor<T> {
           buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
           createNewComplexObj = false;
         } else {
-          LOGGER.debug("handleFieldRules:: bad mapping {}", rules.encode());
+          LOGGER.warn("handleFieldRules:: bad mapping {}", rules.encode());
         }
       }
     }
