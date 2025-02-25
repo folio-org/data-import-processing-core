@@ -162,6 +162,24 @@
         "type": "string"
       }
     },
+    "generalSubdivision": {
+      "type": "string",
+      "description": "Heading general subdivision"
+    },
+    "sftGeneralSubdivision": {
+      "type": "array",
+      "description": "See from tracing general subdivision",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftGeneralSubdivision": {
+      "type": "array",
+      "description": "See also from tracing general subdivision",
+      "items": {
+        "type": "string"
+      }
+    },
     "topicalTerm": {
       "type": "string",
       "description": "Heading topical term"
