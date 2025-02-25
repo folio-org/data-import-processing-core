@@ -566,7 +566,7 @@ public class Processor<T> {
   private String processRules(RuleExecutionContext ruleExecutionContext) {
     if (rules == null) {
       return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
-        .replace("\\\\\"", "\"");
+        .replaceAll("\\\\\"", "\"");
     }
 
     //there are rules associated with this subfield / control field - to instance field mapping
@@ -579,7 +579,7 @@ public class Processor<T> {
       }
     }
     return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
-      .replace("\\\\\"", "\"");
+      .replaceAll("\\\\\"", "\"");
   }
 
   private ProcessedSingleItem processRule(JsonObject rule, RuleExecutionContext ruleExecutionContext, String originalData) {
