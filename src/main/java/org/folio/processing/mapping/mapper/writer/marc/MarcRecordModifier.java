@@ -399,7 +399,10 @@ public class MarcRecordModifier {
       char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
-        .peek(targetField -> targetField.removeSubfield(targetField.getSubfield(subfieldCode)))
+        .map(targetField -> {
+          targetField.removeSubfield(targetField.getSubfield(subfieldCode));
+          return targetField;
+        })
         .filter(field -> field.getSubfields().isEmpty())
         .toList()
         .forEach(targetField -> marcRecordToChange.removeVariableField(targetField));

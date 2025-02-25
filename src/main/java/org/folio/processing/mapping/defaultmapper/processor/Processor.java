@@ -59,6 +59,7 @@ public class Processor<T> {
   private static final String TARGET = "target";
   private static final String SUBFIELD = "subfield";
   private static final String CREATE_SINGLE_OBJECT_PROPERY = "createSingleObject";
+  private static final String RULES = "rules";
   private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Class<?>, Map<String, Method>> METHOD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Field, ParameterizedType> PARAM_TYPE_CACHE = new ConcurrentHashMap<>();
@@ -134,7 +135,7 @@ public class Processor<T> {
 
     for (int i = 0; i < fieldRules.size(); i++) {
       JsonObject rule = fieldRules.getJsonObject(i);
-      rules = rule.getJsonArray("rules");
+      rules = rule.getJsonArray(RULES);
 
       RuleExecutionContext ruleExecutionContext = new RuleExecutionContext();
       ruleExecutionContext.setMappingParameters(mappingParameters);
@@ -373,7 +374,7 @@ public class Processor<T> {
       .collect(Collectors.toCollection(HashSet::new));
 
     //it can be a one to one mapping, or there could be rules to apply prior to the mapping
-    rules = jObj.getJsonArray("rules");
+    rules = jObj.getJsonArray(RULES);
 
     // see ### Delimiters in README.md (section Processor.java)
     delimiters = jObj.getJsonArray("subFieldDelimiter");
@@ -565,7 +566,7 @@ public class Processor<T> {
   private String processRules(RuleExecutionContext ruleExecutionContext) {
     if (rules == null) {
       return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
-        .replaceAll("\\\\\"", "\"");
+        .replace("\\\\\"", "\"");
     }
 
     //there are rules associated with this subfield / control field - to instance field mapping
@@ -578,7 +579,7 @@ public class Processor<T> {
       }
     }
     return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
-      .replaceAll("\\\\\"", "\"");
+      .replace("\\\\\"", "\"");
   }
 
   private ProcessedSingleItem processRule(JsonObject rule, RuleExecutionContext ruleExecutionContext, String originalData) {
@@ -1145,7 +1146,7 @@ public class Processor<T> {
       JsonArray entityRules = JsonArray.of(new JsonObject(Map.of("conditions",
         JsonArray.of(JsonObject.of("type", "set_heading_type_by_name",
           "parameter", JsonObject.of("name", getHeadingType(existingMap.get(TARGET))))))));
-      headingTypeMapping.put("rules", entityRules);
+      headingTypeMapping.put(RULES, entityRules);
 
       JsonObject additionalMapping = JsonObject.of("entityPerRepeatedSubfield", false,
         "entity", JsonArray.of(headingRefMapping, headingTypeMapping));
