@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.IntStream;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -32,6 +33,7 @@ import org.folio.IdentifierType;
 import org.folio.Instance;
 import org.folio.InstanceDateType;
 import org.folio.InstanceType;
+import org.folio.IssuanceMode;
 import org.folio.Subject;
 import org.folio.SubjectSource;
 import org.folio.SubjectType;
@@ -90,6 +92,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/instance/856_missing_uri.mrc";
   private static final String BIB_WITH_MISSING_SUBFIELD_A = "src/test/resources/org/folio/processing/mapping/instance/100_missing_subfield_a.mrc";
   private static final String BIB_WITH_010Z_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/Record_with_010$z.mrc";
+  private static final String BIB_WITH_MISSING_001 = "src/test/resources/org/folio/processing/mapping/instance/recordWithout001Field.mrc";
 
   @Test
   public void testMarcToInstance() throws IOException {
@@ -183,6 +186,30 @@ public class InstanceMappingTest {
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMarcToInstanceLeaderToModeIssuance() throws IOException {
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_001).getBytes(StandardCharsets.UTF_8)));
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    IssuanceMode issuanceMode = new IssuanceMode().withId(UUID.randomUUID().toString())
+      .withName("unspecified").withSource("rdamodeissue");
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withIssuanceModes(List.of(issuanceMode)), mappingRules);
+      assertNotNull(instance.getTitle());
+      assertNotNull(instance.getModeOfIssuanceId());
+      assertNotNull(instance.getSource());
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());

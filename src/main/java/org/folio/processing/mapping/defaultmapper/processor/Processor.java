@@ -59,6 +59,7 @@ public class Processor<T> {
   private static final String TARGET = "target";
   private static final String SUBFIELD = "subfield";
   private static final String CREATE_SINGLE_OBJECT_PROPERY = "createSingleObject";
+  private static final String RULES = "rules";
   private static final Map<Class<?>, Map<String, Field>> FIELD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Class<?>, Map<String, Method>> METHOD_CACHE = new ConcurrentHashMap<>();
   private static final Map<Field, ParameterizedType> PARAM_TYPE_CACHE = new ConcurrentHashMap<>();
@@ -66,9 +67,9 @@ public class Processor<T> {
   private static final String FIELDS_WITH_TRUNCATED_MAPPING_POSTFIX = "Trunc";
   private static final String SAFT_FIELDS_PREFIX = "saft";
   public static final String DELIMITER_SUBFIELDS = "subfields";
+  public static final String LDR_TAG = "LDR";
 
   private JsonObject mappingRules;
-
   private Leader leader;
   private String separator; //separator between subfields with different delimiters
   private JsonArray delimiters;
@@ -106,12 +107,63 @@ public class Processor<T> {
       var setIdMethod = entityClass.getMethod("setId", String.class);
       setIdMethod.invoke(entity, UUID.randomUUID().toString());
       leader = record.getLeader();
+      processLeaderField(leader, mappingParameters);
       processControlFieldSection(record.getControlFields().iterator(), mappingParameters);
       processDataFieldSection(record.getDataFields().iterator(), mappingParameters);
       return this.entity;
     } catch (Exception e) {
       LOGGER.warn(e.getMessage(), e);
       return null;
+    }
+  }
+
+  private void processLeaderField(Leader leader, MappingParameters mappingParameters)
+    throws InstantiationException, IllegalAccessException {
+    if (leader != null) {
+      JsonArray leaderRules = mappingRules.getJsonArray(LDR_TAG);
+      if (leaderRules != null) {
+        handleFieldRules(leaderRules, leader.toString(), mappingParameters);
+      }
+    }
+  }
+
+  private void handleFieldRules(JsonArray fieldRules, String field, MappingParameters mappingParameters)
+    throws InstantiationException, IllegalAccessException {
+
+    Object[] rememberComplexObj = new Object[]{null};
+    createNewComplexObj = true;
+
+    for (int i = 0; i < fieldRules.size(); i++) {
+      JsonObject rule = fieldRules.getJsonObject(i);
+      rules = rule.getJsonArray(RULES);
+
+      RuleExecutionContext ruleExecutionContext = new RuleExecutionContext();
+      ruleExecutionContext.setMappingParameters(mappingParameters);
+      ruleExecutionContext.setSubFieldValue(field);
+
+      String data = processRules(ruleExecutionContext);
+      if (data.isEmpty()) {
+        continue;
+      }
+
+      String target = rule.getString(TARGET);
+      String[] embeddedFields = target.split("\\.");
+
+      if (BooleanUtils.isTrue(rule.getBoolean(CREATE_SINGLE_OBJECT_PROPERY))) {
+        if (data.isBlank()) {
+          data = null;
+        }
+        buildAndFillSimpleObject(entity, embeddedFields, data);
+        createNewComplexObj = false;
+      } else {
+        if (isMappingValid(entity, embeddedFields)) {
+          Object val = getValue(entity, embeddedFields, data);
+          buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
+          createNewComplexObj = false;
+        } else {
+          LOGGER.warn("handleFieldRules:: bad mapping {}", rules.encode());
+        }
+      }
     }
   }
 
@@ -322,7 +374,7 @@ public class Processor<T> {
       .collect(Collectors.toCollection(HashSet::new));
 
     //it can be a one to one mapping, or there could be rules to apply prior to the mapping
-    rules = jObj.getJsonArray("rules");
+    rules = jObj.getJsonArray(RULES);
 
     // see ### Delimiters in README.md (section Processor.java)
     delimiters = jObj.getJsonArray("subFieldDelimiter");
@@ -436,11 +488,11 @@ public class Processor<T> {
       data = processRules(ruleExecutionContext);
     }
 
-    if (delimiters != null && subField2Data.get(String.valueOf(subfield)) != null) {
+    if (delimiters != null && subField2Data.get(subfield) != null) {
       //delimiters is not null, meaning we have a string buffer for each set of subfields
       //so populate the appropriate string buffer
-      if (subField2Data.get(String.valueOf(subfield)).length() > 0) {
-        subField2Data.get(String.valueOf(subfield)).append(subField2Delimiter.get(subfield));
+      if (!subField2Data.get(subfield).isEmpty()) {
+        subField2Data.get(subfield).append(subField2Delimiter.get(subfield));
       }
       subField2Data.get(subfield).append(data);
     } else {
@@ -451,7 +503,7 @@ public class Processor<T> {
         //so we should not concat values
         sb.delete(0, sb.length());
       }
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
         sb.append(REPEATABLE_SUBFIELD_SEPARATOR);
       }
       sb.append(data);
@@ -482,7 +534,7 @@ public class Processor<T> {
         JsonArray subFieldswithDel = job.getJsonArray(DELIMITER_SUBFIELDS);
         StringBuilder subFieldsStringBuilder = new StringBuilder();
         buffers2concat.add(subFieldsStringBuilder);
-        if (subFieldswithDel.size() == 0) {
+        if (subFieldswithDel.isEmpty()) {
           separator = delimiter;
         }
 
@@ -506,65 +558,15 @@ public class Processor<T> {
       //get entry for this control field in the rules.json file
       JsonArray controlFieldRules = mappingRules.getJsonArray(controlField.getTag());
       if (controlFieldRules != null) {
-        handleControlFieldRules(controlFieldRules, controlField, context);
+        handleFieldRules(controlFieldRules, controlField.getData(), context);
       }
     }
   }
-
-  private void handleControlFieldRules(JsonArray controlFieldRules, ControlField controlField, MappingParameters mappingParameters)
-    throws IllegalAccessException, InstantiationException {
-
-    //when populating an instance with multiple fields from the same marc field
-    //this is used to pass the reference of the previously created instance to the buildObject function
-    Object[] rememberComplexObj = new Object[]{null};
-    createNewComplexObj = true;
-
-    for (int i = 0; i < controlFieldRules.size(); i++) {
-      JsonObject cfRule = controlFieldRules.getJsonObject(i);
-
-      //get rules - each rule can contain multiple conditions that need to be met and a
-      //value to inject in case all the conditions are met
-      rules = cfRule.getJsonArray("rules");
-
-      //the content of the Marc control field
-      RuleExecutionContext ruleExecutionContext = new RuleExecutionContext();
-      ruleExecutionContext.setMappingParameters(mappingParameters);
-      ruleExecutionContext.setSubFieldValue(controlField.getData());
-      String data = processRules(ruleExecutionContext);
-      if ((data != null) && data.isEmpty()) {
-        continue;
-      }
-
-      if (BooleanUtils.isTrue(cfRule.getBoolean(CREATE_SINGLE_OBJECT_PROPERY))) {
-        if(data != null && data.isBlank()) {
-          data = null;
-        }
-        String target = cfRule.getString(TARGET);
-        String[] embeddedFields = target.split("\\.");
-        buildAndFillSimpleObject(entity, embeddedFields, data);
-        createNewComplexObj = false;
-      } else {
-        //if conditionsMet = true, then all conditions of a specific rule were met
-        //and we can set the target to the rule's value
-        String target = cfRule.getString(TARGET);
-        String[] embeddedFields = target.split("\\.");
-
-        if (isMappingValid(entity, embeddedFields)) {
-          Object val = getValue(entity, embeddedFields, data);
-          buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
-          createNewComplexObj = false;
-        } else {
-          LOGGER.debug("handleControlFieldRules:: bad mapping {}", rules.encode());
-        }
-      }
-    }
-  }
-
 
   private String processRules(RuleExecutionContext ruleExecutionContext) {
     if (rules == null) {
       return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
-        .replaceAll("\\\\\"", "\\\"");
+        .replaceAll("\\\\\"", "\"");
     }
 
     //there are rules associated with this subfield / control field - to instance field mapping
@@ -577,7 +579,7 @@ public class Processor<T> {
       }
     }
     return Escaper.escape(ruleExecutionContext.getSubFieldValue(), keepTrailingBackslash)
-      .replaceAll("\\\\\"", "\\\"");
+      .replaceAll("\\\\\"", "\"");
   }
 
   private ProcessedSingleItem processRule(JsonObject rule, RuleExecutionContext ruleExecutionContext, String originalData) {
@@ -621,14 +623,6 @@ public class Processor<T> {
   private ProcessedSinglePlusConditionCheck processCondition(JsonObject condition, RuleExecutionContext ruleExecutionContext, String originalData,
                                                              boolean conditionsMet, String ruleConstVal,
                                                              boolean isCustom) {
-
-    if (leader != null && condition.getBoolean("LDR") != null) {
-
-      //the rule also has a condition on the leader field
-      //whose value also needs to be passed into any declared function
-      ruleExecutionContext.setSubFieldValue(leader.toString());
-    }
-
     String valueParam = condition.getString(VALUE);
     for (String function : ProcessorHelper.getFunctionsFromCondition(condition)) {
       ProcessedSinglePlusConditionCheck processedFunction = processFunction(function, ruleExecutionContext, isCustom, valueParam, condition,
@@ -651,6 +645,13 @@ public class Processor<T> {
   private ProcessedSinglePlusConditionCheck processFunction(String function, RuleExecutionContext ruleExecutionContext, boolean isCustom,
                                                             String valueParam, JsonObject condition,
                                                             boolean conditionsMet, String ruleConstVal) {
+    if (leader != null && condition.getBoolean("LDR") != null) {
+
+      //the rule also has a condition on the leader field
+      //whose value also needs to be passed into any declared function
+      ruleExecutionContext.setSubFieldValue(leader.toString());
+    }
+
     ruleExecutionContext.setRuleParameter(condition.getJsonObject("parameter"));
     if (CUSTOM.equals(function.trim())) {
       try {
@@ -710,7 +711,7 @@ public class Processor<T> {
    */
   private boolean createNewObject(String[] embeddedFields, String data, Object[] rememberComplexObj) {
 
-    if (data.length() != 0) {
+    if (!data.isEmpty()) {
       Object val = getValue(entity, embeddedFields, data);
       try {
         return buildObject(entity, embeddedFields, createNewComplexObj, val, rememberComplexObj);
@@ -731,8 +732,8 @@ public class Processor<T> {
   private String generateDataString() {
     StringBuilder finalData = new StringBuilder();
     for (StringBuilder sb : buffers2concat) {
-      if (sb.length() > 0) {
-        if (finalData.length() > 0) {
+      if (!sb.isEmpty()) {
+        if (!finalData.isEmpty()) {
           finalData.append(separator);
         }
         finalData.append(sb);
@@ -757,11 +758,7 @@ public class Processor<T> {
 
     List<Subfield> expandedSubs = new ArrayList<>();
     String func = splitConf.getString(TYPE);
-    boolean isCustom = false;
-
-    if (CUSTOM.equals(func)) {
-      isCustom = true;
-    }
+    boolean isCustom = CUSTOM.equals(func);
 
     String param = splitConf.getString(VALUE);
     for (Subfield subField : subFields) {
@@ -800,7 +797,7 @@ public class Processor<T> {
         if (type.isAssignableFrom(List.class) || type.isAssignableFrom(Set.class)) {
           ParameterizedType listType = getParameterizedType(field);
           type = (Class<?>) listType.getActualTypeArguments()[0];
-          object = type.newInstance();
+          object = type.getDeclaredConstructor().newInstance();
         }
       } catch (Exception e) {
         LOGGER.warn(e.getMessage(), e);
@@ -829,10 +826,10 @@ public class Processor<T> {
    * @param path                     - the target path - the field to place the value in
    * @param newComp                  - should a new object be created , if not, use the object passed into the
    *                                 complexPreviouslyCreated parameter and continue populating it.
-   * @param val
+   * @param val                      - target object
    * @param complexPreviouslyCreated - pass in a non primitive pojo that is already partially
    *                                 populated from previous subfield values
-   * @return
+   * @return                         - returns boolean based on if new object has been built
    */
   static boolean buildObject(Object object, String[] path, boolean newComp, Object val,
                              Object[] complexPreviouslyCreated) {
@@ -904,10 +901,10 @@ public class Processor<T> {
 
   private static Object setObjectCorrectly(boolean newComp, Class<?> listTypeClass, Class<?> type, String pathSegment,
                                            Collection<Object> coll, Object object, Object complexPreviouslyCreated)
-    throws IllegalAccessException, InstantiationException, InvocationTargetException {
+    throws IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException {
 
     if (newComp) {
-      Object o = listTypeClass.newInstance();
+      Object o = listTypeClass.getDeclaredConstructor().newInstance();
       coll.add(o);
       getMethod(object.getClass(), columnNametoCamelCaseWithset(pathSegment), type).invoke(object, coll);
       return o;
@@ -932,7 +929,7 @@ public class Processor<T> {
         sb.replace(i, i + 1, String.valueOf(Character.toUpperCase(sb.charAt(i))));
       }
     }
-    return "set" + sb.toString();
+    return "set" + sb;
   }
 
   private static String columnNametoCamelCaseWithget(String str) {
@@ -944,7 +941,7 @@ public class Processor<T> {
         sb.replace(i, i + 1, String.valueOf(Character.toUpperCase(sb.charAt(i))));
       }
     }
-    return "get" + sb.toString();
+    return "get" + sb;
   }
 
   public boolean checkIfSubfieldShouldBeHandled(Set<String> subFieldsSet, Subfield subfield) {
@@ -1001,12 +998,10 @@ public class Processor<T> {
   /**
    * Extends regular entity mapping for 5xx field with one according to the following rules:
    * additionally to the regular mapping adds the mapping for targets:
-   *
    * saftBroaderTerm,  when the control subfield $w has "g" value
    * saftNarrowerTerm, when the control subfield $w has "h" value
    * saftEarlierHeading, when the control subfield $w has "a" value
    * saftLaterHeading, when the control subfield $w has "b" value.
-   *
    * saft*Trunc for every saft* field with "i" and numeric subfields excluded
    */
   private JsonArray addExtraMappingsForAuthorities(final DataField dataField, final JsonArray regularMapping) {
@@ -1151,7 +1146,7 @@ public class Processor<T> {
       JsonArray entityRules = JsonArray.of(new JsonObject(Map.of("conditions",
         JsonArray.of(JsonObject.of("type", "set_heading_type_by_name",
           "parameter", JsonObject.of("name", getHeadingType(existingMap.get(TARGET))))))));
-      headingTypeMapping.put("rules", entityRules);
+      headingTypeMapping.put(RULES, entityRules);
 
       JsonObject additionalMapping = JsonObject.of("entityPerRepeatedSubfield", false,
         "entity", JsonArray.of(headingRefMapping, headingTypeMapping));
