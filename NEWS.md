@@ -2,8 +2,9 @@
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
 * [MODINVSTOR-1342](https://folio-org.atlassian.net/browse/MODINVSTOR-1342) Add "deleted" field to Instance schema
-* [MODDICORE-438](https://folio-org.atlassian.net/browse/MODDICORE-438) Additional 147/447/547 to authority schema
+* [MODDICORE-438](https://folio-org.atlassian.net/browse/MODDICORE-438) Add MARC fields 147/447/547 to authority schema
 * [MODDICORE-440](https://folio-org.atlassian.net/browse/MODDICORE-440) Mode of Issuance not being set with MARC to Instance Mapping
+* [MODDICORE-443](https://folio-org.atlassian.net/browse/MODDICORE-443) Add MARC fields 180/480/580 to authority schema
 
 ## 2024-10-28 v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation

@@ -383,6 +383,19 @@
       "rules": []
     }
   ],
+  "180": [
+    {
+      "target": "generalSubdivision",
+      "description": "Heading general subdivision",
+      "subfield": [
+        "v",
+        "x",
+        "y",
+        "z"
+      ],
+      "rules": []
+    }
+  ],
   "400": [
     {
       "target": "sftPersonalName",
@@ -598,6 +611,19 @@
         "x",
         "4",
         "5"
+      ],
+      "rules": []
+    }
+  ],
+  "480": [
+    {
+      "target": "sftGeneralSubdivision",
+      "description": "See from tracing general subdivision",
+      "subfield": [
+        "v",
+        "x",
+        "y",
+        "z"
       ],
       "rules": []
     }
@@ -819,6 +845,19 @@
         "x",
         "4",
         "5"
+      ],
+      "rules": []
+    }
+  ],
+  "580": [
+    {
+      "target": "saftGeneralSubdivision",
+      "description": "See also from tracing general subdivision",
+      "subfield": [
+        "v",
+        "x",
+        "y",
+        "z"
       ],
       "rules": []
     }
