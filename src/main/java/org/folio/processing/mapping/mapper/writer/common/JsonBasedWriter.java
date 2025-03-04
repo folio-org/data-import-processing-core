@@ -251,7 +251,7 @@ public class JsonBasedWriter extends AbstractWriter {
   private JsonNode addContainerNode(FieldPathIterator.PathItem pathItem, JsonNode parentNode) {
     JsonNode childNode = parentNode.findPath(pathItem.getName());
     if (childNode.isMissingNode() || childNode.isNull()) {
-      childNode = pathItem.isObject() ? parentNode.withObject(pathItem.getName()) : parentNode.withArray(pathItem.getName());
+      childNode = pathItem.isObject() ? parentNode.with(pathItem.getName()) : parentNode.withArray(pathItem.getName());
     }
     return childNode;
   }
