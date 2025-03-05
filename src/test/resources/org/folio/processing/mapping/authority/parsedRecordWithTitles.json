@@ -130,6 +130,21 @@
       }
     },
     {
+      "148": {
+        "subfields": [
+          {
+            "a": "Chronological term",
+            "v": "Form subdivision",
+            "x": "General subdivision",
+            "y": "Chronological subdivision",
+            "z": "Geographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
       "150": {
         "subfields": [
           {
@@ -166,6 +181,17 @@
       }
     },
     {
+      "162": {
+        "subfields": [
+          {
+            "a": "Medium of performance term"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
       "375": {
         "subfields": [
           {
@@ -184,6 +210,48 @@
             "x": "Periodicals",
             "y": "16th century",
             "z": "United States"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "181": {
+        "subfields": [
+          {
+            "v": "Form subdivision",
+            "x": "General subdivision",
+            "y": "Chronological subdivision",
+            "z": "Geographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "182": {
+        "subfields": [
+          {
+            "v": "Form subdivision",
+            "x": "General subdivision",
+            "y": "Chronological subdivision",
+            "z": "Geographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "185": {
+        "subfields": [
+          {
+            "v": "Form subdivision",
+            "x": "General subdivision",
+            "y": "Chronological subdivision",
+            "z": "Geographic subdivision"
           }
         ],
         "ind1": " ",
@@ -262,6 +330,21 @@
             "c": "sftLocation of named event",
             "d": "sftDate of named event",
             "g": "sftMiscellaneous information",
+            "v": "sftForm subdivision",
+            "x": "sftGeneral subdivision",
+            "y": "sftChronological subdivision",
+            "z": "sftGeographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "448": {
+        "subfields": [
+          {
+            "a": "sftChronological term",
             "v": "sftForm subdivision",
             "x": "sftGeneral subdivision",
             "y": "sftChronological subdivision",
@@ -402,6 +485,17 @@
       }
     },
     {
+      "462": {
+        "subfields": [
+          {
+            "a": "sftMedium of performance term"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
       "480": {
         "subfields": [
           {
@@ -409,6 +503,48 @@
             "x": "sftPeriodicals",
             "y": "sft16th century",
             "z": "sftUnited States"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "481": {
+        "subfields": [
+          {
+            "v": "sftForm subdivision",
+            "x": "sftGeneral subdivision",
+            "y": "sftChronological subdivision",
+            "z": "sftGeographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "482": {
+        "subfields": [
+          {
+            "v": "sftForm subdivision",
+            "x": "sftGeneral subdivision",
+            "y": "sftChronological subdivision",
+            "z": "sftGeographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "485": {
+        "subfields": [
+          {
+            "v": "sftForm subdivision",
+            "x": "sftGeneral subdivision",
+            "y": "sftChronological subdivision",
+            "z": "sftGeographic subdivision"
           }
         ],
         "ind1": " ",
@@ -490,6 +626,21 @@
       }
     },
     {
+      "548": {
+        "subfields": [
+          {
+            "a": "saftChronological term",
+            "v": "saftForm subdivision",
+            "x": "saftGeneral subdivision",
+            "y": "saftChronological subdivision",
+            "z": "saftGeographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
       "550": {
         "subfields": [
           {
@@ -550,6 +701,17 @@
       }
     },
     {
+      "562": {
+        "subfields": [
+          {
+            "a": "saftMedium of performance term"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
       "580": {
         "subfields": [
           {
@@ -557,6 +719,48 @@
             "x": "saftPeriodicals",
             "y": "saft16th century",
             "z": "saftUnited States"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "581": {
+        "subfields": [
+          {
+            "v": "saftForm subdivision",
+            "x": "saftGeneral subdivision",
+            "y": "saftChronological subdivision",
+            "z": "saftGeographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "582": {
+        "subfields": [
+          {
+            "v": "saftForm subdivision",
+            "x": "saftGeneral subdivision",
+            "y": "saftChronological subdivision",
+            "z": "saftGeographic subdivision"
+          }
+        ],
+        "ind1": " ",
+        "ind2": " "
+      }
+    },
+    {
+      "585": {
+        "subfields": [
+          {
+            "v": "saftForm subdivision",
+            "x": "saftGeneral subdivision",
+            "y": "saftChronological subdivision",
+            "z": "saftGeographic subdivision"
           }
         ],
         "ind1": " ",

@@ -5,6 +5,7 @@
 * [MODDICORE-438](https://folio-org.atlassian.net/browse/MODDICORE-438) Add MARC fields 147/447/547 to authority schema
 * [MODDICORE-440](https://folio-org.atlassian.net/browse/MODDICORE-440) Mode of Issuance not being set with MARC to Instance Mapping
 * [MODDICORE-443](https://folio-org.atlassian.net/browse/MODDICORE-443) Add MARC fields 180/480/580 to authority schema
+* [MODSOURMAN-1033](https://folio-org.atlassian.net/browse/MODSOURMAN-1033) Add MARC fields 1XX/4XX/5XX to authority schema
 
 ## 2024-10-28 v4.3.0
 * [MODDICORE-388](https://folio-org.atlassian.net/browse/MODDICORE-388) Allow to map vendor details with code that contains brackets during order creation
