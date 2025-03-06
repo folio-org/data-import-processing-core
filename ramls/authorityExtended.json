@@ -103,6 +103,55 @@
       "items": {
         "type": "string"
       }
+    },
+    "saftNamedEventTrunc": {
+      "type": "array",
+      "description": "See also from tracing named event",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftChronTermTrunc": {
+      "type": "array",
+      "description": "See also from tracing chronological term",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftMediumPerfTermTrunc": {
+      "type": "array",
+      "description": "See also from tracing medium of performance term",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftGeneralSubdivisionTrunc": {
+      "type": "array",
+      "description": "See also from tracing general subdivision",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftGeographicSubdivisionTrunc": {
+      "type": "array",
+      "description": "See also from tracing geographic subdivision",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftChronSubdivisionTrunc": {
+      "type": "array",
+      "description": "See also from tracing chronological subdivision",
+      "items": {
+        "type": "string"
+      }
+    },
+    "saftFormSubdivisionTrunc": {
+      "type": "array",
+      "description": "See also from tracing form subdivision",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
