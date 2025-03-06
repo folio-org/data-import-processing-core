@@ -86,7 +86,7 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(fieldPath, arrayValue);
         break;
       case EXCHANGE_EXISTING:
-        if (foundNode != null && foundNode.size() != 0) {
+        if (foundNode != null && !foundNode.isEmpty()) {
           findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
         }
         setValueByFieldPath(fieldPath, arrayValue);
@@ -95,7 +95,7 @@ public class JsonBasedWriter extends AbstractWriter {
         deleteIncomingFieldByPath(listValue, foundNode);
         break;
       case DELETE_EXISTING:
-        if (foundNode != null && foundNode.size() != 0) {
+        if (foundNode != null && !foundNode.isEmpty()) {
           findAndRemoveTheMostNestedFieldIfNeeded(pathForSearch, true);
         }
         break;
@@ -147,7 +147,7 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
-        if (!value.isAlreadyRemovedForExchange() && pathObject != null && pathObject.size() != 0) {
+        if (!value.isAlreadyRemovedForExchange() && pathObject != null && !pathObject.isEmpty()) {
           findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
           value.setAlreadyRemovedForExchange(true);
         }
@@ -157,7 +157,7 @@ public class JsonBasedWriter extends AbstractWriter {
         deleteIncomingFieldByPath(currentObject, currentPath, pathObject);
         break;
       case DELETE_EXISTING:
-        if (pathObject != null && pathObject.size() != 0) {
+        if (pathObject != null && !pathObject.isEmpty()) {
           findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
         }
         break;
@@ -180,7 +180,9 @@ public class JsonBasedWriter extends AbstractWriter {
           writeValuesForRepeatableObject(currentObject, objectField);
         }
       }
-      setRepeatableValueByAction(value, repeatableFieldPath, currentObject);
+      if (!subfield.isEmpty()) {
+        setRepeatableValueByAction(value, repeatableFieldPath, currentObject);
+      }
     }
   }
 
@@ -336,7 +338,7 @@ public class JsonBasedWriter extends AbstractWriter {
    * @return JsonNode result - found node. (For the non-deleting way)
    */
   private JsonNode findAndRemoveTheMostNestedFieldIfNeeded(String currentPath, boolean remove) {
-    if (entityNode.size() == 0) {
+    if (entityNode.isEmpty()) {
       return entityNode;
     }
     int nestedCount = StringUtils.countMatches(currentPath, DOT_SYMBOL) + 1;
@@ -360,7 +362,7 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   private void deleteIncomingFieldByPath(JsonNode currentObject, String currentPath, JsonNode pathObject) {
-    if (pathObject != null && pathObject.size() != 0) {
+    if (pathObject != null && !pathObject.isEmpty()) {
       if (pathObject.isArray()) {
         ArrayNode arrayNode = (ArrayNode) pathObject;
         for (int i = 0; i < arrayNode.size(); i++) {
@@ -391,7 +393,7 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
-    if (foundNode != null && foundNode.size() != 0) {
+    if (foundNode != null && !foundNode.isEmpty()) {
       ArrayNode arrayNode = (ArrayNode) foundNode;
       int indexForDelete = 0;
       for (int i = 0; i < arrayNode.size() + 1; i++) {
