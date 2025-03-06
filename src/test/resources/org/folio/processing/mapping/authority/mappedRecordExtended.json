@@ -63,6 +63,13 @@
   "saftGenreTermTrunc": [
     "linkText--publicNote"
   ],
+  "saftNamedEventTrunc": [],
+  "saftChronTermTrunc": [],
+  "saftMediumPerfTermTrunc": [],
+  "saftGeneralSubdivisionTrunc": [],
+  "saftGeographicSubdivisionTrunc": [],
+  "saftChronSubdivisionTrunc": [],
+  "saftFormSubdivisionTrunc": [],
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
   "sftPersonalName": [
 
@@ -114,6 +121,16 @@
   ],
   "sftNamedEvent": [],
   "saftNamedEvent": [],
+  "sftChronTerm": [],
+  "saftChronTerm": [],
+  "sftMediumPerfTerm": [],
+  "saftMediumPerfTerm": [],
+  "sftGeographicSubdivision": [],
+  "saftGeographicSubdivision": [],
+  "sftChronSubdivision": [],
+  "saftChronSubdivision": [],
+  "sftFormSubdivision": [],
+  "saftFormSubdivision": [],
   "sftGeneralSubdivision": [],
   "saftGeneralSubdivision": [],
   "topicalTerm": "The Journal of ecclesiastical history.",
