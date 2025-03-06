@@ -19,7 +19,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - uses: actions/cache@v4
         with:
           path: |
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-inventory
       - uses: actions/cache@v4
         with:
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-source-record-manager
       - uses: actions/cache@v4
         with:
@@ -92,7 +92,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
       - run: git clone --depth 1 --recurse-submodules https://github.com/folio-org/mod-orders
       - uses: actions/cache@v4
         with:
