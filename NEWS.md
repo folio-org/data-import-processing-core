@@ -1,11 +1,14 @@
-## 202X-XX-XX 4.4.0-SNAPSHOT
+## 2025-03-07 v4.4.0
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
 * [MODINVSTOR-1342](https://folio-org.atlassian.net/browse/MODINVSTOR-1342) Add "deleted" field to Instance schema
+* [MODDICORE-439](https://folio-org.atlassian.net/browse/MODDICORE-439) Add job execution id to kafka headers
+* [MODINV-1140](https://folio-org.atlassian.net/browse/MODINV-1140) Create set_deleted normalization function to account for Leader 05 value
 * [MODDICORE-438](https://folio-org.atlassian.net/browse/MODDICORE-438) Add MARC fields 147/447/547 to authority schema
 * [MODDICORE-440](https://folio-org.atlassian.net/browse/MODDICORE-440) Mode of Issuance not being set with MARC to Instance Mapping
 * [MODDICORE-443](https://folio-org.atlassian.net/browse/MODDICORE-443) Add MARC fields 180/480/580 to authority schema
 * [MODDICORE-442](https://folio-org.atlassian.net/browse/MODDICORE-442) Update to data-import-processing-core Java 21
+* [MODDICORE-428](https://folio-org.atlassian.net/browse/MODDICORE-428) Error appeared when in donor field for order field mapping profile user set 2 incorrect values
 * [MODDICORE-367](https://folio-org.atlassian.net/browse/MODDICORE-367) Add MARC fields 1XX/4XX/5XX to authority schema
 
 ## 2024-10-28 v4.3.0
