@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang.StringUtils.EMPTY;
 import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isMappingValid;
 import static org.folio.processing.mapping.defaultmapper.processor.LoaderHelper.isPrimitiveOrPrimitiveWrapperOrString;
 
@@ -668,7 +669,9 @@ public class Processor<T> {
         LOGGER.warn(e.getMessage(), e);
       }
     } else {
-      String c = NormalizationFunctionRunner.runFunction(function, ruleExecutionContext);
+      String subfield = ruleExecutionContext.getSubFieldValue();
+      String c = (subfield == null || subfield.isEmpty()) ? EMPTY :
+        NormalizationFunctionRunner.runFunction(function, ruleExecutionContext);
       if (valueParam != null && !c.equals(valueParam) && !isCustom) {
 
         //still allow a condition to compare the output of a function on the data to a constant value
