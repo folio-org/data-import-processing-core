@@ -669,9 +669,7 @@ public class Processor<T> {
         LOGGER.warn(e.getMessage(), e);
       }
     } else {
-      String subfield = ruleExecutionContext.getSubFieldValue();
-      String c = (subfield == null || subfield.isEmpty()) ? EMPTY :
-        NormalizationFunctionRunner.runFunction(function, ruleExecutionContext);
+      String c = NormalizationFunctionRunner.runFunction(function, ruleExecutionContext);
       if (valueParam != null && !c.equals(valueParam) && !isCustom) {
 
         //still allow a condition to compare the output of a function on the data to a constant value
