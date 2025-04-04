@@ -212,7 +212,6 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       if (subFieldValue == null || subFieldValue.length() < 7) {
         return EMPTY_STRING;
       }
-
       List<InstanceDateType> dateTypes = context.getMappingParameters().getInstanceDateTypes();
       if (dateTypes == null || dateTypes.isEmpty()) {
         return StringUtils.EMPTY;
