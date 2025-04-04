@@ -58,7 +58,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldValue = context.getSubFieldValue();
-      if (subFieldValue == null || subFieldValue.isEmpty()) {
+      if (subFieldValue == null || subFieldValue.length() < context.getRuleParameter().getInteger(TO_PARAMETER) + 1) {
         return EMPTY_STRING;
       }
       JsonObject ruleParameter = context.getRuleParameter();
@@ -209,14 +209,14 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldValue = context.getSubFieldValue();
-      if (subFieldValue == null || subFieldValue.isEmpty()) {
+      if (subFieldValue == null || subFieldValue.length() < 7) {
         return EMPTY_STRING;
       }
-      char sixthChar = subFieldValue.charAt(6);
       List<InstanceDateType> dateTypes = context.getMappingParameters().getInstanceDateTypes();
       if (dateTypes == null || dateTypes.isEmpty()) {
         return StringUtils.EMPTY;
       }
+      char sixthChar = subFieldValue.charAt(6);
       String defaultDateTypeId = findDateTypeId(dateTypes, StringUtils.EMPTY);
       return matchInstanceDateTypeViaCode(sixthChar, dateTypes, defaultDateTypeId);
     }
