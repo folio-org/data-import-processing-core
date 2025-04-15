@@ -17,10 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -143,7 +140,7 @@ public class MarcRecordModifier {
           isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
         char ind2 =
           isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
-        String subfieldCode = detail.getField().getSubfields().get(0).getSubfield();
+        String subfieldCode = detail.getField().getSubfields().getFirst().getSubfield();
 
         Stream<DataField> incomingDataFields = incomingMarcRecord.getDataFields().stream()
           .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)));
@@ -315,7 +312,7 @@ public class MarcRecordModifier {
     String fieldTag = detail.getField().getField();
     if (Verifier.isControlField(fieldTag)) {
       ControlField controlField =
-        marcFactory.newControlField(fieldTag, detail.getField().getSubfields().get(0).getData().getText());
+        marcFactory.newControlField(fieldTag, detail.getField().getSubfields().getFirst().getData().getText());
       addControlFieldInNumericalOrder(controlField);
     } else {
       char ind1 =
@@ -390,13 +387,13 @@ public class MarcRecordModifier {
       for (VariableField field : marcRecordToChange.getVariableFields(fieldTag)) {
         marcRecordToChange.removeVariableField(field);
       }
-    } else if (detail.getField().getSubfields().get(0).getSubfield().charAt(0) == ANY_CHAR) {
+    } else if (detail.getField().getSubfields().getFirst().getSubfield().charAt(0) == ANY_CHAR) {
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
         .toList()
         .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
-      char subfieldCode = detail.getField().getSubfields().get(0).getSubfield().charAt(0);
+      char subfieldCode = detail.getField().getSubfields().getFirst().getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
         .map(targetField -> {
@@ -420,7 +417,7 @@ public class MarcRecordModifier {
   }
 
   private void processEditAction(MarcMappingDetail mappingDetail) {
-    MarcSubfield subfieldRule = mappingDetail.getField().getSubfields().get(0);
+    MarcSubfield subfieldRule = mappingDetail.getField().getSubfields().getFirst();
     switch (subfieldRule.getSubaction()) {
       case INSERT:
         processInsert(subfieldRule, mappingDetail);
@@ -443,8 +440,8 @@ public class MarcRecordModifier {
     char ind2 = isNotEmpty(mappingRule.getField().getIndicator2())
       ? mappingRule.getField().getIndicator2().charAt(0)
       : BLANK_SUBFIELD_CODE;
-    String dataToInsert = mappingRule.getField().getSubfields().get(0).getData().getText();
-    MarcSubfield.Position dataPosition = mappingRule.getField().getSubfields().get(0).getPosition();
+    String dataToInsert = mappingRule.getField().getSubfields().getFirst().getData().getText();
+    MarcSubfield.Position dataPosition = mappingRule.getField().getSubfields().getFirst().getPosition();
 
     List<DataField> fieldsToEdit = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, tag, ind1, ind2))
@@ -468,8 +465,8 @@ public class MarcRecordModifier {
 
   private void processReplace(MarcMappingDetail mappingRule) {
     String tag = mappingRule.getField().getField().substring(0, 3);
-    String dataToReplace = mappingRule.getField().getSubfields().get(0).getData().getFind();
-    String replacementData = mappingRule.getField().getSubfields().get(0).getData().getReplaceWith();
+    String dataToReplace = mappingRule.getField().getSubfields().getFirst().getData().getFind();
+    String replacementData = mappingRule.getField().getSubfields().getFirst().getData().getReplaceWith();
 
     if (LDR_TAG.equals(tag)) {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
@@ -508,7 +505,7 @@ public class MarcRecordModifier {
 
   private void processRemove(MarcMappingDetail mappingRule) {
     String tag = mappingRule.getField().getField().substring(0, 3);
-    String dataToRemove = mappingRule.getField().getSubfields().get(0).getData().getText();
+    String dataToRemove = mappingRule.getField().getSubfields().getFirst().getData().getText();
 
     if (Verifier.isControlField(tag)) {
       Range<Integer> positions = getControlFieldDataPosition(mappingRule.getField().getField());
@@ -555,7 +552,7 @@ public class MarcRecordModifier {
     char ind2 = isNotEmpty(mappingRule.getField().getIndicator2())
       ? mappingRule.getField().getIndicator2().charAt(0)
       : BLANK_SUBFIELD_CODE;
-    char subfieldCode = mappingRule.getField().getSubfields().get(0).getSubfield().charAt(0);
+    char subfieldCode = mappingRule.getField().getSubfields().getFirst().getSubfield().charAt(0);
 
     marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode))
@@ -622,7 +619,7 @@ public class MarcRecordModifier {
     String newFieldTag = newFieldRule.getField();
     char srcSubfieldCode = subfieldRule.getSubfield().charAt(0);
     char newSubfieldCode =
-      newFieldRule.getSubfields().isEmpty() ? srcSubfieldCode : newFieldRule.getSubfields().get(0).getSubfield().charAt(0);
+      newFieldRule.getSubfields().isEmpty() ? srcSubfieldCode : newFieldRule.getSubfields().getFirst().getSubfield().charAt(0);
 
     for (DataField sourceField : sourceFields) {
       char newFieldInd1 =
@@ -652,7 +649,7 @@ public class MarcRecordModifier {
     char existingFieldInd2 = isEmpty(subfieldRule.getData().getMarcField().getIndicator2()) ? BLANK_SUBFIELD_CODE
       : subfieldRule.getData().getMarcField().getIndicator2().charAt(0);
     char srcSubfieldCode = subfieldRule.getSubfield().charAt(0);
-    char existingFieldSfCode = subfieldRule.getData().getMarcField().getSubfields().get(0).getSubfield().charAt(0);
+    char existingFieldSfCode = subfieldRule.getData().getMarcField().getSubfields().getFirst().getSubfield().charAt(0);
 
     List<DataField> existingFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, existingFieldTag, existingFieldInd1, existingFieldInd2))
@@ -815,7 +812,7 @@ public class MarcRecordModifier {
       if (existingSubfields.isEmpty()) {
         allSubfields.addAll(newSubfields);
       } else {
-        var indexOfFirstSubfield = allSubfields.indexOf(existingSubfields.get(0));
+        var indexOfFirstSubfield = allSubfields.indexOf(existingSubfields.getFirst());
         // replace all existed subfields to all new subfields
         allSubfields.removeIf(subfield -> subfield.getCode() == subfieldChar);
         allSubfields.addAll(indexOfFirstSubfield, newSubfields);
@@ -889,18 +886,52 @@ public class MarcRecordModifier {
   }
 
   private boolean isNotProtected(DataField field) {
+    LOGGER.trace("isNotProtected:: field {}", field.getTag());
     return applicableProtectionSettings.stream()
-      .filter(setting -> setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
-      .filter(setting -> setting.getIndicator1().equals(ANY_STRING)
-        || (isNotEmpty(setting.getIndicator1()) ? setting.getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE)
-        == field.getIndicator1())
-      .filter(setting -> setting.getIndicator2().equals(ANY_STRING)
-        || (isNotEmpty(setting.getIndicator2()) ? setting.getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE)
-        == field.getIndicator2())
-      .filter(
-        setting -> setting.getSubfield().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)) != null)
-      .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData()
-        .equals(field.getSubfield(setting.getSubfield().charAt(0)).getData()));
+      .filter(setting -> matchesField(setting, field))
+      .filter(setting -> matchesIndicator1(setting, field))
+      .filter(setting -> matchesIndicator2(setting, field))
+      .filter(setting -> hasSubfield(setting, field))
+      .noneMatch(setting -> matchesData(setting, field));
+  }
+
+  private boolean matchesField(MarcFieldProtectionSetting setting, DataField field) {
+    LOGGER.trace("matchesField:: field={}, setting: field={}", field.getTag(), setting.getField());
+    return setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag());
+  }
+
+  private boolean matchesIndicator1(MarcFieldProtectionSetting setting, DataField field) {
+    LOGGER.trace("matchesIndicator1:: field={} | setting: indicator1={}", field.getTag(), setting.getIndicator1());
+    return setting.getIndicator1().equals(ANY_STRING) ||
+      (isNotEmpty(setting.getIndicator1()) ? setting.getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE) == field.getIndicator1();
+  }
+
+  private boolean matchesIndicator2(MarcFieldProtectionSetting setting, DataField field) {
+    LOGGER.trace("matchesIndicator2:: field={} | setting: indicator2={}", field.getTag(), setting.getIndicator2());
+    return setting.getIndicator2().equals(ANY_STRING) ||
+      (isNotEmpty(setting.getIndicator2()) ? setting.getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE) == field.getIndicator2();
+  }
+
+  private boolean hasSubfield(MarcFieldProtectionSetting setting, DataField field) {
+    LOGGER.trace("hasSubfield:: field={} | setting: subfield={}", field.getTag(), setting.getSubfield());
+    return setting.getSubfield().equals(ANY_STRING) || field.getSubfield(setting.getSubfield().charAt(0)) != null;
+  }
+
+  private boolean matchesData(MarcFieldProtectionSetting setting, DataField field) {
+    LOGGER.trace("matchesData:: field={} | setting: subfield={}, data={}", field.getTag(), setting.getSubfield(), setting.getData());
+    if (setting.getSubfield().charAt(0) == ANY_CHAR) {
+      return setting.getData().equals(ANY_STRING) ||
+        field.getSubfields().stream().anyMatch(subfield -> dataMatches(setting, subfield));
+    } else {
+      return Optional.ofNullable(field.getSubfield(setting.getSubfield().charAt(0)))
+        .map(subfield -> dataMatches(setting, subfield))
+        .orElse(false);
+    }
+  }
+
+  private boolean dataMatches(MarcFieldProtectionSetting setting, Subfield subfield) {
+    LOGGER.trace("dataMatches:: subfield: code={}, data={} | setting: subfield={}, data={}", subfield.getCode(), subfield.getData(), setting.getSubfield(), setting.getData());
+    return setting.getData().equals(ANY_STRING) || setting.getData().equals(subfield.getData());
   }
 
   private boolean isControlFieldsContains(List<ControlField> controlFields, ControlField controlField) {

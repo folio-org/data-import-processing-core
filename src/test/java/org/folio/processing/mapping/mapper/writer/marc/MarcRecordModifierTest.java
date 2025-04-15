@@ -2034,6 +2034,82 @@ public class MarcRecordModifierTest {
   }
 
   @Test
+  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsNotProtectedAndIncomingFieldIsNotSameWithMultipleSubfieldProtectionSettings() {
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00152nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("655")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("*")
+        .withData("notfast"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
+  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndSomeIncomingFieldIsSameWithMatchesMultipleSubfieldProtectionSettings() {
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00200nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("655")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("*") //any subfield
+        .withData("fast"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
+  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsSameWithMatchesSubfieldProtectionSettings() {
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00200nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("655")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("2") //selected subfield
+        .withData("fast"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
+  public void shouldNotRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsNotProtectedAndIncomingFieldIsSameWithNotMatchesSubfieldProtectionSettings() {
+    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String expectedParsedContent = "{\"leader\":\"00152nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("655")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("2") //selected subfield
+        .withData("notfast"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+  }
+
+  @Test
   public void shouldRetainExistingRepeatableFieldWhenExistingIsProtectedAndHasNoIncomingFieldWithSameTag() {
     // 950 is repeatable field
     String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
