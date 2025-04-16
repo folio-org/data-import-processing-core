@@ -25,6 +25,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   @Override
   public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
+    LOG.debug("process:: Processing event payload {}", eventPayload);
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
@@ -40,6 +41,7 @@ public class EventProcessorImpl implements EventProcessor {
           .whenComplete((payload, throwable) -> {
             logEventProcessingTime(eventType, startTime, eventPayload);
             if (throwable != null) {
+              LOG.warn("process:: Failed to process event payload", throwable);
               future.completeExceptionally(throwable);
             } else {
               future.complete(payload);
@@ -86,7 +88,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   private String getLastEvent(DataImportEventPayload eventPayload) {
     final var eventsChain = eventPayload.getEventsChain();
-    return eventsChain.get(eventsChain.size() - 1);
+    return eventsChain.getLast();
   }
 
   private DataImportEventPayload updatePayloadIfNeeded(DataImportEventPayload dataImportEventPayload) {
