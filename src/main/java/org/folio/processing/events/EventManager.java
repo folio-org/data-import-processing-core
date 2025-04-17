@@ -255,7 +255,7 @@ public final class EventManager {
    * Clears the registry of event handlers.
    */
   public static void clearEventHandlers() {
-    LOGGER.trace("clearEventHandlers:: Clearing event publisher");
+    LOGGER.trace("clearEventHandlers:: Clearing event handlers");
     eventProcessor.getEventHandlers().clear();
   }
 }

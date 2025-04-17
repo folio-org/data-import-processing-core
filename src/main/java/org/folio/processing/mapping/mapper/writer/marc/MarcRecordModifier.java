@@ -924,8 +924,7 @@ public class MarcRecordModifier {
   private boolean matchesData(MarcFieldProtectionSetting setting, DataField field) {
     LOGGER.trace("matchesData:: field={} | setting: subfield={}, data={}", field.getTag(), setting.getSubfield(), setting.getData());
     if (setting.getSubfield().charAt(0) == ANY_CHAR) {
-      return setting.getData().equals(ANY_STRING) ||
-        field.getSubfields().stream().anyMatch(subfield -> dataMatches(setting, subfield));
+      return field.getSubfields().stream().anyMatch(subfield -> dataMatches(setting, subfield));
     } else {
       return Optional.ofNullable(field.getSubfield(setting.getSubfield().charAt(0)))
         .map(subfield -> dataMatches(setting, subfield))
