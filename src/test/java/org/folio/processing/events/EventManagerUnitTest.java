@@ -5,6 +5,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
 import org.folio.JobProfile;
@@ -51,16 +53,19 @@ import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(VertxUnitRunner.class)
 public class EventManagerUnitTest extends AbstractRestTest {
+  private static final Logger LOGGER = LogManager.getLogger(EventManagerUnitTest.class);
   private final String PUBLISH_SERVICE_URL = "/pubsub/publish";
 
   @Before
   public void beforeTest() {
     EventManager.clearEventHandlers();
+    EventManager.registerRestEventPublisher();
     WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.noContent()));
   }
 
   @Test
   public void shouldHandleEvent(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleEvent");
     Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
@@ -95,9 +100,10 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
-      .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().get(0));
+      .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
-    EventManager.handleEvent(eventPayload, profileSnapshot).whenComplete((nextEventContext, throwable) -> {
+    EventManager.handleEvent(eventPayload, profileSnapshot)
+      .whenComplete((nextEventContext, throwable) -> {
     // then
       testContext.assertNull(throwable);
       testContext.assertEquals(1, nextEventContext.getEventsChain().size());
@@ -112,6 +118,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleLastEvent(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleLastEvent");
     Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
@@ -134,7 +141,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
-      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().get(0));
+      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
     // then
@@ -151,6 +158,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldIgnoreEventIfNoHandlersDefined(TestContext testContext) {
+    LOGGER.info("test:: shouldIgnoreEventIfNoHandlersDefined");
     Async async = testContext.async();
     // given
     ProfileSnapshotWrapper profileSnapshot = new ProfileSnapshotWrapper()
@@ -167,7 +175,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
-      .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().get(0));
+      .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().getFirst());
 
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot).whenComplete((nextEventContext, throwable) -> {
@@ -181,6 +189,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleAsErrorEventIfHandlerCompletedExceptionally(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleAsErrorEventIfHandlerCompletedExceptionally");
     Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new FailExceptionallyHandler());
@@ -199,7 +208,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
-      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().get(0));
+      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
     // then
@@ -212,6 +221,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleFirstEventInJobProfile(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleFirstEventInJobProfile");
     Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
@@ -255,12 +265,13 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleAndSetToCurrentNodeAction2Wrapper(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction2Wrapper");
     Async async = testContext.async();
     // given
     CreateInstanceEventHandler createInstanceHandler = Mockito.spy(new CreateInstanceEventHandler());
     Mockito.doAnswer(invocationOnMock -> {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
-      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().get(0));
+      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
       return invocationOnMock.callRealMethod();
     }).when(createInstanceHandler).handle(any(DataImportEventPayload.class));
 
@@ -330,6 +341,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleAndSetToCurrentNodeAction1Wrapper(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction1Wrapper");
     Async async = testContext.async();
     // given
     EventHandler matchInstanceHandler = Mockito.mock(EventHandler.class);
@@ -387,13 +399,14 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleEventInCascadingProfilesAndSwitchNode(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleEventInCascadingProfilesAndSwitchNode");
     Async async = testContext.async();
     // given
     EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
 
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
-      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().get(0));
+      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
       return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_UPDATED.value()));
 
     }).when(updateInstanceHandler).handle(any(DataImportEventPayload.class));
@@ -528,12 +541,13 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleAndSetToCurrentNodeMatchWrapper2(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleAndSetToCurrentNodeMatchWrapper2");
     Async async = testContext.async();
     // given
     EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
-      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().get(0));
+      payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
       return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_UPDATED.value()));
     }).when(updateInstanceHandler).handle(any(DataImportEventPayload.class));
     Mockito.when(updateInstanceHandler.isEligible(any(DataImportEventPayload.class))).thenReturn(true);
@@ -593,6 +607,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldHandleEventAndPreparePayloadForPostProcessing(TestContext testContext) {
+    LOGGER.info("test:: shouldHandleEventAndPreparePayloadForPostProcessing");
     Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
@@ -633,6 +648,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing(TestContext testContext) {
+    LOGGER.info("test:: shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing");
     Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
@@ -678,6 +694,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
 
   @Test
   public void shouldClearExtraOLKeyFromPayload(TestContext testContext) {
+    LOGGER.info("test:: shouldClearExtraOLKeyFromPayload");
     Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
@@ -702,7 +719,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withOkapiUrl(OKAPI_URL)
       .withToken(TOKEN)
       .withContext(extraOLKey)
-      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().get(0));
+      .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
       // then
