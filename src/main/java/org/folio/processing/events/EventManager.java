@@ -41,11 +41,11 @@ import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
  */
 public final class EventManager {
 
+  private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
+
   public static final String POST_PROCESSING_INDICATOR = "POST_PROCESSING";
   public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST_PROCESSING_RESULT_EVENT";
   public static final String OL_ACCUMULATIVE_RESULTS = "OL_ACCUMULATIVE_RESULTS";
-
-  private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
   private static final List<EventPublisher> eventPublisher = new ArrayList<>(Arrays.<EventPublisher>asList(new RestEventPublisher()));
@@ -67,6 +67,7 @@ public final class EventManager {
    * @return future with event payload after handling
    */
   public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot) {
+    LOGGER.trace("handleEvent:: Event type: {}, event payload: {}", eventPayload.getEventType(), eventPayload);
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       setCurrentNodeIfRoot(eventPayload, jobProfileSnapshot);
@@ -89,21 +90,24 @@ public final class EventManager {
   }
 
   private static void setCurrentNodeIfRoot(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot) {
+    LOGGER.trace("setCurrentNodeIfRoot:: Event type: {}, event payload: {}", eventPayload.getEventType(), eventPayload);
     if (eventPayload.getCurrentNode() == null || eventPayload.getCurrentNode().getContentType() == JOB_PROFILE) {
       List<ProfileSnapshotWrapper> jobProfileChildren = jobProfileSnapshot.getChildSnapshotWrappers();
       if (isNotEmpty(jobProfileChildren)) {
-        eventPayload.setCurrentNode(jobProfileChildren.get(0));
+        eventPayload.setCurrentNode(jobProfileChildren.getFirst());
       }
       eventPayload.setCurrentNodePath(new ArrayList<>(Collections.singletonList(jobProfileSnapshot.getId())));
     }
   }
 
   private static CompletableFuture<Boolean> publishEventIfNecessary(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot, Throwable processThrowable) {
+    LOGGER.trace("publishEventIfNecessary:: Event type: {}, event payload: {}", eventPayload.getEventType(), eventPayload, processThrowable);
     if (processThrowable instanceof EventHandlerNotFoundException ||
       (Objects.nonNull(processThrowable) && processThrowable.getCause() instanceof DuplicateEventException)) {
       return CompletableFuture.completedFuture(false);
     }
-    return eventPublisher.get(0).publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
+    LOGGER.trace("publishEventIfNecessary:: eventPublisher = {}", eventPublisher.getFirst().getClass().getSimpleName());
+    return eventPublisher.getFirst().publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
       .thenApply(sentEvent -> true);
   }
 
@@ -167,7 +171,7 @@ public final class EventManager {
     }
     if (currentNode.getContentType() == ACTION_PROFILE) {
       if (isNotEmpty(currentNode.getChildSnapshotWrappers())) {
-        return Optional.of(currentNode.getChildSnapshotWrappers().get(0));
+        return Optional.of(currentNode.getChildSnapshotWrappers().getFirst());
       } else {
         return findParent(currentNode.getId(), jobProfileSnapshot)
           .flatMap(actionParent -> getNextChildProfile(currentNode, actionParent));
@@ -212,6 +216,7 @@ public final class EventManager {
    * @return true handlers is registered
    */
   public static <T extends EventHandler> boolean registerEventHandler(T eventHandler) {
+    LOGGER.trace("registerEventHandler:: Registering event handler: {}", eventHandler.getClass());
     return eventProcessor.getEventHandlers().add(eventHandler);
   }
 
@@ -222,6 +227,7 @@ public final class EventManager {
    * @param vertx       - vertx instance
    */
   public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
+    LOGGER.trace("registerKafkaEventPublisher:: Registering kafka event publisher");
     eventPublisher.forEach(p -> {
       LOGGER.info("registerKafkaEventPublisher {}", p.toString());
       if(p instanceof KafkaEventPublisher publisher) {
@@ -240,6 +246,7 @@ public final class EventManager {
    * Performs registration for rest event publisher in publishers list
    */
   public static void registerRestEventPublisher() {
+    LOGGER.trace("registerRestEventPublisher:: Registering rest event publisher");
     eventPublisher.clear();
     eventPublisher.add(new RestEventPublisher());
   }
@@ -248,6 +255,7 @@ public final class EventManager {
    * Clears the registry of event handlers.
    */
   public static void clearEventHandlers() {
+    LOGGER.trace("clearEventHandlers:: Clearing event handlers");
     eventProcessor.getEventHandlers().clear();
   }
 }
