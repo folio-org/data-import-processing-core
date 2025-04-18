@@ -1,3 +1,7 @@
+## 2025-04-18 v4.4.1
+* [MODDICORE-452](https://folio-org.atlassian.net/browse/MODDICORE-452) Fix MARC Migration failings due to records missing values
+* [MODDICORE-450](https://folio-org.atlassian.net/browse/MODDICORE-450) Fix NullPointerException during Update of MARC bibliographic action processing
+
 ## 2025-03-07 v4.4.0
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
