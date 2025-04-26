@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
