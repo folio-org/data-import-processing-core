@@ -1,3 +1,6 @@
+## 2025-04-29 v4.4.2
+* [MODDICORE-454](https://folio-org.atlassian.net/browse/MODDICORE-454) Upgrade all dependencies to supported versions for Sunflower
+
 ## 2025-04-18 v4.4.1
 * [MODDICORE-452](https://folio-org.atlassian.net/browse/MODDICORE-452) Fix MARC Migration failings due to records missing values
 * [MODDICORE-450](https://folio-org.atlassian.net/browse/MODDICORE-450) Fix NullPointerException during Update of MARC bibliographic action processing
