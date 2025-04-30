@@ -85,6 +85,7 @@
       "type": "array",
       "items": {
         "type": "object",
+        "javaType": "org.folio.FundLocation",
         "properties": {
           "locationId": {
             "description": "UUID of the associated location",

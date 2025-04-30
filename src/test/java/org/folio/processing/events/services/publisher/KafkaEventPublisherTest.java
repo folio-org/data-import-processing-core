@@ -3,25 +3,26 @@ package org.folio.processing.events.services.publisher;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import net.mguenther.kafka.junit.EmbeddedKafkaCluster;
-import net.mguenther.kafka.junit.ObserveKeyValues;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
+import org.folio.processing.TestUtil;
 import org.folio.rest.jaxrs.model.Event;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
+import org.testcontainers.kafka.KafkaContainer;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
-import static net.mguenther.kafka.junit.EmbeddedKafkaCluster.provisionWith;
-import static net.mguenther.kafka.junit.EmbeddedKafkaClusterConfig.defaultClusterConfig;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
 import static org.junit.Assert.assertEquals;
@@ -35,30 +36,35 @@ public class KafkaEventPublisherTest {
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
 
-  public static EmbeddedKafkaCluster kafkaCluster;
-
+  @ClassRule
+  public static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static KafkaConfig kafkaConfig;
+  private static Properties consumerConfig = new Properties();
   private Vertx vertx = Vertx.vertx();
 
   @BeforeClass
   public static void setUpClass() {
-    kafkaCluster = provisionWith(defaultClusterConfig());
-    kafkaCluster.start();
-    String[] hostAndPort = kafkaCluster.getBrokerList().split(":");
     kafkaConfig = KafkaConfig.builder()
-      .kafkaHost(hostAndPort[0])
-      .kafkaPort(hostAndPort[1])
+      .kafkaHost(kafkaContainer.getHost())
+      .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
       .envId(KAFKA_ENV)
       .build();
+    kafkaConfig.getConsumerProps().forEach((key, value) -> {
+      if (value != null) {
+        consumerConfig.put(key, value);
+      }
+    });
+    consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
   }
 
   @Test
   public void shouldPublishPayload() throws Exception {
+    var tenant = "shouldPublishPayload";
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withOkapiUrl(OKAPI_URL)
-        .withTenant(TENANT_ID)
+        .withTenant(tenant)
         .withToken(TOKEN)
         .withContext(new HashMap<>() {{
           put("recordId", UUID.randomUUID().toString());
@@ -67,13 +73,8 @@ public class KafkaEventPublisherTest {
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
 
-      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), TENANT_ID, DI_COMPLETED.value());
-      List<String> observedValues = kafkaCluster.observeValues(ObserveKeyValues.on(topicToObserve, 1)
-        .observeFor(30, TimeUnit.SECONDS)
-        .build());
-
-      Event obtainedEvent = Json.decodeValue(observedValues.get(0), Event.class);
-      DataImportEventPayload actualPayload = Json.decodeValue(obtainedEvent.getEventPayload(), DataImportEventPayload.class);
+      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
+      DataImportEventPayload actualPayload = Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
       assertEquals(eventPayload, actualPayload);
 
       assertFalse(future.isCompletedExceptionally());
@@ -82,11 +83,12 @@ public class KafkaEventPublisherTest {
 
   @Test
   public void shouldPublishPayloadIfTokenIsNull() throws Exception {
+    var tenant = "shouldPublishPayloadIfTokenIsNull";
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withOkapiUrl(OKAPI_URL)
-        .withTenant(TENANT_ID)
+        .withTenant(tenant)
         .withToken(null)
         .withContext(new HashMap<>() {{
           put("recordId", UUID.randomUUID().toString());
@@ -96,13 +98,8 @@ public class KafkaEventPublisherTest {
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
 
-      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), TENANT_ID, DI_COMPLETED.value());
-      List<String> observedValues = kafkaCluster.observeValues(ObserveKeyValues.on(topicToObserve, 1)
-        .observeFor(30, TimeUnit.SECONDS)
-        .build());
-
-      Event obtainedEvent = Json.decodeValue(observedValues.get(observedValues.size() - 1), Event.class);
-      DataImportEventPayload actualPayload = Json.decodeValue(obtainedEvent.getEventPayload(), DataImportEventPayload.class);
+      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
+      DataImportEventPayload actualPayload = Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
       assertEquals(eventPayload, actualPayload);
 
       assertFalse(future.isCompletedExceptionally());
@@ -169,6 +166,18 @@ public class KafkaEventPublisherTest {
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
       assertFalse(future.isCompletedExceptionally());
       future.get();
+    }
+  }
+
+  private String getEventPayload(String topicToObserve) {
+    try (var kafkaConsumer = new KafkaConsumer<String, String>(consumerConfig)) {
+      kafkaConsumer.subscribe(List.of(topicToObserve));
+      var records = kafkaConsumer.poll(Duration.ofSeconds(30));
+      if (records.isEmpty()) {
+        throw new IllegalStateException("Expected Kafka event at " + topicToObserve + " but got none");
+      }
+      Event obtainedEvent = Json.decodeValue(records.iterator().next().value(), Event.class);
+      return obtainedEvent.getEventPayload();
     }
   }
 }
