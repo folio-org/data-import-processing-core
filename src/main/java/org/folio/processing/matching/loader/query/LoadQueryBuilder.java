@@ -8,6 +8,7 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.folio.processing.value.Value.ValueType.DATE;
@@ -26,8 +27,7 @@ public class LoadQueryBuilder {
   private static final String JSON_PATH_SEPARATOR = ".";
   private static final String IDENTIFIER_TYPE_ID = "identifierTypeId";
   private static final String IDENTIFIER_TYPE_VALUE = "instance.identifiers[].value";
-  private static final String IDENTIFIER_CQL_QUERY = "identifiers =/@value/@identifierTypeId=\"%s\" %s";
-  private static final String WHERE_CLAUSE_CONSTRUCTOR_MATCH_CRITERION = "WHERE_CLAUSE_CONSTRUCTOR";
+  private static final String IDENTIFIER_INDIVIDUAL_CQL_QUERY = "identifiers=\"\\\"identifierTypeId\\\":\\\"%s\\\"\" AND identifiers=\"\\\"value\\\":\\\"%s\\\"\"";
 
   /**
    * Builds LoadQuery,
@@ -39,13 +39,13 @@ public class LoadQueryBuilder {
    * @param matchDetail match detail
    * @return LoadQuery or null if query cannot be built
    */
-  public static LoadQuery build(Value value, MatchDetail matchDetail) {
+  public static LoadQuery build(Value<?> value, MatchDetail matchDetail) {
     if (value != null && (value.getType() == STRING || value.getType() == LIST || value.getType() == DATE)) {
       MatchExpression matchExpression = matchDetail.getExistingMatchExpression();
       if (matchExpression != null && matchExpression.getDataValueType() == VALUE_FROM_RECORD) {
         List<Field> fields = matchExpression.getFields();
         if (fields != null && !fields.isEmpty()) {
-          String fieldPath = fields.get(0).getValue();
+          String fieldPath = fields.getFirst().getValue();
           String tableName = StringUtils.substringBefore(fieldPath, JSON_PATH_SEPARATOR);
           String fieldName = StringUtils.substringAfter(fieldPath, JSON_PATH_SEPARATOR);
           QueryHolder mainQuery = new QueryHolder(value, matchDetail.getMatchCriterion())
@@ -61,10 +61,8 @@ public class LoadQueryBuilder {
             mainQuery.applyAdditionalCondition(additionalQuery);
             // TODO provide all the requirements for MODDATAIMP-592 and refactor code block below
             if(checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
-              MatchingCondition matchingCondition =
-                MatchingCondition.valueOf(WHERE_CLAUSE_CONSTRUCTOR_MATCH_CRITERION);
-              String condition = matchingCondition.constructCqlQuery(value);
-              mainQuery.setCqlQuery(String.format(IDENTIFIER_CQL_QUERY, additionalField.getValue(), condition));
+              String cqlQuery = buildIdentifierCqlQuery(value, additionalField.getValue());
+              mainQuery.setCqlQuery(cqlQuery);
               mainQuery.setSqlQuery(StringUtils.EMPTY);
             }
           }
@@ -79,6 +77,42 @@ public class LoadQueryBuilder {
     return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
       matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES && fieldPath.equals(IDENTIFIER_TYPE_VALUE) &&
       additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
+  }
+
+  /**
+   * Builds CQL query for identifier matching with individual AND conditions for each value
+   *
+   * @param value          the value to match against (can be STRING or LIST)
+   * @param identifierTypeId the identifier type ID
+   * @return CQL query string with individual AND conditions
+   */
+  private static String buildIdentifierCqlQuery(Value<?> value, String identifierTypeId) {
+    if (value.getType() == STRING) {
+      return String.format(IDENTIFIER_INDIVIDUAL_CQL_QUERY, identifierTypeId, escapeCqlValue(value.getValue().toString()));
+    } else if (value.getType() == LIST) {
+      List<String> conditions = new ArrayList<>();
+      for (Object val : ((org.folio.processing.value.ListValue) value).getValue()) {
+        conditions.add("(" + String.format(IDENTIFIER_INDIVIDUAL_CQL_QUERY, identifierTypeId, escapeCqlValue(val.toString())) + ")");
+      }
+      return String.join(" OR ", conditions);
+    }
+    return "";
+  }
+
+  /**
+   * Escapes special characters in CQL values to prevent parsing errors
+   *
+   * @param value the value to escape
+   * @return escaped value safe for CQL queries
+   */
+  private static String escapeCqlValue(String value) {
+    // Escape backslashes first, then other special characters
+    return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("(", "\\(")
+                .replace(")", "\\)")
+                .replace("*", "\\*")
+                .replace("?", "\\?");
   }
 
 }
