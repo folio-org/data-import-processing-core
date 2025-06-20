@@ -943,4 +943,44 @@ public class LoadQueryBuilderTest {
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithListValue_ContainsCriterion() {
+    // given
+    ListValue value = ListValue.of(Arrays.asList(
+      "(OCoLC)1349275037",
+      "9924655804502931",
+      "in00022912564"
+    ));
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXISTING_VALUE_CONTAINS_INCOMING_VALUE)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("035"),
+          new Field().withLabel("indicator1").withValue(""),
+          new Field().withLabel("indicator2").withValue(""),
+          new Field().withLabel("recordSubfield").withValue("a"))
+        ))
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+
+    // when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+
+    // then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    // For EXISTING_VALUE_CONTAINS_INCOMING_VALUE with identifiers, the CQL should use wildcard matching
+    String expectedCQLQuery = format("(identifiers=\"\\\"identifierTypeId\\\":\\\"%s\\\"\" AND identifiers=\"\\\"value\\\":\\\"*\\(OCoLC\\)1349275037*\\\"\") OR (identifiers=\"\\\"identifierTypeId\\\":\\\"%s\\\"\" AND identifiers=\"\\\"value\\\":\\\"*9924655804502931*\\\"\") OR (identifiers=\"\\\"identifierTypeId\\\":\\\"%s\\\"\" AND identifiers=\"\\\"value\\\":\\\"*in00022912564*\\\"\")",
+      identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
 }

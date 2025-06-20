@@ -1,6 +1,9 @@
 package org.folio.processing.matching.loader.query;
 
+import io.vertx.core.json.Json;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.MatchDetail;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
@@ -24,6 +27,7 @@ public class LoadQueryBuilder {
   private LoadQueryBuilder() {
   }
 
+  private static final Logger LOGGER = LogManager.getLogger(LoadQueryBuilder.class);
   private static final String JSON_PATH_SEPARATOR = ".";
   private static final String IDENTIFIER_TYPE_ID = "identifierTypeId";
   private static final String IDENTIFIER_TYPE_VALUE = "instance.identifiers[].value";
@@ -64,8 +68,13 @@ public class LoadQueryBuilder {
               String cqlQuery = buildIdentifierCqlQuery(value, additionalField.getValue());
               mainQuery.setCqlQuery(cqlQuery);
               mainQuery.setSqlQuery(StringUtils.EMPTY);
+            } else {
+              LOGGER.debug("LoadQueryBuilder::build - Additional field does not match identifier type criteria: {} fieldPath: {}",
+                additionalField.getLabel(), fieldPath);
             }
           }
+          LOGGER.debug(() -> String.format("LoadQueryBuilder::build - Built LoadQuery for VALUE: ~| %s |~ MATCHDETAIL: ~| %s |~ CQL: ~| %s |~",
+            Json.encode(value), Json.encode(matchDetail), mainQuery.getCqlQuery()));
           return new DefaultJsonLoadQuery(tableName, mainQuery.getSqlQuery(), mainQuery.getCqlQuery());
         }
       }
