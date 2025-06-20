@@ -2,6 +2,7 @@ package org.folio.processing.events.services.publisher;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -25,6 +26,10 @@ import java.util.concurrent.ExecutionException;
 
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
+import static org.folio.processing.events.services.publisher.KafkaEventPublisher.CHUNK_ID_HEADER;
+import static org.folio.processing.events.services.publisher.KafkaEventPublisher.PERMISSIONS_HEADER;
+import static org.folio.processing.events.services.publisher.KafkaEventPublisher.RECORD_ID_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.USER_ID_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +65,10 @@ public class KafkaEventPublisherTest {
   @Test
   public void shouldPublishPayload() throws Exception {
     var tenant = "shouldPublishPayload";
+    String expectedPermissionsHeader = JsonArray.of("test-permission").encode();
+    String expectedUserId = UUID.randomUUID().toString();
+    String expectedRecordId = UUID.randomUUID().toString();
+    String expectedChunkId = UUID.randomUUID().toString();
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
@@ -67,8 +76,10 @@ public class KafkaEventPublisherTest {
         .withTenant(tenant)
         .withToken(TOKEN)
         .withContext(new HashMap<>() {{
-          put("recordId", UUID.randomUUID().toString());
-          put("chunkId", UUID.randomUUID().toString());
+          put(RECORD_ID_HEADER, expectedRecordId);
+          put(CHUNK_ID_HEADER, expectedChunkId);
+          put(PERMISSIONS_HEADER, expectedPermissionsHeader);
+          put(USER_ID_HEADER, expectedUserId);
         }});
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
@@ -76,6 +87,10 @@ public class KafkaEventPublisherTest {
       String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
       DataImportEventPayload actualPayload = Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
       assertEquals(eventPayload, actualPayload);
+      assertEquals(expectedPermissionsHeader, actualPayload.getContext().get(PERMISSIONS_HEADER));
+      assertEquals(expectedUserId, actualPayload.getContext().get(USER_ID_HEADER));
+      assertEquals(expectedRecordId, actualPayload.getContext().get(RECORD_ID_HEADER));
+      assertEquals(expectedChunkId, actualPayload.getContext().get(CHUNK_ID_HEADER));
 
       assertFalse(future.isCompletedExceptionally());
     }
