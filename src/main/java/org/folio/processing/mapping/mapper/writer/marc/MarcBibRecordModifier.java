@@ -49,6 +49,11 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
     this.linkingRules = linkingRules;
   }
 
+  public void setLinks(InstanceLinkDtoCollection links, List<LinkingRuleDto> linkingRules) {
+    bibAuthorityLinks = buildFullLinks(links.getLinks(), linkingRules);
+    this.linkingRules = linkingRules;
+  }
+
   @Override
   protected void addNewUpdatedField(DataField fieldReplacement) {
     if (containsBibTag(linkingRules, fieldReplacement.getTag()) && getLink(fieldReplacement).isEmpty()) {
