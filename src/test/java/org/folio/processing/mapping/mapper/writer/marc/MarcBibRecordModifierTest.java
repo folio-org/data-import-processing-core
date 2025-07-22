@@ -604,6 +604,31 @@ public class MarcBibRecordModifierTest extends MarcRecordModifierTest {
     testMarcUpdating(incomingParsedContent, expectedParsedContent, constructMarcFieldProtectionSettings("100", false), constructMarcFieldProtectionSettings("100", true), 1);
   }
 
+  @Test
+  public void shouldNotRemoveLinkedSubfield9OnUpdateRecord() {
+    // given
+    var incomingParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"}],\"ind1\": \" \",\"ind2\":\" \"}}," +
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var expectedParsedContent = "{\"leader\":\"00150nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}," +
+      "{\"100\":{\"subfields\":[{\"a\":\"electronic\"},{\"0\":\"test0\"},{\"9\":\"bdbf59b7-913b-42ac-b1c6-e50ae7b00e6a\"}],\"ind1\":\" \",\"ind2\":\" \"}}," +
+      "{\"110\":{\"subfields\":[{\"b\":\"book updated\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var linkedTag = "100";
+    var links = constructLinkCollection(linkedTag);
+    var linkingRules = constructLinkingRules(linkedTag);
+    var incomingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(incomingParsedContent));
+    var existingRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(expectedParsedContent));
+
+    //when
+    marcBibRecordModifier.setLinks(links, linkingRules);
+    var updatedContent = marcBibRecordModifier.updateRecord(incomingRecord, existingRecord, emptyList());
+    //then
+    Assert.assertEquals(expectedParsedContent, updatedContent);
+    Assert.assertEquals(1, marcBibRecordModifier.getBibAuthorityLinksKept().size());
+  }
+
   //negative tests
   @Test
   public void shouldThrowExceptionWhenInvalidEntityType() throws IOException {
