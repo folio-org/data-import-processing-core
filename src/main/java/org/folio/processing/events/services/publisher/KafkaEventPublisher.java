@@ -33,6 +33,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
   public static final String RECORD_ID_HEADER = "recordId";
   public static final String CHUNK_ID_HEADER = "chunkId";
+  static final String PERMISSIONS_HEADER = "X-Okapi-Permissions";
   private static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
 
   private static final AtomicLong indexer = new AtomicLong();
@@ -109,6 +110,8 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     List<KafkaHeader> headers = new ArrayList<>();
     Optional.ofNullable(eventPayload.getToken())
       .ifPresent(token -> headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, token)));
+    Optional.ofNullable(eventPayload.getContext().get(PERMISSIONS_HEADER))
+      .ifPresent(permissions -> headers.add(KafkaHeader.header(PERMISSIONS_HEADER, permissions)));
     Optional.ofNullable(eventPayload.getContext())
       .map(it -> it.get(USER_ID_HEADER))
       .ifPresent(userId -> headers.add(KafkaHeader.header(USER_ID_HEADER, userId)));

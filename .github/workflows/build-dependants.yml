@@ -36,9 +36,13 @@ jobs:
           retention-days: 1
   mod-inventory:
     needs: data-import-processing-core
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      matrix:
+        runner:
+          - 'ubuntu-latest'
+          - 'ubuntu-24.04-arm'
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 5
     steps:
       - uses: actions/setup-java@v4

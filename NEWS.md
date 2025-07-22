@@ -1,3 +1,7 @@
+## 2025-mm-dd v4.5.0-SNAPSHOT
+* [MODSOURCE-919](https://folio-org.atlassian.net/browse/MODSOURCE-919) Fill in permissions header during event sending to Kafka
+* [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier
+
 ## 2025-03-07 v4.4.0
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
 * [MODDICORE-432](https://folio-org.atlassian.net/browse/MODDICORE-432) Vendor details are empty with code that contains brackets during order creation
