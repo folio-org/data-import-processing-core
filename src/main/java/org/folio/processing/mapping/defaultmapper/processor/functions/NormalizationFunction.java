@@ -260,7 +260,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return StringUtils.EMPTY;
       }
       return instanceFormats.stream()
-        .filter(instanceFormat -> instanceFormat.getCode().equalsIgnoreCase(context.getSubFieldValue()))
+        .filter(instanceFormat -> instanceFormat.getCode().equalsIgnoreCase(getLastSubfieldValue(context.getSubFieldValue())))
         .findFirst()
         .map(InstanceFormat::getId)
         .orElse(StringUtils.EMPTY);
@@ -439,10 +439,6 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .findFirst();
     }
 
-    private String getLastSubfieldValue(String concatenatedSubfieldsData) {
-      String[] subfields = concatenatedSubfieldsData.split("~");
-      return subfields[subfields.length - 1];
-    }
   },
 
   SET_ELECTRONIC_ACCESS_RELATIONS_ID() {
@@ -770,6 +766,11 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       }
     }
     return IssuanceModeEnum.UNSPECIFIED;
+  }
+
+  protected String getLastSubfieldValue(String concatenatedSubfieldsData) {
+    String[] subfields = concatenatedSubfieldsData.split("~");
+    return subfields[subfields.length - 1];
   }
 
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";

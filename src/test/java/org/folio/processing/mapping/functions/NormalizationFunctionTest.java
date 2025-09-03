@@ -499,6 +499,22 @@ public class NormalizationFunctionTest {
   }
 
   @Test
+  public void SET_INSTANCE_FORMAT_ID_shouldReturnExpectedResultIfCodeInSubfieldA() {
+    // given
+    String expectedInstanceFormatId = UUID.randomUUID().toString();
+    InstanceFormat instanceFormat = new InstanceFormat()
+      .withId(expectedInstanceFormatId)
+      .withCode("nc");
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setSubFieldValue("smth~nc");
+    context.setMappingParameters(new MappingParameters().withInstanceFormats(Collections.singletonList(instanceFormat)));
+    // when
+    String actualTypeId = runFunction("set_instance_format_id", context);
+    // then
+    assertEquals(expectedInstanceFormatId, actualTypeId);
+  }
+
+  @Test
   public void SET_INSTANCE_FORMAT_ID_shouldReturnEmptyStringIfNoSettingsSpecified() {
     // given
     InstanceFormat instanceFormat = new InstanceFormat()

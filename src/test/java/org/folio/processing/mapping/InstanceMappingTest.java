@@ -32,6 +32,7 @@ import org.folio.Identifier;
 import org.folio.IdentifierType;
 import org.folio.Instance;
 import org.folio.InstanceDateType;
+import org.folio.InstanceFormat;
 import org.folio.InstanceType;
 import org.folio.IssuanceMode;
 import org.folio.Subject;
@@ -86,6 +87,8 @@ public class InstanceMappingTest {
   private static final String DEFAULT_SUBJECT_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/subjectTypes.json";
   private static final String DEFAULT_INSTANCE_DATE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instanceDateTypes.json";
 
+  private static final String BIB_WITH_FORMAT_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/338_subfields_mapping.mrc";
+  private static final String DEFAULT_INSTANCE_FORMAT_IDENTIFIERS = "src/test/resources/org/folio/processing/mapping/instance/formatIdentifiers.json";
 
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
   private static final String TXT_INSTANCE_TYPE_ID = "6312d172-f0cf-40f6-b27d-9fa8feaf332f";
@@ -462,6 +465,48 @@ public class InstanceMappingTest {
     assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(1).getInstanceTypeId());
     assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(2).getInstanceTypeId());
     assertEquals(UNSPECIFIED_INSTANCE_TYPE_ID, mappedInstances.get(3).getInstanceTypeId());
+  }
+
+  @Test
+  public void testMarcToInstanceFormatIdMapping() throws IOException {
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FORMAT_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8))
+    );
+    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    String rawInstanceFormatTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_FORMAT_IDENTIFIERS);
+    List<InstanceFormat> instanceFormats = List.of(new ObjectMapper().readValue(rawInstanceFormatTypes, InstanceFormat[].class));
+
+    String expectedFirstFormatId = "2e48e713-17f3-4c13-a9f8-23845bb210a4";
+
+    List<String> expectedMultipleFormatIds = List.of(
+      "2e48e713-17f3-4c13-a9f8-23845bb210a4",
+      "e8b311a6-3b21-43f2-a269-dd9310cb2d0e",
+      "2b94c631-fca9-4892-a730-03ee529ffe27"
+    );
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    List<Instance> mappedInstances = new ArrayList<>();
+    while (reader.hasNext()) {
+      ByteArrayOutputStream os = new ByteArrayOutputStream();
+      MarcJsonWriter writer = new MarcJsonWriter(os);
+      Record record = reader.next();
+      writer.write(record);
+      JsonObject marc = new JsonObject(os.toString());
+      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceFormats(instanceFormats), mappingRules);
+      mappedInstances.add(instance);
+      Validator validator = factory.getValidator();
+      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+      assertTrue(violations.isEmpty());
+    }
+    assertFalse(mappedInstances.isEmpty());
+    assertEquals(5, mappedInstances.size());
+
+    mappedInstances.forEach(mappedInstance -> {
+      assertNotNull(mappedInstance.getInstanceFormatIds());
+      assertEquals(expectedFirstFormatId, mappedInstance.getInstanceFormatIds().get(0));
+    });
+
+    assertEquals(expectedMultipleFormatIds, mappedInstances.get(4).getInstanceFormatIds());
   }
 
   @Test
