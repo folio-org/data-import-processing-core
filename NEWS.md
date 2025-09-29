@@ -1,3 +1,6 @@
+## 2025-09-29 v4.4.4
+* [MODDICORE-457] (https://folio-org.atlassian.net/browse/MODDICORE-457) Use index-friendly CQL for identifier matching
+
 ## 2025-05-06 v4.4.3
 * [MODDICORE-455](https://folio-org.atlassian.net/browse/MODDICORE-455) Disable dependency reduced pom in maven-shade-plugin
 
