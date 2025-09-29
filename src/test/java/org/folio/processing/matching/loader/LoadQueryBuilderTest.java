@@ -70,6 +70,8 @@ public class LoadQueryBuilderTest {
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
       .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
       .withExistingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
         .withFields(Arrays.asList(
@@ -80,11 +82,9 @@ public class LoadQueryBuilderTest {
     LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
     //then
     assertNotNull(result);
-    assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) WHERE field ->> 'value' = 'ybp7406411' AND  field ->> 'identifierTypeId' = '439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    assertEquals(StringUtils.EMPTY, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("identifiers=\"\\\"identifierTypeId\\\":\\\"439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef\\\"\" AND (identifiers=\"\\\"value\\\":\\\"ybp7406411\\\"\")", value.getValue());
+    String expectedCQLQuery = "identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp7406411\"";
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -94,6 +94,8 @@ public class LoadQueryBuilderTest {
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "ybp74064123"));
     MatchDetail matchDetail = new MatchDetail()
       .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
       .withExistingMatchExpression(new MatchExpression()
         .withDataValueType(VALUE_FROM_RECORD)
         .withFields(Arrays.asList(
@@ -104,11 +106,9 @@ public class LoadQueryBuilderTest {
     LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
     //then
     assertNotNull(result);
-    assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) WHERE (field ->> 'value' = 'ybp7406411' OR field ->> 'value' = 'ybp74064123') AND  field ->> 'identifierTypeId' = '439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    assertEquals(StringUtils.EMPTY, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("identifiers=\"\\\"identifierTypeId\\\":\\\"439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef\\\"\" AND (identifiers=\"\\\"value\\\":\\\"ybp7406411\\\"\" OR identifiers=\"\\\"value\\\":\\\"ybp74064123\\\"\")", value.getValue());
+    String expectedCQLQuery = "identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp7406411\" OR identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp74064123\"";
     assertEquals(expectedCQLQuery, result.getCql());
   }
 
@@ -490,7 +490,7 @@ public class LoadQueryBuilderTest {
   @Test
   public void shouldReturnNullIfPassedNullValue() {
     // given
-    Value value = null;
+    Value<?> value = null;
     MatchDetail matchDetail = new MatchDetail()
       .withMatchCriterion(EXACTLY_MATCHES)
       .withExistingMatchExpression(new MatchExpression()
@@ -507,7 +507,7 @@ public class LoadQueryBuilderTest {
   @Test
   public void shouldReturnNullIfPassedMissingValue() {
     // given
-    Value value = MissingValue.getInstance();
+    Value<?> value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
       .withMatchCriterion(EXACTLY_MATCHES)
       .withExistingMatchExpression(new MatchExpression()
@@ -524,7 +524,7 @@ public class LoadQueryBuilderTest {
   @Test
   public void shouldReturnNullIfMatchingByExistingStaticValue() {
     // given
-    Value value = MissingValue.getInstance();
+    Value<?> value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
       .withMatchCriterion(EXACTLY_MATCHES)
       .withExistingMatchExpression(new MatchExpression()
@@ -691,8 +691,296 @@ public class LoadQueryBuilderTest {
     assertNotEquals(expectedSQLQuery, wrongResult.getSql());
     assertNotNull(result.getCql());
     assertNotNull(wrongResult.getCql());
-    String expectedCQLQuery = format("identifiers =/@value/@identifierTypeId=\"%s\" \"%s\"",identifierTypeFieldValue, value.getValue());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"%s\"",identifierTypeFieldValue, value.getValue());
     assertEquals(expectedCQLQuery, result.getCql());
     assertNotEquals(expectedCQLQuery, wrongResult.getCql());
   }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithParenthesesInValue() {
+    // given
+    StringValue value = StringValue.of("(OCoLC)1024095011");
+    String identifierTypeFieldValue = "7e591197-f335-4afb-bc6d-a6d76ca3bace";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)1024095011\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithQuotesInValue() {
+    // given
+    StringValue value = StringValue.of("test\"quote\"value");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"test\\\"quote\\\"value\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithBackslashesInValue() {
+    // given
+    StringValue value = StringValue.of("path\\to\\resource");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"path\\\\to\\\\resource\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithWildcardsInValue() {
+    // given
+    StringValue value = StringValue.of("test*value?");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"test\\*value\\?\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithMultipleSpecialCharacters() {
+    // given
+    StringValue value = StringValue.of("(test*)\\query?");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(test\\*\\)\\\\query\\?\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_ListWithSpecialCharacters() {
+    // given
+    ListValue value = ListValue.of(Arrays.asList("(OCoLC)123", "test*value", "path\\file"));
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)123\" OR identifiers =/@identifierTypeId=%s \"test\\*value\" OR identifiers =/@identifierTypeId=%s \"path\\\\file\"", identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithApostropheInValue() {
+    // given
+    StringValue value = StringValue.of("O'Reilly's Book");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    // Apostrophes don't need escaping in CQL
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"O'Reilly's Book\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_EmptyValue() {
+    // given
+    StringValue value = StringValue.of("");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_PreEscapedValue() {
+    // given
+    StringValue value = StringValue.of("already\\\\escaped");
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    // Should double-escape the already escaped backslashes
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"already\\\\\\\\escaped\"", identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_RealWorldExampleFromProblem() {
+    // Test the exact values from problem.md
+    ListValue value = ListValue.of(Arrays.asList(
+      "(CStRLIN)NYCX1604275S",
+      "(NIC)notisABP6388",
+      "366832",
+      "(OCoLC)1604275"
+    ));
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXACTLY_MATCHES)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+    //when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(CStRLIN\\)NYCX1604275S\" OR identifiers =/@identifierTypeId=%s \"\\(NIC\\)notisABP6388\" OR identifiers =/@identifierTypeId=%s \"366832\" OR identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)1604275\"", identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
+  @Test
+  public void shouldBuildQueryWhere_IdentifierMatching_WithListValue_ContainsCriterion() {
+    // given
+    ListValue value = ListValue.of(Arrays.asList(
+      "(OCoLC)1349275037",
+      "9924655804502931",
+      "in00022912564"
+    ));
+    String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
+    MatchDetail matchDetail = new MatchDetail()
+      .withMatchCriterion(EXISTING_VALUE_CONTAINS_INCOMING_VALUE)
+      .withIncomingRecordType(EntityType.MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(EntityType.INSTANCE)
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("035"),
+          new Field().withLabel("indicator1").withValue(""),
+          new Field().withLabel("indicator2").withValue(""),
+          new Field().withLabel("recordSubfield").withValue("a"))
+        ))
+      .withExistingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("instance.identifiers[].value"),
+          new Field().withLabel("identifierTypeId").withValue(identifierTypeFieldValue))
+        ));
+
+    // when
+    LoadQuery result = LoadQueryBuilder.build(value, matchDetail);
+
+    // then
+    assertNotNull(result);
+    assertEquals(StringUtils.EMPTY, result.getSql());
+    // For EXISTING_VALUE_CONTAINS_INCOMING_VALUE with identifiers, the CQL should use wildcard matching
+    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"*\\(OCoLC\\)1349275037*\" OR identifiers =/@identifierTypeId=%s \"*9924655804502931*\" OR identifiers =/@identifierTypeId=%s \"*in00022912564*\"",
+      identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
+    assertEquals(expectedCQLQuery, result.getCql());
+  }
+
 }
