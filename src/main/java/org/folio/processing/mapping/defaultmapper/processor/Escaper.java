@@ -34,11 +34,6 @@ public class Escaper {
         slash = true;
         isEven = true;
         token.append(t);
-      } else if (slash && !isEven && t != '\\') {
-        // we've hit a non \ after a single \, this needs to get encoded to be \\
-        token.append('\\').append(t);
-        isEven = false;
-        slash = false;
       } else if (!slash && t == '\\') {
         // we've hit a \
         token.append(t);

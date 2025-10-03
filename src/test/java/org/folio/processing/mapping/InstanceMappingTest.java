@@ -318,7 +318,7 @@ public class InstanceMappingTest {
       assertTrue(instance.getNotes().get(2).getStaffOnly());
       assertEquals("Testing Rare copy 3: Gift of David Pescovitz and Timothy Daly. 123", instance.getNotes().get(3).getNote());
       assertFalse(instance.getNotes().get(3).getStaffOnly());
-      assertEquals("Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\\\6\\\\1973", instance.getNotes().get(4).getNote());
+      assertEquals("Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\6\\1973", instance.getNotes().get(4).getNote());
       assertFalse(instance.getNotes().get(4).getStaffOnly());
       assertEquals("The note should be marked as stuffOnly", instance.getNotes().get(5).getNote());
       assertTrue(instance.getNotes().get(5).getStaffOnly());
