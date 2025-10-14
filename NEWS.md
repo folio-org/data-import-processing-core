@@ -1,3 +1,6 @@
+## 2025-10-09 v4.4.5
+* [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier
+
 ## 2025-09-29 v4.4.4
 * [MODDICORE-457] (https://folio-org.atlassian.net/browse/MODDICORE-457) Use index-friendly CQL for identifier matching
 
