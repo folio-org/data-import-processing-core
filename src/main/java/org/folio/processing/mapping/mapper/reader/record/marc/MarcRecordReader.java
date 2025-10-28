@@ -360,9 +360,9 @@ public class MarcRecordReader implements Reader {
       DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
       String tenantConfigurationZone = this.mappingParameters.getTenantConfigurationZone();
       String tenantTimezone = (isEmpty(tenantConfigurationZone)) ? UTC_TIMEZONE : tenantConfigurationZone;
-      ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
-      sb.append(isoFormatter.format(utcZonedDateTime));
-      multipleStringBuilder.append(isoFormatter.format(utcZonedDateTime));
+      ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
+      sb.append(isoFormatter.format(zonedDateTime));
+      multipleStringBuilder.append(isoFormatter.format(zonedDateTime));
     } catch (Exception e) {
       LOGGER.warn("processTodayExpression:: Can not process ##TODAY## expression", e);
       throw new IllegalArgumentException("Can not process ##TODAY## expression", e);
