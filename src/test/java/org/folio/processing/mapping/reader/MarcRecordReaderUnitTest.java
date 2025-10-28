@@ -1,5 +1,6 @@
 package org.folio.processing.mapping.reader;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
@@ -833,7 +834,7 @@ public class MarcRecordReaderUnitTest {
     MappingContext mappingContext = new MappingContext();
     mappingContext.setMappingParameters(new MappingParameters()
       .withInitializedState(true)
-      .withTenantConfigurationZone("{\"locale\":\"en-US\",\"timezone\":\"Pacific/Kiritimati\",\"currency\":\"USD\"}"));
+      .withTenantConfigurationZone("Pacific/Kiritimati"));
 
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -864,7 +865,7 @@ public class MarcRecordReaderUnitTest {
     eventPayload.setContext(context);
 
     MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
-      .withTenantConfigurationZone("{\"locale\":\"en-US\",\"timezone\":\"asdas/sadas\",\"currency\":\"USD\"}")
+      .withTenantConfigurationZone("asdas/sadas")
       .withInitializedState(true));
 
     Reader reader = new MarcBibReaderFactory().createReader();

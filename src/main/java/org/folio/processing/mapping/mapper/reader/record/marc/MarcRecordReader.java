@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.folio.processing.mapping.mapper.util.AcceptedValuesUtil.getAcceptedValues;
@@ -79,7 +80,6 @@ public class MarcRecordReader implements Reader {
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
   public static final String[] DATE_FORMATS = new String[]{ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
   private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
-  private static final String TIMEZONE_PROPERTY = "timezone";
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
   private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider","relationshipId", "donorOrganizationIds");
@@ -359,12 +359,7 @@ public class MarcRecordReader implements Reader {
     try {
       DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern(ISO_DATE_FORMAT);
       String tenantConfigurationZone = this.mappingParameters.getTenantConfigurationZone();
-      String tenantTimezone;
-      if (isTimezoneParameterIsEmpty(tenantConfigurationZone)) {
-        tenantTimezone = UTC_TIMEZONE; // default if timezone configuration is empty.
-      } else {
-        tenantTimezone = new JsonObject(tenantConfigurationZone).getString(TIMEZONE_PROPERTY);
-      }
+      String tenantTimezone = (isEmpty(tenantConfigurationZone)) ? UTC_TIMEZONE : tenantConfigurationZone;
       ZonedDateTime utcZonedDateTime = ZonedDateTime.now(ZoneId.of(tenantTimezone));
       sb.append(isoFormatter.format(utcZonedDateTime));
       multipleStringBuilder.append(isoFormatter.format(utcZonedDateTime));
@@ -372,12 +367,6 @@ public class MarcRecordReader implements Reader {
       LOGGER.warn("processTodayExpression:: Can not process ##TODAY## expression", e);
       throw new IllegalArgumentException("Can not process ##TODAY## expression", e);
     }
-  }
-
-  private boolean isTimezoneParameterIsEmpty(String tenantConfiguration) {
-    return tenantConfiguration == null || tenantConfiguration.isBlank()
-      || new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY) == null
-      || new JsonObject(tenantConfiguration).getString(TIMEZONE_PROPERTY).isBlank();
   }
 
   private Value readRepeatableField(MappingRule ruleExpression) {
