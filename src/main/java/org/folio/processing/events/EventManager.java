@@ -225,21 +225,47 @@ public final class EventManager {
    *
    * @param kafkaConfig - object with kafka initial params
    * @param vertx       - vertx instance
+   * @param maxDistributionNum - maximum number of distribution
    */
   public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
     LOGGER.trace("registerKafkaEventPublisher:: Registering kafka event publisher");
+    cleanupAndRegisterPublisher(new KafkaEventPublisher(kafkaConfig, vertx, maxDistributionNum));
+  }
+
+  /**
+   * Performs registration for a custom kafka event publisher instance in publishers list.
+   * This allows you to provide your own implementation of KafkaEventPublisher.
+   *
+   * @param customPublisher - custom kafka event publisher instance
+   */
+  public static void registerCustomKafkaEventPublisher(EventPublisher customPublisher) {
+    LOGGER.trace("registerCustomKafkaEventPublisher:: Registering custom kafka event publisher: {}",
+        customPublisher.getClass().getName());
+    cleanupAndRegisterPublisher(customPublisher);
+  }
+
+  /**
+   * Helper method to cleanup existing publishers and register a new one
+   *
+   * @param publisher - event publisher to register
+   */
+  private static void cleanupAndRegisterPublisher(EventPublisher publisher) {
+    LOGGER.trace("cleanupAndRegisterPublisher:: Cleaning up and registering publisher: {}",
+        publisher.getClass().getName());
     eventPublisher.forEach(p -> {
-      LOGGER.info("registerKafkaEventPublisher {}", p.toString());
-      if(p instanceof KafkaEventPublisher publisher) {
+      LOGGER.info("cleanupAndRegisterPublisher:: Closing existing publisher: {}", p.getClass().getName());
+      if(p instanceof KafkaEventPublisher kafkaPublisher) {
         try {
-          publisher.close();
+          kafkaPublisher.close();
         } catch (Exception e) {
-          LOGGER.error(e.getMessage(), e);
+          LOGGER.error("cleanupAndRegisterPublisher:: Error closing publisher", e);
         }
       }
     });
     eventPublisher.clear();
-    eventPublisher.add(new KafkaEventPublisher(kafkaConfig, vertx, maxDistributionNum));
+    eventPublisher.add(publisher);
+    LOGGER.info("cleanupAndRegisterPublisher:: Successfully registered publisher: {}",
+        publisher.getClass().getName());
   }
 
   /**

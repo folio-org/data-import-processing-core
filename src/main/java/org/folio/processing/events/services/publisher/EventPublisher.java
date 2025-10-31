@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Event publisher
  */
+@FunctionalInterface
 public interface EventPublisher {
 
   /**
