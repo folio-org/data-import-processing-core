@@ -96,8 +96,7 @@ public class LoadQueryBuilder {
 
   private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath, String additionalFieldPath) {
     return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
-      (matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES ||
-       matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE) &&
+      matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES &&
       fieldPath.equals(IDENTIFIER_TYPE_VALUE) && additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
   }
 
@@ -112,17 +111,11 @@ public class LoadQueryBuilder {
   private static String buildIdentifierCqlQuery(Value<?> value, String identifierTypeId, MatchDetail.MatchCriterion matchCriterion) {
     if (value.getType() == STRING) {
       String escapedValue = escapeCqlValue(value.getValue().toString());
-      if (matchCriterion == MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE) {
-        escapedValue = "*" + escapedValue + "*";
-      }
       return String.format(IDENTIFIER_INDIVIDUAL_CQL_QUERY, identifierTypeId, escapedValue);
     } else if (value.getType() == LIST) {
       List<String> conditions = new ArrayList<>();
       for (Object val : ((org.folio.processing.value.ListValue) value).getValue()) {
         String escapedValue = escapeCqlValue(val.toString());
-        if (matchCriterion == MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE) {
-          escapedValue = "*" + escapedValue + "*";
-        }
         conditions.add(String.format(IDENTIFIER_INDIVIDUAL_CQL_QUERY, identifierTypeId, escapedValue));
       }
       return String.join(" OR ", conditions);
