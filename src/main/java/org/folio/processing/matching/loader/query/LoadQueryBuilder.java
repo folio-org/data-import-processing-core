@@ -77,7 +77,7 @@ public class LoadQueryBuilder {
             mainQuery.applyAdditionalCondition(additionalQuery);
             // TODO provide all the requirements for MODDATAIMP-592 and refactor code block below
             if(checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
-              String cqlQuery = buildIdentifierCqlQuery(value, additionalField.getValue(), matchDetail.getMatchCriterion());
+              String cqlQuery = buildIdentifierCqlQuery(value, additionalField.getValue());
               mainQuery.setCqlQuery(cqlQuery);
               mainQuery.setSqlQuery(StringUtils.EMPTY);
             } else {
@@ -96,8 +96,7 @@ public class LoadQueryBuilder {
 
   private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath, String additionalFieldPath) {
     return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
-      (matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES ||
-       matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE) &&
+      matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES &&
       fieldPath.equals(IDENTIFIER_TYPE_VALUE) && additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
   }
 
@@ -106,23 +105,16 @@ public class LoadQueryBuilder {
    *
    * @param value          the value to match against (can be STRING or LIST)
    * @param identifierTypeId the identifier type ID
-   * @param matchCriterion the match criterion to determine if wildcards should be applied
    * @return CQL query string with individual AND conditions
    */
-  private static String buildIdentifierCqlQuery(Value<?> value, String identifierTypeId, MatchDetail.MatchCriterion matchCriterion) {
+  private static String buildIdentifierCqlQuery(Value<?> value, String identifierTypeId) {
     if (value.getType() == STRING) {
       String escapedValue = escapeCqlValue(value.getValue().toString());
-      if (matchCriterion == MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE) {
-        escapedValue = "*" + escapedValue + "*";
-      }
       return String.format(IDENTIFIER_INDIVIDUAL_CQL_QUERY, identifierTypeId, escapedValue);
     } else if (value.getType() == LIST) {
       List<String> conditions = new ArrayList<>();
       for (Object val : ((org.folio.processing.value.ListValue) value).getValue()) {
         String escapedValue = escapeCqlValue(val.toString());
-        if (matchCriterion == MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE) {
-          escapedValue = "*" + escapedValue + "*";
-        }
         conditions.add(String.format(IDENTIFIER_INDIVIDUAL_CQL_QUERY, identifierTypeId, escapedValue));
       }
       return String.join(" OR ", conditions);
