@@ -1,3 +1,6 @@
+## 2025-11-13 v4.4.6
+* [MODDICORE-473](https://folio-org.atlassian.net/browse/MODDICORE-473) Allow identifier matching only by Exactly Match
+
 ## 2025-10-09 v4.4.5
 * [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier
 
