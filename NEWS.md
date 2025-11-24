@@ -1,3 +1,6 @@
+## 2025-11-24 v4.4.7
+* [MODINV-1307)](https://folio-org.atlassian.net/browse/MODINV-1307) Add sourceUri field to Instance
+
 ## 2025-11-13 v4.4.6
 * [MODDICORE-473](https://folio-org.atlassian.net/browse/MODDICORE-473) Allow identifier matching only by Exactly Match
 
