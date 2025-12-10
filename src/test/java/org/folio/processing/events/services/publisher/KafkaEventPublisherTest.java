@@ -29,6 +29,7 @@ import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.CHUNK_ID_HEADER;
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.PERMISSIONS_HEADER;
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.RECORD_ID_HEADER;
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_REQUEST_ID_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.USER_ID_HEADER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -69,6 +70,7 @@ public class KafkaEventPublisherTest {
     String expectedUserId = UUID.randomUUID().toString();
     String expectedRecordId = UUID.randomUUID().toString();
     String expectedChunkId = UUID.randomUUID().toString();
+    String expectedRequestId = UUID.randomUUID().toString();
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
@@ -80,6 +82,7 @@ public class KafkaEventPublisherTest {
           put(CHUNK_ID_HEADER, expectedChunkId);
           put(PERMISSIONS_HEADER, expectedPermissionsHeader);
           put(USER_ID_HEADER, expectedUserId);
+          put(OKAPI_REQUEST_ID_HEADER, expectedRequestId);
         }});
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
@@ -91,6 +94,7 @@ public class KafkaEventPublisherTest {
       assertEquals(expectedUserId, actualPayload.getContext().get(USER_ID_HEADER));
       assertEquals(expectedRecordId, actualPayload.getContext().get(RECORD_ID_HEADER));
       assertEquals(expectedChunkId, actualPayload.getContext().get(CHUNK_ID_HEADER));
+      assertEquals(expectedRequestId, actualPayload.getContext().get(OKAPI_REQUEST_ID_HEADER));
 
       assertFalse(future.isCompletedExceptionally());
     }
