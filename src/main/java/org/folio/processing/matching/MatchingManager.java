@@ -1,5 +1,6 @@
 package org.folio.processing.matching;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 
 import java.util.Map;
@@ -36,7 +37,8 @@ public final class MatchingManager {
     CompletableFuture<Boolean> future = new CompletableFuture<>();
     try {
       if (eventPayload.getCurrentNode().getContentType() != MATCH_PROFILE) {
-        LOGGER.info("match:: Current node is not of {} content type", MATCH_PROFILE);
+        LOGGER.info("match:: Current node is not of {} content type jobExecutionId: {} recordId: {}",
+          MATCH_PROFILE, eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
         future.complete(false);
         return future;
       }
@@ -53,7 +55,8 @@ public final class MatchingManager {
 
       return matcher.match(eventPayload);
     } catch (Exception e) {
-      LOGGER.warn("match:: Failed to perform matching", e);
+      LOGGER.warn("match:: Failed to perform matching jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
       future.completeExceptionally(new MatchingException(e));
     }
     return future;

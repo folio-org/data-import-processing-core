@@ -31,6 +31,7 @@ import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.DataImportEventTypes.DI_ERROR;
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
@@ -67,7 +68,9 @@ public final class EventManager {
    * @return future with event payload after handling
    */
   public static CompletableFuture<DataImportEventPayload> handleEvent(DataImportEventPayload eventPayload, ProfileSnapshotWrapper jobProfileSnapshot) {
-    LOGGER.trace("handleEvent:: Event type: {}, event payload: {}", eventPayload.getEventType(), eventPayload);
+    LOGGER.trace("handleEvent:: Event type: {} jobExecutionId: {} recordId: {}, event payload: {}",
+      eventPayload.getEventType(), eventPayload.getJobExecutionId(),
+      extractRecordId(eventPayload), eventPayload);
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       setCurrentNodeIfRoot(eventPayload, jobProfileSnapshot);
@@ -78,12 +81,14 @@ public final class EventManager {
               if (publishThrowable == null) {
                 future.complete(eventPayload);
               } else {
-                LOGGER.warn("handleEvent:: Can`t publish event", publishThrowable);
+                LOGGER.warn("handleEvent:: Can`t publish event jobExecutionId: {} recordId: {}",
+                  eventPayload.getJobExecutionId(), extractRecordId(eventPayload), publishThrowable);
                 future.completeExceptionally(publishThrowable);
               }
             }));
     } catch (Exception e) {
-      LOGGER.warn("handleEvent:: Can`t handle event", e);
+      LOGGER.warn("handleEvent:: Can`t handle event jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
       future.completeExceptionally(e);
     }
     return future;

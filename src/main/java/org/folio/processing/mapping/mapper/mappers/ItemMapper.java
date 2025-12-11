@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
 import static org.folio.rest.jaxrs.model.EntityType.ITEM;
 
@@ -40,7 +41,8 @@ public class ItemMapper implements Mapper {
       }
       return executeMultipleItemsLogic(eventPayload, profile, mappingContext);
     } catch (IOException e) {
-      LOGGER.warn("map:: Failed to perform Items mapping", e);
+      LOGGER.warn("map:: Failed to perform Items mapping jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
       throw new MappingException(e);
     }
   }

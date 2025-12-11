@@ -16,6 +16,7 @@ import static org.folio.DataImportEventTypes.DI_SRS_MARC_AUTHORITY_RECORD_CREATE
 import static org.folio.processing.events.EventManager.OL_ACCUMULATIVE_RESULTS;
 import static org.folio.processing.events.EventManager.POST_PROCESSING_INDICATOR;
 import static org.folio.processing.events.EventManager.POST_PROCESSING_RESULT_EVENT_KEY;
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 
 public class EventProcessorImpl implements EventProcessor {
 
@@ -25,7 +26,8 @@ public class EventProcessorImpl implements EventProcessor {
 
   @Override
   public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
-    LOG.debug("process:: Processing event payload {}", eventPayload);
+    LOG.debug("process:: Processing event payload jobExecutionId: {} recordId: {}",
+      eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
@@ -41,18 +43,22 @@ public class EventProcessorImpl implements EventProcessor {
           .whenComplete((payload, throwable) -> {
             logEventProcessingTime(eventType, startTime, eventPayload);
             if (throwable != null) {
-              LOG.warn("process:: Failed to process event payload", throwable);
+              LOG.warn("process:: Failed to process event payload jobExecutionId: {} recordId: {}",
+                eventPayload.getJobExecutionId(), extractRecordId(eventPayload), throwable);
               future.completeExceptionally(throwable);
             } else {
               future.complete(payload);
             }
           });
       } else {
-        LOG.info("process:: No suitable handler found for {} event type and current profile {}", eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType());
+        LOG.info("process:: No suitable handler found for {} event type and current profile {} jobExecutionId: {} recordId: {}",
+          eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType(),
+          eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
         future.completeExceptionally(new EventHandlerNotFoundException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
       }
     } catch (Exception e) {
-      LOG.warn("process:: Failed to process event payload", e);
+      LOG.warn("process:: Failed to process event payload jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
       future.completeExceptionally(e);
     }
     return future;
@@ -75,14 +81,17 @@ public class EventProcessorImpl implements EventProcessor {
       var endTime = System.nanoTime();
       final String lastEvent = getLastEvent(eventPayload);
       if (DI_SRS_MARC_AUTHORITY_RECORD_CREATED.value().equals(lastEvent)) {
-        LOG.debug("logEventProcessingTime:: Event '{}' has been processed for {} ms", lastEvent, (endTime - startTime) / 1000000L);
+        LOG.debug("logEventProcessingTime:: Event '{}' has been processed for {} ms jobExecutionId: {} recordId: {}",
+          lastEvent, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
       } else {
         String profileType = eventPayload.getCurrentNode().getContentType().toString();
         String profileId = eventPayload.getCurrentNode().getProfileId();
-        LOG.debug("logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' for {} ms", eventType, profileType, profileId, (endTime - startTime) / 1000000L);
+        LOG.debug("logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' for {} ms jobExecutionId: {} recordId: {}",
+          eventType, profileType, profileId, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
       }
     } catch (Exception e) {
-      LOG.warn("logEventProcessingTime:: An Exception occurred {}", e.getMessage());
+      LOG.warn("logEventProcessingTime:: An Exception occurred {} jobExecutionId: {} recordId: {}",
+        e.getMessage(), eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
     }
   }
 
