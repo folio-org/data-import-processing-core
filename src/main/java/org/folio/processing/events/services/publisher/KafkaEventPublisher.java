@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.folio.rest.util.OkapiConnectionParams.OKAPI_REQUEST_ID_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
 import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
@@ -115,6 +116,9 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     Optional.ofNullable(eventPayload.getContext())
       .map(it -> it.get(USER_ID_HEADER))
       .ifPresent(userId -> headers.add(KafkaHeader.header(USER_ID_HEADER, userId)));
+    Optional.ofNullable(eventPayload.getContext())
+      .map(it -> it.get(OKAPI_REQUEST_ID_HEADER))
+      .ifPresent(requestId -> headers.add(KafkaHeader.header(OKAPI_REQUEST_ID_HEADER, requestId)));
 
     headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
     headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));

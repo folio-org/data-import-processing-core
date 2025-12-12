@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.EXPRESSIONS_DIVIDER;
 import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
 
@@ -48,7 +49,8 @@ public class HoldingsMapper implements Mapper {
       }
       return executeMultipleHoldingsLogic(eventPayload, profile, mappingContext);
     } catch (IOException e) {
-      LOGGER.warn("map:: Failed to perform Holdings mapping", e);
+      LOGGER.warn("map:: Failed to perform Holdings mapping jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
       throw new MappingException(e);
     }
   }
