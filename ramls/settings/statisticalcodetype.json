@@ -21,6 +21,7 @@
       "readonly": true
     }
   },
+  "additionalProperties": true,
   "required": [
     "name",
     "source"

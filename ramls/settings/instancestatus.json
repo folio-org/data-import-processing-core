@@ -24,6 +24,7 @@
       "readonly": true
     }
   },
+  "additionalProperties": true,
   "required": [
     "code",
     "name",

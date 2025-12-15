@@ -61,7 +61,7 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "name",
     "accountNo",

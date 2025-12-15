@@ -54,6 +54,6 @@
       "readonly": true
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }
 

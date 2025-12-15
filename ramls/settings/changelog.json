@@ -13,7 +13,7 @@
       "format": "date-time"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "description",
     "timestamp"

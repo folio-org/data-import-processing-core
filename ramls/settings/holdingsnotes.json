@@ -3,7 +3,7 @@
   "description": "Note for holding record",
   "javaType": "org.folio.rest.jaxrs.model.HoldingsNotes",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
     "properties": {
       "holdingsNoteTypeId": {
         "type": "string",
