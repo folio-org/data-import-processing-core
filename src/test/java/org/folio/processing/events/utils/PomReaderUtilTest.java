@@ -50,7 +50,7 @@ class PomReaderUtilTest {
 
     pom.readIt(null, "META-INF/maven/io.vertx");  // force reading from Jar
     // first dependency in main pom
-    assertThat(pom.getModuleName(), is("vertx_parent"));
+    assertThat(pom.getModuleName(), is("vertx_core_aggregator"));
   }
 
   @Test
