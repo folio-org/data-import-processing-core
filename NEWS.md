@@ -1,3 +1,6 @@
+## 2025-12-15 v4.4.8
+* [MODDICORE-486](https://folio-org.atlassian.net/browse/MODDICORE-486) Fix deserialization error for location entity
+
 ## 2025-11-24 v4.4.7
 * [MODINV-1307)](https://folio-org.atlassian.net/browse/MODINV-1307) Add sourceUri field to Instance
 
