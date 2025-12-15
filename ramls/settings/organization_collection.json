@@ -17,7 +17,7 @@
       "type": "integer"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "organizations",
     "totalRecords"
