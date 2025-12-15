@@ -15,6 +15,8 @@ import org.folio.rest.jaxrs.model.MappingRule;
 import java.io.IOException;
 import java.util.List;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
+
 public class AbstractMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(AbstractMapper.class);
 
@@ -42,7 +44,8 @@ public class AbstractMapper implements Mapper {
       }
       return writer.getResult(eventPayload);
     } catch (IOException e) {
-      LOGGER.warn("map:: Failed to perform Abstract mapping", e);
+      LOGGER.warn("map:: Failed to perform Abstract mapping jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
       throw new MappingException(e);
     }
   }
