@@ -1,3 +1,6 @@
+## 2025-12-dd v4.3.5
+* [MODDICORE-480](https://folio-org.atlassian.net/browse/MODDICORE-480) RMB Logging release - RMB 35.3.1, Vert.x 4.5.23
+
 ## 2025-01-17 v4.3.4
 * [MODDICORE-426](https://folio-org.atlassian.net/browse/MODDICORE-426) Extend Authority with saft* fields having custom mapping
 * [MODDICORE-436](https://folio-org.atlassian.net/browse/MODDICORE-436) Apply "--" subFieldDelimiter to Authority fields in Extended version
