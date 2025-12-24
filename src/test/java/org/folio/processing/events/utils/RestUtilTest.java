@@ -165,8 +165,7 @@ public class RestUtilTest extends AbstractRestTest {
     RestUtil.doRequest(params, "/pubsub/publish", HttpMethod.POST, mockItem)
       .onComplete(postPublishResult -> {
         testContext.assertTrue(postPublishResult.failed());
-        Throwable throwable = postPublishResult.cause();
-        testContext.assertTrue(throwable instanceof EncodeException);
+        testContext.assertTrue(postPublishResult.cause() instanceof EncodeException);
         async.complete();
       });
   }
