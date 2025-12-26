@@ -26,8 +26,8 @@ public class EventProcessorImpl implements EventProcessor {
 
   @Override
   public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
-    LOG.debug("process:: Processing event payload jobExecutionId: {} recordId: {}",
-      eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
+    LOG.debug("process:: Processing event payload, eventType: {} jobExecutionId: {} recordId: {}",
+      eventPayload.getEventType(), eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       Optional<EventHandler> optionalEventHandler = eventHandlers.stream()
@@ -90,8 +90,8 @@ public class EventProcessorImpl implements EventProcessor {
           eventType, profileType, profileId, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
       }
     } catch (Exception e) {
-      LOG.warn("logEventProcessingTime:: An Exception occurred {} jobExecutionId: {} recordId: {}",
-        e.getMessage(), eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
+      LOG.warn("logEventProcessingTime:: An Exception occurred, jobExecutionId: {} recordId: {}",
+        eventPayload.getJobExecutionId(), extractRecordId(eventPayload), e);
     }
   }
 

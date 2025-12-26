@@ -1,6 +1,5 @@
 package org.folio.processing.matching.matcher;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -51,7 +50,7 @@ public class HoldingsItemMatcher extends AbstractMatcher {
     JsonArray matchedEntities = new JsonArray();
     JsonArray errors = new JsonArray();
 
-    List<Future> multipleFutures = new ArrayList<>();
+    List<Future<Void>> multipleFutures = new ArrayList<>();
     values.forEach(v -> {
       Promise<Void> promise = Promise.promise();
       multipleFutures.add(promise.future());
@@ -66,16 +65,16 @@ public class HoldingsItemMatcher extends AbstractMatcher {
         });
     });
 
-    CompositeFuture.join(multipleFutures)
+    Future.join(multipleFutures)
       .onComplete(ar -> {
         String errorsAsStringJson = errors.encode();
-        if (matchedEntities.size() == 0 && errors.size() == values.size()) {
+        if (matchedEntities.isEmpty() && errors.size() == values.size()) {
           resultFuture.completeExceptionally(new MatchingException(errorsAsStringJson));
         } else {
           eventPayload.getContext().put(ERRORS, errorsAsStringJson);
           eventPayload.getContext().put(matchDetail.getExistingRecordType().value(), matchedEntities.encode());
           eventPayload.getContext().put(NOT_MATCHED_NUMBER, String.valueOf(values.size() - matchedEntities.size() - errors.size()));
-          resultFuture.complete(matchedEntities.size() > 0);
+          resultFuture.complete(!matchedEntities.isEmpty());
         }
       });
 
