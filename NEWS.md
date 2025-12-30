@@ -1,3 +1,6 @@
+## 2025-12-dd v4.4.9
+* [MODDICORE-482](https://folio-org.atlassian.net/browse/MODDICORE-482) Upgrade RMB v35.4.2 (verbose logging suppression), Vert.x v4.5.23 (CVE-2025-67735 Netty CRLF injection fix)
+
 ## 2025-12-15 v4.4.8
 * [MODDICORE-486](https://folio-org.atlassian.net/browse/MODDICORE-486) Fix deserialization error for location entity
 
