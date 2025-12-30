@@ -1,5 +1,5 @@
-## 2025-12-dd v4.3.5
-* [MODDICORE-480](https://folio-org.atlassian.net/browse/MODDICORE-480) RMB Logging release - RMB 35.3.1, Vert.x 4.5.23
+## 2025-12-30 v4.3.5
+* [MODDICORE-480](https://folio-org.atlassian.net/browse/MODDICORE-480) RMB Logging release - RMB 35.3.2, Vert.x 4.5.23 (fixing CVE-2025-67735 Netty CRLF)
 
 ## 2025-01-17 v4.3.4
 * [MODDICORE-426](https://folio-org.atlassian.net/browse/MODDICORE-426) Extend Authority with saft* fields having custom mapping
