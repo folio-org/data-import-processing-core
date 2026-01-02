@@ -1,6 +1,5 @@
 package org.folio.rest.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Handler;
@@ -9,6 +8,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
@@ -97,9 +97,10 @@ public final class RestUtil {
         }
       }
       if (method == HttpMethod.PUT || method == HttpMethod.POST) {
-        request.sendBuffer(Buffer.buffer(new ObjectMapper().writeValueAsString(payload)), handleResponse(promise));
+        request.sendBuffer(Buffer.buffer(Json.encode(payload)))
+          .onComplete(handleResponse(promise));
       } else {
-        request.send(handleResponse(promise));
+        request.send().onComplete(handleResponse(promise));
       }
       return promise.future();
     } catch (Exception e) {

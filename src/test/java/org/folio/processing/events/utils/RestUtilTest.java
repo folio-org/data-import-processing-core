@@ -1,9 +1,9 @@
 package org.folio.processing.events.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -155,22 +155,17 @@ public class RestUtilTest extends AbstractRestTest {
   }
 
   @Test
-  public void shouldReturnFailedFutureWhenJsonDoesntParse(TestContext testContext) throws IOException {
+  public void shouldReturnFailedFutureWhenJsonDoesntParse(TestContext testContext) {
     Async async = testContext.async();
     WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.forbidden()));
 
     Object mockItem = mock(Object.class);
     when(mockItem.toString()).thenReturn(mockItem.getClass().getName());
 
-    Promise<Event> promise = Promise.promise();
     RestUtil.doRequest(params, "/pubsub/publish", HttpMethod.POST, mockItem)
       .onComplete(postPublishResult -> {
-        if(postPublishResult.succeeded()) {
-          fail();
-        } else {
-          Throwable throwable = postPublishResult.cause();
-          Assert.assertTrue(throwable instanceof JsonProcessingException);
-        }
+        testContext.assertTrue(postPublishResult.failed());
+        testContext.assertTrue(postPublishResult.cause() instanceof EncodeException);
         async.complete();
       });
   }

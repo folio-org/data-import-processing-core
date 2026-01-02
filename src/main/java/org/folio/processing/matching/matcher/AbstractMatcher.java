@@ -44,11 +44,11 @@ public class AbstractMatcher implements Matcher {
     }
     // Only one matching detail is expected in first implementation,
     // in future matching will support multiple matching details combined in logic expressions
-    MatchDetail matchDetail = matchProfile.getMatchDetails().get(0);
+    MatchDetail matchDetail = matchProfile.getMatchDetails().getFirst();
 
     Value value = matchValueReader.read(eventPayload, matchDetail);
     if (value != null && value.getType().equals(Value.ValueType.STRING)) {
-      value = MatchIdProcessorUtil.retrieveIdFromContext(matchDetail.getExistingMatchExpression().getFields().get(0).getValue(),
+      value = MatchIdProcessorUtil.retrieveIdFromContext(matchDetail.getExistingMatchExpression().getFields().getFirst().getValue(),
         eventPayload, (StringValue) value);
     }
 
