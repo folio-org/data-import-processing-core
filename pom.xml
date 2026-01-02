@@ -24,7 +24,7 @@
     <logger.version>2.0.17</logger.version>
     <junit.version>4.13.2</junit.version>
     <wiremock.version>3.12.1</wiremock.version>
-    <raml-module-builder.version>35.4.0</raml-module-builder.version>
+    <raml-module-builder.version>35.4.2</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
     <sonar.exclusions>**/OkapiConnectionParams.java</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
@@ -45,7 +45,7 @@
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-stack-depchain</artifactId>
-        <version>4.5.14</version>
+        <version>4.5.23</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
