@@ -114,7 +114,7 @@
       "readonly": true
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "code",
     "fundStatus",
