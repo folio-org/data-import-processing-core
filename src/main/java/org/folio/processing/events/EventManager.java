@@ -220,7 +220,7 @@ public final class EventManager {
    * @param eventHandler event handler
    * @return true handlers is registered
    */
-  public static <T extends EventHandler> boolean registerEventHandler(T eventHandler) {
+  public static synchronized <T extends EventHandler> boolean registerEventHandler(T eventHandler) {
     LOGGER.trace("registerEventHandler:: Registering event handler: {}", eventHandler.getClass());
     return eventProcessor.getEventHandlers().add(eventHandler);
   }
@@ -232,7 +232,7 @@ public final class EventManager {
    * @param vertx       - vertx instance
    * @param maxDistributionNum - maximum number of distribution
    */
-  public static void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
+  public static synchronized void registerKafkaEventPublisher(KafkaConfig kafkaConfig, Vertx vertx, int maxDistributionNum) {
     LOGGER.trace("registerKafkaEventPublisher:: Registering kafka event publisher");
     cleanupAndRegisterPublisher(new KafkaEventPublisher(kafkaConfig, vertx, maxDistributionNum));
   }
@@ -243,7 +243,7 @@ public final class EventManager {
    *
    * @param customPublisher - custom kafka event publisher instance
    */
-  public static void registerCustomKafkaEventPublisher(EventPublisher customPublisher) {
+  public static synchronized void registerCustomKafkaEventPublisher(EventPublisher customPublisher) {
     LOGGER.trace("registerCustomKafkaEventPublisher:: Registering custom kafka event publisher: {}",
         customPublisher.getClass().getName());
     cleanupAndRegisterPublisher(customPublisher);
@@ -254,7 +254,7 @@ public final class EventManager {
    *
    * @param publisher - event publisher to register
    */
-  private static void cleanupAndRegisterPublisher(EventPublisher publisher) {
+  private static synchronized void cleanupAndRegisterPublisher(EventPublisher publisher) {
     LOGGER.trace("cleanupAndRegisterPublisher:: Cleaning up and registering publisher: {}",
         publisher.getClass().getName());
     eventPublisher.forEach(p -> {
@@ -276,7 +276,7 @@ public final class EventManager {
   /**
    * Performs registration for rest event publisher in publishers list
    */
-  public static void registerRestEventPublisher() {
+  public static synchronized void registerRestEventPublisher() {
     LOGGER.trace("registerRestEventPublisher:: Registering rest event publisher");
     eventPublisher.clear();
     eventPublisher.add(new RestEventPublisher());
@@ -285,7 +285,7 @@ public final class EventManager {
   /**
    * Clears the registry of event handlers.
    */
-  public static void clearEventHandlers() {
+  public static synchronized void clearEventHandlers() {
     LOGGER.trace("clearEventHandlers:: Clearing event handlers");
     eventProcessor.getEventHandlers().clear();
   }

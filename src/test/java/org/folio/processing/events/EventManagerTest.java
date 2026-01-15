@@ -8,6 +8,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.processing.TestUtil;
+import org.folio.processing.events.services.publisher.KafkaEventPublisher;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,6 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
@@ -91,5 +95,43 @@ public class EventManagerTest {
       context.assertNotNull(payload);
       async.complete();
     });
+  }
+
+  @Test
+  public void testConcurrentKafkaEventPublisherRegistration(TestContext context) throws InterruptedException {
+    Async async = context.async();
+    Vertx vertx = rule.vertx();
+    int threadCount = 10;
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    AtomicInteger errorCount = new AtomicInteger(0);
+
+    // Spawn multiple threads that register publishers concurrently
+    for (int i = 0; i < threadCount; i++) {
+      new Thread(() -> {
+        try {
+          EventManager.registerKafkaEventPublisher(kafkaConfig, vertx, 100);
+        } catch (Exception e) {
+          errorCount.incrementAndGet();
+          context.fail("Exception occurred during concurrent registration: " + e.getMessage());
+        } finally {
+          latch.countDown();
+        }
+      }).start();
+    }
+
+    // Wait for all threads to complete
+    boolean completed = latch.await(10, TimeUnit.SECONDS);
+    context.assertTrue(completed, "All threads should complete within timeout");
+
+    // Verify no errors occurred
+    context.assertEquals(0, errorCount.get(), "Expected no concurrent modification errors");
+
+    // Verify only 1 publisher is registered (last one wins)
+    context.assertEquals(1, EventManager.getEventPublishers().size());
+
+    // Verify the publisher is a KafkaEventPublisher
+    context.assertTrue(EventManager.getEventPublishers().get(0) instanceof KafkaEventPublisher);
+
+    async.complete();
   }
 }

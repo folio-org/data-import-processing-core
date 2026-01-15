@@ -7,6 +7,7 @@ import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.exceptions.EventHandlerNotFoundException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -22,7 +23,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final Logger LOG = LogManager.getLogger(EventProcessorImpl.class);
 
-  private List<EventHandler> eventHandlers = new ArrayList<>();
+  private List<EventHandler> eventHandlers = Collections.synchronizedList(new ArrayList<>());
 
   @Override
   public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
