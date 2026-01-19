@@ -254,7 +254,7 @@ public final class EventManager {
    *
    * @param publisher - event publisher to register
    */
-  private static void cleanupAndRegisterPublisher(EventPublisher publisher) {
+  private synchronized static void cleanupAndRegisterPublisher(EventPublisher publisher) {
     LOGGER.trace("cleanupAndRegisterPublisher:: Cleaning up and registering publisher: {}",
         publisher.getClass().getName());
     eventPublisher.forEach(p -> {
@@ -276,7 +276,7 @@ public final class EventManager {
   /**
    * Performs registration for rest event publisher in publishers list
    */
-  public static void registerRestEventPublisher() {
+  public synchronized static void registerRestEventPublisher() {
     LOGGER.trace("registerRestEventPublisher:: Registering rest event publisher");
     eventPublisher.clear();
     eventPublisher.add(new RestEventPublisher());
