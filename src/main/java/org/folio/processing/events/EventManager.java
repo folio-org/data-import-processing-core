@@ -277,7 +277,7 @@ public final class EventManager {
   /**
    * Performs registration for rest event publisher in publishers list
    */
-  public synchronized static void registerRestEventPublisher() {
+  public static void registerRestEventPublisher() {
     LOGGER.trace("registerRestEventPublisher:: Registering rest event publisher");
     eventPublisher.clear();
     eventPublisher.add(new RestEventPublisher());
