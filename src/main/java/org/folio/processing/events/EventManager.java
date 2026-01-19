@@ -18,13 +18,13 @@ import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.rest.jaxrs.model.ReactToType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static java.lang.Boolean.parseBoolean;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
@@ -49,8 +49,7 @@ public final class EventManager {
   public static final String OL_ACCUMULATIVE_RESULTS = "OL_ACCUMULATIVE_RESULTS";
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
-  private static final List<EventPublisher> eventPublisher = new ArrayList<>(Arrays.<EventPublisher>asList(new RestEventPublisher()));
-
+  private static final List<EventPublisher> eventPublisher = new CopyOnWriteArrayList<>(List.of(new RestEventPublisher()));
 
   private EventManager() {
   }
@@ -254,9 +253,10 @@ public final class EventManager {
    *
    * @param publisher - event publisher to register
    */
-  private synchronized static void cleanupAndRegisterPublisher(EventPublisher publisher) {
+  private static void cleanupAndRegisterPublisher(EventPublisher publisher) {
     LOGGER.trace("cleanupAndRegisterPublisher:: Cleaning up and registering publisher: {}",
         publisher.getClass().getName());
+
     eventPublisher.forEach(p -> {
       LOGGER.info("cleanupAndRegisterPublisher:: Closing existing publisher: {}", p.getClass().getName());
       if(p instanceof KafkaEventPublisher kafkaPublisher) {
@@ -267,6 +267,7 @@ public final class EventManager {
         }
       }
     });
+
     eventPublisher.clear();
     eventPublisher.add(publisher);
     LOGGER.info("cleanupAndRegisterPublisher:: Successfully registered publisher: {}",
@@ -276,7 +277,7 @@ public final class EventManager {
   /**
    * Performs registration for rest event publisher in publishers list
    */
-  public synchronized static void registerRestEventPublisher() {
+  public static void registerRestEventPublisher() {
     LOGGER.trace("registerRestEventPublisher:: Registering rest event publisher");
     eventPublisher.clear();
     eventPublisher.add(new RestEventPublisher());
