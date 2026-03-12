@@ -2,7 +2,7 @@ package org.folio.processing.mapping.mapper.util;
 
 import io.vertx.core.json.JsonObject;
 import org.folio.Organization;
-import org.folio.StatisticalCodeType;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
 import java.util.HashMap;

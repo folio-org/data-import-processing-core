@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import io.vertx.core.json.JsonObject;
 import org.junit.Assert;
@@ -15,12 +16,12 @@ import org.marc4j.MarcJsonReader;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.marc.Record;
 
-import org.folio.CallNumberType;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.Holdings;
-import org.folio.HoldingsNoteType;
-import org.folio.HoldingsType;
-import org.folio.Location;
+import org.folio.rest.jaxrs.model.CallNumberType;
+import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
+import org.folio.rest.jaxrs.model.HoldingsRecord;
+import org.folio.rest.jaxrs.model.HoldingsNoteType;
+import org.folio.rest.jaxrs.model.HoldingsType;
+import org.folio.rest.jaxrs.model.Location;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
@@ -36,15 +37,21 @@ public class HoldingsMappingTest {
   private static final String DEFAULT_MAPPING_RULES_PATH =
     "src/test/resources/org/folio/processing/mapping/holdings/holdingsRules.json";
 
-  private final RecordMapper<Holdings> mapper = RecordMapperBuilder.buildMapper("MARC_HOLDINGS");
+  private final RecordMapper<HoldingsRecord> mapper = RecordMapperBuilder.buildMapper("MARC_HOLDINGS");
 
   @Test
   public void testMarcToHoldings() throws IOException {
     JsonObject expectedMappedHoldings = new JsonObject(TestUtil.readFileFromPath(MAPPED_HOLDINGS_PATH));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
-    Holdings actualMappedHoldings = mapper.mapRecord(getJsonMarcRecord(), getMappingParameters(), mappingRules);
-    Assert.assertEquals(expectedMappedHoldings.encode(), JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode());
+    HoldingsRecord actualMappedHoldings = mapper.mapRecord(getJsonMarcRecord(), getMappingParameters(), mappingRules);
+    JsonObject actual = JsonObject.mapFrom(actualMappedHoldings).copy().put("id", "0");
+    Set<String> expectedFields = expectedMappedHoldings.fieldNames();
+    for (String field : expectedFields) {
+      Object expectedValue = expectedMappedHoldings.getValue(field);
+      Object actualValue = actual.getValue(field);
+      Assert.assertEquals("Field '" + field + "' mismatch", expectedValue, actualValue);
+    }
   }
 
   @Test
@@ -55,8 +62,14 @@ public class HoldingsMappingTest {
 
     var jsonMarcRecord = getJsonMarcRecord();
     jsonMarcRecord.put("leader", "00379cu  a22001334  4500");
-    Holdings actualMappedHoldings = mapper.mapRecord(jsonMarcRecord, getMappingParameters(), mappingRules);
-    Assert.assertEquals(expectedMappedHoldings.encode(), JsonObject.mapFrom(actualMappedHoldings).put("id", "0").encode());
+    HoldingsRecord actualMappedHoldings = mapper.mapRecord(jsonMarcRecord, getMappingParameters(), mappingRules);
+    JsonObject actual = JsonObject.mapFrom(actualMappedHoldings).put("id", "0");
+    Set<String> expectedFields = expectedMappedHoldings.fieldNames();
+    for (String field : expectedFields) {
+      Object expectedValue = expectedMappedHoldings.getValue(field);
+      Object actualValue = actual.getValue(field);
+      Assert.assertEquals("Field '" + field + "' mismatch", expectedValue, actualValue);
+    }
   }
 
   private JsonObject getJsonMarcRecord() throws IOException {

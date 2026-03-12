@@ -5,7 +5,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
-import org.folio.Location;
+import org.folio.rest.jaxrs.model.Location;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;

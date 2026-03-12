@@ -6,10 +6,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.folio.AcquisitionsUnit;
 import org.folio.DataImportEventPayload;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.Holdings;
+import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
+import org.folio.rest.jaxrs.model.HoldingsRecord;
 import org.folio.ItemNoteType;
-import org.folio.Location;
+import org.folio.rest.jaxrs.model.Location;
 import org.folio.NatureOfContentTerm;
 import org.folio.Organization;
 import org.folio.ParsedRecord;
@@ -1899,7 +1899,7 @@ public class MarcRecordReaderUnitTest {
     String givenMarcRecord = Json.encode(new Record()
       .withParsedRecord(parsedRecord));
     var entity = new JsonObject();
-    entity.put("instance", new Holdings());
+    entity.put("instance", new HoldingsRecord());
     String encodedEntity = entity.encode();
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
