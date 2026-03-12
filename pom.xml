@@ -273,21 +273,10 @@
                 <path>${basedir}/ramls/instance.json</path>
                 <path>${basedir}/ramls/authority.json</path>
                 <path>${basedir}/ramls/authorityExtended.json</path>
-                <path>${basedir}/ramls/settings/instanceformats.json</path>
-                <path>${basedir}/ramls/settings/instancenotetypes.json</path>
-                <path>${basedir}/ramls/settings/instancetypes.json</path>
-                <path>${basedir}/ramls/settings/instancestatuses.json</path>
-                <path>${basedir}/ramls/settings/natureofcontentterms.json</path>
-                <path>${basedir}/ramls/settings/instancerelationshiptypes.json</path>
-                <path>${basedir}/ramls/settings/itemnotetypes.json</path>
-                <path>${basedir}/ramls/settings/issuancemodes.json</path>
                 <path>${basedir}/ramls/settings/authoritynotetypes.json</path>
                 <path>${basedir}/ramls/settings/authoritysourcefiles.json</path>
                 <path>${basedir}/ramls/settings/organization.json</path>
                 <path>${basedir}/ramls/settings/organization_collection.json</path>
-                <path>${basedir}/ramls/settings/subjectSources.json</path>
-                <path>${basedir}/ramls/settings/subjectTypes.json</path>
-                <path>${basedir}/ramls/settings/instanceDateTypes.json</path>
                 <path>${basedir}/ramls/settings/acquisitions_unit.json</path>
                 <path>${basedir}/ramls/settings/acquisitions_unit_collection.json</path>
                 <path>${basedir}/ramls/settings/acquisition_method.json</path>
