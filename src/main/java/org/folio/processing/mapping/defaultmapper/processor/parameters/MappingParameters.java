@@ -7,7 +7,6 @@ import org.folio.AlternativeTitleType;
 import org.folio.AuthorityIdentifierType;
 import org.folio.AuthorityNoteType;
 import org.folio.AuthoritySourceFile;
-import org.folio.Authorityidentifiertypes;
 import org.folio.CallNumberType;
 import org.folio.ClassificationType;
 import org.folio.ContributorNameType;
