@@ -270,6 +270,7 @@
                 <path>${basedir}/ramls/authority.json</path>
                 <path>${basedir}/ramls/authorityExtended.json</path>
                 <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
+                <path>${basedir}/ramls/settings/authorityidentifiertypes.json</path>
                 <path>${basedir}/ramls/settings/classificationtypes.json</path>
                 <path>${basedir}/ramls/settings/contributornametypes.json</path>
                 <path>${basedir}/ramls/settings/contributortypes.json</path>

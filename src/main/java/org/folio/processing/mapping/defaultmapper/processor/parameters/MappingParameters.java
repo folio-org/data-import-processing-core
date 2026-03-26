@@ -4,6 +4,7 @@ import org.apache.commons.collections4.list.UnmodifiableList;
 import org.folio.AcquisitionMethod;
 import org.folio.AcquisitionsUnit;
 import org.folio.AlternativeTitleType;
+import org.folio.AuthorityIdentifierType;
 import org.folio.AuthorityNoteType;
 import org.folio.AuthoritySourceFile;
 import org.folio.CallNumberType;
@@ -75,6 +76,7 @@ public class MappingParameters {
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
   private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
   private String tenantConfigurationZone;
+  private List<AuthorityIdentifierType> authorityIdentifierTypes;
   private List<AuthorityNoteType> authorityNoteTypes;
   private List<AuthoritySourceFile> authoritySourceFiles;
   private List<SubjectSource> subjectSources;
@@ -590,6 +592,19 @@ public class MappingParameters {
 
   public MappingParameters withTenantConfigurationAddresses(List<String> tenantConfigurationAddresses) {
     this.tenantConfigurationAddresses = tenantConfigurationAddresses;
+    return this;
+  }
+
+  public List<AuthorityIdentifierType> getAuthorityIdentifierTypes() {
+    return authorityIdentifierTypes;
+  }
+
+  public void setAuthorityIdentifierTypes(List<AuthorityIdentifierType> authorityIdentifierTypes) {
+    this.authorityIdentifierTypes = authorityIdentifierTypes;
+  }
+
+  public MappingParameters withAuthorityIdentifierTypes(List<AuthorityIdentifierType> authorityIdentifierTypes) {
+    this.authorityIdentifierTypes = new UnmodifiableList<>(authorityIdentifierTypes);
     return this;
   }
 }
