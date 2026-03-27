@@ -26,18 +26,18 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-import org.folio.ContributorNameType;
-import org.folio.ContributorType;
+import org.folio.rest.jaxrs.model.ContributorNameType;
+import org.folio.rest.jaxrs.model.ContributorType;
 import org.folio.Identifier;
-import org.folio.IdentifierType;
+import org.folio.rest.jaxrs.model.IdentifierType;
 import org.folio.Instance;
-import org.folio.InstanceDateType;
-import org.folio.InstanceFormat;
-import org.folio.InstanceType;
-import org.folio.IssuanceMode;
+import org.folio.rest.jaxrs.model.InstanceDateType;
+import org.folio.rest.jaxrs.model.InstanceFormat;
+import org.folio.rest.jaxrs.model.InstanceType;
+import org.folio.rest.jaxrs.model.IssuanceMode;
 import org.folio.Subject;
-import org.folio.SubjectSource;
-import org.folio.SubjectType;
+import org.folio.rest.jaxrs.model.SubjectSource;
+import org.folio.rest.jaxrs.model.SubjectType;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
@@ -431,7 +431,7 @@ public class InstanceMappingTest {
       assertNotNull(instance.getSource());
       assertNotNull(instance.getNotes());
       assertEquals(1, instance.getNotes().size());
-      assertEquals("Adaptation of Xi xiang ji by Wang Shifu", instance.getNotes().get(0).getNote());
+      assertEquals("Adaptation of Xi xiang ji by Wang Shifu", instance.getNotes().getFirst().getNote());
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
@@ -461,7 +461,7 @@ public class InstanceMappingTest {
     }
     assertFalse(mappedInstances.isEmpty());
     assertEquals(4, mappedInstances.size());
-    assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(0).getInstanceTypeId());
+    assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.getFirst().getInstanceTypeId());
     assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(1).getInstanceTypeId());
     assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.get(2).getInstanceTypeId());
     assertEquals(UNSPECIFIED_INSTANCE_TYPE_ID, mappedInstances.get(3).getInstanceTypeId());
@@ -503,7 +503,7 @@ public class InstanceMappingTest {
 
     mappedInstances.forEach(mappedInstance -> {
       assertNotNull(mappedInstance.getInstanceFormatIds());
-      assertEquals(expectedFirstFormatId, mappedInstance.getInstanceFormatIds().get(0));
+      assertEquals(expectedFirstFormatId, mappedInstance.getInstanceFormatIds().getFirst());
     });
 
     assertEquals(expectedMultipleFormatIds, mappedInstances.get(4).getInstanceFormatIds());
@@ -542,7 +542,7 @@ public class InstanceMappingTest {
     }
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
-    List<Identifier> identifierTypes = mappedInstances.get(0).getIdentifiers();
+    List<Identifier> identifierTypes = mappedInstances.getFirst().getIdentifiers();
     assertEquals(6, identifierTypes.size());
     IntStream.range(0, expectedResults.size()).forEach(index -> {
       Map.Entry<String, String> expected = expectedResults.get(index);
@@ -626,7 +626,7 @@ public class InstanceMappingTest {
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
-    Set<Subject> subjects = mappedInstances.get(0).getSubjects();
+    Set<Subject> subjects = mappedInstances.getFirst().getSubjects();
     assertEquals(17, subjects.size());
 
     Iterator<Subject> iterator = subjects.iterator();
@@ -663,12 +663,12 @@ public class InstanceMappingTest {
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
-    Instance mappedInstance = mappedInstances.get(0);
+    Instance mappedInstance = mappedInstances.getFirst();
     assertNotNull(mappedInstance.getId());
 
-    assertEquals("1991", mappedInstances.get(0).getDates().getDate1());
-    assertEquals("0101", mappedInstances.get(0).getDates().getDate2());
-    assertEquals("24a506e8-2a92-4ecc-bd09-ff849321fd5a", mappedInstances.get(0).getDates().getDateTypeId());
+    assertEquals("1991", mappedInstances.getFirst().getDates().getDate1());
+    assertEquals("0101", mappedInstances.getFirst().getDates().getDate2());
+    assertEquals("24a506e8-2a92-4ecc-bd09-ff849321fd5a", mappedInstances.getFirst().getDates().getDateTypeId());
   }
 
   @Test
@@ -696,12 +696,12 @@ public class InstanceMappingTest {
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
-    Instance mappedInstance = mappedInstances.get(0);
+    Instance mappedInstance = mappedInstances.getFirst();
     assertNotNull(mappedInstance.getId());
 
-    assertEquals(true, mappedInstances.get(0).getDeleted());
-    assertEquals(true, mappedInstances.get(0).getStaffSuppress());
-    assertEquals(true, mappedInstances.get(0).getDiscoverySuppress());
+    assertEquals(true, mappedInstances.getFirst().getDeleted());
+    assertEquals(true, mappedInstances.getFirst().getStaffSuppress());
+    assertEquals(true, mappedInstances.getFirst().getDiscoverySuppress());
   }
 
   @Test
@@ -729,12 +729,12 @@ public class InstanceMappingTest {
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
-    Instance mappedInstance = mappedInstances.get(0);
+    Instance mappedInstance = mappedInstances.getFirst();
     assertNotNull(mappedInstance.getId());
 
-    assertNull(mappedInstances.get(0).getDates().getDate1());
-    assertNull(mappedInstances.get(0).getDates().getDate2());
-    assertEquals("77a09c3c-37bd-4ad3-aae4-9d86fc1b33d8", mappedInstances.get(0).getDates().getDateTypeId());
+    assertNull(mappedInstances.getFirst().getDates().getDate1());
+    assertNull(mappedInstances.getFirst().getDates().getDate2());
+    assertEquals("77a09c3c-37bd-4ad3-aae4-9d86fc1b33d8", mappedInstances.getFirst().getDates().getDateTypeId());
   }
 
   @Test
@@ -763,10 +763,10 @@ public class InstanceMappingTest {
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
-    Instance mappedInstance = mappedInstances.get(0);
+    Instance mappedInstance = mappedInstances.getFirst();
     assertNotNull(mappedInstance.getId());
 
-    assertNull(mappedInstances.get(0).getDates());
+    assertNull(mappedInstances.getFirst().getDates());
   }
 
   @Test
@@ -818,7 +818,7 @@ public class InstanceMappingTest {
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
-    Set<Subject> subjects = mappedInstances.get(0).getSubjects();
+    Set<Subject> subjects = mappedInstances.getFirst().getSubjects();
     assertEquals(9, subjects.size());
 
     Iterator<Subject> iterator = subjects.iterator();
@@ -897,10 +897,10 @@ public class InstanceMappingTest {
     assertNotNull(instance.getSource());
     assertEquals(6, instance.getContributors().size());
     // 720 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
-    assertEquals("Boguslawski, Pawel", instance.getContributors().get(0).getName());
-    assertEquals("1", instance.getContributors().get(0).getContributorTypeId());
-    assertNull(instance.getContributors().get(0).getContributorTypeText());
-    assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
+    assertEquals("Boguslawski, Pawel", instance.getContributors().getFirst().getName());
+    assertEquals("1", instance.getContributors().getFirst().getContributorTypeId());
+    assertNull(instance.getContributors().getFirst().getContributorTypeText());
+    assertEquals("1", instance.getContributors().getFirst().getContributorNameTypeId());
 
     // 720  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
     assertEquals("CHUJO, T.", instance.getContributors().get(1).getName());
@@ -966,10 +966,10 @@ public class InstanceMappingTest {
 
 
       // 100 \1\$aChin, Staceyann,$d1972-$eAuthor$eNarrator$0http://id.loc.gov/authorities/names/n2008052404$1http://viaf.org/viaf/24074052 should match by $e subfield and set contributorTypeId
-      assertEquals("Chin, Staceyann, 1972-", instance.getContributors().get(0).getName());
-      assertEquals("1", instance.getContributors().get(0).getContributorTypeId());
-      assertNull(instance.getContributors().get(0).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
+      assertEquals("Chin, Staceyann, 1972-", instance.getContributors().getFirst().getName());
+      assertEquals("1", instance.getContributors().getFirst().getContributorTypeId());
+      assertNull(instance.getContributors().getFirst().getContributorTypeText());
+      assertEquals("1", instance.getContributors().getFirst().getContributorNameTypeId());
 
       // 110 1\$aOklahoma.$bDept. of Highways.$4cou should match by $e subfield and set contributorTypeId
       assertEquals("Oklahoma. Dept. of Highways", instance.getContributors().get(1).getName());
@@ -1097,10 +1097,10 @@ public class InstanceMappingTest {
 
 
       // 100 1\$aKani, John,$econceptor;$ecourt report should match by first $e subfield and set contributorTypeId to 3
-      assertEquals("Kani, John", instance.getContributors().get(0).getName());
-      assertEquals("3", instance.getContributors().get(0).getContributorTypeId());
-      assertNull(instance.getContributors().get(0).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(0).getContributorNameTypeId());
+      assertEquals("Kani, John", instance.getContributors().getFirst().getName());
+      assertEquals("3", instance.getContributors().getFirst().getContributorTypeId());
+      assertNull(instance.getContributors().getFirst().getContributorTypeText());
+      assertEquals("1", instance.getContributors().getFirst().getContributorNameTypeId());
 
       // 110 2\$aBuena Vista Corporate (Firm),$efilm distributor. should remove comma at the end of the name, match by first $e subfield and set contributorTypeId to 5
       assertEquals("Buena Vista Corporate (Firm)", instance.getContributors().get(1).getName());
@@ -1187,10 +1187,10 @@ public class InstanceMappingTest {
       }
       assertFalse(mappedInstances.isEmpty());
       assertEquals(1, mappedInstances.size());
-      assertEquals(expectedSizeOfIdentifiers, mappedInstances.get(0).getIdentifiers().size());
-      mappedInstances.get(0).getIdentifiers().forEach(Assert::assertNotNull);
+      assertEquals(expectedSizeOfIdentifiers, mappedInstances.getFirst().getIdentifiers().size());
+      mappedInstances.getFirst().getIdentifiers().forEach(Assert::assertNotNull);
 
-      var identifiers = mappedInstances.get(0).getIdentifiers();
+      var identifiers = mappedInstances.getFirst().getIdentifiers();
       assertTrue(identifiers.stream().map(Identifier::getValue).anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
 
     }

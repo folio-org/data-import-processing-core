@@ -3,40 +3,40 @@ package org.folio.processing.mapping.defaultmapper.processor.parameters;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.folio.AcquisitionMethod;
 import org.folio.AcquisitionsUnit;
-import org.folio.AlternativeTitleType;
 import org.folio.AuthorityIdentifierType;
 import org.folio.AuthorityNoteType;
 import org.folio.AuthoritySourceFile;
-import org.folio.CallNumberType;
-import org.folio.ClassificationType;
-import org.folio.ContributorNameType;
-import org.folio.ContributorType;
-import org.folio.ElectronicAccessRelationship;
 import org.folio.ExpenseClass;
 import org.folio.Fund;
-import org.folio.HoldingsNoteType;
-import org.folio.HoldingsType;
-import org.folio.IdentifierType;
-import org.folio.IllPolicy;
-import org.folio.InstanceDateType;
-import org.folio.InstanceFormat;
-import org.folio.InstanceNoteType;
-import org.folio.InstanceRelationshipType;
-import org.folio.InstanceStatus;
-import org.folio.InstanceType;
-import org.folio.IssuanceMode;
-import org.folio.ItemDamageStatus;
-import org.folio.ItemNoteType;
 import org.folio.LinkingRuleDto;
-import org.folio.Loantype;
-import org.folio.Location;
-import org.folio.Mtype;
-import org.folio.NatureOfContentTerm;
-import org.folio.StatisticalCode;
-import org.folio.StatisticalCodeType;
 import org.folio.Organization;
-import org.folio.SubjectSource;
-import org.folio.SubjectType;
+import org.folio.rest.jaxrs.model.AlternativeTitleType;
+import org.folio.rest.jaxrs.model.CallNumberType;
+import org.folio.rest.jaxrs.model.ClassificationType;
+import org.folio.rest.jaxrs.model.ContributorNameType;
+import org.folio.rest.jaxrs.model.ContributorType;
+import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
+import org.folio.rest.jaxrs.model.HoldingsNoteType;
+import org.folio.rest.jaxrs.model.HoldingsType;
+import org.folio.rest.jaxrs.model.IdentifierType;
+import org.folio.rest.jaxrs.model.IllPolicy;
+import org.folio.rest.jaxrs.model.InstanceDateType;
+import org.folio.rest.jaxrs.model.InstanceFormat;
+import org.folio.rest.jaxrs.model.InstanceNoteType;
+import org.folio.rest.jaxrs.model.InstanceRelationshipType;
+import org.folio.rest.jaxrs.model.InstanceStatus;
+import org.folio.rest.jaxrs.model.InstanceType;
+import org.folio.rest.jaxrs.model.IssuanceMode;
+import org.folio.rest.jaxrs.model.ItemDamageStatus;
+import org.folio.rest.jaxrs.model.ItemNoteType;
+import org.folio.rest.jaxrs.model.LoanType;
+import org.folio.rest.jaxrs.model.Location;
+import org.folio.rest.jaxrs.model.MaterialType;
+import org.folio.rest.jaxrs.model.NatureOfContentTerm;
+import org.folio.rest.jaxrs.model.StatisticalCode;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
+import org.folio.rest.jaxrs.model.SubjectSource;
+import org.folio.rest.jaxrs.model.SubjectType;
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 
 import java.util.ArrayList;
@@ -70,9 +70,9 @@ public class MappingParameters {
   private List<StatisticalCode> statisticalCodes = new ArrayList<>();
   private List<StatisticalCodeType> statisticalCodeTypes = new ArrayList<>();
   private List<Location> locations = new ArrayList<>();
-  private List<Mtype> materialTypes = new ArrayList<>();
+  private List<MaterialType> materialTypes = new ArrayList<>();
   private List<ItemDamageStatus> itemDamageStatuses = new ArrayList<>();
-  private List<Loantype> loanTypes = new ArrayList<>();
+  private List<LoanType> loanTypes = new ArrayList<>();
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
   private List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
   private String tenantConfigurationZone;
@@ -335,11 +335,11 @@ public class MappingParameters {
     this.locations = locations;
   }
 
-  public List<Mtype> getMaterialTypes() {
+  public List<MaterialType> getMaterialTypes() {
     return materialTypes;
   }
 
-  public void setMaterialTypes(List<Mtype> materialTypes) {
+  public void setMaterialTypes(List<MaterialType> materialTypes) {
     this.materialTypes = materialTypes;
   }
 
@@ -351,11 +351,11 @@ public class MappingParameters {
     this.itemDamageStatuses = itemDamageStatuses;
   }
 
-  public List<Loantype> getLoanTypes() {
+  public List<LoanType> getLoanTypes() {
     return loanTypes;
   }
 
-  public void setLoanTypes(List<Loantype> loanTypes) {
+  public void setLoanTypes(List<LoanType> loanTypes) {
     this.loanTypes = loanTypes;
   }
 
@@ -439,7 +439,7 @@ public class MappingParameters {
     return this;
   }
 
-  public MappingParameters withMaterialTypes(List<Mtype> materialTypes) {
+  public MappingParameters withMaterialTypes(List<MaterialType> materialTypes) {
     this.materialTypes = new UnmodifiableList<>(materialTypes);
     return this;
   }
@@ -449,7 +449,7 @@ public class MappingParameters {
     return this;
   }
 
-  public MappingParameters withLoanTypes(List<Loantype> loantypes) {
+  public MappingParameters withLoanTypes(List<LoanType> loantypes) {
     this.loanTypes = new UnmodifiableList<>(loantypes);
     return this;
   }

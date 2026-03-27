@@ -5,21 +5,21 @@ import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.AuthorityIdentifierType;
 import org.folio.AuthorityNoteType;
-import org.folio.ClassificationType;
-import org.folio.InstanceDateType;
-import org.folio.InstanceType;
-import org.folio.ElectronicAccessRelationship;
-import org.folio.InstanceFormat;
-import org.folio.ContributorType;
-import org.folio.ContributorNameType;
-import org.folio.IdentifierType;
-import org.folio.InstanceNoteType;
-import org.folio.AlternativeTitleType;
-import org.folio.IssuanceMode;
-import org.folio.HoldingsType;
-import org.folio.CallNumberType;
-import org.folio.SubjectSource;
-import org.folio.SubjectType;
+import org.folio.rest.jaxrs.model.ClassificationType;
+import org.folio.rest.jaxrs.model.InstanceDateType;
+import org.folio.rest.jaxrs.model.InstanceType;
+import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
+import org.folio.rest.jaxrs.model.InstanceFormat;
+import org.folio.rest.jaxrs.model.ContributorType;
+import org.folio.rest.jaxrs.model.ContributorNameType;
+import org.folio.rest.jaxrs.model.IdentifierType;
+import org.folio.rest.jaxrs.model.InstanceNoteType;
+import org.folio.rest.jaxrs.model.AlternativeTitleType;
+import org.folio.rest.jaxrs.model.IssuanceMode;
+import org.folio.rest.jaxrs.model.HoldingsType;
+import org.folio.rest.jaxrs.model.CallNumberType;
+import org.folio.rest.jaxrs.model.SubjectSource;
+import org.folio.rest.jaxrs.model.SubjectType;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.Test;
@@ -861,7 +861,7 @@ public class NormalizationFunctionTest {
   public void SET_HOLDINGS_TYPE_ID_shouldReturnValidId() {
     // given
     List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
-    String expectedSerialHoldingsId = holdingsMappingParameter.get(0).getId();
+    String expectedSerialHoldingsId = holdingsMappingParameter.getFirst().getId();
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters().withHoldingsTypes(holdingsMappingParameter));
     context.setSubFieldValue("00379cy  a22001334  4500");
@@ -914,7 +914,7 @@ public class NormalizationFunctionTest {
   public void SET_CALL_NUMBER_TYPE_ID_shouldReturnValidValue() {
     RuleExecutionContext context = new RuleExecutionContext();
     List<CallNumberType> callNumberTypeMappingParameter = getCallNumberTypeMappingParameter();
-    String expectedLibraryOfCongressId = callNumberTypeMappingParameter.get(0).getId();
+    String expectedLibraryOfCongressId = callNumberTypeMappingParameter.getFirst().getId();
     context.setMappingParameters(new MappingParameters().withCallNumberTypes(callNumberTypeMappingParameter));
     context.setDataField(new DataFieldImpl("852", '0', '1'));
     // when

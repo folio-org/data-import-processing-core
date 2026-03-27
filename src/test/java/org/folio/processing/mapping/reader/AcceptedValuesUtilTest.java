@@ -2,26 +2,26 @@ package org.folio.processing.mapping.reader;
 
 import org.folio.AcquisitionMethod;
 import org.folio.AcquisitionsUnit;
-import org.folio.CallNumberType;
-import org.folio.ContributorNameType;
-import org.folio.ElectronicAccessRelationship;
+import org.folio.rest.jaxrs.model.CallNumberType;
+import org.folio.rest.jaxrs.model.ContributorNameType;
+import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
 import org.folio.ExpenseClass;
 import org.folio.Fund;
-import org.folio.HoldingsNoteType;
-import org.folio.HoldingsType;
-import org.folio.IdentifierType;
-import org.folio.IllPolicy;
-import org.folio.InstanceRelationshipType;
-import org.folio.InstanceStatus;
-import org.folio.ItemDamageStatus;
-import org.folio.ItemNoteType;
-import org.folio.Loantype;
-import org.folio.Location;
-import org.folio.Mtype;
-import org.folio.NatureOfContentTerm;
+import org.folio.rest.jaxrs.model.HoldingsNoteType;
+import org.folio.rest.jaxrs.model.HoldingsType;
+import org.folio.rest.jaxrs.model.IdentifierType;
+import org.folio.rest.jaxrs.model.IllPolicy;
+import org.folio.rest.jaxrs.model.InstanceRelationshipType;
+import org.folio.rest.jaxrs.model.InstanceStatus;
+import org.folio.rest.jaxrs.model.ItemDamageStatus;
+import org.folio.rest.jaxrs.model.ItemNoteType;
+import org.folio.rest.jaxrs.model.LoanType;
+import org.folio.rest.jaxrs.model.Location;
+import org.folio.rest.jaxrs.model.MaterialType;
+import org.folio.rest.jaxrs.model.NatureOfContentTerm;
 import org.folio.Organization;
-import org.folio.StatisticalCode;
-import org.folio.StatisticalCodeType;
+import org.folio.rest.jaxrs.model.StatisticalCode;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.util.AcceptedValuesUtil;
 import org.junit.Test;
@@ -83,11 +83,11 @@ public class AcceptedValuesUtilTest {
     String testUUID = UUID.randomUUID().toString();
 
     MappingParameters mappingParameters = new MappingParameters()
-      .withMaterialTypes(List.of(new Mtype().withId(testUUID + "materialType.id").withName(TEST_NAME)))
+      .withMaterialTypes(List.of(new MaterialType().withId(testUUID + "materialType.id").withName(TEST_NAME)))
       .withCallNumberTypes(List.of(new CallNumberType().withId(testUUID + "itemLevelCallNumberTypeId").withName(TEST_NAME)))
       .withItemDamagedStatuses(List.of(new ItemDamageStatus().withId(testUUID + "itemDamagedStatusId").withName(TEST_NAME)))
       .withItemNoteTypes(List.of(new ItemNoteType().withId(testUUID + "itemNoteTypeId").withName(TEST_NAME)))
-      .withLoanTypes(List.of(new Loantype().withId(testUUID + "permanentLoanType.id").withName(TEST_NAME), new Loantype().withId(testUUID + "temporaryLoanType.id").withName(TEST_NAME)))
+      .withLoanTypes(List.of(new LoanType().withId(testUUID + "permanentLoanType.id").withName(TEST_NAME), new LoanType().withId(testUUID + "temporaryLoanType.id").withName(TEST_NAME)))
       .withLocations(List.of(new Location().withId(testUUID + "permanentLocation.id").withName(TEST_NAME), new Location().withId(testUUID + "temporaryLocation.id").withName(TEST_NAME)));
 
     testAcceptedValues(ITEM_ACCEPTED_VALUES_RULES, mappingParameters, testUUID);
@@ -107,7 +107,7 @@ public class AcceptedValuesUtilTest {
       .withFunds(List.of(new Fund().withId(testUUID + "fundId").withName(TEST_NAME)))
       .withExpenseClasses(List.of(new ExpenseClass().withId(testUUID + "expenseClassId").withName(TEST_NAME)))
       .withLocations(List.of(new Location().withId(testUUID + "locationId").withName(TEST_NAME)))
-      .withMaterialTypes(List.of(new Mtype().withId(testUUID + "materialType").withName(TEST_NAME)))
+      .withMaterialTypes(List.of(new MaterialType().withId(testUUID + "materialType").withName(TEST_NAME)))
       .withOrganizations(List.of(new Organization().withId(testUUID + "accessProvider").withName(TEST_NAME),
         new Organization().withId(testUUID + "vendor").withName(TEST_NAME),
         new Organization().withId(testUUID + "donorOrganizationIds").withIsDonor(true).withName(TEST_NAME),

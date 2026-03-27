@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
-import org.folio.Holdings;
+import org.folio.rest.jaxrs.model.HoldingsRecord;
 import org.folio.Instance;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
-import org.folio.StatisticalCode;
-import org.folio.StatisticalCodeType;
+import org.folio.rest.jaxrs.model.StatisticalCode;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
 import org.folio.processing.mapping.MappingManager;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.MappingContext;
@@ -156,7 +156,7 @@ public class MappingManagerUnitTest {
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcFieldByName() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new Holdings(), null, List.of(0));
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new HoldingsRecord(), null, List.of(0));
   }
 
   @Test
@@ -172,7 +172,7 @@ public class MappingManagerUnitTest {
 
   @Test
   public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesFromStringValue() {
-    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abc", "bbc"), new Holdings(),
+    shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abc", "bbc"), new HoldingsRecord(),
       "\"TEST (test code type): abc - abd\"", List.of(0));
   }
 
