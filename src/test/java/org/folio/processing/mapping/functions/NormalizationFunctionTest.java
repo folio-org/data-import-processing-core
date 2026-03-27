@@ -3,6 +3,7 @@ package org.folio.processing.mapping.functions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.lang3.StringUtils;
+import org.folio.AuthorityIdentifierType;
 import org.folio.AuthorityNoteType;
 import org.folio.rest.jaxrs.model.ClassificationType;
 import org.folio.rest.jaxrs.model.InstanceDateType;
@@ -630,6 +631,24 @@ public class NormalizationFunctionTest {
     String actualContributorNameTypeId = runFunction("set_contributor_name_type_id", context);
     // then
     assertEquals(STUB_FIELD_TYPE_ID, actualContributorNameTypeId);
+  }
+
+  @Test
+  public void SET_AUTHORITY_IDENTIFIER_TYPE_ID_BY_CODE_shouldReturnExpectedResult() {
+    // given
+    String expectedIdentifierTypeId = UUID.randomUUID().toString();
+    var identifierType = new AuthorityIdentifierType()
+      .withId(expectedIdentifierTypeId)
+      .withCode("lccn")
+      .withName("LCCN");
+    RuleExecutionContext context = new RuleExecutionContext();
+    context.setMappingParameters(new MappingParameters()
+      .withAuthorityIdentifierTypes(Collections.singletonList(identifierType)));
+    context.setRuleParameter(new JsonObject().put("code", "lccn"));
+    // when
+    String actualIdentifierTypeId = runFunction("set_authority_identifier_type_id_by_code", context);
+    // then
+    assertEquals(expectedIdentifierTypeId, actualIdentifierTypeId);
   }
 
   @Test

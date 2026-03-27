@@ -69,7 +69,7 @@ public class MappingParameters {
   private List<StatisticalCode> statisticalCodes = new ArrayList<>();
   private List<StatisticalCodeType> statisticalCodeTypes = new ArrayList<>();
   private List<Location> locations = new ArrayList<>();
-  private List<MaterialType> materialTypes = new ArrayList<>();
+  private List<Mtype> materialTypes = new ArrayList<>();
   private List<ItemDamageStatus> itemDamageStatuses = new ArrayList<>();
   private List<LoanType> loanTypes = new ArrayList<>();
   private List<ItemNoteType> itemNoteTypes = new ArrayList<>();
@@ -590,6 +590,19 @@ public class MappingParameters {
 
   public MappingParameters withTenantConfigurationAddresses(List<String> tenantConfigurationAddresses) {
     this.tenantConfigurationAddresses = tenantConfigurationAddresses;
+    return this;
+  }
+
+  public List<AuthorityIdentifierType> getAuthorityIdentifierTypes() {
+    return authorityIdentifierTypes;
+  }
+
+  public void setAuthorityIdentifierTypes(List<AuthorityIdentifierType> authorityIdentifierTypes) {
+    this.authorityIdentifierTypes = authorityIdentifierTypes;
+  }
+
+  public MappingParameters withAuthorityIdentifierTypes(List<AuthorityIdentifierType> authorityIdentifierTypes) {
+    this.authorityIdentifierTypes = new UnmodifiableList<>(authorityIdentifierTypes);
     return this;
   }
 }
