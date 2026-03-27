@@ -75,11 +75,11 @@
       <artifactId>domain-models-api-aspects</artifactId>
       <version>${raml-module-builder.version}</version>
     </dependency>
-<!--    <dependency>-->
-<!--      <groupId>org.folio</groupId>-->
-<!--      <artifactId>mod-inventory-storage-dto</artifactId>-->
-<!--      <version>30.0.0-SNAPSHOT</version>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>org.folio</groupId>
+      <artifactId>mod-inventory-storage-dto</artifactId>
+      <version>30.0.0-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.marc4j</groupId>
       <artifactId>marc4j</artifactId>
@@ -271,48 +271,21 @@
                 <path>${basedir}/ramls/relatedHeading.json</path>
                 <path>${basedir}/ramls/event.json</path>
                 <path>${basedir}/ramls/instance.json</path>
-                <path>${basedir}/ramls/holdings.json</path>
                 <path>${basedir}/ramls/authority.json</path>
                 <path>${basedir}/ramls/authorityExtended.json</path>
-                <path>${basedir}/ramls/settings/alternativetitletypes.json</path>
-                <path>${basedir}/ramls/settings/classificationtypes.json</path>
-                <path>${basedir}/ramls/settings/contributornametypes.json</path>
-                <path>${basedir}/ramls/settings/contributortypes.json</path>
-                <path>${basedir}/ramls/settings/electronicaccessrelationships.json</path>
-                <path>${basedir}/ramls/settings/identifiertypes.json</path>
-                <path>${basedir}/ramls/settings/instanceformats.json</path>
-                <path>${basedir}/ramls/settings/instancenotetypes.json</path>
-                <path>${basedir}/ramls/settings/instancetypes.json</path>
-                <path>${basedir}/ramls/settings/instancestatuses.json</path>
-                <path>${basedir}/ramls/settings/natureofcontentterms.json</path>
-                <path>${basedir}/ramls/settings/instancerelationshiptypes.json</path>
-                <path>${basedir}/ramls/settings/holdingstypes.json</path>
-                <path>${basedir}/ramls/settings/holdingsnotetypes.json</path>
-                <path>${basedir}/ramls/settings/illpolicies.json</path>
-                <path>${basedir}/ramls/settings/callnumbertypes.json</path>
-                <path>${basedir}/ramls/settings/statisticalcodes.json</path>
-                <path>${basedir}/ramls/settings/statisticalcodetypes.json</path>
-                <path>${basedir}/ramls/settings/locations.json</path>
-                <path>${basedir}/ramls/settings/materialtypes.json</path>
-                <path>${basedir}/ramls/settings/itemdamagedstatuses.json</path>
-                <path>${basedir}/ramls/settings/loantypes.json</path>
-                <path>${basedir}/ramls/settings/itemnotetypes.json</path>
-                <path>${basedir}/ramls/settings/issuancemodes.json</path>
-                <path>${basedir}/ramls/settings/authoritynotetypes.json</path>
-                <path>${basedir}/ramls/settings/authoritysourcefiles.json</path>
-                <path>${basedir}/ramls/settings/organization.json</path>
-                <path>${basedir}/ramls/settings/organization_collection.json</path>
-                <path>${basedir}/ramls/settings/subjectSources.json</path>
-                <path>${basedir}/ramls/settings/subjectTypes.json</path>
-                <path>${basedir}/ramls/settings/instanceDateTypes.json</path>
-                <path>${basedir}/ramls/settings/acquisitions_unit.json</path>
-                <path>${basedir}/ramls/settings/acquisitions_unit_collection.json</path>
                 <path>${basedir}/ramls/settings/acquisition_method.json</path>
                 <path>${basedir}/ramls/settings/acquisition_method_collection.json</path>
-                <path>${basedir}/ramls/settings/fund.json</path>
-                <path>${basedir}/ramls/settings/fund_collection.json</path>
+                <path>${basedir}/ramls/settings/acquisitions_unit.json</path>
+                <path>${basedir}/ramls/settings/acquisitions_unit_collection.json</path>
+                <path>${basedir}/ramls/settings/authoritynotetypes.json</path>
+                <path>${basedir}/ramls/settings/authoritysourcefiles.json</path>
+                <path>${basedir}/ramls/settings/authorityidentifiertypes.json</path>
                 <path>${basedir}/ramls/settings/expense_class.json</path>
                 <path>${basedir}/ramls/settings/expense_class_collection.json</path>
+                <path>${basedir}/ramls/settings/fund.json</path>
+                <path>${basedir}/ramls/settings/fund_collection.json</path>
+                <path>${basedir}/ramls/settings/organization.json</path>
+                <path>${basedir}/ramls/settings/organization_collection.json</path>
               </sourcePaths>
               <targetPackage>org.folio</targetPackage>
               <generateBuilders>true</generateBuilders>
@@ -389,6 +362,7 @@
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
           <systemPropertyVariables>
+            <!-- <api.version>1.44</api.version>-->
             <vertx.logger-delegate-factory-class-name>
               io.vertx.core.logging.Log4j2LogDelegateFactory
             </vertx.logger-delegate-factory-class-name>

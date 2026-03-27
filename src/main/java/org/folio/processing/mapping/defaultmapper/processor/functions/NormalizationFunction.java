@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang.StringUtils;
+import org.folio.AuthorityIdentifierType;
 import org.folio.rest.jaxrs.model.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
 import org.folio.rest.jaxrs.model.CallNumberType;
@@ -509,6 +510,24 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .filter(subjectType -> subjectType.getName().trim().equalsIgnoreCase(typeName))
         .findFirst()
         .map(SubjectType::getId)
+        .orElse(StringUtils.EMPTY);
+    }
+  },
+
+  SET_AUTHORITY_IDENTIFIER_TYPE_ID_BY_CODE() {
+    private static final String CODE_PARAMETER = "code";
+
+    @Override
+    public String apply(RuleExecutionContext context) {
+      String typeCode = context.getRuleParameter().getString(CODE_PARAMETER);
+      List<AuthorityIdentifierType> identifierTypes = context.getMappingParameters().getAuthorityIdentifierTypes();
+      if (identifierTypes == null || typeCode == null) {
+        return STUB_FIELD_TYPE_ID;
+      }
+      return identifierTypes.stream()
+        .filter(identifierType -> identifierType.getCode().trim().equalsIgnoreCase(typeCode))
+        .findFirst()
+        .map(AuthorityIdentifierType::getId)
         .orElse(StringUtils.EMPTY);
     }
   },
