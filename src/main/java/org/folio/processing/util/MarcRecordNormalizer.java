@@ -8,7 +8,7 @@ import org.marc4j.marc.Record;
 import org.marc4j.marc.Subfield;
 import org.marc4j.marc.VariableField;
 
-public final class MarcRecordModifier {
+public final class MarcRecordNormalizer {
 
   private static final String TAG_035 = "035";
   private static final String OCLC_PREFIX = "(OCoLC)";
@@ -19,7 +19,7 @@ public final class MarcRecordModifier {
   private static final Pattern DIGITS_PATTERN = Pattern.compile("\\d+");
   private static final Pattern PREFIX_ZEROS_PATTERN = Pattern.compile("^0+");
 
-  private MarcRecordModifier() {
+  private MarcRecordNormalizer() {
   }
 
   public static void normalize035Field(Record marcRecord) {

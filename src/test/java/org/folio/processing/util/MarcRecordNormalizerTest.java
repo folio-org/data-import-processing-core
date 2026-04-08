@@ -18,7 +18,7 @@ import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
 
 @RunWith(JUnit4.class)
-class MarcRecordModifierTest {
+class MarcRecordNormalizerTest {
 
   private static final String TAG_035 = "035";
   private static final String OCLC_PREFIX = "(OCoLC)";
@@ -50,19 +50,19 @@ class MarcRecordModifierTest {
   @MethodSource("singleFieldFormattingParameters")
   void normalize035Field_singleFieldFormatting(String testName, String input, String expected) {
     var marcRecord = recordWith035(input);
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
     assertEquals(expected, firstSubfieldData(marcRecord));
   }
 
   @Test
   void normalize035Field_nullRecord_doesNotThrow() {
-    assertDoesNotThrow(() -> MarcRecordModifier.normalize035Field(null));
+    assertDoesNotThrow(() -> MarcRecordNormalizer.normalize035Field(null));
   }
 
   @Test
   void normalize035Field_noFields_recordUnchanged() {
     var marcRecord = FACTORY.newRecord();
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
     assertTrue(marcRecord.getVariableFields(TAG_035).isEmpty());
   }
 
@@ -73,7 +73,7 @@ class MarcRecordModifierTest {
     field.addSubfield(FACTORY.newSubfield('a', OCLC_12345));
     marcRecord.addVariableField(field);
 
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
 
     assertTrue(marcRecord.getVariableFields(TAG_035).isEmpty());
   }
@@ -91,7 +91,7 @@ class MarcRecordModifierTest {
     marcRecord.addVariableField(field1);
     marcRecord.addVariableField(field2);
 
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
 
     var remaining = marcRecord.getVariableFields(TAG_035);
     assertEquals(1, remaining.size());
@@ -106,7 +106,7 @@ class MarcRecordModifierTest {
     field.addSubfield(FACTORY.newSubfield('a', OCLC_0012345));
     marcRecord.addVariableField(field);
 
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
 
     var remaining = marcRecord.getVariableFields(TAG_035);
     assertEquals(1, remaining.size());
@@ -128,7 +128,7 @@ class MarcRecordModifierTest {
     marcRecord.addVariableField(field1);
     marcRecord.addVariableField(field2);
 
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
 
     var remaining = marcRecord.getVariableFields(TAG_035);
     assertEquals(1, remaining.size());
@@ -147,7 +147,7 @@ class MarcRecordModifierTest {
     marcRecord.addVariableField(field1);
     marcRecord.addVariableField(field2);
 
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
 
     var remaining = marcRecord.getVariableFields(TAG_035);
     assertEquals(2, remaining.size());
@@ -168,7 +168,7 @@ class MarcRecordModifierTest {
     field2.addSubfield(FACTORY.newSubfield('k', "(OCoLC)120194933"));
     basicRecord.addVariableField(field2);
 
-    MarcRecordModifier.normalize035Field(basicRecord);
+    MarcRecordNormalizer.normalize035Field(basicRecord);
 
     var updatedField = (DataField) basicRecord.getVariableField("035");
     assertNotNull(updatedField);
@@ -189,7 +189,7 @@ class MarcRecordModifierTest {
     field.addSubfield(FACTORY.newSubfield('z', "(NLC)999"));
     marcRecord.addVariableField(field);
 
-    MarcRecordModifier.normalize035Field(marcRecord);
+    MarcRecordNormalizer.normalize035Field(marcRecord);
 
     var df = (DataField) marcRecord.getVariableFields(TAG_035).getFirst();
     assertEquals(OCLC_123456, df.getSubfield('a').getData());
