@@ -3,6 +3,7 @@
 * [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier
 * [MODDICORE-468](https://folio-org.atlassian.net/browse/MODDICORE-468) Upgrade to Vert.x v5.0 and RMB v36.0.0
 * [MODDICORE-500](https://folio-org.atlassian.net/browse/MODDICORE-500) Enables automatic resolution of authority identifier types by code during data mapping
+* [MODDICORE-495](https://folio-org.atlassian.net/browse/MODDICORE-495) Add MARC 035 OCLC normalization logic  for reuse across modules
 
 ## 2025-03-07 v4.4.0
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
