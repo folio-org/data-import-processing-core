@@ -1,9 +1,16 @@
-## 2025-mm-dd v5.0.0-SNAPSHOT
+## 2026-04-14 v5.0.0
 * [MODSOURCE-919](https://folio-org.atlassian.net/browse/MODSOURCE-919) Fill in permissions header during event sending to Kafka
 * [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier
 * [MODDICORE-468](https://folio-org.atlassian.net/browse/MODDICORE-468) Upgrade to Vert.x v5.0 and RMB v36.0.0
 * [MODDICORE-500](https://folio-org.atlassian.net/browse/MODDICORE-500) Enables automatic resolution of authority identifier types by code during data mapping
 * [MODDICORE-495](https://folio-org.atlassian.net/browse/MODDICORE-495) Add MARC 035 OCLC normalization logic  for reuse across modules
+* [MODDICORE-496](https://folio-org.atlassian.net/browse/MODDICORE-496) Fix ConcurrentModificationException during publisher registration
+* [MODDICORE-492](https://folio-org.atlassian.net/browse/MODDICORE-492) Add dependency on mod-inventory-storage-dto and remove inventory schemas
+* [MODDICORE-484](https://folio-org.atlassian.net/browse/MODDICORE-484) Update KafkaEventPublisher to send x-okapi-request-id header
+* [MODDICORE-457](https://folio-org.atlassian.net/browse/MODDICORE-457) Enhance CQL Query Generation for Performance During Identifier Matching
+* [MODDICORE-456](https://folio-org.atlassian.net/browse/MODDICORE-456) Update the MARC to Instance field mapping for Format (338$a and $b)
+* [MODDICORE-453](https://folio-org.atlassian.net/browse/MODDICORE-453) Replace net.mguenther.kafka:kafka-junit (EOL)
+* [MODDICORE-421](https://folio-org.atlassian.net/browse/MODDICORE-421) Include Job Execution Identifiers In Logs
 
 ## 2025-03-07 v4.4.0
 * [MODDICORE-433](https://folio-org.atlassian.net/browse/MODDICORE-433) Add userId to event header and allow to send events with null token
