@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 public final class TestUtil {
 
-  public static final DockerImageName KAFKA_CONTAINER_NAME = DockerImageName.parse("apache/kafka-native:3.8.0");
+  public static final DockerImageName KAFKA_CONTAINER_NAME = DockerImageName.parse("apache/kafka-native:4.2.0");
 
   public static String readFileFromPath(String path) throws IOException {
     return new String(FileUtils.readFileToByteArray(new File(path)));
