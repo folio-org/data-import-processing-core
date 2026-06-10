@@ -11,8 +11,8 @@ import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.processing.TestUtil;
 import org.folio.rest.jaxrs.model.Event;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.kafka.KafkaContainer;
@@ -42,7 +42,6 @@ public class KafkaEventPublisherTest {
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
 
-  @ClassRule
   public static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static KafkaConfig kafkaConfig;
   private static Properties consumerConfig = new Properties();
@@ -50,6 +49,7 @@ public class KafkaEventPublisherTest {
 
   @BeforeClass
   public static void setUpClass() {
+    kafkaContainer.start();
     kafkaConfig = KafkaConfig.builder()
       .kafkaHost(kafkaContainer.getHost())
       .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
@@ -61,6 +61,11 @@ public class KafkaEventPublisherTest {
       }
     });
     consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
+  }
+
+  @AfterClass
+  public static void tearDownClass() {
+    kafkaContainer.stop();
   }
 
   @Test

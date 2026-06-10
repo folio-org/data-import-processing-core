@@ -10,8 +10,8 @@ import org.folio.kafka.KafkaConfig;
 import org.folio.processing.TestUtil;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +29,6 @@ import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
 public class EventManagerTest {
   private static final String KAFKA_ENV = "folio";
 
-  @ClassRule
   public static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static KafkaConfig kafkaConfig;
 
@@ -38,11 +37,17 @@ public class EventManagerTest {
 
   @BeforeClass
   public static void setUpClass() {
+    kafkaContainer.start();
     kafkaConfig = KafkaConfig.builder()
         .kafkaHost(kafkaContainer.getHost())
         .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
         .envId(KAFKA_ENV)
         .build();
+  }
+
+  @AfterClass
+  public static void tearDownClass() {
+    kafkaContainer.stop();
   }
 
   @Before
