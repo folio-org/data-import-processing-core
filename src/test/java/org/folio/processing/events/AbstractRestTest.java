@@ -2,11 +2,9 @@ package org.folio.processing.events;
 
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Before;
 import org.junit.Rule;
 
 import java.io.IOException;
@@ -27,11 +25,6 @@ public abstract class AbstractRestTest {
     WireMockConfiguration.wireMockConfig()
       .port(PORT)
       .notifier(new Slf4jNotifier(true)));
-
-  @Before
-  public void configureWireMockClient() {
-    WireMock.configureFor("localhost", mockServer.port());
-  }
 
   public static int nextFreePort() {
     LOGGER.trace("nextFreePort:: creating random port");
