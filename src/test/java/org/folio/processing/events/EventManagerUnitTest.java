@@ -1,6 +1,5 @@
 package org.folio.processing.events;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -20,6 +19,8 @@ import org.folio.processing.events.handlers.FailExceptionallyHandler;
 import org.folio.processing.events.handlers.InstancePostProcessingEventHandler;
 import org.folio.processing.events.handlers.UpdateInstanceEventHandler;
 import org.folio.processing.events.services.handler.EventHandler;
+import org.folio.processing.events.services.publisher.EventPublisher;
+import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,17 +51,23 @@ import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 import static org.folio.rest.jaxrs.model.ReactToType.MATCH;
 import static org.folio.rest.jaxrs.model.ReactToType.NON_MATCH;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(VertxUnitRunner.class)
-public class EventManagerUnitTest extends AbstractRestTest {
+public class EventManagerUnitTest {
   private static final Logger LOGGER = LogManager.getLogger(EventManagerUnitTest.class);
-  private final String PUBLISH_SERVICE_URL = "/pubsub/publish";
+
+  private static final String TOKEN = "token";
+  private static final String TENANT_ID = "diku";
+  private static final String CONNECTION_URL = "http://localhost:9000";
 
   @Before
   public void beforeTest() {
     EventManager.clearEventHandlers();
-    EventManager.registerRestEventPublisher();
-    WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.noContent()));
+    var eventPublisher = mock(EventPublisher.class);
+    EventManager.registerCustomKafkaEventPublisher(eventPublisher);
+    when(eventPublisher.publish(any())).thenReturn(CompletableFuture.completedFuture(new Event()));
   }
 
   @Test
@@ -97,7 +104,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().getFirst());
@@ -138,7 +145,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
         DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
@@ -172,7 +179,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().getFirst());
@@ -205,7 +212,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
@@ -241,7 +248,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>());
     // when
@@ -319,7 +326,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INVENTORY_INSTANCE_NOT_MATCHED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(action1Wrapper);
@@ -344,7 +351,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction1Wrapper");
     Async async = testContext.async();
     // given
-    EventHandler matchInstanceHandler = Mockito.mock(EventHandler.class);
+    EventHandler matchInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
       return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()));
@@ -382,7 +389,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(matchWrapper);
@@ -402,7 +409,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     LOGGER.info("test:: shouldHandleEventInCascadingProfilesAndSwitchNode");
     Async async = testContext.async();
     // given
-    EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
+    EventHandler updateInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
 
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
@@ -524,7 +531,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INVENTORY_INSTANCE_UPDATED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(instanceUpdateActionWrapper2);
@@ -544,7 +551,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeMatchWrapper2");
     Async async = testContext.async();
     // given
-    EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
+    EventHandler updateInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
       payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
@@ -590,7 +597,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(actionWrapper);
@@ -627,7 +634,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>());
     // when
@@ -672,7 +679,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT)
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(payloadContext);
     // when
@@ -716,7 +723,7 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(extraOLKey)
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());

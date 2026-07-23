@@ -12,7 +12,6 @@ import org.folio.processing.events.services.processor.EventProcessor;
 import org.folio.processing.events.services.processor.EventProcessorImpl;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.processing.events.services.publisher.KafkaEventPublisher;
-import org.folio.processing.events.services.publisher.RestEventPublisher;
 import org.folio.processing.exceptions.EventHandlerNotFoundException;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.rest.jaxrs.model.ReactToType;
@@ -49,7 +48,7 @@ public final class EventManager {
   public static final String OL_ACCUMULATIVE_RESULTS = "OL_ACCUMULATIVE_RESULTS";
 
   private static final EventProcessor eventProcessor = new EventProcessorImpl();
-  private static final List<EventPublisher> eventPublisher = new CopyOnWriteArrayList<>(List.of(new RestEventPublisher()));
+  private static final List<EventPublisher> eventPublisher = new CopyOnWriteArrayList<>();
 
   private EventManager() {
   }
@@ -272,15 +271,6 @@ public final class EventManager {
     eventPublisher.add(publisher);
     LOGGER.info("cleanupAndRegisterPublisher:: Successfully registered publisher: {}",
         publisher.getClass().getName());
-  }
-
-  /**
-   * Performs registration for rest event publisher in publishers list
-   */
-  public static void registerRestEventPublisher() {
-    LOGGER.trace("registerRestEventPublisher:: Registering rest event publisher");
-    eventPublisher.clear();
-    eventPublisher.add(new RestEventPublisher());
   }
 
   /**

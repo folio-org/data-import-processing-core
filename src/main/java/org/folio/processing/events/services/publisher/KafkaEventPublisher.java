@@ -24,19 +24,20 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_REQUEST_ID_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.USER_ID_HEADER;
 
 public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
+
   public static final String RECORD_ID_HEADER = "recordId";
   public static final String CHUNK_ID_HEADER = "chunkId";
-  static final String PERMISSIONS_HEADER = "X-Okapi-Permissions";
-  private static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
-
+  public static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
+  public static final String USER_ID_HEADER = "userId";
+  public static final String TOKEN_HEADER = "X-Okapi-Token";
+  public static final String URL_HEADER = "X-Okapi-Url";
+  public static final String TENANT_HEADER = "X-Okapi-Tenant";
+  public static final String REQUEST_ID_HEADER = "X-Okapi-Request-Id";
+  public static final String PERMISSIONS_HEADER = "X-Okapi-Permissions";
+  
   private static final AtomicLong indexer = new AtomicLong();
 
   private final KafkaConfig kafkaConfig;
@@ -110,18 +111,18 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   private List<KafkaHeader> getHeaders(DataImportEventPayload eventPayload, String recordId, String chunkId, String jobExecutionId) {
     List<KafkaHeader> headers = new ArrayList<>();
     Optional.ofNullable(eventPayload.getToken())
-      .ifPresent(token -> headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, token)));
+      .ifPresent(token -> headers.add(KafkaHeader.header(TOKEN_HEADER, token)));
     Optional.ofNullable(eventPayload.getContext().get(PERMISSIONS_HEADER))
       .ifPresent(permissions -> headers.add(KafkaHeader.header(PERMISSIONS_HEADER, permissions)));
     Optional.ofNullable(eventPayload.getContext())
       .map(it -> it.get(USER_ID_HEADER))
       .ifPresent(userId -> headers.add(KafkaHeader.header(USER_ID_HEADER, userId)));
     Optional.ofNullable(eventPayload.getContext())
-      .map(it -> it.get(OKAPI_REQUEST_ID_HEADER))
-      .ifPresent(requestId -> headers.add(KafkaHeader.header(OKAPI_REQUEST_ID_HEADER, requestId)));
+      .map(it -> it.get(REQUEST_ID_HEADER))
+      .ifPresent(requestId -> headers.add(KafkaHeader.header(REQUEST_ID_HEADER, requestId)));
 
-    headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
-    headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
+    headers.add(KafkaHeader.header(URL_HEADER, eventPayload.getOkapiUrl()));
+    headers.add(KafkaHeader.header(TENANT_HEADER, eventPayload.getTenant()));
     checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
     return headers;
   }
