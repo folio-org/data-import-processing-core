@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.BooleanUtils;
 import org.marc4j.marc.DataField;
+import org.marc4j.marc.Subfield;
 
 /**
  * Util for processing fields with specific logic.
@@ -57,13 +58,11 @@ public final class ExtraFieldUtil {
       .stream()
       .map(sf -> field.getSubfield(String.valueOf(sf).charAt(0)))
       .filter(Objects::nonNull)
-      .map(sf -> sf.getData())
+      .map(Subfield::getData)
       .filter(Objects::nonNull)
       .filter(data -> data.length() >= 3)
       .map(data -> data.substring(0, 3))
-      .forEach(data -> {
-        field.setTag(replacementRules.getOrDefault(data, data));
-      });
+      .forEach(data -> field.setTag(replacementRules.getOrDefault(data, data)));
   }
 
   private static Map<String, String> retrieveReplacementRules(JsonArray fieldReplacementRules) {

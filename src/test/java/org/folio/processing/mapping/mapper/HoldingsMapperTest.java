@@ -88,12 +88,11 @@ class HoldingsMapperTest {
   @Test
   void shouldCreateOneHoldingIfPermanentLocationIsStringValue() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = SINGLE_LOCATION_PARSED_CONTENT;
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(parsedContent));
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(SINGLE_LOCATION_PARSED_CONTENT));
     HashMap<String, String> context = new HashMap<>();
     context.put(HOLDINGS.value(), new JsonObject().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -151,9 +150,8 @@ class HoldingsMapperTest {
   @Test
   void shouldMapMultipleHoldingInExistingHoldings() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = SINGLE_LOCATION_PARSED_CONTENT;
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(parsedContent));
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(SINGLE_LOCATION_PARSED_CONTENT));
 
     JsonArray holdingsAsJson = new JsonArray(List.of(
       new JsonObject().put("holdings", new JsonObject()
@@ -165,7 +163,7 @@ class HoldingsMapperTest {
 
     HashMap<String, String> context = new HashMap<>();
     context.put(HOLDINGS.value(), holdingsAsJson.encode());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -224,9 +222,8 @@ class HoldingsMapperTest {
   @Test
   void shouldMapOneHoldingInExistingHoldingIfPermanentLocationIsStringValue() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = SINGLE_LOCATION_PARSED_CONTENT;
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(parsedContent));
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(SINGLE_LOCATION_PARSED_CONTENT));
 
     JsonArray holdingsAsJson = new JsonArray(List.of(
       new JsonObject()
@@ -235,7 +232,7 @@ class HoldingsMapperTest {
 
     HashMap<String, String> context = new HashMap<>();
     context.put(HOLDINGS.value(), holdingsAsJson.encode());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -376,12 +373,11 @@ class HoldingsMapperTest {
   @Test
   void shouldCreateSingleHoldingIfLocationsAreTheSame() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = SAME_LOCATION_PARSED_CONTENT;
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(parsedContent));
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(SAME_LOCATION_PARSED_CONTENT));
     HashMap<String, String> context = new HashMap<>();
     context.put(HOLDINGS.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -441,22 +437,18 @@ class HoldingsMapperTest {
   @Test
   void shouldNotCreateOneHoldingsIfProfileIsInvalid() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = SINGLE_LOCATION_PARSED_CONTENT;
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(parsedContent));
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(SINGLE_LOCATION_PARSED_CONTENT));
     HashMap<String, String> context = new HashMap<>();
     context.put(HOLDINGS.value(), new JsonObject().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
-
-    MappingDetail mappingDetails = null;
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
       .withName("Create testing Holdings")
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(HOLDINGS)
-      .withMappingDetails(mappingDetails);
+      .withExistingRecordType(HOLDINGS);
 
     MappingContext mappingContext = new MappingContext()
       .withMappingParameters(new MappingParameters()
@@ -519,10 +511,10 @@ class HoldingsMapperTest {
   }
 
   private DataImportEventPayload createEventPayload(String holdingsValue, String parsedContent) {
-    Record record = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
     context.put(HOLDINGS.value(), holdingsValue);
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
     return eventPayload;

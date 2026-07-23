@@ -463,7 +463,7 @@ class EventManagerUnitTest {
       holdingsChildMatchWrapper, holdingsUpdateActionWrapper);
 
     ProfileSnapshotWrapper jobProfileWrapper =
-      jobProfileWrapper("jobProfileWrapper", instanceParentMatchWrapper, holdingsParentMatchWrapper);
+      jobProfileWrapper(instanceParentMatchWrapper, holdingsParentMatchWrapper);
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INVENTORY_INSTANCE_UPDATED.value())
@@ -701,14 +701,12 @@ class EventManagerUnitTest {
           .withExistingRecordType(existingRecordType)));
   }
 
-  private ProfileSnapshotWrapper actionWrapper(
-    String name,
-    ReactToType reactTo,
-    int order,
-    ActionProfile.FolioRecord folioRecord,
-    ActionProfile.Action action,
-    ProfileSnapshotWrapper childWrapper
-  ) {
+  private ProfileSnapshotWrapper actionWrapper(String name,
+                                               ReactToType reactTo,
+                                               int order,
+                                               ActionProfile.FolioRecord folioRecord,
+                                               ActionProfile.Action action,
+                                               ProfileSnapshotWrapper childWrapper) {
     return new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withReactTo(reactTo)
@@ -719,13 +717,11 @@ class EventManagerUnitTest {
       .withChildSnapshotWrappers(Collections.singletonList(childWrapper));
   }
 
-  private ProfileSnapshotWrapper matchWrapper(
-    String name,
-    ReactToType reactTo,
-    int order,
-    EntityType existingRecordType,
-    ProfileSnapshotWrapper... childWrappers
-  ) {
+  private ProfileSnapshotWrapper matchWrapper(String name,
+                                              ReactToType reactTo,
+                                              int order,
+                                              EntityType existingRecordType,
+                                              ProfileSnapshotWrapper... childWrappers) {
     ProfileSnapshotWrapper wrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withOrder(order)
@@ -740,11 +736,11 @@ class EventManagerUnitTest {
     return wrapper;
   }
 
-  private ProfileSnapshotWrapper jobProfileWrapper(String name, ProfileSnapshotWrapper... childWrappers) {
+  private ProfileSnapshotWrapper jobProfileWrapper(ProfileSnapshotWrapper... childWrappers) {
     return new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withContentType(JOB_PROFILE)
-      .withContent(JsonObject.mapFrom(new JobProfile().withName(name)))
+      .withContent(JsonObject.mapFrom(new JobProfile().withName("jobProfileWrapper")))
       .withChildSnapshotWrappers(List.of(childWrappers));
   }
 }

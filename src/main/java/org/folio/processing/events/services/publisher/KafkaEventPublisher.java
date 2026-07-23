@@ -76,22 +76,20 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
         KafkaTopicNameHelper.formatTopicName(kafkaConfig.getEnvId(), KafkaTopicNameHelper.getDefaultNameSpace(),
           eventPayload.getTenant(), eventType);
 
-      var record = buildRecord(eventPayload, event, topicName);
-      record.addHeaders(getHeaders(eventPayload, recordId, chunkId, jobExecutionId));
+      var producerRecord = buildRecord(eventPayload, event, topicName);
+      producerRecord.addHeaders(getHeaders(eventPayload, recordId, chunkId, jobExecutionId));
 
-      producer.send(record)
+      producer.send(producerRecord)
         .<Void>mapEmpty()
         .onSuccess(ar -> {
-          LOGGER.info(
-            "publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' "
-              + "with chunkId: '{}' was sent to the topic '{}' ",
+          LOGGER.info("publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' "
+                      + "with chunkId: '{}' was sent to the topic '{}' ",
             eventType, jobExecutionId, recordId, chunkId, topicName);
           future.complete(event);
         })
         .onFailure(error -> {
-          LOGGER.warn(
-            "publish:: {} send error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' "
-              + "and with chunkId: '{}' ",
+          LOGGER.warn("publish:: {} send error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' "
+                      + "and with chunkId: '{}' ",
             eventType + "_Producer", eventType, jobExecutionId, recordId, chunkId, error);
           future.completeExceptionally(error);
         });
@@ -103,8 +101,8 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   }
 
   @Override
-  public void close() throws Exception {
-    producer.flush().eventually(() -> producer.close());
+  public void close() {
+    producer.flush().eventually(producer::close);
   }
 
   private KafkaProducerRecord<String, String> buildRecord(DataImportEventPayload eventPayload, Event event,

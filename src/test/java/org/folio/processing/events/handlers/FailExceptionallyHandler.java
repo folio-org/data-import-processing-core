@@ -11,7 +11,7 @@ public class FailExceptionallyHandler implements EventHandler {
 
   @Override
   public CompletableFuture<DataImportEventPayload> handle(DataImportEventPayload eventPayload) {
-    CompletableFuture<DataImportEventPayload> future = new CompletableFuture();
+    CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     future.completeExceptionally(new IllegalArgumentException("Can not handle event payload"));
     return future;
   }

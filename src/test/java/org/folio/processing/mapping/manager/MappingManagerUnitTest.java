@@ -223,7 +223,7 @@ class MappingManagerUnitTest {
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(entityType.value()));
 
-    Map<String, Object> entityResult =
+    var entityResult =
       (Map) Json.decodeValue(eventPayload.getContext().get(entityType.value()), Map.class).get("instance");
     List<String> statisticalCodeIds = (List) entityResult.get("statisticalCodeIds");
     assertEquals(statisticalCodeIds.size(), expectedResultIndexes.size());

@@ -41,8 +41,8 @@ public final class MatchingManager {
       }
       ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
       MatchProfile matchProfile;
-      if (matchingProfileWrapper.getContent() instanceof Map) {
-        matchProfile = new JsonObject((Map) matchingProfileWrapper.getContent()).mapTo(MatchProfile.class);
+      if (matchingProfileWrapper.getContent() instanceof Map map) {
+        matchProfile = new JsonObject(map).mapTo(MatchProfile.class);
       } else {
         matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
       }

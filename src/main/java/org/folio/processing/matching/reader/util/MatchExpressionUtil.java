@@ -45,19 +45,12 @@ public final class MatchExpressionUtil {
   public static boolean isQualified(String value, Qualifier qualifier) {
     boolean isQualified = true;
     if (value != null && qualifier != null && qualifier.getQualifierType() != null) {
-      switch (qualifier.getQualifierType()) {
-        case BEGINS_WITH:
-          isQualified = value.startsWith(qualifier.getQualifierValue());
-          break;
-        case ENDS_WITH:
-          isQualified = value.endsWith(qualifier.getQualifierValue());
-          break;
-        case CONTAINS:
-          isQualified = value.contains(qualifier.getQualifierValue());
-          break;
-        default:
-          isQualified = false;
-      }
+      isQualified = switch (qualifier.getQualifierType()) {
+        case BEGINS_WITH -> value.startsWith(qualifier.getQualifierValue());
+        case ENDS_WITH -> value.endsWith(qualifier.getQualifierValue());
+        case CONTAINS -> value.contains(qualifier.getQualifierValue());
+        default -> false;
+      };
     }
     return isQualified;
   }

@@ -30,13 +30,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MatchingManagerTest {
-  private MatchValueLoader instanceValueLoader;
 
   @BeforeEach
   void beforeTest() {
     MatchValueReaderFactory.clearReaderFactory();
     MatchValueLoaderFactory.clearLoaderFactory();
-    instanceValueLoader = new MatchValueLoader() {
+    MatchValueLoader instanceValueLoader = new MatchValueLoader() {
       @Override
       public CompletableFuture<LoadResult> loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload) {
         CompletableFuture<LoadResult> future = new CompletableFuture<>();
@@ -52,6 +51,7 @@ class MatchingManagerTest {
         return existingRecordType == INSTANCE;
       }
     };
+    MatchValueLoaderFactory.register(instanceValueLoader);
   }
 
   @Test

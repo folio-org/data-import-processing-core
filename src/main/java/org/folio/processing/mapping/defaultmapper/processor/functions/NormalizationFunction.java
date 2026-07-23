@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.folio.AuthorityIdentifierType;
 import org.folio.AuthorityNoteType;
 import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
@@ -140,7 +141,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       JsonObject ruleParameter = context.getRuleParameter();
       if (ruleParameter != null && ruleParameter.containsKey(SUBSTRING_PARAMETER)) {
         String substring = context.getRuleParameter().getString(SUBSTRING_PARAMETER);
-        return StringUtils.remove(subFieldValue, substring);
+        return Strings.CS.remove(subFieldValue, substring);
       } else {
         return subFieldValue;
       }
@@ -156,7 +157,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       int to = Character.getNumericValue(dataField.getIndicator2());
       if (0 < to && to < subFieldData.length()) {
         String prefixToRemove = subFieldData.substring(from, to);
-        return StringUtils.remove(subFieldData, prefixToRemove);
+        return Strings.CS.remove(subFieldData, prefixToRemove);
       } else {
         return subFieldData;
       }
@@ -221,16 +222,16 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return StringUtils.EMPTY;
       }
       char sixthChar = subFieldValue.charAt(6);
-      String defaultDateTypeId = findDateTypeId(dateTypes, StringUtils.EMPTY);
+      String defaultDateTypeId = findDateTypeId(dateTypes);
       return matchInstanceDateTypeViaCode(sixthChar, dateTypes, defaultDateTypeId);
     }
 
-    private String findDateTypeId(List<InstanceDateType> dates, String defaultId) {
+    private String findDateTypeId(List<InstanceDateType> dates) {
       return dates.stream()
         .filter(date -> date.getName().equalsIgnoreCase(DEFAULT_DATE_TYPE))
         .findFirst()
         .map(InstanceDateType::getId)
-        .orElse(defaultId);
+        .orElse(StringUtils.EMPTY);
     }
 
     private String matchInstanceDateTypeViaCode(char sixthChar, List<InstanceDateType> instanceDateTypes,

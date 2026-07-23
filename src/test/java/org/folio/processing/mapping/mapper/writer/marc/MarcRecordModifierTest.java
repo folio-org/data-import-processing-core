@@ -43,13 +43,12 @@ class MarcRecordModifierTest {
   protected MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test
-  void shouldThrowExceptionWhenHasNoMarcRecord() throws IOException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    eventPayload.setContext(new HashMap<>());
-    MappingProfile mappingProfile =
-      new MappingProfile().withMappingDetails(new MappingDetail().withMarcMappingOption(MODIFY));
+  void shouldThrowExceptionWhenHasNoMarcRecord() {
+    var eventPayload = new DataImportEventPayload().withContext(new HashMap<>());
+    var mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail().withMarcMappingOption(MODIFY));
+    var mappingParameters = new MappingParameters();
     Assertions.assertThrows(IllegalArgumentException.class,
-      () -> marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC));
+      () -> marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC));
   }
 
   @Test
@@ -59,12 +58,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
       + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{"
       + "\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -104,12 +103,12 @@ class MarcRecordModifierTest {
       + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"650\":{\"subfields\":[{\"b\":\"book\"}]"
       + ",\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -148,12 +147,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{"
       + "\"005\":\"20191122134835.0\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -187,12 +186,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{"
       + "\"007\":\"vz|cza\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -224,12 +223,12 @@ class MarcRecordModifierTest {
       + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{"
       + "\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -264,12 +263,12 @@ class MarcRecordModifierTest {
       + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{"
       + "\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -305,12 +304,12 @@ class MarcRecordModifierTest {
       + "\"a\":\"electronic\"},{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{"
       + "\"subfields\":[{\"a\":\"book\"},{\"b\":\"red\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -347,12 +346,12 @@ class MarcRecordModifierTest {
       + "\"a\":\"electronic\"},{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{"
       + "\"subfields\":[{\"a\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -387,12 +386,12 @@ class MarcRecordModifierTest {
       "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"020\": {"
       + "\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
@@ -437,12 +436,12 @@ class MarcRecordModifierTest {
       "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"020\": {\"subfields\": [{\"a\": "
       + "\"electronic bk\"}, {\"b\": \"256\"}, {\"c\": \"128\"}], \"ind1\": \"7\",\"ind2\": \" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
@@ -485,12 +484,12 @@ class MarcRecordModifierTest {
       "{\"leader\": \"01314nam  22003851a 4500\", \"fields\":[{\"020\":{\"subfields\":[{"
       + "\"a\":\"(electronic bk.)\"},{\"b\": \"green\"}],\"ind1\": \"7\", \"ind2\": \"7\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
@@ -534,12 +533,12 @@ class MarcRecordModifierTest {
     String parsedContent =
       "{\"leader\":\"00059nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
       + "\"a\":\"(electronic bk.)\"}],\"ind1\":\"7\",\"ind2\":\"7\"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
@@ -581,12 +580,12 @@ class MarcRecordModifierTest {
       + "\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\": \"7\",\"ind2\": \"7\"}},{\"022\":{"
       + "\"subfields\":[{\"a\":\"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
@@ -633,12 +632,12 @@ class MarcRecordModifierTest {
       + "\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": \"two\"}],\"ind1\":\" \","
       + "\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
@@ -685,12 +684,12 @@ class MarcRecordModifierTest {
       + "\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": "
       + "\"two\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
@@ -739,12 +738,12 @@ class MarcRecordModifierTest {
       + "\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": "
       + "\"two\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
@@ -792,12 +791,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
       + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"a\":\"book\"}]"
       + ",\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
@@ -838,12 +837,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
       + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"a\":\"book\"}]"
       + ",\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
@@ -884,12 +883,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
       + "\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -929,12 +928,12 @@ class MarcRecordModifierTest {
       + "\"ind1\":\"a\",\"ind2\":\"a\"}},{\"905\":{\"subfields\":[{\"a\":\"art\"}],\"ind1\":\" \","
       + "\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -974,12 +973,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
       + "\"z\":\"electronic\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1018,12 +1017,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
       + "\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1062,12 +1061,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
       + "\"a\":\"http://libproxy.smith.edu\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1107,12 +1106,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"c\":\"Church\"}]"
       + ",\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1152,12 +1151,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
       + "0 eng d\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1193,12 +1192,12 @@ class MarcRecordModifierTest {
     String parsedContent =
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2019    vtu     ob    001 "
       + "0 eng d\"}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1235,12 +1234,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
       + "0 eng d\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1276,12 +1275,12 @@ class MarcRecordModifierTest {
     String parsedContent =
       "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
       + "0 eng d\"}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1315,12 +1314,12 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"via "
       + "CatWeb\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1358,12 +1357,12 @@ class MarcRecordModifierTest {
     String parsedContent =
       "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2019    vtu     ob    001 "
       + "0 eng d\"}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -2294,8 +2293,7 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd abcde\"}"
       + "]}";
 
-    String expectedParsedContent = incomingParsedContent;
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent);
+    testMarcUpdating(incomingParsedContent, existingParsedContent, incomingParsedContent);
   }
 
   @Test
@@ -2328,40 +2326,10 @@ class MarcRecordModifierTest {
   }
 
   @Test
-  void shouldAddRepeatableControlFieldsWhenHaveNoSuchExistingFields() throws IOException {
-    // given
-    // 007 is a repeatable control field
-    String incomingParsedContent =
-      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{"
-      + "\"007\":\"xyz\"}]}";
-    String existingParsedContent =
-      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
-
-    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
-      .withId(UUID.randomUUID().toString())
-      .withField("001")
-      .withSubfield("")
-      .withIndicator1("")
-      .withIndicator2("")
-      .withData("*")
-      .withSource(MarcFieldProtectionSetting.Source.SYSTEM)
-      .withOverride(true);
-
-    MappingParameters mappingParameters = new MappingParameters()
-      .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
-
-    String expectedParsedContent =
-      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{"
-      + "\"007\":\"xyz\"}]}";
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
-  }
-
-  @Test
   void shouldDiscardIncomingRepeatableControlFieldWhenExistingFieldContainsSameData() throws IOException {
     // given
     String incomingParsedContent =
-      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"}]}"
-      + "";
+      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"}]}";
     String existingParsedContent =
       "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{"
       + "\"007\":\"123\"}]}";
@@ -2755,8 +2723,7 @@ class MarcRecordModifierTest {
       "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"new "
       + "data\"}]}";
     String existingParsedContent =
-      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"NcD\"}]}"
-      + "";
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"NcD\"}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -2885,8 +2852,7 @@ class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
-    String expectedParsedContent = existingParsedContent;
-    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters);
   }
 
   @Test

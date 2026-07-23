@@ -3,6 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,11 @@ public final class LoaderHelper {
           ParameterizedType listType = (ParameterizedType) newField.getGenericType();
           return (Class<?>) listType.getActualTypeArguments()[0];
         });
-        object = listTypeClass.newInstance();
+        try {
+          object = listTypeClass.getDeclaredConstructor().newInstance();
+        } catch (InvocationTargetException | NoSuchMethodException e) {
+          throw new InstantiationException(e.getMessage());
+        }
         if (isPrimitiveOrPrimitiveWrapperOrString(listTypeClass) && i == path.length - 1) {
           // we are here if the last entry in the path is an array / set of primitives, that is ok
           return true;

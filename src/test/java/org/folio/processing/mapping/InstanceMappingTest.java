@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
+import org.folio.Contributor;
 import org.folio.Identifier;
 import org.folio.Instance;
 import org.folio.Subject;
@@ -69,7 +70,7 @@ class InstanceMappingTest {
     "src/test/resources/org/folio/processing/mapping/instance/880_245_to_246.mrc";
   private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE =
     "src/test/resources/org/folio/processing/mapping/instance/880_to_830.mrc";
-  private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS =
+  private static final String BIB_WITH_5XX_STAFF_ONLY_INDICATORS =
     "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
   private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD =
     "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
@@ -95,7 +96,7 @@ class InstanceMappingTest {
     "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS =
     "src/test/resources/org/folio/processing/mapping/instance/"
-      + "fields_for_alternative_mapping_samples_with_punctuations.mrc";
+    + "fields_for_alternative_mapping_samples_with_punctuations.mrc";
   private static final String CLASSIFICATIONS_TEST =
     "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
   private static final String INSTANCES_CLASSIFICATIONS_PATH =
@@ -131,76 +132,53 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstance() throws IOException {
-    var reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_PATH).getBytes(StandardCharsets.UTF_8)));
+    var reader = newMarcReader(BIBS_PATH);
     var expected = new JsonArray(TestUtil.readFileFromPath(INSTANCES_PATH));
-    var mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
     var actual = new JsonArray();
-    try (var factory = Validation.buildDefaultValidatorFactory()) {
-      var validator = factory.getValidator();
+    while (reader.hasNext()) {
+      var parsedRecord = marcRecordToJson(reader.next());
+      var actualMappedInstance = mapper.mapRecord(parsedRecord, new MappingParameters(), mappingRules);
+      assertTrue(validator.validate(actualMappedInstance).isEmpty());
 
-      while (reader.hasNext()) {
-        var os = new ByteArrayOutputStream();
-        var writer = new MarcJsonWriter(os);
-        writer.write(reader.next());
-        var marcJson = new JsonObject(os.toString());
-        var actualMappedInstance = mapper.mapRecord(marcJson, new MappingParameters(), mappingRules);
-        var violations = validator.validate(actualMappedInstance);
-        assertTrue(violations.isEmpty());
-
-        actual.add(JsonObject.mapFrom(actualMappedInstance).put("id", "0"));
-      }
+      actual.add(JsonObject.mapFrom(actualMappedInstance).put("id", "0"));
     }
     assertEquals(expected.encode(), actual.encode());
   }
 
   @Test
   void testMarcToInstanceClassifications() throws IOException {
-    var reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(CLASSIFICATIONS_TEST).getBytes(StandardCharsets.UTF_8)));
+    var reader = newMarcReader(CLASSIFICATIONS_TEST);
     var expected = new JsonArray(TestUtil.readFileFromPath(INSTANCES_CLASSIFICATIONS_PATH));
-    var mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
     var actual = new JsonArray();
-    try (var factory = Validation.buildDefaultValidatorFactory()) {
-      var validator = factory.getValidator();
+    while (reader.hasNext()) {
+      var parsedRecord = marcRecordToJson(reader.next());
+      var actualMappedInstance = mapper.mapRecord(parsedRecord, new MappingParameters(), mappingRules);
+      assertTrue(validator.validate(actualMappedInstance).isEmpty());
 
-      while (reader.hasNext()) {
-        var os = new ByteArrayOutputStream();
-        var writer = new MarcJsonWriter(os);
-        writer.write(reader.next());
-        var marcJson = new JsonObject(os.toString());
-        var actualMappedInstance = mapper.mapRecord(marcJson, new MappingParameters(), mappingRules);
-        var violations = validator.validate(actualMappedInstance);
-        assertTrue(violations.isEmpty());
-
-        actual.add(JsonObject.mapFrom(actualMappedInstance).put("id", "0"));
-      }
+      actual.add(JsonObject.mapFrom(actualMappedInstance).put("id", "0"));
     }
     assertEquals(expected.encode(), actual.encode());
   }
 
   @Test
   void testMarcToInstanceWithWrongRecords() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_ERRORS_PATH).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIBS_ERRORS_PATH);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
+
     int i = 0;
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertNotNull(instance.getInstanceTypeId());
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
       i++;
     }
     assertEquals(50, i);
@@ -208,67 +186,45 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceIgnoreSubsequentSubfieldsForInstanceTypeId() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_REPEATED_SUBFIELDS_PATH).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_REPEATED_SUBFIELDS_PATH);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstanceLeaderToModeIssuance() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_001).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_MISSING_001);
+    var mappingRules = loadMappingRules();
     IssuanceMode issuanceMode = new IssuanceMode().withId(UUID.randomUUID().toString())
       .withName("unspecified").withSource("rdamodeissue");
+    var mappingParameters = new MappingParameters().withIssuanceModes(List.of(issuanceMode));
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withIssuanceModes(List.of(issuanceMode)), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), mappingParameters, mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getModeOfIssuanceId());
       assertNotNull(instance.getSource());
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstance880FieldToContributorMeetingName() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_880_WITH_111_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_880_WITH_111_SUBFIELD_VALUE);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
@@ -276,80 +232,57 @@ class InstanceMappingTest {
       assertEquals("fe19bae4-da28-472b-be90-d442e2428ead",
         instance.getContributors().get(1).getContributorNameTypeId());
       assertEquals("testingMeetingName", instance.getContributors().get(1).getName());
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstance880FieldToAlternativeTitleName() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
       assertEquals(3, instance.getAlternativeTitles().size());
-      assertNotNull(
-        instance.getAlternativeTitles().stream().filter(e -> e.getAlternativeTitle().equals("testingAlternativeTitle"))
-          .findAny().orElse(null));
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertNotNull(instance.getAlternativeTitles().stream()
+        .filter(e -> e.getAlternativeTitle().equals("testingAlternativeTitle"))
+        .findAny().orElse(null));
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstance880FieldToSeriesStatement() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
       assertNotNull(instance.getSeries());
       assertEquals(1, instance.getSeries().size());
-      assertNotNull(instance.getSeries().stream().filter(e -> e.getValue().equals("testingSeries"))
+      assertNotNull(instance.getSeries().stream()
+        .filter(e -> e.getValue().equals("testingSeries"))
         .findAny().orElse(null));
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstanceNoteStaffOnlyViaIndicator() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_5xx_STAFF_ONLY_INDICATORS).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_5XX_STAFF_ONLY_INDICATORS);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertNotNull(instance.getNotes());
@@ -363,80 +296,54 @@ class InstanceMappingTest {
       assertFalse(instance.getNotes().get(3).getStaffOnly());
       assertEquals(
         "Correspondence relating to the collection may be found in Cornell University Libraries. "
-          + "John M. Echols Collection. Records, #13\\6\\1973",
+        + "John M. Echols Collection. Records, #13\\6\\1973",
         instance.getNotes().get(4).getNote());
       assertFalse(instance.getNotes().get(4).getStaffOnly());
       assertEquals("The note should be marked as stuffOnly", instance.getNotes().get(5).getNote());
       assertTrue(instance.getNotes().get(5).getStaffOnly());
       assertEquals("The note should not be marked as stuffOnly", instance.getNotes().get(6).getNote());
       assertFalse(instance.getNotes().get(6).getStaffOnly());
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstanceRemoveElectronicAccessEntriesWithNoUri() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_URI).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_MISSING_URI);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       instance.getElectronicAccess()
         .forEach(electronicAccess ->
           assertNotNull(electronicAccess.getUri()));
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstance100requiredSubfield() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_MISSING_SUBFIELD_A).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_MISSING_SUBFIELD_A);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       instance.getContributors()
         .forEach(Assertions::assertNull);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstancePrecedingTitles() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(PRECEDING_FILE_PATH).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(PRECEDING_FILE_PATH);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<JsonObject> array = new ArrayList<>();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
-      array.add(JsonObject.mapFrom(instance));
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       instance.getSucceedingTitles()
         .forEach(succeedingTitle -> {
           assertNotNull(succeedingTitle.getTitle());
@@ -453,60 +360,36 @@ class InstanceMappingTest {
             assertNotNull(id.getValue());
           });
         });
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstanceNotMappedSubFields() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_NOT_MAPPED_590_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_NOT_MAPPED_590_SUBFIELD);
+    var mappingRules = loadMappingRules();
+    var validator = getValidator();
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), new MappingParameters(), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getSource());
       assertNotNull(instance.getNotes());
       assertEquals(1, instance.getNotes().size());
       assertEquals("Adaptation of Xi xiang ji by Wang Shifu", instance.getNotes().getFirst().getNote());
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstanceResourceTypeIdMapping() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
-    List<InstanceType> instanceTypes = List.of(new ObjectMapper().readValue(rawInstanceTypes, InstanceType[].class));
+    var reader = newMarcReader(BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE);
+    var mappingRules = loadMappingRules();
+    List<InstanceType> instanceTypes = loadReferenceData(DEFAULT_INSTANCE_TYPES_PATH, InstanceType[].class);
+    var mappingParameters = new MappingParameters().withInstanceTypes(instanceTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(4, mappedInstances.size());
     assertEquals(TXT_INSTANCE_TYPE_ID, mappedInstances.getFirst().getInstanceTypeId());
@@ -517,30 +400,14 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceFormatIdMapping() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(
-        TestUtil.readFileFromPath(BIB_WITH_FORMAT_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8))
-    );
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceFormatTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_FORMAT_IDENTIFIERS);
+    var reader = newMarcReader(BIB_WITH_FORMAT_SUBFIELD_VALUE);
+    var mappingRules = loadMappingRules();
     List<InstanceFormat> instanceFormats =
-      List.of(new ObjectMapper().readValue(rawInstanceFormatTypes, InstanceFormat[].class));
+      loadReferenceData(DEFAULT_INSTANCE_FORMAT_IDENTIFIERS, InstanceFormat[].class);
+    var mappingParameters = new MappingParameters().withInstanceFormats(instanceFormats);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withInstanceFormats(instanceFormats), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(5, mappedInstances.size());
     String expectedFirstFormatId = "2e48e713-17f3-4c13-a9f8-23845bb210a4";
@@ -570,35 +437,21 @@ class InstanceMappingTest {
       Map.entry("9780471725329 (electronic bk.)", isbnIdentifierId),
       Map.entry("0471622672 (acid-free paper)", invalidIsbnIdentifierId));
 
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_REPEATED_020_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawResourceIdentifierTypes = TestUtil.readFileFromPath(DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH);
-    List<IdentifierType> instanceTypes =
-      List.of(new ObjectMapper().readValue(rawResourceIdentifierTypes, IdentifierType[].class));
+    var reader = newMarcReader(BIB_WITH_REPEATED_020_SUBFIELDS);
+    var mappingRules = loadMappingRules();
+    List<IdentifierType> identifierTypes =
+      loadReferenceData(DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH, IdentifierType[].class);
+    var mappingParameters = new MappingParameters().withIdentifierTypes(identifierTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withIdentifierTypes(instanceTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
-    List<Identifier> identifierTypes = mappedInstances.getFirst().getIdentifiers();
-    assertEquals(6, identifierTypes.size());
+    List<Identifier> identifiers = mappedInstances.getFirst().getIdentifiers();
+    assertEquals(6, identifiers.size());
     IntStream.range(0, expectedResults.size()).forEach(index -> {
       Map.Entry<String, String> expected = expectedResults.get(index);
-      Identifier actual = identifierTypes.get(index);
+      Identifier actual = identifiers.get(index);
       assertEquals(expected.getValue(), actual.getIdentifierTypeId());
       assertEquals(expected.getKey(), actual.getValue());
     });
@@ -608,30 +461,14 @@ class InstanceMappingTest {
   void testMarcToInstanceWithRepeatableSubjects() throws IOException {
     final List<Subject> expectedResults = getExpectedRepeatableSubjects();
 
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
-    String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
-    List<SubjectSource> subjectSources =
-      List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
-    List<SubjectType> subjectTypes = List.of(new ObjectMapper().readValue(rawSubjectTypes, SubjectType[].class));
+    var reader = newMarcReader(BIB_WITH_REPEATED_600_SUBFIELDS);
+    var mappingRules = loadMappingRules();
+    List<SubjectSource> subjectSources = loadReferenceData(DEFAULT_SUBJECT_SOURCES_PATH, SubjectSource[].class);
+    List<SubjectType> subjectTypes = loadReferenceData(DEFAULT_SUBJECT_TYPES_PATH, SubjectType[].class);
+    var mappingParameters = new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc,
-        new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
@@ -649,28 +486,14 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWith008Date() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_008_DATE).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
+    var reader = newMarcReader(BIB_WITH_008_DATE);
+    var mappingRules = loadMappingRules();
     List<InstanceDateType> instanceDateTypes =
-      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
+      loadReferenceData(DEFAULT_INSTANCE_DATE_TYPES_PATH, InstanceDateType[].class);
+    var mappingParameters = new MappingParameters().withInstanceDateTypes(instanceDateTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record targetRecord = reader.next();
-      writer.write(targetRecord);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
@@ -684,28 +507,14 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithDeletedLeader() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_DELETED_LEADER).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
+    var reader = newMarcReader(BIB_WITH_DELETED_LEADER);
+    var mappingRules = loadMappingRules();
     List<InstanceDateType> instanceDateTypes =
-      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
+      loadReferenceData(DEFAULT_INSTANCE_DATE_TYPES_PATH, InstanceDateType[].class);
+    var mappingParameters = new MappingParameters().withInstanceDateTypes(instanceDateTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record targetRecord = reader.next();
-      writer.write(targetRecord);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
@@ -719,28 +528,14 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithEmpty008Date() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITHOUT_008_DATE).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
+    var reader = newMarcReader(BIB_WITHOUT_008_DATE);
+    var mappingRules = loadMappingRules();
     List<InstanceDateType> instanceDateTypes =
-      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
+      loadReferenceData(DEFAULT_INSTANCE_DATE_TYPES_PATH, InstanceDateType[].class);
+    var mappingParameters = new MappingParameters().withInstanceDateTypes(instanceDateTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record targetRecord = reader.next();
-      writer.write(targetRecord);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
@@ -754,28 +549,14 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithEmpty008Field() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(
-      BIB_WITH_INVALID_008_FIELD).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
+    var reader = newMarcReader(BIB_WITH_INVALID_008_FIELD);
+    var mappingRules = loadMappingRules();
     List<InstanceDateType> instanceDateTypes =
-      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
+      loadReferenceData(DEFAULT_INSTANCE_DATE_TYPES_PATH, InstanceDateType[].class);
+    var mappingParameters = new MappingParameters().withInstanceDateTypes(instanceDateTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record targetRecord = reader.next();
-      writer.write(targetRecord);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance =
-        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
@@ -809,30 +590,14 @@ class InstanceMappingTest {
       new Subject().withValue("Test 655 subject").withTypeId(ninthSubjectTypeId)
     );
 
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
-    String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
-    List<SubjectSource> subjectSources =
-      List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
-    List<SubjectType> subjectTypes = List.of(new ObjectMapper().readValue(rawSubjectTypes, SubjectType[].class));
+    var reader = newMarcReader(BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR);
+    var mappingRules = loadMappingRules();
+    List<SubjectSource> subjectSources = loadReferenceData(DEFAULT_SUBJECT_SOURCES_PATH, SubjectSource[].class);
+    List<SubjectType> subjectTypes = loadReferenceData(DEFAULT_SUBJECT_TYPES_PATH, SubjectType[].class);
+    var mappingParameters = new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes);
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    List<Instance> mappedInstances = new ArrayList<>();
-    while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc,
-        new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
-      mappedInstances.add(instance);
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
-    }
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
     assertFalse(mappedInstances.isEmpty());
     assertEquals(1, mappedInstances.size());
 
@@ -850,21 +615,13 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToSubjectSourceIdMappingByCodeFrom2Subfield() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
-      TestUtil.readFileFromPath(BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
-
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD);
+    var mappingRules = loadMappingRules();
     List<SubjectSource> subjectSources = new ObjectMapper()
       .readValue(new File(DEFAULT_SUBJECT_SOURCES_PATH), new TypeReference<>() { });
+    var mappingParameters = new MappingParameters().withSubjectSources(subjectSources);
 
-    assertTrue(reader.hasNext());
-    ByteArrayOutputStream os = new ByteArrayOutputStream();
-    MarcJsonWriter writer = new MarcJsonWriter(os);
-    Record marcRecord = reader.next();
-    writer.write(marcRecord);
-    JsonObject marc = new JsonObject(os.toString());
-    Instance instance =
-      mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources), mappingRules);
+    Instance instance = mapSingleRecord(reader, mappingParameters, mappingRules);
 
     assertNotNull(instance.getSubjects());
     assertEquals(9, instance.getSubjects().size());
@@ -887,9 +644,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarc720ToInstanceContributors() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_720_FIELDS)
-      .getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_720_FIELDS);
+    var mappingRules = loadMappingRules();
 
     List<ContributorType> contributorTypes = List.of(
       new ContributorType().withName("Author").withCode("aut").withId("1"),
@@ -899,15 +655,11 @@ class InstanceMappingTest {
       new ContributorNameType().withName("Personal name").withId("1"),
       new ContributorNameType().withName("Corporate name").withId("2"));
 
-    ByteArrayOutputStream os = new ByteArrayOutputStream();
-    MarcJsonWriter writer = new MarcJsonWriter(os);
-    assertTrue(reader.hasNext());
-    Record marcRecord = reader.next();
-    writer.write(marcRecord);
-    JsonObject marc = new JsonObject(os.toString());
-    Instance instance = mapper.mapRecord(marc,
-      new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes),
-      mappingRules);
+    var mappingParameters = new MappingParameters().withContributorTypes(contributorTypes)
+      .withContributorNameTypes(contributorNameTypes);
+
+    Instance instance = mapSingleRecord(reader, mappingParameters, mappingRules);
+
     assertNotNull(instance.getSource());
     assertEquals(6, instance.getContributors().size());
     // 720 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
@@ -947,18 +699,14 @@ class InstanceMappingTest {
     assertNull(instance.getContributors().get(5).getContributorTypeText());
     assertEquals("2", instance.getContributors().get(5).getContributorNameTypeId());
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    Validator validator = factory.getValidator();
-    Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
+    Set<ConstraintViolation<Instance>> violations = getValidator().validate(instance);
     assertTrue(violations.isEmpty());
   }
 
   @Test
   void testMarcAlternativeMappingForInstanceContributors() throws IOException {
-    MarcReader reader =
-      new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING)
-        .getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING);
+    var mappingRules = loadMappingRules();
 
     List<ContributorType> contributorTypes = List.of(
       new ContributorType().withName("Author").withCode("aut").withId("1"),
@@ -969,16 +717,12 @@ class InstanceMappingTest {
       new ContributorNameType().withName("Corporate name").withId("2"),
       new ContributorNameType().withName("Meeting name").withId("3"));
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    var mappingParameters = new MappingParameters().withContributorTypes(contributorTypes)
+      .withContributorNameTypes(contributorNameTypes);
+    var validator = getValidator();
+
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc,
-        new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes),
-        mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), mappingParameters, mappingRules);
       assertNotNull(instance.getSource());
       assertEquals(15, instance.getContributors().size());
       assertContributor(instance.getContributors().getFirst(), "Chin, Staceyann, 1972-", "1", null, "1");
@@ -998,18 +742,14 @@ class InstanceMappingTest {
       assertContributor(instance.getContributors().get(13), "KURIHARA, N.", null, "data contact", "3");
       assertContributor(instance.getContributors().get(14), "London Symphony Orchestra", "1", null, "3");
 
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcAlternativeMappingForInstanceContributorsWithPunctuations() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS)
-        .getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+    var reader = newMarcReader(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS);
+    var mappingRules = loadMappingRules();
 
     List<ContributorType> contributorTypes = List.of(
       new ContributorType().withName("Author").withCode("aut").withId("1"),
@@ -1028,16 +768,12 @@ class InstanceMappingTest {
       new ContributorNameType().withName("Corporate name").withId("2"),
       new ContributorNameType().withName("Meeting name").withId("3"));
 
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    var mappingParameters = new MappingParameters().withContributorTypes(contributorTypes)
+      .withContributorNameTypes(contributorNameTypes);
+    var validator = getValidator();
+
     while (reader.hasNext()) {
-      ByteArrayOutputStream os = new ByteArrayOutputStream();
-      MarcJsonWriter writer = new MarcJsonWriter(os);
-      Record record = reader.next();
-      writer.write(record);
-      JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc,
-        new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes),
-        mappingRules);
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), mappingParameters, mappingRules);
       assertNotNull(instance.getSource());
       assertEquals(10, instance.getContributors().size());
 
@@ -1110,49 +846,89 @@ class InstanceMappingTest {
       assertNull(instance.getContributors().get(9).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(9).getContributorNameTypeId());
 
-      Validator validator = factory.getValidator();
-      Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-      assertTrue(violations.isEmpty());
+      assertTrue(validator.validate(instance).isEmpty());
     }
   }
 
   @Test
   void testMarcToInstanceForInstanceTypeIds() throws IOException {
-    MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_010Z_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
-    JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
-    String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
-    List<InstanceType> instanceTypes = List.of(new ObjectMapper().readValue(rawInstanceTypes, InstanceType[].class));
-    String expected010SubfieldZ = "3025698745";
+    var reader = newMarcReader(BIB_WITH_010Z_SUBFIELD);
+    var mappingRules = loadMappingRules();
+    List<InstanceType> instanceTypes = loadReferenceData(DEFAULT_INSTANCE_TYPES_PATH, InstanceType[].class);
+    var mappingParameters = new MappingParameters().withInstanceTypes(instanceTypes);
+
+    var mappedInstances = mapAllRecords(reader, mappingParameters, mappingRules, getValidator());
+
+    assertFalse(mappedInstances.isEmpty());
+    assertEquals(1, mappedInstances.size());
     int expectedSizeOfIdentifiers = 7;
+    assertEquals(expectedSizeOfIdentifiers, mappedInstances.getFirst().getIdentifiers().size());
+    mappedInstances.getFirst().getIdentifiers().forEach(Assertions::assertNotNull);
 
+    var identifiers = mappedInstances.getFirst().getIdentifiers();
+    String expected010SubfieldZ = "3025698745";
+    assertTrue(identifiers.stream().map(Identifier::getValue)
+      .anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
+  }
+
+  /**
+   * Creates a {@link MarcReader} over the MARC records stored in the file at the given path.
+   */
+  private static MarcReader newMarcReader(String path) throws IOException {
+    return new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(path).getBytes(StandardCharsets.UTF_8)));
+  }
+
+  private static JsonObject loadMappingRules() throws IOException {
+    return new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
+  }
+
+  /**
+   * Converts a single MARC {@link Record} into the {@link JsonObject} representation expected by the mapper.
+   */
+  private static JsonObject marcRecordToJson(Record marcRecord) {
+    var os = new ByteArrayOutputStream();
+    var writer = new MarcJsonWriter(os);
+    writer.write(marcRecord);
+    return new JsonObject(os.toString());
+  }
+
+  private static <T> List<T> loadReferenceData(String path, Class<T[]> arrayType) throws IOException {
+    String raw = TestUtil.readFileFromPath(path);
+    return List.of(new ObjectMapper().readValue(raw, arrayType));
+  }
+
+  /**
+   * Maps every record left in the reader to an {@link Instance}, validating each one against the given validator,
+   * and returns all mapped instances in order for further assertions.
+   */
+  private List<Instance> mapAllRecords(MarcReader reader, MappingParameters mappingParameters,
+                                       JsonObject mappingRules, Validator validator) throws IOException {
+    List<Instance> mappedInstances = new ArrayList<>();
+    while (reader.hasNext()) {
+      Instance instance = mapper.mapRecord(marcRecordToJson(reader.next()), mappingParameters, mappingRules);
+      mappedInstances.add(instance);
+      assertTrue(validator.validate(instance).isEmpty());
+    }
+    return mappedInstances;
+  }
+
+  /**
+   * Maps the next single record from the reader to an {@link Instance}, asserting that the reader is not empty.
+   */
+  private Instance mapSingleRecord(MarcReader reader, MappingParameters mappingParameters, JsonObject mappingRules)
+    throws IOException {
+    assertTrue(reader.hasNext());
+    return mapper.mapRecord(marcRecordToJson(reader.next()), mappingParameters, mappingRules);
+  }
+
+  private Validator getValidator() {
     try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-      List<Instance> mappedInstances = new ArrayList<>();
-      while (reader.hasNext()) {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        MarcJsonWriter writer = new MarcJsonWriter(os);
-        Record record = reader.next();
-        writer.write(record);
-        JsonObject marc = new JsonObject(os.toString());
-        Instance instance =
-          mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
-        mappedInstances.add(instance);
-        Validator validator = factory.getValidator();
-        Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
-        assertTrue(violations.isEmpty());
-      }
-      assertFalse(mappedInstances.isEmpty());
-      assertEquals(1, mappedInstances.size());
-      assertEquals(expectedSizeOfIdentifiers, mappedInstances.getFirst().getIdentifiers().size());
-      mappedInstances.getFirst().getIdentifiers().forEach(Assertions::assertNotNull);
-
-      var identifiers = mappedInstances.getFirst().getIdentifiers();
-      assertTrue(identifiers.stream().map(Identifier::getValue)
-        .anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
+      return factory.getValidator();
     }
   }
 
-  private static void assertContributor(org.folio.Contributor contributor, String expectedName,
+  private static void assertContributor(Contributor contributor, String expectedName,
                                         String expectedContributorTypeId, String expectedContributorTypeText,
                                         String expectedContributorNameTypeId) {
     assertEquals(expectedName, contributor.getName());

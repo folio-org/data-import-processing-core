@@ -53,7 +53,7 @@ public class EventProcessorImpl implements EventProcessor {
       } else {
         LOG.info(
           "process:: No suitable handler found for {} event type and current profile {} "
-            + "jobExecutionId: {} recordId: {}",
+          + "jobExecutionId: {} recordId: {}",
           eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType(),
           eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
         future.completeExceptionally(new EventHandlerNotFoundException(
@@ -91,9 +91,8 @@ public class EventProcessorImpl implements EventProcessor {
       } else {
         String profileType = eventPayload.getCurrentNode().getContentType().toString();
         String profileId = eventPayload.getCurrentNode().getProfileId();
-        LOG.debug(
-          "logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' "
-            + "for {} ms jobExecutionId: {} recordId: {}",
+        LOG.debug("logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' "
+                  + "for {} ms jobExecutionId: {} recordId: {}",
           eventType, profileType, profileId, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(),
           extractRecordId(eventPayload));
       }

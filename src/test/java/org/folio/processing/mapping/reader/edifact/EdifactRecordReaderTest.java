@@ -51,7 +51,7 @@ class EdifactRecordReaderTest {
   private final MappingContext mappingContext = new MappingContext();
 
   @Test
-  void shouldThrowExceptionWhenPayloadHasNoRecord() throws IOException {
+  void shouldThrowExceptionWhenPayloadHasNoRecord() {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(new HashMap<>());
 
@@ -61,7 +61,7 @@ class EdifactRecordReaderTest {
   }
 
   @Test
-  void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() throws IOException {
+  void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord())));

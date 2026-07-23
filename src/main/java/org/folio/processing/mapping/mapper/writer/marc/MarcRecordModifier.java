@@ -292,7 +292,7 @@ public class MarcRecordModifier {
   private void initializeForModifyOption(DataImportEventPayload eventPayload, MappingParameters mappingParameters,
                                          MappingProfile mappingProfile) throws IOException {
     if (isNull(eventPayload.getContext()) || isBlank(eventPayload.getContext().get(marcType.value()))) {
-      LOGGER.warn(PAYLOAD_HAS_NO_DATA_MSG);
+      LOGGER.warn("initializeForModifyOption:: " + PAYLOAD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
     }
 
@@ -309,7 +309,7 @@ public class MarcRecordModifier {
     if (isNull(eventPayload.getContext())
         || isBlank(eventPayload.getContext().get(marcType.value()))
         || isBlank(eventPayload.getContext().get(getMatchedMarcKey()))) {
-      LOGGER.warn(PAYLOAD_HAS_NO_DATA_MSG);
+      LOGGER.warn("initializeForUpdateOption:: " + PAYLOAD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PAYLOAD_HAS_NO_DATA_MSG);
     }
 

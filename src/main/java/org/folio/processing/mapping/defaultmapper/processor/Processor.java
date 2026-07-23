@@ -554,7 +554,7 @@ public class Processor<T> {
       }
       subField2Data.get(subfield).append(data);
     } else {
-      StringBuilder sb = buffers2concat.get(0);
+      StringBuilder sb = buffers2concat.getFirst();
       if (entityRequestedPerRepeatedSubfield) {
         //create a new value no matter what , since this use case
         //indicates that repeated and non-repeated subfields will create a new entity
@@ -936,18 +936,16 @@ public class Processor<T> {
   }
 
   private static String columnNametoCamelCaseWithset(String str) {
-    StringBuilder sb = new StringBuilder(str);
-    sb.replace(0, 1, String.valueOf(Character.toUpperCase(sb.charAt(0))));
-    for (int i = 0; i < sb.length(); i++) {
-      if (sb.charAt(i) == '_') {
-        sb.deleteCharAt(i);
-        sb.replace(i, i + 1, String.valueOf(Character.toUpperCase(sb.charAt(i))));
-      }
-    }
+    StringBuilder sb = columnNaneToCamelCase(str);
     return "set" + sb;
   }
 
   private static String columnNametoCamelCaseWithget(String str) {
+    StringBuilder sb = columnNaneToCamelCase(str);
+    return "get" + sb;
+  }
+
+  private static StringBuilder columnNaneToCamelCase(String str) {
     StringBuilder sb = new StringBuilder(str);
     sb.replace(0, 1, String.valueOf(Character.toUpperCase(sb.charAt(0))));
     for (int i = 0; i < sb.length(); i++) {
@@ -956,7 +954,7 @@ public class Processor<T> {
         sb.replace(i, i + 1, String.valueOf(Character.toUpperCase(sb.charAt(i))));
       }
     }
-    return "get" + sb;
+    return sb;
   }
 
   /**

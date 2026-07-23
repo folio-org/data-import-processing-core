@@ -100,15 +100,7 @@ public class JsonBasedWriter extends AbstractWriter {
     processIfRepeatableFieldsAreEmpty(repeatableFieldPath, value, repeatableFields);
     value.setAlreadyRemovedForExchange(false);
     for (Map<String, Value> subfield : repeatableFields) {
-      JsonNode currentObject = objectMapper.createObjectNode();
-      for (Map.Entry<String, Value> objectField : subfield.entrySet()) {
-        if (objectField.getValue().getType().equals(REPEATABLE)) {
-          writeNestedRepeatableValue(objectField.getKey(), (RepeatableFieldValue) objectField.getValue(),
-            currentObject);
-        } else {
-          writeValuesForRepeatableObject(currentObject, objectField);
-        }
-      }
+      var currentObject = getJsonNode(subfield);
       if (!subfield.isEmpty()) {
         setRepeatableValueByAction(value, repeatableFieldPath, currentObject);
       }
@@ -160,8 +152,7 @@ public class JsonBasedWriter extends AbstractWriter {
   private void writeValuesForRepeatableObject(JsonNode object, Map.Entry<String, Value> objectField) {
     JsonNode field = MissingNode.getInstance();
     switch (objectField.getValue().getType()) {
-      case LIST:
-      case MAP:
+      case LIST, MAP:
         field = objectMapper.valueToTree(objectField.getValue().getValue());
         break;
       case STRING:
@@ -176,14 +167,25 @@ public class JsonBasedWriter extends AbstractWriter {
           field = BooleanNode.FALSE;
         }
         break;
-      case MISSING:
-      case REPEATABLE:
       default:
         break;
     }
     if (!field.isMissingNode()) {
       setValueByFieldPath(objectField.getKey().substring(objectField.getKey().lastIndexOf('.') + 1), field, object);
     }
+  }
+
+  private JsonNode getJsonNode(Map<String, Value> subfield) {
+    JsonNode currentObject = objectMapper.createObjectNode();
+    for (Map.Entry<String, Value> objectField : subfield.entrySet()) {
+      if (objectField.getValue().getType().equals(REPEATABLE)) {
+        writeNestedRepeatableValue(objectField.getKey(), (RepeatableFieldValue) objectField.getValue(),
+          currentObject);
+      } else {
+        writeValuesForRepeatableObject(currentObject, objectField);
+      }
+    }
+    return currentObject;
   }
 
   private void setRepeatableValueByAction(RepeatableFieldValue value, String repeatableFieldPath,
@@ -217,15 +219,7 @@ public class JsonBasedWriter extends AbstractWriter {
   private void writeNestedRepeatableValue(String repeatableFieldPath, RepeatableFieldValue value, JsonNode parentNode) {
     List<Map<String, Value>> repeatableFields = value.getValue();
     for (Map<String, Value> subfield : repeatableFields) {
-      JsonNode currentObject = objectMapper.createObjectNode();
-      for (Map.Entry<String, Value> objectField : subfield.entrySet()) {
-        if (objectField.getValue().getType().equals(REPEATABLE)) {
-          writeNestedRepeatableValue(objectField.getKey(), (RepeatableFieldValue) objectField.getValue(),
-            currentObject);
-        } else {
-          writeValuesForRepeatableObject(currentObject, objectField);
-        }
-      }
+      var currentObject = getJsonNode(subfield);
       setValueByFieldPath(repeatableFieldPath.substring(repeatableFieldPath.lastIndexOf('.') + 1), currentObject,
         parentNode);
     }
@@ -268,7 +262,9 @@ public class JsonBasedWriter extends AbstractWriter {
   private JsonNode addContainerNode(FieldPathIterator.PathItem pathItem, JsonNode parentNode) {
     JsonNode childNode = parentNode.findPath(pathItem.getName());
     if (childNode.isMissingNode() || childNode.isNull()) {
-      childNode = pathItem.isObject() ? parentNode.with(pathItem.getName()) : parentNode.withArray(pathItem.getName());
+      childNode = pathItem.isObject()
+                  ? parentNode.withObject(pathItem.getName())
+                  : parentNode.withArray(pathItem.getName());
     }
     return childNode;
   }
@@ -344,7 +340,7 @@ public class JsonBasedWriter extends AbstractWriter {
    * @param currentPath - full path for processing.
    *                    (Example: currentPath = "instance.history.entries".
    *                    Will be removed "entries" data from the entityNode)
-   * @param remove-     flag if this data will be removed.
+   * @param remove - flag if this data will be removed.
    * @return JsonNode result - found node. (For the non-deleting way)
    */
   private JsonNode findAndRemoveTheMostNestedFieldIfNeeded(String currentPath, boolean remove) {

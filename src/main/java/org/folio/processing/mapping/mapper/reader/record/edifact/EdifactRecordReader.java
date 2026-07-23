@@ -91,7 +91,6 @@ public class EdifactRecordReader implements Reader {
   private static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
 
   private final EntityType entityType;
-  private EdifactParsedContent edifactParsedContent;
   private List<Segment> invoiceSegments;
   private List<List<Segment>> invoiceLinesSegmentGroups;
 
@@ -145,7 +144,7 @@ public class EdifactRecordReader implements Reader {
       String recordAsString = eventPayload.getContext().get(entityType.value());
       Record sourceRecord = Json.decodeValue(recordAsString, Record.class);
       if (ObjectUtils.allNotNull(sourceRecord.getParsedRecord(), sourceRecord.getParsedRecord().getContent())) {
-        edifactParsedContent = DatabindCodec.mapper()
+        var edifactParsedContent = DatabindCodec.mapper()
           .readValue(sourceRecord.getParsedRecord().getContent().toString(), EdifactParsedContent.class);
         invoiceSegments = getInvoiceSegments(edifactParsedContent);
         invoiceLinesSegmentGroups = getInvoiceLinesSegments(edifactParsedContent);
@@ -192,9 +191,9 @@ public class EdifactRecordReader implements Reader {
         break;
       }
     }
-    ArrayList<Segment> invoiceSegments = new ArrayList<>(segments.subList(0, invoiceHeaderSegmentsEnd + 1));
-    invoiceSegments.addAll(segments.subList(invoiceSummarySegmentsStart, segments.size()));
-    return invoiceSegments;
+    ArrayList<Segment> segmentArrayList = new ArrayList<>(segments.subList(0, invoiceHeaderSegmentsEnd + 1));
+    segmentArrayList.addAll(segments.subList(invoiceSummarySegmentsStart, segments.size()));
+    return segmentArrayList;
   }
 
   private static List<List<Segment>> getInvoiceLinesSegments(EdifactParsedContent edifactParsedContent) {
@@ -401,8 +400,8 @@ public class EdifactRecordReader implements Reader {
         if (qualifierValue == null || qualifierValue.equals(segmentValueQualifier)) {
           List<String> currentDataElementsValues = segment.getDataElements().stream()
             .limit(dataElementsFilterValues.size())
-            .map(dataElement -> dataElement.getComponents().get(0).getData())
-            .collect(Collectors.toList());
+            .map(dataElement -> dataElement.getComponents().getFirst().getData())
+            .toList();
 
           if (dataElementsFilterValues.equals(currentDataElementsValues)
               && segment.getDataElements().size() > targetDataElementIndex) {
@@ -455,11 +454,9 @@ public class EdifactRecordReader implements Reader {
   }
 
   private void formatDateValues(List<String> componentsData) {
-    for (int i = 0; i < componentsData.size(); i++) {
-      LocalDate parsedDate = LocalDate.parse(componentsData.get(i), DateTimeFormatter.ofPattern(INCOMING_DATE_FORMAT));
-      String formattedDate = ZONE_DATE_TIME_FORMATTER.format(ZonedDateTime.of(parsedDate, MIDNIGHT, ZoneId.of("UTC")));
-      componentsData.set(i, formattedDate);
-    }
+    componentsData.replaceAll(text -> ZONE_DATE_TIME_FORMATTER.format(
+      ZonedDateTime.of(LocalDate.parse(text, DateTimeFormatter.ofPattern(INCOMING_DATE_FORMAT)), MIDNIGHT,
+        ZoneId.of("UTC"))));
   }
 
   private String extractDataByExternalDataExpression(String externalDataExpression) {

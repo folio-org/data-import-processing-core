@@ -21,18 +21,13 @@ public class StaticValueReaderImpl implements MatchValueReader {
     MatchExpression matchExpression = matchDetail.getIncomingMatchExpression();
     if (matchExpression.getDataValueType() == STATIC_VALUE && nonNull(matchExpression.getStaticValueDetails())) {
       StaticValueDetails staticValueDetails = matchExpression.getStaticValueDetails();
-      switch (staticValueDetails.getStaticValueType()) {
-        case TEXT:
-          return obtainStringValue(staticValueDetails.getText());
-        case NUMBER:
-          return obtainStringValue(staticValueDetails.getNumber());
-        case EXACT_DATE:
-          return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
-        case DATE_RANGE:
-          return obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
-        default:
-          return MissingValue.getInstance();
-      }
+      return switch (staticValueDetails.getStaticValueType()) {
+        case TEXT -> obtainStringValue(staticValueDetails.getText());
+        case NUMBER -> obtainStringValue(staticValueDetails.getNumber());
+        case EXACT_DATE -> obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
+        case DATE_RANGE -> obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
+        default -> MissingValue.getInstance();
+      };
     }
     return MissingValue.getInstance();
   }

@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.kafka.KafkaContainer;
 
 class KafkaEventPublisherTest {
-  static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
+  private static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static final String KAFKA_ENV = "folio";
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
@@ -46,10 +46,10 @@ class KafkaEventPublisherTest {
 
   @BeforeAll
   static void setUpClass() {
-    kafkaContainer.start();
+    KAFKA_CONTAINER.start();
     kafkaConfig = KafkaConfig.builder()
-      .kafkaHost(kafkaContainer.getHost())
-      .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
+      .kafkaHost(KAFKA_CONTAINER.getHost())
+      .kafkaPort(KAFKA_CONTAINER.getFirstMappedPort() + "")
       .envId(KAFKA_ENV)
       .build();
     kafkaConfig.getConsumerProps().forEach((key, value) -> {
@@ -62,7 +62,7 @@ class KafkaEventPublisherTest {
 
   @AfterAll
   static void tearDownClass() {
-    kafkaContainer.stop();
+    KAFKA_CONTAINER.stop();
   }
 
   @Test

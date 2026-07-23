@@ -8,9 +8,9 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.folio.Authority;
 import org.folio.AuthoritySourceFile;
 import org.folio.processing.mapping.defaultmapper.processor.Processor;
@@ -112,7 +112,7 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
         LinkedHashMap::new));
 
     return codeIdsMap.entrySet().stream()
-      .filter(codeIdEntry -> StringUtils.equals(codeIdEntry.getKey(), sourceFilePrefix))
+      .filter(codeIdEntry -> Objects.equals(codeIdEntry.getKey(), sourceFilePrefix))
       .map(Map.Entry::getValue)
       .findFirst()
       .orElse(null);

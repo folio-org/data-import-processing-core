@@ -36,8 +36,8 @@ public class AbstractMatcher implements Matcher {
     payloadContext.remove(NOT_MATCHED_NUMBER);
     ProfileSnapshotWrapper matchingProfileWrapper = eventPayload.getCurrentNode();
     MatchProfile matchProfile;
-    if (matchingProfileWrapper.getContent() instanceof Map) {
-      matchProfile = new JsonObject((Map) matchingProfileWrapper.getContent()).mapTo(MatchProfile.class);
+    if (matchingProfileWrapper.getContent() instanceof Map map) {
+      matchProfile = new JsonObject(map).mapTo(MatchProfile.class);
     } else {
       matchProfile = (MatchProfile) matchingProfileWrapper.getContent();
     }
@@ -45,7 +45,7 @@ public class AbstractMatcher implements Matcher {
     // in future matching will support multiple matching details combined in logic expressions
     MatchDetail matchDetail = matchProfile.getMatchDetails().getFirst();
 
-    Value value = matchValueReader.read(eventPayload, matchDetail);
+    var value = matchValueReader.read(eventPayload, matchDetail);
     if (value != null && value.getType().equals(Value.ValueType.STRING)) {
       value = MatchIdProcessorUtil.retrieveIdFromContext(
         matchDetail.getExistingMatchExpression().getFields().getFirst().getValue(),

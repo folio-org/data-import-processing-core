@@ -11,16 +11,12 @@ import org.folio.rest.jaxrs.model.MappingRule;
 
 public class TestMarcBibliographicReader implements Reader {
 
-  private String marcBibliographicRecord;
-
   TestMarcBibliographicReader() {
   }
 
   @Override
   public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) {
-    if (eventPayload.getContext().containsKey(MARC_BIBLIOGRAPHIC.value())) {
-      this.marcBibliographicRecord = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
-    } else {
+    if (!eventPayload.getContext().containsKey(MARC_BIBLIOGRAPHIC.value())) {
       throw new IllegalArgumentException("Can not initialize MarcBibliographicReader, no record found in context");
     }
   }

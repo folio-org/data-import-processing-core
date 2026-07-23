@@ -46,7 +46,7 @@ class FieldPathIterator {
   /**
    * Class to hold meta information for a single item of the fieldPath.
    */
-  class PathItem {
+  static class PathItem {
     private static final String ARRAY_SIGN = "[]";
     private final String name;
     private final boolean isArray;

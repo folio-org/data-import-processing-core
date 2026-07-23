@@ -26,23 +26,23 @@ import org.testcontainers.kafka.KafkaContainer;
 
 @ExtendWith(VertxExtension.class)
 class EventManagerTest {
-  static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
+  private static final KafkaContainer KAFKA_CONTAINER = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static final String KAFKA_ENV = "folio";
   private static KafkaConfig kafkaConfig;
 
   @BeforeAll
   static void setUpClass() {
-    kafkaContainer.start();
+    KAFKA_CONTAINER.start();
     kafkaConfig = KafkaConfig.builder()
-      .kafkaHost(kafkaContainer.getHost())
-      .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
+      .kafkaHost(KAFKA_CONTAINER.getHost())
+      .kafkaPort(KAFKA_CONTAINER.getFirstMappedPort() + "")
       .envId(KAFKA_ENV)
       .build();
   }
 
   @AfterAll
   static void tearDownClass() {
-    kafkaContainer.stop();
+    KAFKA_CONTAINER.stop();
   }
 
   @BeforeEach

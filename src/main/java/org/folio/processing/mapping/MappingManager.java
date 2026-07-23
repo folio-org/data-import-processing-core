@@ -54,8 +54,8 @@ public final class MappingManager {
       ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
 
       MappingProfile mappingProfile;
-      if (mappingProfileWrapper.getContent() instanceof Map) {
-        mappingProfile = new JsonObject((Map) mappingProfileWrapper.getContent()).mapTo(MappingProfile.class);
+      if (mappingProfileWrapper.getContent() instanceof Map map) {
+        mappingProfile = new JsonObject(map).mapTo(MappingProfile.class);
       } else {
         mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
       }

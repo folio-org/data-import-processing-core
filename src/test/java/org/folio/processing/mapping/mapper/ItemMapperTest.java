@@ -31,21 +31,21 @@ import org.junit.jupiter.api.Test;
 class ItemMapperTest {
   private final String parsedContentWithMultipleFields =
     """
-    {"leader":"01314nam  22003851a 4500","fields":[{"001":"ybp7406411"},{"944":{"subfields":[{"s":"t\
-    estCode2"}],"ind1":" ","ind2":" "}}, {"945":{"subfields":[{"a":"E"}, {"b":"123"},{"s":"testCode"\
-    },{"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"a":"KU/CC/DI/A"}, {"b":"123\
-    4"}, {"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"h":"KU/CC/DI/A"}],"ind1"\
-    :" ","ind2":" "}}]}\
-    """;
+      {"leader":"01314nam  22003851a 4500","fields":[{"001":"ybp7406411"},{"944":{"subfields":[{"s":"t\
+      estCode2"}],"ind1":" ","ind2":" "}}, {"945":{"subfields":[{"a":"E"}, {"b":"123"},{"s":"testCode"\
+      },{"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"a":"KU/CC/DI/A"}, {"b":"123\
+      4"}, {"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"h":"KU/CC/DI/A"}],"ind1"\
+      :" ","ind2":" "}}]}\
+      """;
 
   @Test
   void shouldCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -83,7 +83,7 @@ class ItemMapperTest {
   @Test
   void shouldMapExistingItemFromContext() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     UUID itemId1 = UUID.randomUUID();
@@ -93,7 +93,7 @@ class ItemMapperTest {
       new JsonObject().put("item", new JsonObject().put("id", itemId2))));
 
     context.put(ITEM.value(), itemsAsJson.encode());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -133,11 +133,11 @@ class ItemMapperTest {
 
   @Test
   void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     context.put(MULTIPLE_HOLDINGS_FIELD, "945");
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
@@ -217,21 +217,18 @@ class ItemMapperTest {
   @Test
   void shouldNotCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
-
-    MappingDetail mappingDetails = null;
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
       .withName("Create testing Items")
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(ITEM)
-      .withMappingDetails(mappingDetails);
+      .withExistingRecordType(ITEM);
 
     MappingContext mappingContext = new MappingContext();
 

@@ -62,14 +62,13 @@ class NormalizationFunctionTest {
     context.setSubFieldValue(givenSubField);
     // when
     context.setRuleParameter(null);
-    String expectedSubField = givenSubField;
     String actualSubFieldIfParameterNoParameterSpecified = runFunction("char_select", context);
 
     context.setRuleParameter(new JsonObject().put("from", -5).put("to", -1));
     String actualSubFieldIfNegativeArgumentsSpecified = runFunction("char_select", context);
     // then
-    assertEquals(expectedSubField, actualSubFieldIfParameterNoParameterSpecified);
-    assertEquals(expectedSubField, actualSubFieldIfNegativeArgumentsSpecified);
+    assertEquals(givenSubField, actualSubFieldIfParameterNoParameterSpecified);
+    assertEquals(givenSubField, actualSubFieldIfNegativeArgumentsSpecified);
   }
 
   @Test
@@ -193,7 +192,6 @@ class NormalizationFunctionTest {
   void removeSubstringShouldReturnGivenSubFieldIfWrongParameterSpecified() {
     // given
     String givenSubField = "305.2309599";
-    String expectedSubField = givenSubField;
     JsonObject ruleParameter = new JsonObject().put("substring", -132);
     RuleExecutionContext context = new RuleExecutionContext();
     context.setSubFieldValue(givenSubField);
@@ -201,7 +199,7 @@ class NormalizationFunctionTest {
     // when
     String actualSubField = runFunction("remove_substring", context);
     // then
-    assertEquals(expectedSubField, actualSubField);
+    assertEquals(givenSubField, actualSubField);
   }
 
   @Test
@@ -234,14 +232,13 @@ class NormalizationFunctionTest {
     // given
     String givenSubField = "London.";
     DataField givenDataField = new DataFieldImpl("100", '0', '9');
-    String expectedSubField = givenSubField;
     RuleExecutionContext context = new RuleExecutionContext();
     context.setDataField(givenDataField);
     context.setSubFieldValue(givenSubField);
     // when
     String actualSubField = runFunction("remove_prefix_by_indicator", context);
     // then
-    assertEquals(expectedSubField, actualSubField);
+    assertEquals(givenSubField, actualSubField);
   }
 
   @Test
