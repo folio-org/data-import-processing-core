@@ -30,8 +30,29 @@ public enum PomReaderUtil {
   private Properties props = null;
   private List<Dependency> dependencies = null;
 
-  private PomReaderUtil() {
+  PomReaderUtil() {
     init("pom.xml");
+  }
+
+  public String constructModuleVersionAndVersion(String moduleName, String moduleVersion) {
+    String result = moduleName.replace("_", "-");
+    return result + "-" + moduleVersion;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public String getModuleName() {
+    return moduleName;
+  }
+
+  public Properties getProps() {
+    return props;
+  }
+
+  public List<Dependency> getDependencies() {
+    return dependencies;
   }
 
   /**
@@ -44,7 +65,8 @@ public enum PomReaderUtil {
       String currentRunningJar =
         PomReaderUtil.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
       boolean readCurrent = currentRunningJar != null && (currentRunningJar.contains("domain-models-runtime")
-        || currentRunningJar.contains("domain-models-interface-extensions") || currentRunningJar.contains("target"));
+                                                          || currentRunningJar.contains(
+        "domain-models-interface-extensions") || currentRunningJar.contains("target"));
       if (readCurrent) {
         readIt(pomFilename, "META-INF/maven");
       } else {
@@ -92,7 +114,6 @@ public enum PomReaderUtil {
 
     //the version is a placeholder to a value in the props section
     version = replacePlaceHolderWithValue(version);
-
   }
 
   private Model getModelFromJar(String directoryName) throws IOException, XmlPullParserException {
@@ -103,7 +124,7 @@ public enum PomReaderUtil {
       String dirname = directoryName + "/";
       String path = url.getPath();
       var jarPath = path.substring(5, path.indexOf('!'));
-      var jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name()));
+      var jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8));
       Enumeration<JarEntry> entries = jar.entries();
       while (entries.hasMoreElements()) {
         JarEntry entry = entries.nextElement();
@@ -120,7 +141,7 @@ public enum PomReaderUtil {
   }
 
   private String replacePlaceHolderWithValue(String placeholder) {
-    var ret = new String[]{placeholder};
+    var ret = new String[] {placeholder};
     if (placeholder != null && placeholder.startsWith("${")) {
       props.forEach((k, v) -> {
         if (("${" + k + "}").equals(placeholder)) {
@@ -129,26 +150,5 @@ public enum PomReaderUtil {
       });
     }
     return ret[0];
-  }
-
-  public String constructModuleVersionAndVersion(String moduleName, String moduleVersion) {
-    String result = moduleName.replace("_", "-");
-    return result + "-" + moduleVersion;
-  }
-
-  public String getVersion() {
-    return version;
-  }
-
-  public String getModuleName() {
-    return moduleName;
-  }
-
-  public Properties getProps() {
-    return props;
-  }
-
-  public List<Dependency> getDependencies() {
-    return dependencies;
   }
 }

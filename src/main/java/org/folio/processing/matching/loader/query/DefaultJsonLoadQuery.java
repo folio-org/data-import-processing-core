@@ -54,5 +54,4 @@ public class DefaultJsonLoadQuery implements LoadQuery {
   public void setCqlQuery(String cqlQuery) {
     this.cqlQuery = cqlQuery;
   }
-
 }

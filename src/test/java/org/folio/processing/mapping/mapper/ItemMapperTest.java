@@ -1,9 +1,20 @@
 package org.folio.processing.mapping.mapper;
 
+import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
+import static org.folio.rest.jaxrs.model.EntityType.ITEM;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
@@ -17,20 +28,9 @@ import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
-import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
-import static org.folio.rest.jaxrs.model.EntityType.ITEM;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 class ItemMapperTest {
-  private final String PARSED_CONTENT_WITH_MULTIPLE_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"}, {\"b\":\"123\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"}, {\"b\":\"1234\"}, {\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+  private final String PARSED_CONTENT_WITH_MULTIPLE_FIELDS =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"}, {\"b\":\"123\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"}, {\"b\":\"1234\"}, {\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
   @Test
   void shouldCreateOneItem() throws IOException {
@@ -46,10 +46,10 @@ class ItemMapperTest {
       .withName("item")
       .withRecordType(ITEM)
       .withMappingFields(Lists.newArrayList(new MappingRule()
-          .withName("barcode")
-          .withEnabled("true")
-          .withPath("item.barcode")
-          .withValue("\"123\"")));
+        .withName("barcode")
+        .withEnabled("true")
+        .withPath("item.barcode")
+        .withValue("\"123\"")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -140,10 +140,10 @@ class ItemMapperTest {
       .withName("item")
       .withRecordType(ITEM)
       .withMappingFields(Lists.newArrayList(new MappingRule()
-        .withName("barcode")
-        .withEnabled("true")
-        .withPath("item.barcode")
-        .withValue("945$b"),
+          .withName("barcode")
+          .withEnabled("true")
+          .withPath("item.barcode")
+          .withValue("945$b"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -192,14 +192,20 @@ class ItemMapperTest {
     assertEquals("1234", items.getJsonObject(1).getJsonObject("item").getString("barcode"));
     assertNull(items.getJsonObject(2).getJsonObject("item").getString("barcode"));
 
-    assertEquals("Testing", items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("testCode", items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
+    assertEquals("Testing",
+      items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
+    assertEquals("testCode",
+      items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("Testing", items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("testCode2", items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
+    assertEquals("Testing",
+      items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
+    assertEquals("testCode2",
+      items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("Testing", items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("testCode2", items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
+    assertEquals("Testing",
+      items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
+    assertEquals("testCode2",
+      items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
   }
 
   @Test

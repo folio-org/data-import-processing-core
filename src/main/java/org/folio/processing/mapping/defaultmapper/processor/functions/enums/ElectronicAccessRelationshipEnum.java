@@ -6,13 +6,12 @@ public enum ElectronicAccessRelationshipEnum {
   RELATED_RESOURCE('2', "related resource"),
   NO_INFORMATION_PROVIDED('3', "no information provided");
 
+  private final char indicator2value;
+  private final String name;
   ElectronicAccessRelationshipEnum(char indicator2value, String name) {
     this.indicator2value = indicator2value;
     this.name = name;
   }
-
-  private char indicator2value;
-  private String name;
 
   public static String getNameByIndicator(char indicatorValue) {
     for (ElectronicAccessRelationshipEnum enumValue : values()) {

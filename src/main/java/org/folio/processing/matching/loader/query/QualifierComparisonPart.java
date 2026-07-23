@@ -1,9 +1,9 @@
 package org.folio.processing.matching.loader.query;
 
-import org.folio.rest.jaxrs.model.Qualifier.ComparisonPart;
-
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import org.folio.rest.jaxrs.model.Qualifier.ComparisonPart;
 
 /**
  * Allows to apply comparison part to sql and cql queries according to the {@link ComparisonPart},
@@ -17,8 +17,8 @@ public enum QualifierComparisonPart {
   ALPHANUMERICS_ONLY("REGEXP_REPLACE(FIELD_NAME, '[^[:alnum:]]','','g')",
     "FIELD_NAME");
 
-  private String sqlSubstitute;
-  private String cqlSubstitute;
+  private final String sqlSubstitute;
+  private final String cqlSubstitute;
 
   QualifierComparisonPart(String sqlSubstitute, String cqlSubstitute) {
     this.sqlSubstitute = sqlSubstitute;
@@ -44,5 +44,4 @@ public enum QualifierComparisonPart {
   public String applyToCql(String cqlQuery) {
     return isBlank(cqlQuery) ? EMPTY : cqlQuery.replace("FIELD_NAME", cqlSubstitute);
   }
-
 }

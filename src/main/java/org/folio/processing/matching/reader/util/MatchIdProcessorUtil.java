@@ -1,12 +1,11 @@
 package org.folio.processing.matching.reader.util;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Util class for processing and retrieving ids from context`s data.
@@ -47,11 +46,12 @@ public final class MatchIdProcessorUtil {
   private static Value checkMatchByLocation(JsonArray jsonArray, String text) {
     for (int i = 0; i < jsonArray.size(); i++) {
       if (jsonArray.getJsonObject(i).getString(NAME_PROPERTY)
-        .equals(text)
-        || jsonArray.getJsonObject(i).getString(CODE_PROPERTY)
-        .equals(text)
-        || (String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY), jsonArray.getJsonObject(i).getString(CODE_PROPERTY)))
-        .equals(text)) {
+            .equals(text)
+          || jsonArray.getJsonObject(i).getString(CODE_PROPERTY)
+            .equals(text)
+          || (String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY),
+        jsonArray.getJsonObject(i).getString(CODE_PROPERTY)))
+            .equals(text)) {
         JsonObject result = jsonArray.getJsonObject(i);
         return StringValue.of(result.getString(ID_PROPERTY));
       }

@@ -9,6 +9,12 @@ import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.jackson.DatabindCodec;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -20,10 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,14 +54,6 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Iterables;
-
-import io.vertx.core.json.Json;
-import io.vertx.core.json.jackson.DatabindCodec;
-
 /**
  * The {@link Reader} implementation for EDIFACT INVOICE.
  * Returns {@link Value} by rule from EDIFACT parsed content.
@@ -67,9 +63,11 @@ public class EdifactRecordReader implements Reader {
   private static final Logger LOGGER = LogManager.getLogger(EdifactRecordReader.class);
 
   private static final Pattern CONSTANT_EXPRESSION_PATTERN = Pattern.compile("(\"[^\"]+\")");
-  private static final Pattern SEGMENT_QUERY_PATTERN = Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
+  private static final Pattern SEGMENT_QUERY_PATTERN =
+    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
   private static final Pattern MULTI_SEGMENTS_EXPRESSION_PATTERN =
-    Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\"[^\"]*\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
+    Pattern.compile(
+      "[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\"[^\"]*\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
   private static final Pattern EXTERNAL_DATA_EXPRESSION_PATTERN = Pattern.compile("\\{[\\w]+\\}");
   private static final String ELSE_DELIMITER = "; else ";
   private static final String RANGE_DELIMITER = "-";
@@ -80,20 +78,27 @@ public class EdifactRecordReader implements Reader {
   private static final String INVOICE_LINE_ITEM_TAG = "LIN";
   private static final String INVOICE_SUMMARY_TAG = "UNS";
   private static final String DATE_TIME_TAG = "DTM";
-  private static final String PARSED_RECORD_HAS_NO_DATA_MSG = "Failed to retrieve segments data - parsed record does not contain EDIFACT data";
+  private static final String PARSED_RECORD_HAS_NO_DATA_MSG =
+    "Failed to retrieve segments data - parsed record does not contain EDIFACT data";
   private static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
-  private static final String INVALID_DATA_RANGE_MSG = "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
+  private static final String INVALID_DATA_RANGE_MSG =
+    "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
-  private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+  private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER =
+    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
   private static final String INVOICE_LINES_ROOT_PATH = "invoice.invoiceLines[]";
 
-  private EntityType entityType;
+  private final EntityType entityType;
   private EdifactParsedContent edifactParsedContent;
   private List<Segment> invoiceSegments;
   private List<List<Segment>> invoiceLinesSegmentGroups;
 
   private Map<String, String> payloadContext;
   private int invoiceLineCounter = -1;
+
+  public EdifactRecordReader(EntityType entityType) {
+    this.entityType = entityType;
+  }
 
   /**
    * Extracts data from the invoice lines segments specified in the {@code segmentMappingExpression}.
@@ -104,7 +109,8 @@ public class EdifactRecordReader implements Reader {
    * @throws IllegalArgumentException if {@code parsedRecord} has no EDIFACT parsed content
    *                                  and when invalid segment mapping expression is specified
    */
-  public static Map<Integer, String> getInvoiceLinesSegmentsValues(ParsedRecord parsedRecord, String segmentMappingExpression) {
+  public static Map<Integer, String> getInvoiceLinesSegmentsValues(ParsedRecord parsedRecord,
+                                                                   String segmentMappingExpression) {
     if (parsedRecord == null || parsedRecord.getContent() == null) {
       LOGGER.warn(PARSED_RECORD_HAS_NO_DATA_MSG);
       throw new IllegalArgumentException(PARSED_RECORD_HAS_NO_DATA_MSG);
@@ -114,7 +120,8 @@ public class EdifactRecordReader implements Reader {
       throw new IllegalArgumentException(msg);
     }
 
-    EdifactParsedContent parsedContent = Json.decodeValue(parsedRecord.getContent().toString(), EdifactParsedContent.class);
+    EdifactParsedContent parsedContent =
+      Json.decodeValue(parsedRecord.getContent().toString(), EdifactParsedContent.class);
     List<List<Segment>> invoiceLinesSegmentGroups = getInvoiceLinesSegments(parsedContent);
     HashMap<Integer, String> invLineNoToSegmentValue = new HashMap<>();
 
@@ -130,24 +137,30 @@ public class EdifactRecordReader implements Reader {
     return invLineNoToSegmentValue;
   }
 
-  public EdifactRecordReader(EntityType entityType) {
-    this.entityType = entityType;
-  }
-
   @Override
   public void initialize(DataImportEventPayload eventPayload, MappingContext mappingContext) throws IOException {
     if (eventPayload.getContext() != null && isNotBlank(eventPayload.getContext().get(entityType.value()))) {
       String recordAsString = eventPayload.getContext().get(entityType.value());
       Record sourceRecord = Json.decodeValue(recordAsString, Record.class);
       if (ObjectUtils.allNotNull(sourceRecord.getParsedRecord(), sourceRecord.getParsedRecord().getContent())) {
-        edifactParsedContent = DatabindCodec.mapper().readValue(sourceRecord.getParsedRecord().getContent().toString(), EdifactParsedContent.class);
+        edifactParsedContent = DatabindCodec.mapper()
+          .readValue(sourceRecord.getParsedRecord().getContent().toString(), EdifactParsedContent.class);
         invoiceSegments = getInvoiceSegments(edifactParsedContent);
         invoiceLinesSegmentGroups = getInvoiceLinesSegments(edifactParsedContent);
         payloadContext = eventPayload.getContext();
         return;
       }
     }
-    throw new IllegalArgumentException("Can not initialize EdifactRecordReader, event payload has no EDIFACT parsed content");
+    throw new IllegalArgumentException(
+      "Can not initialize EdifactRecordReader, event payload has no EDIFACT parsed content");
+  }
+
+  @Override
+  public Value read(MappingRule mappingRule) {
+    if (mappingRule.getPath().startsWith(INVOICE_LINES_ROOT_PATH)) {
+      return readInvoiceLinesRepeatableFieldValue(mappingRule);
+    }
+    return read(mappingRule, invoiceSegments);
   }
 
   private List<Segment> getInvoiceSegments(EdifactParsedContent edifactParsedContent) {
@@ -192,14 +205,6 @@ public class EdifactRecordReader implements Reader {
     return invoiceLinesSegments;
   }
 
-  @Override
-  public Value read(MappingRule mappingRule) {
-    if (mappingRule.getPath().startsWith(INVOICE_LINES_ROOT_PATH)) {
-      return readInvoiceLinesRepeatableFieldValue(mappingRule);
-    }
-    return read(mappingRule, invoiceSegments);
-  }
-
   private Value read(MappingRule mappingRule, List<Segment> segments) {
     if (mappingRule.getBooleanFieldAction() != null) {
       return BooleanValue.of(mappingRule.getBooleanFieldAction());
@@ -223,7 +228,8 @@ public class EdifactRecordReader implements Reader {
           Value value;
           if (!fieldRule.getSubfields().isEmpty()) {
             value = readFullFilledRepeatableFieldValueObjects(fieldRule, invoiceLineSegments);
-          } else if (nonNull(fieldRule.getValue()) && EXTERNAL_DATA_EXPRESSION_PATTERN.matcher(fieldRule.getValue()).matches()) {
+          } else if (nonNull(fieldRule.getValue()) && EXTERNAL_DATA_EXPRESSION_PATTERN.matcher(fieldRule.getValue())
+            .matches()) {
             value = readValueByExternalDataExpression(fieldRule, fieldRule.getValue());
           } else {
             value = read(fieldRule, invoiceLineSegments);
@@ -246,7 +252,7 @@ public class EdifactRecordReader implements Reader {
       for (MappingRule fieldRule : subfield.getFields()) {
         Value<?> value = read(fieldRule, segments);
         if (value.getType().equals(MISSING) && StringUtils.isNotBlank(fieldRule.getValue())
-          && SEGMENT_QUERY_PATTERN.matcher(fieldRule.getValue()).matches()) {
+            && SEGMENT_QUERY_PATTERN.matcher(fieldRule.getValue()).matches()) {
           break;
         }
         objectModel.put(fieldRule.getPath(), value);
@@ -257,7 +263,7 @@ public class EdifactRecordReader implements Reader {
     }
 
     return repeatableObjects.isEmpty() ? MissingValue.getInstance()
-      : RepeatableFieldValue.of(repeatableObjects, action, mappingRule.getPath());
+                                       : RepeatableFieldValue.of(repeatableObjects, action, mappingRule.getPath());
   }
 
   private Value readRepeatableFieldValue(MappingRule mappingRule, List<Segment> segments) {
@@ -378,9 +384,11 @@ public class EdifactRecordReader implements Reader {
 
     if (isContainsQualifier(segmentQuery)) {
       qualifierValue = StringUtils.substringBetween(segmentQuery, QUALIFIER_SIGN, "[");
-      dataElementsFilterValues = Arrays.asList(StringUtils.split(segmentQuery.substring(4, segmentQuery.indexOf(QUALIFIER_SIGN)), dataElementSeparator));
+      dataElementsFilterValues = Arrays.asList(
+        StringUtils.split(segmentQuery.substring(4, segmentQuery.indexOf(QUALIFIER_SIGN)), dataElementSeparator));
     } else {
-      dataElementsFilterValues = Arrays.asList(segmentQuery.substring(4, segmentQuery.indexOf('[')).split(String.format("\\%s", dataElementSeparator)));
+      dataElementsFilterValues = Arrays.asList(
+        segmentQuery.substring(4, segmentQuery.indexOf('[')).split(String.format("\\%s", dataElementSeparator)));
     }
 
     for (Segment segment : segments) {
@@ -394,7 +402,8 @@ public class EdifactRecordReader implements Reader {
             .map(dataElement -> dataElement.getComponents().get(0).getData())
             .collect(Collectors.toList());
 
-          if (dataElementsFilterValues.equals(currentDataElementsValues) && segment.getDataElements().size() > targetDataElementIndex) {
+          if (dataElementsFilterValues.equals(currentDataElementsValues)
+              && segment.getDataElements().size() > targetDataElementIndex) {
             DataElement targetDataElement = segment.getDataElements().get(targetDataElementIndex);
             Pair<Integer, Integer> componentsRange = extractComponentPositionsRange(segmentQuery);
             componentsValues.add(getComponentsData(targetDataElement, componentsRange));
@@ -454,7 +463,7 @@ public class EdifactRecordReader implements Reader {
   private String extractDataByExternalDataExpression(String externalDataExpression) {
     String reference = StringUtils.substringBetween(externalDataExpression, "{", "}");
     String preparedReference = invoiceLineCounter >= 0 ? format("%s_%s", reference, invoiceLineCounter).toUpperCase()
-      : reference.toUpperCase();
+                                                       : reference.toUpperCase();
     return payloadContext.get(preparedReference);
   }
 
@@ -462,7 +471,8 @@ public class EdifactRecordReader implements Reader {
     String externalData = extractDataByExternalDataExpression(externalDataExpression);
     try {
       if (isEmpty(externalData)) {
-        LOGGER.info("readValueByExternalDataExpression:: Payload context has no data by external data expression: '{}'", externalDataExpression);
+        LOGGER.info("readValueByExternalDataExpression:: Payload context has no data by external data expression: '{}'",
+          externalDataExpression);
         return MissingValue.getInstance();
       } else {
         JsonNode jsonNode = new ObjectMapper().readTree(externalData);
@@ -482,7 +492,8 @@ public class EdifactRecordReader implements Reader {
           Iterator<String> fieldNamesIterator = node.fieldNames();
           while (fieldNamesIterator.hasNext()) {
             String fieldName = fieldNamesIterator.next();
-            objectModel.put(String.format("%s.%s", mappingRule.getPath(), fieldName), StringValue.of(node.get(fieldName).asText()));
+            objectModel.put(String.format("%s.%s", mappingRule.getPath(), fieldName),
+              StringValue.of(node.get(fieldName).asText()));
           }
           arrayNodeValues.add(objectModel);
         }
@@ -492,5 +503,4 @@ public class EdifactRecordReader implements Reader {
       return StringValue.of(jsonNode.textValue());
     }
   }
-
 }

@@ -1,27 +1,5 @@
 package org.folio.processing.events.services.publisher;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.folio.DataImportEventPayload;
-import org.folio.kafka.KafkaConfig;
-import org.folio.kafka.KafkaTopicNameHelper;
-import org.folio.processing.TestUtil;
-import org.folio.rest.jaxrs.model.Event;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.kafka.KafkaContainer;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
 import static org.folio.DataImportEventTypes.DI_COMPLETED;
 import static org.folio.kafka.KafkaTopicNameHelper.getDefaultNameSpace;
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.CHUNK_ID_HEADER;
@@ -34,16 +12,37 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.folio.DataImportEventPayload;
+import org.folio.kafka.KafkaConfig;
+import org.folio.kafka.KafkaTopicNameHelper;
+import org.folio.processing.TestUtil;
+import org.folio.rest.jaxrs.model.Event;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.kafka.KafkaContainer;
+
 class KafkaEventPublisherTest {
+  static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static final String KAFKA_ENV = "folio";
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
-
-  static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
+  private static final Properties consumerConfig = new Properties();
   private static KafkaConfig kafkaConfig;
-  private static Properties consumerConfig = new Properties();
-  private Vertx vertx = Vertx.vertx();
+  private final Vertx vertx = Vertx.vertx();
 
   @BeforeAll
   static void setUpClass() {
@@ -74,7 +73,7 @@ class KafkaEventPublisherTest {
     String expectedRecordId = UUID.randomUUID().toString();
     String expectedChunkId = UUID.randomUUID().toString();
     String expectedRequestId = UUID.randomUUID().toString();
-    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+    try (KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withOkapiUrl(OKAPI_URL)
@@ -90,8 +89,10 @@ class KafkaEventPublisherTest {
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
 
-      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
-      DataImportEventPayload actualPayload = Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
+      String topicToObserve =
+        KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
+      DataImportEventPayload actualPayload =
+        Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
       assertEquals(eventPayload, actualPayload);
       assertEquals(expectedPermissionsHeader, actualPayload.getContext().get(PERMISSIONS_HEADER));
       assertEquals(expectedUserId, actualPayload.getContext().get(USER_ID_HEADER));
@@ -106,7 +107,7 @@ class KafkaEventPublisherTest {
   @Test
   void shouldPublishPayloadIfTokenIsNull() throws Exception {
     var tenant = "shouldPublishPayloadIfTokenIsNull";
-    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+    try (KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withOkapiUrl(OKAPI_URL)
@@ -120,8 +121,10 @@ class KafkaEventPublisherTest {
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
 
-      String topicToObserve = KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
-      DataImportEventPayload actualPayload = Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
+      String topicToObserve =
+        KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
+      DataImportEventPayload actualPayload =
+        Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
       assertEquals(eventPayload, actualPayload);
 
       assertFalse(future.isCompletedExceptionally());
@@ -130,7 +133,7 @@ class KafkaEventPublisherTest {
 
   @Test
   void shouldReturnFailedFutureWhenPayloadIsNull() throws Exception {
-    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+    try (KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       CompletableFuture<Event> future = eventPublisher.publish(null);
       assertTrue(future.isCompletedExceptionally());
       assertThrows(ExecutionException.class, future::get);
@@ -139,7 +142,7 @@ class KafkaEventPublisherTest {
 
   @Test
   void shouldReturnFailedFutureWhenPayloadParameterIsNull() throws Exception {
-    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+    try (KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withToken(TOKEN)
@@ -157,7 +160,7 @@ class KafkaEventPublisherTest {
 
   @Test
   void shouldReturnFailedFutureWhenRecordIdIsNull() throws Exception {
-    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+    try (KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withOkapiUrl(OKAPI_URL)
@@ -175,7 +178,7 @@ class KafkaEventPublisherTest {
 
   @Test
   void shouldReturnFailedFutureWhenChunkIdIsNull() throws Exception {
-    try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
+    try (KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
         .withOkapiUrl(OKAPI_URL)

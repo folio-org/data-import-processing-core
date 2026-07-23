@@ -1,11 +1,20 @@
 package org.folio.processing.mapping.mapper;
 
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import org.folio.DataImportEventPayload;
-import org.folio.rest.jaxrs.model.Location;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -15,27 +24,18 @@ import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.reader.record.marc.MarcBibReaderFactory;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
 import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.Location;
 import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
-import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 class HoldingsMapperTest {
   @Test
   void shouldCreateOneHoldingIfOnlySingleMARCfieldContainsLocation() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -92,7 +92,8 @@ class HoldingsMapperTest {
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals(1, holdings.size());
     JsonObject firstHolding = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHolding.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      firstHolding.getJsonObject("holdings").getString("permanentLocationId"));
     assertEquals("Testing", firstHolding.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
@@ -103,7 +104,8 @@ class HoldingsMapperTest {
   @Test
   void shouldCreateOneHoldingIfPermanentLocationIsStringValue() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -115,10 +117,10 @@ class HoldingsMapperTest {
       .withName("holdings")
       .withRecordType(HOLDINGS)
       .withMappingFields(Lists.newArrayList(new MappingRule()
-          .withName("permanentLocationId")
-          .withEnabled("true")
-          .withPath("holdings.permanentLocationId")
-          .withValue("\"KU/CC/DI/A\"; else 945$h")));
+        .withName("permanentLocationId")
+        .withEnabled("true")
+        .withPath("holdings.permanentLocationId")
+        .withValue("\"KU/CC/DI/A\"; else 945$h")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -155,7 +157,8 @@ class HoldingsMapperTest {
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals(1, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(1, holdingsIdentifier.size());
@@ -165,7 +168,8 @@ class HoldingsMapperTest {
   @Test
   void shouldMapMultipleHoldingInExistingHoldings() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
@@ -227,16 +231,19 @@ class HoldingsMapperTest {
     assertEquals(2, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
     JsonObject secondHoldings = holdings.getJsonObject(1);
-    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertEquals("Testing", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertEquals("Testing", secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
   }
 
   @Test
   void shouldMapOneHoldingInExistingHoldingIfPermanentLocationIsStringValue() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
@@ -294,7 +301,8 @@ class HoldingsMapperTest {
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals(1, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(1, holdingsIdentifier.size());
@@ -304,7 +312,8 @@ class HoldingsMapperTest {
   @Test
   void shouldCreateMultipleHoldingsButWithoutDuplicatedLocations() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -385,13 +394,16 @@ class HoldingsMapperTest {
     assertEquals(2, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
     JsonObject secondHoldings = holdings.getJsonObject(1);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
-    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+      firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals(2, firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
     assertEquals("Testing", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     assertEquals("testCode", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0",
+      secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertNull(secondHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals("Testing", secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     assertEquals(1, secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
@@ -407,7 +419,8 @@ class HoldingsMapperTest {
   @Test
   void shouldCreateMultipleHoldingsButIfLocationMappingRuleContainsElseStatement() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -490,13 +503,16 @@ class HoldingsMapperTest {
 
     JsonObject firstHoldings = holdings.getJsonObject(0);
     JsonObject secondHoldings = holdings.getJsonObject(1);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
-    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+      firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals(2, firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
     assertEquals("Testing", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     assertEquals("testCode", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0",
+      secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertNull(secondHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals("Testing", secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     assertEquals(1, secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
@@ -512,7 +528,8 @@ class HoldingsMapperTest {
   @Test
   void shouldCreateMultipleHoldingsUsingMappingRuleWithElseStatement() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -593,13 +610,16 @@ class HoldingsMapperTest {
     assertEquals(2, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
     JsonObject secondHoldings = holdings.getJsonObject(1);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
-    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+      firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals(2, firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
     assertEquals("Testing", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     assertEquals("testCode", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0", secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("53cf956f-c1df-410b-8bea-27f712cca7c0",
+      secondHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertNull(secondHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals(2, secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
     assertEquals("Testing", secondHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
@@ -696,14 +716,16 @@ class HoldingsMapperTest {
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals(1, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
-    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     assertNull(firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
   }
 
   @Test
   void shouldCreateSingleHoldingIfLocationsAreTheSame() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"AM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"asdf\"},{\"h\":\"fcd64ce1-6995-48f0-840e-89ffa2288371\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"AM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"asdf\"},{\"h\":\"fcd64ce1-6995-48f0-840e-89ffa2288371\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -755,7 +777,8 @@ class HoldingsMapperTest {
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     assertEquals(1, holdings.size());
     JsonObject firstHoldings = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
     JsonArray holdingsIdentifier = new JsonArray(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
     assertNotNull(holdingsIdentifier);
     assertEquals(3, holdingsIdentifier.size());
@@ -767,7 +790,8 @@ class HoldingsMapperTest {
   @Test
   void shouldNotCreateOneHoldingsIfProfileIsInvalid() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     HashMap<String, String> context = new HashMap<>();
@@ -814,11 +838,11 @@ class HoldingsMapperTest {
     assertNull(mappedPayload.getContext().get("HOLDINGS_IDENTIFIERS"));
   }
 
-
   @Test
   void shouldUpdateSingleHoldingsButWithoutDuplicatedLocations() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
     JsonObject firstExistedHolding = new JsonObject();
@@ -831,7 +855,7 @@ class HoldingsMapperTest {
     firstExistedHoldingBody.put("hrid", firstHoldingsHrid);
     firstExistedHoldingBody.put("instanceId", firstHoldingsInstanceId);
     firstExistedHoldingBody.put("permanentLocationId", firstHoldingsPermanentLocationId);
-    firstExistedHolding.put("holdings",firstExistedHoldingBody);
+    firstExistedHolding.put("holdings", firstExistedHoldingBody);
 
     JsonObject secondExistedHolding = new JsonObject();
     String secondHoldingsId = String.valueOf(UUID.randomUUID());
@@ -843,7 +867,7 @@ class HoldingsMapperTest {
     secondExistedHoldingBody.put("hrid", secondHoldingsHrid);
     secondExistedHoldingBody.put("instanceId", secondHoldingsInstanceId);
     secondExistedHoldingBody.put("permanentLocationId", secondHoldingsPermanentLocationId);
-    secondExistedHolding.put("holdings",secondExistedHoldingBody);
+    secondExistedHolding.put("holdings", secondExistedHoldingBody);
 
     JsonArray existedHoldings = new JsonArray();
     existedHoldings
@@ -927,8 +951,10 @@ class HoldingsMapperTest {
     assertNotNull(mappedPayload.getContext().get(HOLDINGS.value()));
     JsonArray holdings = new JsonArray(mappedPayload.getContext().get(HOLDINGS.value()));
     JsonObject firstHoldings = holdings.getJsonObject(0);
-    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371", firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
-    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5", firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
+    assertEquals("fcd64ce1-6995-48f0-840e-89ffa2288371",
+      firstHoldings.getJsonObject("holdings").getString("permanentLocationId"));
+    assertEquals("184aae84-a5bf-4c6a-85ba-4a7c73026cd5",
+      firstHoldings.getJsonObject("holdings").getString("temporaryLocationId"));
     assertEquals(2, firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").size());
     assertEquals("Testing", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(0));
     assertEquals("testCode", firstHoldings.getJsonObject("holdings").getJsonArray("statisticalCodeIds").getString(1));

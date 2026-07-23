@@ -1,8 +1,36 @@
 package org.folio.processing.events;
 
+import static org.folio.ActionProfile.Action.CREATE;
+import static org.folio.ActionProfile.Action.UPDATE;
+import static org.folio.DataImportEventTypes.DI_COMPLETED;
+import static org.folio.DataImportEventTypes.DI_INCOMING_MARC_BIB_RECORD_PARSED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
+import static org.folio.rest.jaxrs.model.ReactToType.MATCH;
+import static org.folio.rest.jaxrs.model.ReactToType.NON_MATCH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.ActionProfile;
@@ -25,35 +53,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import static org.folio.ActionProfile.Action.CREATE;
-import static org.folio.ActionProfile.Action.UPDATE;
-import static org.folio.DataImportEventTypes.DI_COMPLETED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
-import static org.folio.DataImportEventTypes.DI_INCOMING_MARC_BIB_RECORD_PARSED;
-import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
-import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
-import static org.folio.rest.jaxrs.model.ReactToType.MATCH;
-import static org.folio.rest.jaxrs.model.ReactToType.NON_MATCH;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(VertxExtension.class)
 class EventManagerUnitTest {
@@ -99,7 +98,8 @@ class EventManagerUnitTest {
                 new ProfileSnapshotWrapper()
                   .withId(UUID.randomUUID().toString())
                   .withContentType(ACTION_PROFILE)
-                  .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))))))));
+                  .withContent(
+                    JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))))))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
@@ -111,18 +111,18 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot)
       .whenComplete((nextEventContext, throwable) -> {
-      testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(1, nextEventContext.getEventsChain().size());
-      assertEquals(
-        nextEventContext.getEventsChain(),
-        Collections.singletonList("DI_INCOMING_MARC_BIB_RECORD_PARSED")
-      );
-      assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
+        testContext.verify(() -> {
+          // then
+          assertNull(throwable);
+          assertEquals(1, nextEventContext.getEventsChain().size());
+          assertEquals(
+            nextEventContext.getEventsChain(),
+            Collections.singletonList("DI_INCOMING_MARC_BIB_RECORD_PARSED")
+          );
+          assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
+        });
+        testContext.completeNow();
       });
-      testContext.completeNow();
-    });
   }
 
   @Test
@@ -143,7 +143,7 @@ class EventManagerUnitTest {
         .withContentType(ACTION_PROFILE)
         .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))));
 
-        DataImportEventPayload eventPayload = new DataImportEventPayload()
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
       .withOkapiUrl(CONNECTION_URL)
@@ -153,14 +153,14 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(2, nextEventContext.getEventsChain().size());
-      assertEquals(
-        nextEventContext.getEventsChain(),
-        Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
-      );
-      assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(2, nextEventContext.getEventsChain().size());
+        assertEquals(
+          nextEventContext.getEventsChain(),
+          Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
+        );
+        assertEquals("DI_COMPLETED", nextEventContext.getEventType());
       });
       testContext.completeNow();
     });
@@ -189,10 +189,10 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot).whenComplete((nextEventContext, throwable) -> {
       testContext.verify(() -> {
-      // then
-      assertNull(throwable);
-      assertEquals(0, eventPayload.getEventsChain().size());
-      assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(0, eventPayload.getEventsChain().size());
+        assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
       });
       testContext.completeNow();
     });
@@ -222,10 +222,10 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(1, eventPayload.getEventsChain().size());
-      assertEquals("DI_ERROR", eventPayload.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(1, eventPayload.getEventsChain().size());
+        assertEquals("DI_ERROR", eventPayload.getEventType());
       });
       testContext.completeNow();
     });
@@ -258,19 +258,19 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((eventContext, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(2, eventContext.getEventsChain().size());
-      assertEquals(2, eventContext.getCurrentNodePath().size());
-      assertEquals(
-        eventContext.getCurrentNodePath(),
-        Arrays.asList(jobProfileId, actionProfileId)
-      );
-      assertEquals(
-        eventContext.getEventsChain(),
-        Arrays.asList("DI_INCOMING_MARC_BIB_RECORD_PARSED", "DI_INVENTORY_INSTANCE_CREATED")
-      );
-      assertEquals("DI_COMPLETED", eventContext.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(2, eventContext.getEventsChain().size());
+        assertEquals(2, eventContext.getCurrentNodePath().size());
+        assertEquals(
+          eventContext.getCurrentNodePath(),
+          Arrays.asList(jobProfileId, actionProfileId)
+        );
+        assertEquals(
+          eventContext.getEventsChain(),
+          Arrays.asList("DI_INCOMING_MARC_BIB_RECORD_PARSED", "DI_INVENTORY_INSTANCE_CREATED")
+        );
+        assertEquals("DI_COMPLETED", eventContext.getEventType());
       });
       testContext.completeNow();
     });
@@ -325,7 +325,8 @@ class EventManagerUnitTest {
         new ProfileSnapshotWrapper()
           .withId(UUID.randomUUID().toString())
           .withContentType(MATCH_PROFILE)
-          .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)))
+          .withContent(JsonObject.mapFrom(
+            new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)))
           .withChildSnapshotWrappers(Arrays.asList(action1Wrapper, action2Wrapper))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
@@ -339,15 +340,15 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(action2Wrapper.getId(), eventContext.getCurrentNode().getId());
-      assertEquals(1, eventContext.getEventsChain().size());
-      assertEquals(
-        Collections.singletonList(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()),
-        eventContext.getEventsChain()
-      );
-      assertEquals(DI_INVENTORY_INSTANCE_CREATED.value(), eventContext.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(action2Wrapper.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(1, eventContext.getEventsChain().size());
+        assertEquals(
+          Collections.singletonList(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()),
+          eventContext.getEventsChain()
+        );
+        assertEquals(DI_INVENTORY_INSTANCE_CREATED.value(), eventContext.getEventType());
       });
       testContext.completeNow();
     });
@@ -383,7 +384,8 @@ class EventManagerUnitTest {
     ProfileSnapshotWrapper matchWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)));
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)));
 
     ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -403,10 +405,10 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
-      assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
       });
       testContext.completeNow();
     });
@@ -422,7 +424,6 @@ class EventManagerUnitTest {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
       payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
       return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_UPDATED.value()));
-
     }).when(updateInstanceHandler).handle(any(DataImportEventPayload.class));
     Mockito.when(updateInstanceHandler.isEligible(any(DataImportEventPayload.class))).thenReturn(true);
 
@@ -443,7 +444,9 @@ class EventManagerUnitTest {
       .withReactTo(MATCH)
       .withOrder(0)
       .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(UPDATE)))
+      .withContent(JsonObject.mapFrom(
+        new ActionProfile().withName("instanceUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE)
+          .withAction(UPDATE)))
       .withChildSnapshotWrappers(Collections.singletonList(instanceUpdateMappingWrapper));
 
     ProfileSnapshotWrapper instanceUpdateActionWrapper2 = new ProfileSnapshotWrapper()
@@ -451,7 +454,9 @@ class EventManagerUnitTest {
       .withReactTo(MATCH)
       .withOrder(0)
       .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceUpdateActionWrapper2").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(UPDATE)))
+      .withContent(JsonObject.mapFrom(
+        new ActionProfile().withName("instanceUpdateActionWrapper2").withFolioRecord(ActionProfile.FolioRecord.INSTANCE)
+          .withAction(UPDATE)))
       .withChildSnapshotWrappers(Collections.singletonList(instanceUpdateMappingWrapper));
 
     // create instance
@@ -459,14 +464,18 @@ class EventManagerUnitTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withName("instanceCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+      .withContent(JsonObject.mapFrom(
+        new MappingProfile().withName("instanceCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(INSTANCE)));
 
     ProfileSnapshotWrapper instanceCreateActionWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withReactTo(NON_MATCH)
       .withOrder(0)
       .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(CREATE)))
+      .withContent(JsonObject.mapFrom(
+        new ActionProfile().withName("instanceCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE)
+          .withAction(CREATE)))
       .withChildSnapshotWrappers(Collections.singletonList(instanceCreateMappingWrapper));
 
     ProfileSnapshotWrapper instanceChildMatchWrapper = new ProfileSnapshotWrapper()
@@ -474,14 +483,18 @@ class EventManagerUnitTest {
       .withOrder(0)
       .withContentType(MATCH_PROFILE)
       .withReactTo(NON_MATCH)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("instanceChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withName("instanceChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(HOLDINGS)))
       .withChildSnapshotWrappers(List.of(instanceUpdateActionWrapper2, instanceCreateActionWrapper));
 
     ProfileSnapshotWrapper instanceParentMatchWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("instanceParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)))
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withName("instanceParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(INSTANCE)))
       .withChildSnapshotWrappers(List.of(instanceChildMatchWrapper, instanceUpdateActionWrapper));
 
     // update holdings
@@ -489,14 +502,18 @@ class EventManagerUnitTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withName("holdingsUpdateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+      .withContent(JsonObject.mapFrom(
+        new MappingProfile().withName("holdingsUpdateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(HOLDINGS)));
 
     ProfileSnapshotWrapper holdingsUpdateActionWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withReactTo(MATCH)
       .withOrder(0)
       .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("holdingsUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS).withAction(UPDATE)))
+      .withContent(JsonObject.mapFrom(
+        new ActionProfile().withName("holdingsUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS)
+          .withAction(UPDATE)))
       .withChildSnapshotWrappers(Collections.singletonList(holdingsUpdateMappingWrapper));
 
     // create holdings
@@ -504,14 +521,18 @@ class EventManagerUnitTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withName("holdingsCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+      .withContent(JsonObject.mapFrom(
+        new MappingProfile().withName("holdingsCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(HOLDINGS)));
 
     ProfileSnapshotWrapper holdingsCreateActionWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withReactTo(NON_MATCH)
       .withOrder(0)
       .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("holdingsCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS).withAction(CREATE)))
+      .withContent(JsonObject.mapFrom(
+        new ActionProfile().withName("holdingsCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS)
+          .withAction(CREATE)))
       .withChildSnapshotWrappers(Collections.singletonList(holdingsCreateMappingWrapper));
 
     ProfileSnapshotWrapper holdingsChildMatchWrapper = new ProfileSnapshotWrapper()
@@ -519,14 +540,18 @@ class EventManagerUnitTest {
       .withOrder(1)
       .withContentType(MATCH_PROFILE)
       .withReactTo(NON_MATCH)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("holdingsChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withName("holdingsChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(HOLDINGS)))
       .withChildSnapshotWrappers(List.of(holdingsUpdateActionWrapper, holdingsCreateActionWrapper));
 
     ProfileSnapshotWrapper holdingsParentMatchWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withOrder(1)
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("holdingsParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withName("holdingsParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(HOLDINGS)))
       .withChildSnapshotWrappers(List.of(holdingsChildMatchWrapper, holdingsUpdateActionWrapper));
 
     ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
@@ -546,10 +571,10 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
       testContext.verify(() -> {
-      // then
-      assertNull(throwable);
-      assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
-      assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
       });
       testContext.completeNow();
     });
@@ -573,7 +598,8 @@ class EventManagerUnitTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+      .withContent(JsonObject.mapFrom(
+        new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
 
     ProfileSnapshotWrapper actionWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -587,13 +613,15 @@ class EventManagerUnitTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
 
     ProfileSnapshotWrapper matchWrapper2 = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withOrder(1)
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
 
     ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -613,10 +641,10 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
-      assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+        // then
+        assertNull(throwable);
+        assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
       });
       testContext.completeNow();
     });
@@ -638,7 +666,8 @@ class EventManagerUnitTest {
         new ProfileSnapshotWrapper()
           .withId(actionProfileId)
           .withContentType(ACTION_PROFILE)
-          .withContent(JsonObject.mapFrom(new ActionProfile().withAction(UPDATE).withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))));
+          .withContent(JsonObject.mapFrom(
+            new ActionProfile().withAction(UPDATE).withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
@@ -649,16 +678,17 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((payload, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      HashMap<String, String> context = payload.getContext();
-      assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
-      assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT, context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+        // then
+        assertNull(throwable);
+        HashMap<String, String> context = payload.getContext();
+        assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
+        assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT,
+          context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
 
-      assertEquals(1, payload.getEventsChain().size());
-      assertEquals(1, payload.getCurrentNodePath().size());
-      assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
-      assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
+        assertEquals(1, payload.getEventsChain().size());
+        assertEquals(1, payload.getCurrentNodePath().size());
+        assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
+        assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
       });
       testContext.completeNow();
     });
@@ -672,9 +702,9 @@ class EventManagerUnitTest {
     String actionProfileId = UUID.randomUUID().toString();
     EventManager.registerEventHandler(new InstancePostProcessingEventHandler());
 
-
     HashMap<String, String> payloadContext = new HashMap<>();
-    payloadContext.put(EventManager.POST_PROCESSING_RESULT_EVENT_KEY, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT);
+    payloadContext.put(EventManager.POST_PROCESSING_RESULT_EVENT_KEY,
+      UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT);
 
     ProfileSnapshotWrapper jobProfileSnapshot = new ProfileSnapshotWrapper()
       .withId(jobProfileId)
@@ -695,17 +725,18 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((payload, throwable) -> {
       testContext.verify(() -> {
-    // then
-      assertNull(throwable);
-      HashMap<String, String> context = payload.getContext();
-      assertEquals(DI_COMPLETED.value(), payload.getEventType());
-      assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+        // then
+        assertNull(throwable);
+        HashMap<String, String> context = payload.getContext();
+        assertEquals(DI_COMPLETED.value(), payload.getEventType());
+        assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
 
-      assertEquals(2, payload.getEventsChain().size());
-      assertEquals(2, payload.getCurrentNodePath().size());
-      assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
-      assertEquals(payload.getEventsChain(),
-        Arrays.asList(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT));
+        assertEquals(2, payload.getEventsChain().size());
+        assertEquals(2, payload.getCurrentNodePath().size());
+        assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
+        assertEquals(payload.getEventsChain(),
+          Arrays.asList(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT,
+            UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT));
       });
       testContext.completeNow();
     });
@@ -741,15 +772,15 @@ class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
       testContext.verify(() -> {
-      // then
-      assertNull(throwable);
-      assertEquals(2, nextEventContext.getEventsChain().size());
-      assertEquals(
-        nextEventContext.getEventsChain(),
-        Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
-      );
-      assertEquals("DI_COMPLETED", nextEventContext.getEventType());
-      assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
+        // then
+        assertNull(throwable);
+        assertEquals(2, nextEventContext.getEventsChain().size());
+        assertEquals(
+          nextEventContext.getEventsChain(),
+          Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
+        );
+        assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+        assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
       });
       testContext.completeNow();
     });

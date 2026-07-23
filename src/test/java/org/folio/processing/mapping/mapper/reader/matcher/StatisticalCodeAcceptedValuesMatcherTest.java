@@ -1,12 +1,11 @@
 package org.folio.processing.mapping.mapper.reader.matcher;
 
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class StatisticalCodeAcceptedValuesMatcherTest {
 
-  private StatisticalCodeAcceptedValuesMatcher acceptedValuesMatcher = new StatisticalCodeAcceptedValuesMatcher();
+  private final StatisticalCodeAcceptedValuesMatcher acceptedValuesMatcher = new StatisticalCodeAcceptedValuesMatcher();
 
   @Test
   void shouldMatchCaseSensitivelyByName() {
@@ -35,5 +34,4 @@ class StatisticalCodeAcceptedValuesMatcherTest {
     String code = "ARCH";
     Assertions.assertFalse(acceptedValuesMatcher.matches(statisticalCodeAcceptedValue, code));
   }
-
 }

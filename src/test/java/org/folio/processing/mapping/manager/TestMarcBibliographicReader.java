@@ -1,13 +1,13 @@
 package org.folio.processing.mapping.manager;
 
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
-
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class TestMarcBibliographicReader implements Reader {
 

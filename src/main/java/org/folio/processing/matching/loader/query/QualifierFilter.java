@@ -1,9 +1,9 @@
 package org.folio.processing.matching.loader.query;
 
+import static java.lang.String.format;
+
 import org.folio.rest.jaxrs.model.Qualifier;
 import org.folio.rest.jaxrs.model.Qualifier.QualifierType;
-
-import static java.lang.String.format;
 
 /**
  * Allows to build additional sql or cql filter according to the {@link QualifierType},
@@ -15,8 +15,8 @@ public enum QualifierFilter {
   ENDS_WITH(" AND LIKE '%%%s'", " AND FIELD_NAME = '*%s'"),
   BEGINS_WITH(" AND LIKE '%s%%'", " AND FIELD_NAME = '%s*'");
 
-  private String sqlFilter;
-  private String cqlFilter;
+  private final String sqlFilter;
+  private final String cqlFilter;
 
   QualifierFilter(String sqlFilter, String cqlFilter) {
     this.sqlFilter = sqlFilter;
@@ -42,5 +42,4 @@ public enum QualifierFilter {
   public String getCqlFilter(String qualifierValue) {
     return format(cqlFilter, qualifierValue);
   }
-
 }

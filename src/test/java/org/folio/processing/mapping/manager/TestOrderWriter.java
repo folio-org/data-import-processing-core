@@ -1,7 +1,11 @@
 package org.folio.processing.mapping.manager;
 
+import static org.folio.rest.jaxrs.model.EntityType.ORDER;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.AbstractWriter;
 import org.folio.processing.value.BooleanValue;
@@ -9,11 +13,6 @@ import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MapValue;
 import org.folio.processing.value.RepeatableFieldValue;
 import org.folio.processing.value.StringValue;
-
-import java.io.IOException;
-import java.util.HashMap;
-
-import static org.folio.rest.jaxrs.model.EntityType.ORDER;
 
 public class TestOrderWriter extends AbstractWriter {
   private TestOrder order;

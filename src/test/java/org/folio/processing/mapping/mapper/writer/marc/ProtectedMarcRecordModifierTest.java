@@ -1,20 +1,19 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
-import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
+import org.junit.jupiter.api.Test;
 
 class ProtectedMarcRecordModifierTest {
 
-  private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
+  private final MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test
   void shouldReturnEmptyListIfThereIsNoSettings() {
@@ -30,7 +29,9 @@ class ProtectedMarcRecordModifierTest {
         .withSource(MarcFieldProtectionSetting.Source.USER)
         .withOverride(true));
 
-    assertTrue(marcRecordModifier.filterOutOverriddenProtectionSettings(marcFieldProtectionSettings, protectionSettingsOverrides).isEmpty());
+    assertTrue(
+      marcRecordModifier.filterOutOverriddenProtectionSettings(marcFieldProtectionSettings, protectionSettingsOverrides)
+        .isEmpty());
   }
 
   @Test
@@ -47,7 +48,9 @@ class ProtectedMarcRecordModifierTest {
         .withOverride(false));
     List<MarcFieldProtectionSetting> protectionSettingsOverrides = new ArrayList<>();
 
-    assertEquals(marcFieldProtectionSettings, marcRecordModifier.filterOutOverriddenProtectionSettings(marcFieldProtectionSettings, protectionSettingsOverrides));
+    assertEquals(marcFieldProtectionSettings,
+      marcRecordModifier.filterOutOverriddenProtectionSettings(marcFieldProtectionSettings,
+        protectionSettingsOverrides));
   }
 
   @Test
@@ -190,11 +193,11 @@ class ProtectedMarcRecordModifierTest {
     );
 
     List<MarcFieldProtectionSetting> actual =
-      marcRecordModifier.filterOutOverriddenProtectionSettings(marcFieldProtectionSettings, protectionSettingsOverrides);
+      marcRecordModifier.filterOutOverriddenProtectionSettings(marcFieldProtectionSettings,
+        protectionSettingsOverrides);
 
     assertEquals(expectedRelevantProtectionSettings.size(), actual.size());
     expectedRelevantProtectionSettings.forEach(setting ->
       assertTrue(actual.stream().anyMatch(actualSetting -> setting.getId().equals(actualSetting.getId()))));
   }
-
 }

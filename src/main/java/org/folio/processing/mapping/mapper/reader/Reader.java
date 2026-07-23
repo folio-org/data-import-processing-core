@@ -1,11 +1,10 @@
 package org.folio.processing.mapping.mapper.reader;
 
+import java.io.IOException;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
-
-import java.io.IOException;
 
 /**
  * The root interface for Readers.

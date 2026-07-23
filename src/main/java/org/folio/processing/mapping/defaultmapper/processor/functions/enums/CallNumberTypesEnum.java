@@ -13,13 +13,12 @@ public enum CallNumberTypesEnum {
   SOURCE_SPECIFIED_IN_SUBFIELD_2('7', "source specified in subfield $2"),
   OTHER_SCHEME('8', "other scheme");
 
+  private final char indicator;
+  private final String name;
   CallNumberTypesEnum(char indicator, String name) {
     this.indicator = indicator;
     this.name = name;
   }
-
-  private char indicator;
-  private String name;
 
   public static String getNameByIndicator(char indicatorValue) {
     for (CallNumberTypesEnum enumValue : values()) {

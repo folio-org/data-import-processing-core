@@ -1,6 +1,5 @@
 package org.folio.processing.mapping;
 
-import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,6 +10,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,26 +26,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import org.folio.rest.jaxrs.model.ContributorNameType;
-import org.folio.rest.jaxrs.model.ContributorType;
 import org.folio.Identifier;
-import org.folio.rest.jaxrs.model.IdentifierType;
 import org.folio.Instance;
-import org.folio.rest.jaxrs.model.InstanceDateType;
-import org.folio.rest.jaxrs.model.InstanceFormat;
-import org.folio.rest.jaxrs.model.InstanceType;
-import org.folio.rest.jaxrs.model.IssuanceMode;
 import org.folio.Subject;
-import org.folio.rest.jaxrs.model.SubjectSource;
-import org.folio.rest.jaxrs.model.SubjectType;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.rest.jaxrs.model.ContributorNameType;
+import org.folio.rest.jaxrs.model.ContributorType;
+import org.folio.rest.jaxrs.model.IdentifierType;
+import org.folio.rest.jaxrs.model.InstanceDateType;
+import org.folio.rest.jaxrs.model.InstanceFormat;
+import org.folio.rest.jaxrs.model.InstanceType;
+import org.folio.rest.jaxrs.model.IssuanceMode;
+import org.folio.rest.jaxrs.model.SubjectSource;
+import org.folio.rest.jaxrs.model.SubjectType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcReader;
@@ -51,49 +51,82 @@ import org.marc4j.marc.Record;
 
 class InstanceMappingTest {
 
-  private final RecordMapper<Instance> mapper = RecordMapperBuilder.buildMapper("MARC_BIB");
-
-  private static final String INSTANCES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instances.json";
-  private static final String BIBS_PATH = "src/test/resources/org/folio/processing/mapping/instance/CornellFOLIOExemplars_Bibs.mrc";
-  private static final String PRECEDING_FILE_PATH = "src/test/resources/org/folio/processing/mapping/instance/780_785_examples.mrc";
-  private static final String BIBS_ERRORS_PATH = "src/test/resources/org/folio/processing/mapping/instance/test1_err.mrc";
-  private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH = "src/test/resources/org/folio/processing/mapping/instance/336_repeated_subfields.mrc";
-  private static final String BIB_WITH_880_WITH_111_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/880_111_to_711.mrc";
-  private static final String BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/880_245_to_246.mrc";
-  private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/880_to_830.mrc";
-  private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS = "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
-  private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
-  private static final String BIB_WITH_REPEATED_020_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
-  private static final String BIB_WITH_REPEATED_600_SUBFIELDS = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
-  private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR = "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_without_indicators.mrc";
-  private static final String BIB_WITH_008_DATE = "src/test/resources/org/folio/processing/mapping/instance/008_date.mrc";
-  private static final String BIB_WITHOUT_008_DATE = "src/test/resources/org/folio/processing/mapping/instance/008_empty_date.mrc";
-  private static final String BIB_WITH_INVALID_008_FIELD = "src/test/resources/org/folio/processing/mapping/instance/008_invalid_field.mrc";
-  private static final String BIB_WITH_DELETED_LEADER = "src/test/resources/org/folio/processing/mapping/instance/deleted_leader.mrc";
-  private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
-  private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
-  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
-  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations.mrc";
-  static final String BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/subject_source_codes_in_2_subfield.mrc";
-  private static final String CLASSIFICATIONS_TEST = "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
-  private static final String INSTANCES_CLASSIFICATIONS_PATH = "src/test/resources/org/folio/processing/mapping/instance/classificationsTestInstance.json";
-  private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
-  private static final String DEFAULT_INSTANCE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instanceTypes.json";
-  private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/resourceIdentifiers.json";
-  private static final String DEFAULT_SUBJECT_SOURCES_PATH = "src/test/resources/org/folio/processing/mapping/instance/subjectSources.json";
-  private static final String DEFAULT_SUBJECT_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/subjectTypes.json";
-  private static final String DEFAULT_INSTANCE_DATE_TYPES_PATH = "src/test/resources/org/folio/processing/mapping/instance/instanceDateTypes.json";
-
-  private static final String BIB_WITH_FORMAT_SUBFIELD_VALUE = "src/test/resources/org/folio/processing/mapping/instance/338_subfields_mapping.mrc";
-  private static final String DEFAULT_INSTANCE_FORMAT_IDENTIFIERS = "src/test/resources/org/folio/processing/mapping/instance/formatIdentifiers.json";
-
+  static final String BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD =
+    "src/test/resources/org/folio/processing/mapping/instance/subject_source_codes_in_2_subfield.mrc";
+  private static final String INSTANCES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/instances.json";
+  private static final String BIBS_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/CornellFOLIOExemplars_Bibs.mrc";
+  private static final String PRECEDING_FILE_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/780_785_examples.mrc";
+  private static final String BIBS_ERRORS_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/test1_err.mrc";
+  private static final String BIB_WITH_REPEATED_SUBFIELDS_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/336_repeated_subfields.mrc";
+  private static final String BIB_WITH_880_WITH_111_SUBFIELD_VALUE =
+    "src/test/resources/org/folio/processing/mapping/instance/880_111_to_711.mrc";
+  private static final String BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE =
+    "src/test/resources/org/folio/processing/mapping/instance/880_245_to_246.mrc";
+  private static final String BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE =
+    "src/test/resources/org/folio/processing/mapping/instance/880_to_830.mrc";
+  private static final String BIB_WITH_5xx_STAFF_ONLY_INDICATORS =
+    "src/test/resources/org/folio/processing/mapping/instance/5xx_staff_only_indicators.mrc";
+  private static final String BIB_WITH_NOT_MAPPED_590_SUBFIELD =
+    "src/test/resources/org/folio/processing/mapping/instance/590_subfield_3.mrc";
+  private static final String BIB_WITH_REPEATED_020_SUBFIELDS =
+    "src/test/resources/org/folio/processing/mapping/instance/ISBN.mrc";
+  private static final String BIB_WITH_REPEATED_600_SUBFIELDS =
+    "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects.mrc";
+  private static final String BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR =
+    "src/test/resources/org/folio/processing/mapping/instance/6xx_subjects_without_indicators.mrc";
+  private static final String BIB_WITH_008_DATE =
+    "src/test/resources/org/folio/processing/mapping/instance/008_date.mrc";
+  private static final String BIB_WITHOUT_008_DATE =
+    "src/test/resources/org/folio/processing/mapping/instance/008_empty_date.mrc";
+  private static final String BIB_WITH_INVALID_008_FIELD =
+    "src/test/resources/org/folio/processing/mapping/instance/008_invalid_field.mrc";
+  private static final String BIB_WITH_DELETED_LEADER =
+    "src/test/resources/org/folio/processing/mapping/instance/deleted_leader.mrc";
+  private static final String BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE =
+    "src/test/resources/org/folio/processing/mapping/instance/336_subfields_mapping.mrc";
+  private static final String BIB_WITH_720_FIELDS =
+    "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
+  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING =
+    "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
+  private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS =
+    "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations.mrc";
+  private static final String CLASSIFICATIONS_TEST =
+    "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
+  private static final String INSTANCES_CLASSIFICATIONS_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/classificationsTestInstance.json";
+  private static final String DEFAULT_MAPPING_RULES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/rules.json";
+  private static final String DEFAULT_INSTANCE_TYPES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/instanceTypes.json";
+  private static final String DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/resourceIdentifiers.json";
+  private static final String DEFAULT_SUBJECT_SOURCES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/subjectSources.json";
+  private static final String DEFAULT_SUBJECT_TYPES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/subjectTypes.json";
+  private static final String DEFAULT_INSTANCE_DATE_TYPES_PATH =
+    "src/test/resources/org/folio/processing/mapping/instance/instanceDateTypes.json";
+  private static final String BIB_WITH_FORMAT_SUBFIELD_VALUE =
+    "src/test/resources/org/folio/processing/mapping/instance/338_subfields_mapping.mrc";
+  private static final String DEFAULT_INSTANCE_FORMAT_IDENTIFIERS =
+    "src/test/resources/org/folio/processing/mapping/instance/formatIdentifiers.json";
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
   private static final String TXT_INSTANCE_TYPE_ID = "6312d172-f0cf-40f6-b27d-9fa8feaf332f";
   private static final String UNSPECIFIED_INSTANCE_TYPE_ID = "30fffe0e-e985-4144-b2e2-1e8179bdb41f";
-  private static final String BIB_WITH_MISSING_URI = "src/test/resources/org/folio/processing/mapping/instance/856_missing_uri.mrc";
-  private static final String BIB_WITH_MISSING_SUBFIELD_A = "src/test/resources/org/folio/processing/mapping/instance/100_missing_subfield_a.mrc";
-  private static final String BIB_WITH_010Z_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/Record_with_010$z.mrc";
-  private static final String BIB_WITH_MISSING_001 = "src/test/resources/org/folio/processing/mapping/instance/recordWithout001Field.mrc";
+  private static final String BIB_WITH_MISSING_URI =
+    "src/test/resources/org/folio/processing/mapping/instance/856_missing_uri.mrc";
+  private static final String BIB_WITH_MISSING_SUBFIELD_A =
+    "src/test/resources/org/folio/processing/mapping/instance/100_missing_subfield_a.mrc";
+  private static final String BIB_WITH_010Z_SUBFIELD =
+    "src/test/resources/org/folio/processing/mapping/instance/Record_with_010$z.mrc";
+  private static final String BIB_WITH_MISSING_001 =
+    "src/test/resources/org/folio/processing/mapping/instance/recordWithout001Field.mrc";
+  private final RecordMapper<Instance> mapper = RecordMapperBuilder.buildMapper("MARC_BIB");
 
   @Test
   void testMarcToInstance() throws IOException {
@@ -149,7 +182,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithWrongRecords() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_ERRORS_PATH).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_ERRORS_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     int i = 0;
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -173,7 +207,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceIgnoreSubsequentSubfieldsForInstanceTypeId() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_SUBFIELDS_PATH).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_REPEATED_SUBFIELDS_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -195,7 +230,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceLeaderToModeIssuance() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_001).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_001).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     IssuanceMode issuanceMode = new IssuanceMode().withId(UUID.randomUUID().toString())
       .withName("unspecified").withSource("rdamodeissue");
@@ -207,7 +243,8 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withIssuanceModes(List.of(issuanceMode)), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withIssuanceModes(List.of(issuanceMode)), mappingRules);
       assertNotNull(instance.getTitle());
       assertNotNull(instance.getModeOfIssuanceId());
       assertNotNull(instance.getSource());
@@ -219,7 +256,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstance880FieldToContributorMeetingName() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_WITH_111_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_880_WITH_111_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -234,7 +272,8 @@ class InstanceMappingTest {
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
       assertNotNull(instance.getContributors().get(1));
-      assertEquals("fe19bae4-da28-472b-be90-d442e2428ead", instance.getContributors().get(1).getContributorNameTypeId());
+      assertEquals("fe19bae4-da28-472b-be90-d442e2428ead",
+        instance.getContributors().get(1).getContributorNameTypeId());
       assertEquals("testingMeetingName", instance.getContributors().get(1).getName());
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -244,7 +283,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstance880FieldToAlternativeTitleName() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -259,7 +299,9 @@ class InstanceMappingTest {
       assertNotNull(instance.getSource());
       assertEquals(STUB_FIELD_TYPE_ID, instance.getInstanceTypeId());
       assertEquals(3, instance.getAlternativeTitles().size());
-      assertNotNull(instance.getAlternativeTitles().stream().filter(e -> e.getAlternativeTitle().equals("testingAlternativeTitle")).findAny().orElse(null));
+      assertNotNull(
+        instance.getAlternativeTitles().stream().filter(e -> e.getAlternativeTitle().equals("testingAlternativeTitle"))
+          .findAny().orElse(null));
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
@@ -268,7 +310,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstance880FieldToSeriesStatement() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -294,7 +337,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceNoteStaffOnlyViaIndicator() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_5xx_STAFF_ONLY_INDICATORS).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_5xx_STAFF_ONLY_INDICATORS).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -313,9 +357,12 @@ class InstanceMappingTest {
       assertTrue(instance.getNotes().get(1).getStaffOnly());
       assertEquals("Testing Rare copy: Gift of David Pescovitz and Timothy Daly", instance.getNotes().get(2).getNote());
       assertTrue(instance.getNotes().get(2).getStaffOnly());
-      assertEquals("Testing Rare copy 3: Gift of David Pescovitz and Timothy Daly. 123", instance.getNotes().get(3).getNote());
+      assertEquals("Testing Rare copy 3: Gift of David Pescovitz and Timothy Daly. 123",
+        instance.getNotes().get(3).getNote());
       assertFalse(instance.getNotes().get(3).getStaffOnly());
-      assertEquals("Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\6\\1973", instance.getNotes().get(4).getNote());
+      assertEquals(
+        "Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\6\\1973",
+        instance.getNotes().get(4).getNote());
       assertFalse(instance.getNotes().get(4).getStaffOnly());
       assertEquals("The note should be marked as stuffOnly", instance.getNotes().get(5).getNote());
       assertTrue(instance.getNotes().get(5).getStaffOnly());
@@ -329,7 +376,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceRemoveElectronicAccessEntriesWithNoUri() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_URI).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_URI).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -351,7 +399,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstance100requiredSubfield() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_SUBFIELD_A).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_MISSING_SUBFIELD_A).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -372,7 +421,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstancePrecedingTitles() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(PRECEDING_FILE_PATH).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(PRECEDING_FILE_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -413,7 +463,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceNotMappedSubFields() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_NOT_MAPPED_590_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_NOT_MAPPED_590_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
@@ -437,7 +488,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceResourceTypeIdMapping() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
     List<InstanceType> instanceTypes = List.of(new ObjectMapper().readValue(rawInstanceTypes, InstanceType[].class));
@@ -450,7 +502,8 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -467,11 +520,13 @@ class InstanceMappingTest {
   @Test
   void testMarcToInstanceFormatIdMapping() throws IOException {
     MarcReader reader = new MarcStreamReader(
-      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FORMAT_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8))
+      new ByteArrayInputStream(
+        TestUtil.readFileFromPath(BIB_WITH_FORMAT_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8))
     );
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceFormatTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_FORMAT_IDENTIFIERS);
-    List<InstanceFormat> instanceFormats = List.of(new ObjectMapper().readValue(rawInstanceFormatTypes, InstanceFormat[].class));
+    List<InstanceFormat> instanceFormats =
+      List.of(new ObjectMapper().readValue(rawInstanceFormatTypes, InstanceFormat[].class));
 
     String expectedFirstFormatId = "2e48e713-17f3-4c13-a9f8-23845bb210a4";
 
@@ -489,7 +544,8 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceFormats(instanceFormats), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withInstanceFormats(instanceFormats), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -518,10 +574,12 @@ class InstanceMappingTest {
       Map.entry("9780471725329 (electronic bk.)", ISBN_IDENTIFIER_ID),
       Map.entry("0471622672 (acid-free paper)", INVALID_ISBN_IDENTIFIER_ID));
 
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_020_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_REPEATED_020_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawResourceIdentifierTypes = TestUtil.readFileFromPath(DEFAULT_RESOURCE_IDENTIFIERS_TYPES_PATH);
-    List<IdentifierType> instanceTypes = List.of(new ObjectMapper().readValue(rawResourceIdentifierTypes, IdentifierType[].class));
+    List<IdentifierType> instanceTypes =
+      List.of(new ObjectMapper().readValue(rawResourceIdentifierTypes, IdentifierType[].class));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -531,7 +589,8 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withIdentifierTypes(instanceTypes), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withIdentifierTypes(instanceTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -577,34 +636,51 @@ class InstanceMappingTest {
     final String FIFTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff515";
     final String SIXTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff516";
 
-
     final List<Subject> expectedResults = List.of(
-      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 600.2 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FIRST_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 610 subject").withSourceId(THIRD_LIBRARY_SOURCE_ID).withTypeId(SECOND_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 611 subject").withSourceId(FOURTH_LIBRARY_SOURCE_ID).withTypeId(THIRD_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 630 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID).withTypeId(FOURTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 647 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(FIFTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID).withTypeId(SIXTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID).withTypeId(SEVENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 651 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(EIGHTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 653 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(TENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 654 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(ELEVENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 655 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(NINTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 656 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(TWELFTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 657 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(THIRTEENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 658 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(FOURTEENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 662 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(FIFTEENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 688 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID).withTypeId(SIXTEENTH_SUBJECT_TYPE_ID)
-      );
+      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID)
+        .withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 600.2 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID)
+        .withTypeId(FIRST_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 610 subject").withSourceId(THIRD_LIBRARY_SOURCE_ID)
+        .withTypeId(SECOND_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 611 subject").withSourceId(FOURTH_LIBRARY_SOURCE_ID)
+        .withTypeId(THIRD_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 630 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID)
+        .withTypeId(FOURTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 647 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID)
+        .withTypeId(FIFTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID)
+        .withTypeId(SIXTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID)
+        .withTypeId(SEVENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 651 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(EIGHTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 653 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(TENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 654 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(ELEVENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 655 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(NINTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 656 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(TWELFTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 657 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(THIRTEENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 658 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(FOURTEENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 662 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(FIFTEENTH_SUBJECT_TYPE_ID),
+      new Subject().withValue("Test 688 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
+        .withTypeId(SIXTEENTH_SUBJECT_TYPE_ID)
+    );
 
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
     String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
-    List<SubjectSource> subjectSources = List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
+    List<SubjectSource> subjectSources =
+      List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
     List<SubjectType> subjectTypes = List.of(new ObjectMapper().readValue(rawSubjectTypes, SubjectType[].class));
-
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -614,7 +690,8 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
+      Instance instance = mapper.mapRecord(marc,
+        new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -637,11 +714,12 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWith008Date() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_008_DATE).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_008_DATE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
-    List<InstanceDateType> instanceDateTypes = List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
-
+    List<InstanceDateType> instanceDateTypes =
+      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -651,7 +729,8 @@ class InstanceMappingTest {
       Record targetRecord = reader.next();
       writer.write(targetRecord);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -670,11 +749,12 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithDeletedLeader() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_DELETED_LEADER).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_DELETED_LEADER).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
-    List<InstanceDateType> instanceDateTypes = List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
-
+    List<InstanceDateType> instanceDateTypes =
+      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -684,7 +764,8 @@ class InstanceMappingTest {
       Record targetRecord = reader.next();
       writer.write(targetRecord);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -703,11 +784,12 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithEmpty008Date() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITHOUT_008_DATE).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITHOUT_008_DATE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
-    List<InstanceDateType> instanceDateTypes = List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
-
+    List<InstanceDateType> instanceDateTypes =
+      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -717,7 +799,8 @@ class InstanceMappingTest {
       Record targetRecord = reader.next();
       writer.write(targetRecord);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -740,8 +823,8 @@ class InstanceMappingTest {
       BIB_WITH_INVALID_008_FIELD).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
-    List<InstanceDateType> instanceDateTypes = List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
-
+    List<InstanceDateType> instanceDateTypes =
+      List.of(new ObjectMapper().readValue(rawInstanceDateTypes, InstanceDateType[].class));
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -751,7 +834,8 @@ class InstanceMappingTest {
       Record targetRecord = reader.next();
       writer.write(targetRecord);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
+      Instance instance =
+        mapper.mapRecord(marc, new MappingParameters().withInstanceDateTypes(instanceDateTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -790,13 +874,14 @@ class InstanceMappingTest {
       new Subject().withValue("Test 655 subject").withTypeId(NINTH_SUBJECT_TYPE_ID)
     );
 
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
+      TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELD_AND_EMPTY_INDICATOR).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawSubjectSources = TestUtil.readFileFromPath(DEFAULT_SUBJECT_SOURCES_PATH);
     String rawSubjectTypes = TestUtil.readFileFromPath(DEFAULT_SUBJECT_TYPES_PATH);
-    List<SubjectSource> subjectSources = List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
+    List<SubjectSource> subjectSources =
+      List.of(new ObjectMapper().readValue(rawSubjectSources, SubjectSource[].class));
     List<SubjectType> subjectTypes = List.of(new ObjectMapper().readValue(rawSubjectTypes, SubjectType[].class));
-
 
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
@@ -806,7 +891,8 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
+      Instance instance = mapper.mapRecord(marc,
+        new MappingParameters().withSubjectSources(subjectSources).withSubjectTypes(subjectTypes), mappingRules);
       mappedInstances.add(instance);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -834,7 +920,7 @@ class InstanceMappingTest {
 
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     List<SubjectSource> subjectSources = new ObjectMapper()
-      .readValue(new File(DEFAULT_SUBJECT_SOURCES_PATH), new TypeReference<>() {});
+      .readValue(new File(DEFAULT_SUBJECT_SOURCES_PATH), new TypeReference<>() { });
 
     String firstSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
     String secondSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
@@ -860,7 +946,8 @@ class InstanceMappingTest {
     Record marcRecord = reader.next();
     writer.write(marcRecord);
     JsonObject marc = new JsonObject(os.toString());
-    Instance instance = mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources), mappingRules);
+    Instance instance =
+      mapper.mapRecord(marc, new MappingParameters().withSubjectSources(subjectSources), mappingRules);
 
     assertNotNull(instance.getSubjects());
     assertEquals(9, instance.getSubjects().size());
@@ -890,7 +977,9 @@ class InstanceMappingTest {
     Record marcRecord = reader.next();
     writer.write(marcRecord);
     JsonObject marc = new JsonObject(os.toString());
-    Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
+    Instance instance = mapper.mapRecord(marc,
+      new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes),
+      mappingRules);
     assertNotNull(instance.getSource());
     assertEquals(6, instance.getContributors().size());
     // 720 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
@@ -937,8 +1026,9 @@ class InstanceMappingTest {
 
   @Test
   void testMarcAlternativeMappingForInstanceContributors() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING)
-      .getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader =
+      new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING)
+        .getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     List<ContributorType> contributorTypes = List.of(
@@ -957,10 +1047,11 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
+      Instance instance = mapper.mapRecord(marc,
+        new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes),
+        mappingRules);
       assertNotNull(instance.getSource());
       assertEquals(15, instance.getContributors().size());
-
 
       // 100 \1\$aChin, Staceyann,$d1972-$eAuthor$eNarrator$0http://id.loc.gov/authorities/names/n2008052404$1http://viaf.org/viaf/24074052 should match by $e subfield and set contributorTypeId
       assertEquals("Chin, Staceyann, 1972-", instance.getContributors().getFirst().getName());
@@ -1060,8 +1151,9 @@ class InstanceMappingTest {
 
   @Test
   void testMarcAlternativeMappingForInstanceContributorsWithPunctuations() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS)
-      .getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS)
+        .getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     List<ContributorType> contributorTypes = List.of(
@@ -1088,10 +1180,11 @@ class InstanceMappingTest {
       Record record = reader.next();
       writer.write(record);
       JsonObject marc = new JsonObject(os.toString());
-      Instance instance = mapper.mapRecord(marc, new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes), mappingRules);
+      Instance instance = mapper.mapRecord(marc,
+        new MappingParameters().withContributorTypes(contributorTypes).withContributorNameTypes(contributorNameTypes),
+        mappingRules);
       assertNotNull(instance.getSource());
       assertEquals(10, instance.getContributors().size());
-
 
       // 100 1\$aKani, John,$econceptor;$ecourt report should match by first $e subfield and set contributorTypeId to 3
       assertEquals("Kani, John", instance.getContributors().getFirst().getName());
@@ -1161,7 +1254,8 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceForInstanceTypeIds() throws IOException {
-    MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_010Z_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
+    MarcReader reader = new MarcStreamReader(
+      new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_010Z_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
     List<InstanceType> instanceTypes = List.of(new ObjectMapper().readValue(rawInstanceTypes, InstanceType[].class));
@@ -1176,7 +1270,8 @@ class InstanceMappingTest {
         Record record = reader.next();
         writer.write(record);
         JsonObject marc = new JsonObject(os.toString());
-        Instance instance = mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
+        Instance instance =
+          mapper.mapRecord(marc, new MappingParameters().withInstanceTypes(instanceTypes), mappingRules);
         mappedInstances.add(instance);
         Validator validator = factory.getValidator();
         Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -1188,8 +1283,8 @@ class InstanceMappingTest {
       mappedInstances.getFirst().getIdentifiers().forEach(Assertions::assertNotNull);
 
       var identifiers = mappedInstances.getFirst().getIdentifiers();
-      assertTrue(identifiers.stream().map(Identifier::getValue).anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
-
+      assertTrue(identifiers.stream().map(Identifier::getValue)
+        .anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
     }
   }
 }

@@ -4,7 +4,7 @@ import org.folio.rest.jaxrs.model.MappingRule;
 
 public class BooleanValue implements Value<MappingRule.BooleanFieldAction> {
 
-  private MappingRule.BooleanFieldAction booleanFieldAction;
+  private final MappingRule.BooleanFieldAction booleanFieldAction;
 
   protected BooleanValue(MappingRule.BooleanFieldAction value) {
     this.booleanFieldAction = value;

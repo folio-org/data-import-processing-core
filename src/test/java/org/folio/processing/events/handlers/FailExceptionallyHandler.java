@@ -1,9 +1,8 @@
 package org.folio.processing.events.handlers;
 
+import java.util.concurrent.CompletableFuture;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Test event handler. Returns future that is exceptionally completed (failed).

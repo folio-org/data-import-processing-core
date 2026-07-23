@@ -67,7 +67,7 @@ class PomReaderUtilTest {
   }
 
   @Test
-  void BadFilename()  {
+  void BadFilename() {
     PomReaderUtil pom = PomReaderUtil.INSTANCE;
 
     assertThrows(IllegalArgumentException.class, () -> pom.init("does_not_exist.xml"));

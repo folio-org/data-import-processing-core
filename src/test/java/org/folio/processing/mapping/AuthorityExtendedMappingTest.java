@@ -1,6 +1,5 @@
 package org.folio.processing.mapping;
 
-
 import io.vertx.core.json.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -1,6 +1,13 @@
 package org.folio.processing.matching.loader.query;
 
+import static org.folio.processing.value.Value.ValueType.DATE;
+import static org.folio.processing.value.Value.ValueType.LIST;
+import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
+
 import io.vertx.core.json.Json;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,21 +18,10 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.folio.processing.value.Value.ValueType.DATE;
-import static org.folio.processing.value.Value.ValueType.LIST;
-import static org.folio.processing.value.Value.ValueType.STRING;
-import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
-
 /**
  * Provides functionality to build LoadQuery based on match details and matching value
  */
 public class LoadQueryBuilder {
-
-  private LoadQueryBuilder() {
-  }
 
   private static final Logger LOGGER = LogManager.getLogger(LoadQueryBuilder.class);
   private static final String JSON_PATH_SEPARATOR = ".";
@@ -44,6 +40,8 @@ public class LoadQueryBuilder {
    * This syntax allows PostgreSQL to use the GIN index on the field consistently, improving query performance.
    */
   private static final String IDENTIFIER_INDIVIDUAL_CQL_QUERY = "identifiers =/@identifierTypeId=%s \"%s\"";
+  private LoadQueryBuilder() {
+  }
 
   /**
    * Builds LoadQuery,
@@ -70,22 +68,25 @@ public class LoadQueryBuilder {
           if (fields.size() > 1) {
             Field additionalField = fields.get(1);
             String additionalFieldName = StringUtils.substringBefore(fieldName, JSON_PATH_SEPARATOR)
-              + JSON_PATH_SEPARATOR
-              + additionalField.getLabel();
-            QueryHolder additionalQuery = new QueryHolder(StringValue.of(additionalField.getValue()), matchDetail.getMatchCriterion())
-              .replaceFieldReference(additionalFieldName, true);
+                                         + JSON_PATH_SEPARATOR
+                                         + additionalField.getLabel();
+            QueryHolder additionalQuery =
+              new QueryHolder(StringValue.of(additionalField.getValue()), matchDetail.getMatchCriterion())
+                .replaceFieldReference(additionalFieldName, true);
             mainQuery.applyAdditionalCondition(additionalQuery);
             // TODO provide all the requirements for MODDATAIMP-592 and refactor code block below
-            if(checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
+            if (checkIfIdentifierTypeExists(matchDetail, fieldPath, additionalField.getLabel())) {
               String cqlQuery = buildIdentifierCqlQuery(value, additionalField.getValue());
               mainQuery.setCqlQuery(cqlQuery);
               mainQuery.setSqlQuery(StringUtils.EMPTY);
             } else {
-              LOGGER.debug("LoadQueryBuilder::build - Additional field does not match identifier type criteria: {} fieldPath: {}",
+              LOGGER.debug(
+                "LoadQueryBuilder::build - Additional field does not match identifier type criteria: {} fieldPath: {}",
                 additionalField.getLabel(), fieldPath);
             }
           }
-          LOGGER.debug(() -> String.format("LoadQueryBuilder::build - Built LoadQuery for VALUE: ~| %s |~ MATCHDETAIL: ~| %s |~ CQL: ~| %s |~",
+          LOGGER.debug(() -> String.format(
+            "LoadQueryBuilder::build - Built LoadQuery for VALUE: ~| %s |~ MATCHDETAIL: ~| %s |~ CQL: ~| %s |~",
             Json.encode(value), Json.encode(matchDetail), mainQuery.getCqlQuery()));
           return new DefaultJsonLoadQuery(tableName, mainQuery.getSqlQuery(), mainQuery.getCqlQuery());
         }
@@ -94,16 +95,18 @@ public class LoadQueryBuilder {
     return null;
   }
 
-  private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath, String additionalFieldPath) {
-    return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
-      matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES &&
-      fieldPath.equals(IDENTIFIER_TYPE_VALUE) && additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
+  private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath,
+                                                     String additionalFieldPath) {
+    return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC
+           && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
+           matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES &&
+           fieldPath.equals(IDENTIFIER_TYPE_VALUE) && additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
   }
 
   /**
    * Builds CQL query for identifier matching with individual AND conditions for each value
    *
-   * @param value          the value to match against (can be STRING or LIST)
+   * @param value            the value to match against (can be STRING or LIST)
    * @param identifierTypeId the identifier type ID
    * @return CQL query string with individual AND conditions
    */
@@ -131,11 +134,10 @@ public class LoadQueryBuilder {
   private static String escapeCqlValue(String value) {
     // Escape backslashes first, then other special characters
     return value.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("(", "\\(")
-                .replace(")", "\\)")
-                .replace("*", "\\*")
-                .replace("?", "\\?");
+      .replace("\"", "\\\"")
+      .replace("(", "\\(")
+      .replace(")", "\\)")
+      .replace("*", "\\*")
+      .replace("?", "\\?");
   }
-
 }

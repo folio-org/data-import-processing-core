@@ -1,10 +1,10 @@
 package org.folio.processing.matching.reader.util;
 
-import org.apache.commons.lang3.StringUtils;
-import org.folio.rest.jaxrs.model.Qualifier;
-
 import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;
 import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.NUMERICS_ONLY;
+
+import org.apache.commons.lang3.StringUtils;
+import org.folio.rest.jaxrs.model.Qualifier;
 
 /**
  * Util class to process value according to MatchExpression
@@ -46,16 +46,19 @@ public final class MatchExpressionUtil {
     boolean isQualified = true;
     if (value != null && qualifier != null && qualifier.getQualifierType() != null) {
       switch (qualifier.getQualifierType()) {
-        case BEGINS_WITH: isQualified = value.startsWith(qualifier.getQualifierValue());
-        break;
-        case ENDS_WITH: isQualified = value.endsWith(qualifier.getQualifierValue());
-        break;
-        case CONTAINS: isQualified = value.contains(qualifier.getQualifierValue());
-        break;
-        default: isQualified = false;
+        case BEGINS_WITH:
+          isQualified = value.startsWith(qualifier.getQualifierValue());
+          break;
+        case ENDS_WITH:
+          isQualified = value.endsWith(qualifier.getQualifierValue());
+          break;
+        case CONTAINS:
+          isQualified = value.contains(qualifier.getQualifierValue());
+          break;
+        default:
+          isQualified = false;
       }
     }
     return isQualified;
   }
-
 }

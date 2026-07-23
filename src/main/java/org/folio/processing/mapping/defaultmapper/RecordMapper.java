@@ -1,7 +1,6 @@
 package org.folio.processing.mapping.defaultmapper;
 
 import io.vertx.core.json.JsonObject;
-import org.folio.Instance;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
 /**
@@ -16,7 +15,7 @@ public interface RecordMapper<T> {
    * @param mappingParameters - parameters needed for mapping functions
    * @param mappingRules      - required rules for mapping
    * @return - Wrapper for parsed record in json format.
-   * Can contains errors descriptions if parsing was failed
+   *   Can contains errors descriptions if parsing was failed
    */
   T mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules);
 

@@ -32,13 +32,11 @@
     }
   ],
   "saftPersonalNameTrunc": [
-
   ],
   "saftPersonalNameTitleTrunc": [
     "Editor:   C. W. Dugmore."
   ],
   "saftCorporateNameTrunc": [
-
   ],
   "saftCorporateNameTitleTrunc": [
     "Church history"
@@ -72,10 +70,8 @@
   "saftFormSubdivisionTrunc": [],
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
   "sftPersonalName": [
-
   ],
   "saftPersonalName": [
-
   ],
   "personalNameTitle": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
   "sftPersonalNameTitle": [
@@ -85,10 +81,8 @@
     "Editor:   C. W. Dugmore."
   ],
   "sftCorporateName": [
-
   ],
   "saftCorporateName": [
-
   ],
   "corporateNameTitle": "BR140 .J6",
   "sftCorporateNameTitle": [
@@ -98,7 +92,6 @@
     "Church history"
   ],
   "sftMeetingName": [
-
   ],
   "saftMeetingName": [
     "Some narrower term - 511"
@@ -177,5 +170,5 @@
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     }
   ],
-  "notes": [ ]
+  "notes": []
 }

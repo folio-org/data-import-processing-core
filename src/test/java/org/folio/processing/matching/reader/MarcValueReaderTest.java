@@ -1,24 +1,5 @@
 package org.folio.processing.matching.reader;
 
-import io.vertx.core.json.Json;
-import org.apache.commons.lang3.StringUtils;
-import org.folio.DataImportEventPayload;
-import org.folio.MatchDetail;
-import org.folio.ParsedRecord;
-import org.folio.Record;
-import org.folio.processing.TestUtil;
-import org.folio.processing.value.ListValue;
-import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.Field;
-import org.folio.rest.jaxrs.model.MatchExpression;
-import org.folio.rest.jaxrs.model.Qualifier;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 import static org.folio.processing.value.Value.ValueType.STRING;
@@ -34,6 +15,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.vertx.core.json.Json;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import org.apache.commons.lang3.StringUtils;
+import org.folio.DataImportEventPayload;
+import org.folio.MatchDetail;
+import org.folio.ParsedRecord;
+import org.folio.Record;
+import org.folio.processing.TestUtil;
+import org.folio.processing.value.ListValue;
+import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Field;
+import org.folio.rest.jaxrs.model.MatchExpression;
+import org.folio.rest.jaxrs.model.Qualifier;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
 class MarcValueReaderTest {
 
   private final static String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
@@ -44,7 +43,7 @@ class MarcValueReaderTest {
   static void setUp() throws IOException {
     PARSED_CONTENT = TestUtil.readFileFromPath(MARC_RECORD_PATH);
     MARC_RECORD = new Record().withParsedRecord(new ParsedRecord()
-        .withContent(PARSED_CONTENT));
+      .withContent(PARSED_CONTENT));
   }
 
   @Test
@@ -789,5 +788,4 @@ class MarcValueReaderTest {
     assertEquals(STRING, result.getType());
     assertEquals("781234", result.getValue());
   }
-
 }

@@ -1,10 +1,9 @@
 package org.folio.processing.events.services.processor;
 
-import org.folio.DataImportEventPayload;
-import org.folio.processing.events.services.handler.EventHandler;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.folio.DataImportEventPayload;
+import org.folio.processing.events.services.handler.EventHandler;
 
 /**
  * The central interface for event processors.

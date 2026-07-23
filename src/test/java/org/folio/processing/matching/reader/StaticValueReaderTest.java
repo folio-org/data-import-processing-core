@@ -1,5 +1,12 @@
 package org.folio.processing.matching.reader;
 
+import static org.folio.processing.value.Value.ValueType.DATE;
+import static org.folio.processing.value.Value.ValueType.MISSING;
+import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.EntityType.STATIC_VALUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,13 +17,6 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
 import org.junit.jupiter.api.Test;
-
-import static org.folio.processing.value.Value.ValueType.DATE;
-import static org.folio.processing.value.Value.ValueType.MISSING;
-import static org.folio.processing.value.Value.ValueType.STRING;
-import static org.folio.rest.jaxrs.model.EntityType.STATIC_VALUE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class StaticValueReaderTest {
 

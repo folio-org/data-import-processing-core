@@ -92,8 +92,8 @@ public final class MarcRecordNormalizer {
 
   private static boolean isDuplicate(Subfield s1, Subfield s2) {
     return !s1.equals(s2)
-      && s1.getData().equals(s2.getData())
-      && s1.getCode() == s2.getCode();
+           && s1.getData().equals(s2.getData())
+           && s1.getCode() == s2.getCode();
   }
 
   private static void removeSubfieldIfExist(Record marcRecord, VariableField field,

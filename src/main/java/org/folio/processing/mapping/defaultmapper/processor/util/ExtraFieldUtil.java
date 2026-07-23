@@ -1,15 +1,12 @@
 package org.folio.processing.mapping.defaultmapper.processor.util;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.marc4j.marc.DataField;
-import org.marc4j.marc.Subfield;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Util for processing fields with specific logic.

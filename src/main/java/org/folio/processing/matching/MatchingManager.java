@@ -3,8 +3,11 @@ package org.folio.processing.matching;
 import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 
+import io.vertx.core.json.JsonObject;
 import java.util.Map;
-
+import java.util.concurrent.CompletableFuture;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchProfile;
 import org.folio.processing.exceptions.MatchingException;
@@ -16,12 +19,6 @@ import org.folio.processing.matching.matcher.MatcherFactory;
 import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.CompletableFuture;
-
-import io.vertx.core.json.JsonObject;
 
 /**
  * Matching Manager implementation, provides ability to perform matching

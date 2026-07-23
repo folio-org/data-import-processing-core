@@ -1,45 +1,43 @@
 package org.folio.processing.events;
 
-import io.vertx.core.Vertx;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import org.folio.DataImportEventPayload;
-import org.folio.kafka.KafkaConfig;
-import org.folio.processing.TestUtil;
-import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.kafka.KafkaContainer;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
 import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.vertx.core.Vertx;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import org.folio.DataImportEventPayload;
+import org.folio.kafka.KafkaConfig;
+import org.folio.processing.TestUtil;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.testcontainers.kafka.KafkaContainer;
+
 @ExtendWith(VertxExtension.class)
 class EventManagerTest {
-  private static final String KAFKA_ENV = "folio";
-
   static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
+  private static final String KAFKA_ENV = "folio";
   private static KafkaConfig kafkaConfig;
 
   @BeforeAll
   static void setUpClass() {
     kafkaContainer.start();
     kafkaConfig = KafkaConfig.builder()
-        .kafkaHost(kafkaContainer.getHost())
-        .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
-        .envId(KAFKA_ENV)
-        .build();
+      .kafkaHost(kafkaContainer.getHost())
+      .kafkaPort(kafkaContainer.getFirstMappedPort() + "")
+      .envId(KAFKA_ENV)
+      .build();
   }
 
   @AfterAll

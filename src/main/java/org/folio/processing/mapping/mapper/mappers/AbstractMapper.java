@@ -1,5 +1,9 @@
 package org.folio.processing.mapping.mapper.mappers;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
+
+import java.io.IOException;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -12,16 +16,11 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 
-import java.io.IOException;
-import java.util.List;
-
-import static org.folio.processing.events.utils.EventUtils.extractRecordId;
-
 public class AbstractMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(AbstractMapper.class);
 
-  private Reader reader;
-  private Writer writer;
+  private final Reader reader;
+  private final Writer writer;
 
   public AbstractMapper(Reader reader, Writer writer) {
     this.reader = reader;
@@ -29,7 +28,8 @@ public class AbstractMapper implements Mapper {
   }
 
   @Override
-  public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload, MappingContext mappingContext) {
+  public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload,
+                                    MappingContext mappingContext) {
     try {
       initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
       if (ifProfileIsInvalid(profile)) {

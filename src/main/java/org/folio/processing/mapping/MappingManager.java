@@ -1,6 +1,10 @@
 package org.folio.processing.mapping;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
+import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
+
 import io.vertx.core.json.JsonObject;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -15,11 +19,6 @@ import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-
-import java.util.Map;
-
-import static org.folio.processing.events.utils.EventUtils.extractRecordId;
-import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 
 /**
  * MappingManager is the entry point to work with mapping.

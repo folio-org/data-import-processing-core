@@ -1,38 +1,5 @@
 package org.folio.processing.mapping.manager;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonObject;
-import org.folio.DataImportEventPayload;
-import org.folio.rest.jaxrs.model.HoldingsRecord;
-import org.folio.Instance;
-import org.folio.MappingProfile;
-import org.folio.ParsedRecord;
-import org.folio.Record;
-import org.folio.rest.jaxrs.model.StatisticalCode;
-import org.folio.rest.jaxrs.model.StatisticalCodeType;
-import org.folio.processing.mapping.MappingManager;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.folio.processing.mapping.mapper.MappingContext;
-import org.folio.processing.mapping.mapper.reader.record.marc.MarcBibReaderFactory;
-import org.folio.processing.mapping.mapper.writer.Writer;
-import org.folio.processing.mapping.mapper.writer.WriterFactory;
-import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
-import org.folio.rest.jaxrs.model.EntityType;
-import org.folio.rest.jaxrs.model.MappingDetail;
-import org.folio.rest.jaxrs.model.MappingRule;
-import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import static java.util.Collections.singletonList;
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
@@ -41,6 +8,38 @@ import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.folio.DataImportEventPayload;
+import org.folio.Instance;
+import org.folio.MappingProfile;
+import org.folio.ParsedRecord;
+import org.folio.Record;
+import org.folio.processing.mapping.MappingManager;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.processing.mapping.mapper.MappingContext;
+import org.folio.processing.mapping.mapper.reader.record.marc.MarcBibReaderFactory;
+import org.folio.processing.mapping.mapper.writer.Writer;
+import org.folio.processing.mapping.mapper.writer.WriterFactory;
+import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
+import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.HoldingsRecord;
+import org.folio.rest.jaxrs.model.MappingDetail;
+import org.folio.rest.jaxrs.model.MappingRule;
+import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
+import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
+import org.folio.rest.jaxrs.model.StatisticalCode;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class MappingManagerUnitTest {
 
@@ -60,7 +59,8 @@ class MappingManagerUnitTest {
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
       .withExistingRecordType(INSTANCE)
       .withMappingDetails(new MappingDetail()
-        .withMappingFields(singletonList(new MappingRule().withPath("indexTitle").withValue("RULE_EXPRESSION").withEnabled("true"))));
+        .withMappingFields(
+          singletonList(new MappingRule().withPath("indexTitle").withValue("RULE_EXPRESSION").withEnabled("true"))));
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
@@ -81,7 +81,8 @@ class MappingManagerUnitTest {
     // then
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(INSTANCE.value()));
-    TestInstance mappedInstance = new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
+    TestInstance mappedInstance =
+      new ObjectMapper().readValue(eventPayload.getContext().get(INSTANCE.value()), TestInstance.class);
     assertNotNull(mappedInstance.getId());
     assertNotNull(mappedInstance.getIndexTitle());
   }
@@ -90,7 +91,8 @@ class MappingManagerUnitTest {
   void shouldThrowException_ifNoReaderEligible() {
     assertThrows(RuntimeException.class, () -> {
       // given
-      MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
+      MappingProfile mappingProfile =
+        new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
       ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
       mappingProfileWrapper.setContent(mappingProfile);
       mappingProfileWrapper.setContentType(MAPPING_PROFILE);
@@ -107,7 +109,8 @@ class MappingManagerUnitTest {
   void shouldThrowException_ifNoWriterEligible() {
     assertThrows(RuntimeException.class, () -> {
       // given
-      MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
+      MappingProfile mappingProfile =
+        new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
       ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
       mappingProfileWrapper.setContent(mappingProfile);
       mappingProfileWrapper.setContentType(MAPPING_PROFILE);
@@ -206,7 +209,6 @@ class MappingManagerUnitTest {
         .withId("uuid1")
         .withName("TEST (test code type)"));
 
-
     MappingProfile mappingProfile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
@@ -278,7 +280,8 @@ class MappingManagerUnitTest {
     assertNotNull(eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value()));
     assertNotNull(eventPayload.getContext().get(entityType.value()));
 
-    Map<String, Object> entityResult = (Map) Json.decodeValue(eventPayload.getContext().get(entityType.value()), Map.class).get("instance");
+    Map<String, Object> entityResult =
+      (Map) Json.decodeValue(eventPayload.getContext().get(entityType.value()), Map.class).get("instance");
     List<String> statisticalCodeIds = (List) entityResult.get("statisticalCodeIds");
     assertEquals(statisticalCodeIds.size(), expectedResultIndexes.size());
     for (int i = 0; i < expectedResultIndexes.size(); i++) {

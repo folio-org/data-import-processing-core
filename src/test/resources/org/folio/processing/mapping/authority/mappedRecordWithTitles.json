@@ -1,54 +1,110 @@
 {
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
-  "sftPersonalName": [ ],
-  "saftPersonalName": [ ],
+  "sftPersonalName": [],
+  "saftPersonalName": [],
   "personalNameTitle": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
-  "sftPersonalNameTitle": [ "v. 25 cm." ],
-  "saftPersonalNameTitle": [ "Editor:   C. W. Dugmore." ],
+  "sftPersonalNameTitle": [
+    "v. 25 cm."
+  ],
+  "saftPersonalNameTitle": [
+    "Editor:   C. W. Dugmore."
+  ],
   "sftCorporateName": [],
-  "saftCorporateName": [ ],
+  "saftCorporateName": [],
   "corporateNameTitle": "BR140 .J6",
-  "sftCorporateNameTitle": [ "Quarterly, 1970-" ],
-  "saftCorporateNameTitle": [ "Church history" ],
-  "sftMeetingName": [ ],
-  "saftMeetingName": [ ],
+  "sftCorporateNameTitle": [
+    "Quarterly, 1970-"
+  ],
+  "saftCorporateNameTitle": [
+    "Church history"
+  ],
+  "sftMeetingName": [],
+  "saftMeetingName": [],
   "meetingNameTitle": "270.05",
-  "sftMeetingNameTitle": [ "Semiannual, 1950-69" ],
-  "saftMeetingNameTitle": [ "Church history" ],
+  "sftMeetingNameTitle": [
+    "Semiannual, 1950-69"
+  ],
+  "saftMeetingNameTitle": [
+    "Church history"
+  ],
   "uniformTitle": "The Journal of ecclesiastical history",
-  "sftUniformTitle": [ "v. 1-   Apr. 1950-" ],
-  "saftUniformTitle": [ "Periodicals" ],
+  "sftUniformTitle": [
+    "v. 1-   Apr. 1950-"
+  ],
+  "saftUniformTitle": [
+    "Periodicals"
+  ],
   "namedEvent": "Named event Location of named event Date of named event Miscellaneous information Form subdivision General subdivision Chronological subdivision Geographic subdivision",
-  "sftNamedEvent": [ "sftNamed event sftLocation of named event sftDate of named event sftMiscellaneous information sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision" ],
-  "saftNamedEvent": [ "saftNamed event saftLocation of named event saftDate of named event saftMiscellaneous information saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision" ],
+  "sftNamedEvent": [
+    "sftNamed event sftLocation of named event sftDate of named event sftMiscellaneous information sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision"
+  ],
+  "saftNamedEvent": [
+    "saftNamed event saftLocation of named event saftDate of named event saftMiscellaneous information saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision"
+  ],
   "chronTerm": "Chronological term Form subdivision General subdivision Chronological subdivision Geographic subdivision",
-  "sftChronTerm": [ "sftChronological term sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision" ],
-  "saftChronTerm": [ "saftChronological term saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision" ],
+  "sftChronTerm": [
+    "sftChronological term sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision"
+  ],
+  "saftChronTerm": [
+    "saftChronological term saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision"
+  ],
   "mediumPerfTerm": "Medium of performance term",
-  "sftMediumPerfTerm": [ "sftMedium of performance term" ],
-  "saftMediumPerfTerm": [ "saftMedium of performance term" ],
+  "sftMediumPerfTerm": [
+    "sftMedium of performance term"
+  ],
+  "saftMediumPerfTerm": [
+    "saftMedium of performance term"
+  ],
   "geographicSubdivision": "Form subdivision General subdivision Chronological subdivision Geographic subdivision",
-  "sftGeographicSubdivision": [ "sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision" ],
-  "saftGeographicSubdivision": [ "saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision" ],
+  "sftGeographicSubdivision": [
+    "sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision"
+  ],
+  "saftGeographicSubdivision": [
+    "saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision"
+  ],
   "chronSubdivision": "Form subdivision General subdivision Chronological subdivision Geographic subdivision",
-  "sftChronSubdivision": [ "sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision" ],
-  "saftChronSubdivision": [ "saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision" ],
+  "sftChronSubdivision": [
+    "sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision"
+  ],
+  "saftChronSubdivision": [
+    "saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision"
+  ],
   "formSubdivision": "Form subdivision General subdivision Chronological subdivision Geographic subdivision",
-  "sftFormSubdivision": [ "sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision" ],
-  "saftFormSubdivision": [ "saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision" ],
+  "sftFormSubdivision": [
+    "sftForm subdivision sftGeneral subdivision sftChronological subdivision sftGeographic subdivision"
+  ],
+  "saftFormSubdivision": [
+    "saftForm subdivision saftGeneral subdivision saftChronological subdivision saftGeographic subdivision"
+  ],
   "generalSubdivision": "Indexes Periodicals 16th century United States",
-  "sftGeneralSubdivision": [ "sftIndexes sftPeriodicals sft16th century sftUnited States" ],
-  "saftGeneralSubdivision": [ "saftIndexes saftPeriodicals saft16th century saftUnited States" ],
+  "sftGeneralSubdivision": [
+    "sftIndexes sftPeriodicals sft16th century sftUnited States"
+  ],
+  "saftGeneralSubdivision": [
+    "saftIndexes saftPeriodicals saft16th century saftUnited States"
+  ],
   "topicalTerm": "The Journal of ecclesiastical history.",
-  "sftTopicalTerm": [ "note$a note$5" ],
-  "saftTopicalTerm": [ "Dugmore, C. W." ],
+  "sftTopicalTerm": [
+    "note$a note$5"
+  ],
+  "saftTopicalTerm": [
+    "Dugmore, C. W."
+  ],
   "subjectHeadings": "a",
   "geographicName": "London,",
-  "sftGeographicName": [ "note$a note$5" ],
-  "saftGeographicName": [ "callNumber2" ],
+  "sftGeographicName": [
+    "note$a note$5"
+  ],
+  "saftGeographicName": [
+    "callNumber2"
+  ],
   "genreTerm": "32 East 57th St., New York, 10022",
-  "sftGenreTerm": [ "note$a note$i note$x note$z note$5" ],
-  "saftGenreTerm": [ "linkText publicNote" ],
+  "sftGenreTerm": [
+    "note$a note$i note$x note$z note$5"
+  ],
+  "saftGenreTerm": [
+    "linkText publicNote"
+  ],
   "identifiers": [
     {
       "value": "1000649",
@@ -67,5 +123,5 @@
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     }
   ],
-  "notes": [ ]
+  "notes": []
 }

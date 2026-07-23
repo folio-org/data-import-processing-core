@@ -45,5 +45,4 @@ public class DefaultLoadQuery implements LoadQuery {
   public void setWhereClause(String whereClause) {
     this.whereClause = whereClause;
   }
-
 }

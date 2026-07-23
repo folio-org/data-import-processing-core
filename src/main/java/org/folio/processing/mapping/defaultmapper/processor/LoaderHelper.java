@@ -1,22 +1,21 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.AuthorityExtended;
 
 public class LoaderHelper {
 
   private static final Logger LOGGER = LogManager.getLogger(LoaderHelper.class);
   private static final Map<Field, Class<?>> LIST_TYPE_CLASS_CACHE = new ConcurrentHashMap<>();
-  private LoaderHelper() {}
+
+  private LoaderHelper() { }
 
   public static boolean isMappingValid(Object object, String[] path)
     throws InstantiationException, IllegalAccessException {
@@ -34,7 +33,7 @@ public class LoaderHelper {
       // to be populated on that object. if you map a marc field to an object, it must be
       // something like - marc.identifier -> identifierObject.idField
       if (type.isAssignableFrom(java.util.List.class)
-        || type.isAssignableFrom(java.util.Set.class)) {
+          || type.isAssignableFrom(java.util.Set.class)) {
         Class<?> listTypeClass = LIST_TYPE_CLASS_CACHE.computeIfAbsent(field, newField -> {
           ParameterizedType listType = (ParameterizedType) newField.getGenericType();
           return (Class<?>) listType.getActualTypeArguments()[0];
@@ -51,9 +50,9 @@ public class LoaderHelper {
 
   public static boolean isPrimitiveOrPrimitiveWrapperOrString(Class<?> type) {
     return (type.isPrimitive() && type != void.class) || type == Double.class || type == Float.class
-      || type == Long.class || type == Integer.class || type == Short.class
-      || type == Character.class || type == Byte.class || type == Boolean.class
-      || type == String.class;
+           || type == Long.class || type == Integer.class || type == Short.class
+           || type == Character.class || type == Byte.class || type == Boolean.class
+           || type == String.class;
   }
 
   public static void closeInputStream(InputStream inputStream) {
@@ -71,9 +70,8 @@ public class LoaderHelper {
     if (clazz == AuthorityExtended.class) {
       try {
         return clazz.getDeclaredField(fieldName);
-      }
-      catch (NoSuchFieldException e) {
-          return clazz.getSuperclass().getDeclaredField(fieldName);
+      } catch (NoSuchFieldException e) {
+        return clazz.getSuperclass().getDeclaredField(fieldName);
       }
     }
     return clazz.getDeclaredField(fieldName);

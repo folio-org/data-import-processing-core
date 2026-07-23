@@ -2,9 +2,9 @@ package org.folio.processing.value;
 
 public final class StringValue implements Value<String> {
   private final String value;
-  private boolean removeOnWrite;
+  private final boolean removeOnWrite;
 
-  protected StringValue(String value, boolean removeOnWrite) {
+  private StringValue(String value, boolean removeOnWrite) {
     this.value = value;
     this.removeOnWrite = removeOnWrite;
   }

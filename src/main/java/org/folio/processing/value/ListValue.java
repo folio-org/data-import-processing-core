@@ -1,8 +1,7 @@
 package org.folio.processing.value;
 
-import org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction;
-
 import java.util.List;
+import org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction;
 
 public class ListValue implements Value<List<String>> {
   private final List<String> list;

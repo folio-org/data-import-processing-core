@@ -1,7 +1,23 @@
 package org.folio.processing.mapping.mapper.writer;
 
+import static java.util.Arrays.asList;
+import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_FALSE;
+import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_INCOMING;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.google.common.collect.Lists;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
@@ -13,23 +29,6 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Arrays.asList;
-import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_FALSE;
-import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
-import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
-import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_INCOMING;
-import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING;
-import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
@@ -52,14 +51,14 @@ class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{\"" +
-      "indexTitle\":\"The Journal of ecclesiastical history.\",\"" +
-      "classification\":{\"number\":\"N7326 .T12 1991\"},\"" +
-      "languages\":[\"eng\",\"lat\"],\"" +
-      "contributor\":{\"" +
-      "names\":[\"Heins\",\"Rattu\",\"Tabrani\"]," +
-      "\"active\":false" +
-      "}" +
-      "}";
+                              "indexTitle\":\"The Journal of ecclesiastical history.\",\"" +
+                              "classification\":{\"number\":\"N7326 .T12 1991\"},\"" +
+                              "languages\":[\"eng\",\"lat\"],\"" +
+                              "contributor\":{\"" +
+                              "names\":[\"Heins\",\"Rattu\",\"Tabrani\"]," +
+                              "\"active\":false" +
+                              "}" +
+                              "}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -69,7 +68,8 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]}]}}\n");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]}]}}\n");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -87,7 +87,8 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
@@ -101,7 +102,8 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -119,13 +121,16 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
-    assertEquals("{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}", resultInstance);
+    assertEquals(
+      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}",
+      resultInstance);
   }
 
   @Test
@@ -133,7 +138,8 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -149,13 +155,16 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
-    assertEquals("{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}", resultInstance);
+    assertEquals(
+      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}",
+      resultInstance);
   }
 
   @Test
@@ -163,7 +172,8 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]}]}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]}]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -181,12 +191,14 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+    String expectedInstance =
+      "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -196,7 +208,8 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]}]}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\": {\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]}]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -219,7 +232,8 @@ class JsonBasedWriterUnitTest {
 
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+    String expectedInstance =
+      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -229,12 +243,15 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]}]}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]}]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(Collections.emptyList(), MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(Collections.emptyList(), MappingRule.RepeatableFieldAction.DELETE_EXISTING,
+        "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
@@ -271,7 +288,8 @@ class JsonBasedWriterUnitTest {
 
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+    String expectedInstance =
+      "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -299,7 +317,8 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
@@ -331,12 +350,14 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"contributor\":[{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+    String expectedInstance =
+      "{\"instance\":{\"contributor\":[{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -364,7 +385,8 @@ class JsonBasedWriterUnitTest {
     objects.add(object1);
     objects.add(object2);
 
-    RepeatableFieldValue field = RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_EXISTING, "contributor");
     WRITER.write("instance.contributor[]", field);
 
     WRITER.getResult(eventContext);
@@ -372,7 +394,6 @@ class JsonBasedWriterUnitTest {
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals("{}", resultInstance);
   }
-
 
   @Test
   void shouldOverride_StringValue() throws IOException {
@@ -513,11 +534,13 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Lists.newArrayList("UUID1", "UUID2", "UUID3"), DELETE_INCOMING));
+    WRITER.write("instance.natureOfContentTermIds[]",
+      ListValue.of(Lists.newArrayList("UUID1", "UUID2", "UUID3"), DELETE_INCOMING));
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID4\"]}}";
@@ -530,14 +553,17 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\":{\"natureOfContentTermIds\": [\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Lists.newArrayList("UUID6", "UUID7", "UUID8"), DELETE_INCOMING));
+    WRITER.write("instance.natureOfContentTermIds[]",
+      ListValue.of(Lists.newArrayList("UUID6", "UUID7", "UUID8"), DELETE_INCOMING));
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}";
+    String expectedInstance =
+      "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\",\"UUID5\"]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -551,7 +577,8 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID3"), DELETE_EXISTING));
+    WRITER.write("instance.natureOfContentTermIds[]",
+      ListValue.of(Collections.singletonList("UUID3"), DELETE_EXISTING));
     WRITER.getResult(eventContext);
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
@@ -587,7 +614,8 @@ class JsonBasedWriterUnitTest {
     WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"],\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
+    String expectedInstance =
+      "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"],\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -618,7 +646,8 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID2"), DELETE_INCOMING));
+    WRITER.write("instance.natureOfContentTermIds[]",
+      ListValue.of(Collections.singletonList("UUID2"), DELETE_INCOMING));
     WRITER.getResult(eventContext);
     // then
     String expectedInstance = "{}";
@@ -635,20 +664,21 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(Collections.singletonList("UUID3"), DELETE_EXISTING));
+    WRITER.write("instance.natureOfContentTermIds[]",
+      ListValue.of(Collections.singletonList("UUID3"), DELETE_EXISTING));
     WRITER.getResult(eventContext);
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals("{}", resultInstance);
   }
 
-
   @Test
   void shouldDeleteOnWrite_StringValue() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\": {\"title\":\"bla\", \"catalogedDate\": \"1970-01-01T00:00:00\"}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"instance\": {\"title\":\"bla\", \"catalogedDate\": \"1970-01-01T00:00:00\"}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -665,7 +695,8 @@ class JsonBasedWriterUnitTest {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"item\": {\"temporaryLoanType\": {\"id\": \"8d0a5eca-25de-4391-81a9-236eeefdd20b\", \"name\": \"Can circulate\"}, \"hrid\": \"it00000000001\"}}");
+    context.put(EntityType.INSTANCE.value(),
+      "{\"item\": {\"temporaryLoanType\": {\"id\": \"8d0a5eca-25de-4391-81a9-236eeefdd20b\", \"name\": \"Can circulate\"}, \"hrid\": \"it00000000001\"}}");
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -720,11 +751,15 @@ class JsonBasedWriterUnitTest {
     Map<String, Value> adjustment1 = Map.of(
       "invoice.adjustments[].description", StringValue.of("description-1"),
       "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE),
-      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(fundDistributionElement1_1, fundDistributionElement1_2), EXTEND_EXISTING, fundDistributionsRootPath));
+      "invoice.adjustments[].fundDistributions[]",
+      RepeatableFieldValue.of(List.of(fundDistributionElement1_1, fundDistributionElement1_2), EXTEND_EXISTING,
+        fundDistributionsRootPath));
     Map<String, Value> adjustment2 = Map.of(
       "invoice.adjustments[].description", StringValue.of("description-2"),
       "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_FALSE),
-      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(fundDistributionElement2_1, fundDistributionElement2_2), EXTEND_EXISTING, fundDistributionsRootPath));
+      "invoice.adjustments[].fundDistributions[]",
+      RepeatableFieldValue.of(List.of(fundDistributionElement2_1, fundDistributionElement2_2), EXTEND_EXISTING,
+        fundDistributionsRootPath));
 
     RepeatableFieldValue value = RepeatableFieldValue.of(List.of(adjustment1, adjustment2), EXTEND_EXISTING, rootPath);
 
@@ -735,7 +770,8 @@ class JsonBasedWriterUnitTest {
     writer.getResult(eventContext);
 
     // then
-    String expectedInvoiceAsString = "{\"invoice\":{\"adjustments\":[{\"fundDistributions\":[{\"code\":\"USHIST-1.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f711\"},{\"code\":\"USHIST-1.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f712\"}],\"exportToAccounting\":true,\"description\":\"description-1\"},{\"fundDistributions\":[{\"code\":\"USHIST-2.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f721\"},{\"code\":\"USHIST-2.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f722\"}],\"exportToAccounting\":false,\"description\":\"description-2\"}]}}";
+    String expectedInvoiceAsString =
+      "{\"invoice\":{\"adjustments\":[{\"fundDistributions\":[{\"code\":\"USHIST-1.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f711\"},{\"code\":\"USHIST-1.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f712\"}],\"exportToAccounting\":true,\"description\":\"description-1\"},{\"fundDistributions\":[{\"code\":\"USHIST-2.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f721\"},{\"code\":\"USHIST-2.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f722\"}],\"exportToAccounting\":false,\"description\":\"description-2\"}]}}";
     String resultInvoice = eventContext.getContext().get(EntityType.INVOICE.value());
     assertEquals(new JsonObject(expectedInvoiceAsString), new JsonObject(resultInvoice));
   }
@@ -761,7 +797,8 @@ class JsonBasedWriterUnitTest {
     ORDER_WRITER.write("order.poLine.cost.currency", StringValue.of("UAH"));
     ORDER_WRITER.getResult(eventContext);
     // then
-    String expectedOrder = "{\"order\":{\"po\":{\"workflowStatus\":\"Pending\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
+    String expectedOrder =
+      "{\"order\":{\"po\":{\"workflowStatus\":\"Pending\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
     String resultOrder = eventContext.getContext().get(EntityType.ORDER.value());
     assertEquals(expectedOrder, resultOrder);
   }
@@ -784,11 +821,13 @@ class JsonBasedWriterUnitTest {
     ORDER_WRITER.write("order.poLine.acquisitionMethod", StringValue.of("796596c4-62b5-4b64-a2ce-524c747afaa2"));
     ORDER_WRITER.write("order.poLine.orderFormat", StringValue.of("P/E Mix"));
     ORDER_WRITER.write("order.poLine.source", StringValue.of("MARC"));
-    ORDER_WRITER.write("order.poLine.donorOrganizationIds[]", RepeatableFieldValue.of(List.of(Map.of()), EXTEND_EXISTING, "order.poLine.donorOrganizationIds[]") );
+    ORDER_WRITER.write("order.poLine.donorOrganizationIds[]",
+      RepeatableFieldValue.of(List.of(Map.of()), EXTEND_EXISTING, "order.poLine.donorOrganizationIds[]"));
     ORDER_WRITER.write("order.poLine.cost.currency", StringValue.of("UAH"));
     ORDER_WRITER.getResult(eventContext);
     // then
-    String expectedOrder = "{\"order\":{\"po\":{\"workflowStatus\":\"Open\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
+    String expectedOrder =
+      "{\"order\":{\"po\":{\"workflowStatus\":\"Open\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
     String resultOrder = eventContext.getContext().get(EntityType.ORDER.value());
     assertEquals(expectedOrder, resultOrder);
   }

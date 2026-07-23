@@ -1,24 +1,22 @@
 package org.folio.processing.mapping;
 
+import io.vertx.core.json.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import io.vertx.core.json.JsonObject;
+import org.folio.Authority;
 import org.folio.AuthoritySourceFile;
+import org.folio.processing.TestUtil;
+import org.folio.processing.mapping.defaultmapper.RecordMapper;
+import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.marc.Record;
-
-import org.folio.Authority;
-import org.folio.processing.TestUtil;
-import org.folio.processing.mapping.defaultmapper.RecordMapper;
-import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
 class AuthorityMappingTest {
 
@@ -84,7 +82,8 @@ class AuthorityMappingTest {
 
   @Test
   void testMarcToAuthorityWithoutTitles() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITHOUT_TITLES_PATH));
+    JsonObject expectedMappedAuthority =
+      new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITHOUT_TITLES_PATH));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper
@@ -94,7 +93,8 @@ class AuthorityMappingTest {
 
   @Test
   void testMarcToAuthorityWithSourceFileAt010() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_010));
+    JsonObject expectedMappedAuthority =
+      new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_010));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper
@@ -105,7 +105,8 @@ class AuthorityMappingTest {
 
   @Test
   void testMarcToAuthorityWithSourceFileAt001And010() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_001_AND_010));
+    JsonObject expectedMappedAuthority =
+      new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_001_AND_010));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper
@@ -116,7 +117,8 @@ class AuthorityMappingTest {
 
   @Test
   void testMarcToAuthorityWithSourceFileAt001() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_001));
+    JsonObject expectedMappedAuthority =
+      new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_001));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper
@@ -127,7 +129,8 @@ class AuthorityMappingTest {
 
   @Test
   void testMarcToAuthorityWithSourceFileAt010WithMultipleSubfields() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_010_WITH_MULTIPLE_SUBFIELDS));
+    JsonObject expectedMappedAuthority =
+      new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_010_WITH_MULTIPLE_SUBFIELDS));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper
@@ -138,7 +141,8 @@ class AuthorityMappingTest {
 
   @Test
   void testMarcToAuthorityWithoutSourceFile_defaultNaturalId() throws IOException {
-    JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITHOUT_SOURCE_FILE));
+    JsonObject expectedMappedAuthority =
+      new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_WITHOUT_SOURCE_FILE));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper

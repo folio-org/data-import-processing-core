@@ -120,5 +120,4 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
   private static String sanitizedAlphaNumericValue(String str) {
     return str == null ? null : str.replaceAll("[^0-9a-zA-Z]", "");
   }
-
 }

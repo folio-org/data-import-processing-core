@@ -25,6 +25,7 @@ public final class RecordMapperBuilder {
     return mappers.stream()
       .filter(mapper -> mapper.getMapperFormat().equals(format))
       .findFirst()
-      .orElseThrow(() -> new RecordToInstanceMapperNotFoundException(String.format("Record to Instance Mapper was not found for Record Format: %s", format)));
+      .orElseThrow(() -> new RecordToInstanceMapperNotFoundException(
+        String.format("Record to Instance Mapper was not found for Record Format: %s", format)));
   }
 }

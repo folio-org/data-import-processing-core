@@ -1,12 +1,32 @@
 package org.folio.processing.mapping.defaultmapper.processor.functions;
 
+import static io.netty.util.internal.StringUtil.EMPTY_STRING;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.AuthorityIdentifierType;
-import org.folio.rest.jaxrs.model.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
+import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.HoldingsTypeEnum;
+import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
+import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
+import org.folio.rest.jaxrs.model.AlternativeTitleType;
 import org.folio.rest.jaxrs.model.CallNumberType;
 import org.folio.rest.jaxrs.model.ClassificationType;
 import org.folio.rest.jaxrs.model.ContributorNameType;
@@ -23,29 +43,8 @@ import org.folio.rest.jaxrs.model.IssuanceMode;
 import org.folio.rest.jaxrs.model.Location;
 import org.folio.rest.jaxrs.model.SubjectSource;
 import org.folio.rest.jaxrs.model.SubjectType;
-import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.CallNumberTypesEnum;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.ElectronicAccessRelationshipEnum;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.HoldingsTypeEnum;
-import org.folio.processing.mapping.defaultmapper.processor.functions.enums.IssuanceModeEnum;
-import org.folio.processing.mapping.defaultmapper.processor.publisher.PublisherRole;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static io.netty.util.internal.StringUtil.EMPTY_STRING;
-import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 /**
  * Enumeration to store normalization functions
@@ -63,7 +62,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return EMPTY_STRING;
       }
       JsonObject ruleParameter = context.getRuleParameter();
-      if (ruleParameter != null && ruleParameter.containsKey(FROM_PARAMETER) && ruleParameter.containsKey(TO_PARAMETER)) {
+      if (ruleParameter != null && ruleParameter.containsKey(FROM_PARAMETER) && ruleParameter.containsKey(
+        TO_PARAMETER)) {
         Integer from = context.getRuleParameter().getInteger(FROM_PARAMETER);
         Integer to = context.getRuleParameter().getInteger(TO_PARAMETER);
         return subFieldValue.substring(from, to);
@@ -114,7 +114,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     private static final String COMMA = ",";
     private static final String HYPHEN = "-";
     private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD = "^(.*?)\\s.[.]$";
-    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA = "^(.*?)\\s.,[.]$";
+    private static final String REGEXP_FOR_TEXT_ENDS_WITH_SINGLE_LETTER_AND_PERIOD_FOLLOWED_BY_COMMA =
+      "^(.*?)\\s.,[.]$";
 
     @Override
     public String apply(RuleExecutionContext context) {
@@ -182,8 +183,10 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .filter(i -> subfields.get(i).getData().equals(subFieldValue))
         .findFirst().orElse(0);
 
-      List<String> subfieldsToStop = ListUtils.union(Collections.singletonList(String.valueOf(subfields.get(subFieldIndex).getCode())),
-        Objects.requireNonNullElse(ruleParameter.getJsonArray(SUBFIELDS_TO_STOP), new JsonArray()).stream().map(Object::toString).collect(Collectors.toList()));
+      List<String> subfieldsToStop =
+        ListUtils.union(Collections.singletonList(String.valueOf(subfields.get(subFieldIndex).getCode())),
+          Objects.requireNonNullElse(ruleParameter.getJsonArray(SUBFIELDS_TO_STOP), new JsonArray()).stream()
+            .map(Object::toString).collect(Collectors.toList()));
       int subfieldsLimit = IntStream.range(subFieldIndex + 1, subfields.size())
         .filter(index -> subfieldsToStop.contains(String.valueOf(subfields.get(index).getCode())))
         .min().orElse(subfields.size());
@@ -230,7 +233,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .orElse(defaultId);
     }
 
-    private String matchInstanceDateTypeViaCode(char sixthChar, List<InstanceDateType> instanceDateTypes, String defaultId) {
+    private String matchInstanceDateTypeViaCode(char sixthChar, List<InstanceDateType> instanceDateTypes,
+                                                String defaultId) {
       return instanceDateTypes.stream()
         .filter(instanceFormat -> instanceFormat.getCode().equalsIgnoreCase(String.valueOf(sixthChar)))
         .findFirst()
@@ -261,7 +265,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         return StringUtils.EMPTY;
       }
       return instanceFormats.stream()
-        .filter(instanceFormat -> instanceFormat.getCode().equalsIgnoreCase(getLastSubfieldValue(context.getSubFieldValue())))
+        .filter(
+          instanceFormat -> instanceFormat.getCode().equalsIgnoreCase(getLastSubfieldValue(context.getSubFieldValue())))
         .findFirst()
         .map(InstanceFormat::getId)
         .orElse(StringUtils.EMPTY);
@@ -408,7 +413,6 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .findFirst()
         .orElse(StringUtils.EMPTY);
     }
-
   },
 
   SET_INSTANCE_TYPE_ID() {
@@ -422,7 +426,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
       }
       String unspecifiedTypeCode = context.getRuleParameter().getString(NAME_PARAMETER);
       String instanceTypeValue = context.getDataField() != null
-        ? getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
+                                 ? getLastSubfieldValue(context.getSubFieldValue()) : unspecifiedTypeCode;
 
       return getInstanceTypeByCode(instanceTypeValue, types)
         .map(InstanceType::getId)
@@ -434,18 +438,20 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     private Optional<InstanceType> getInstanceTypeByCode(String instanceTypeValue, List<InstanceType> instanceTypes) {
       return instanceTypes
         .stream()
-        .filter(instanceType -> StringUtils.isNotBlank(instanceType.getName()) && StringUtils.isNotBlank(instanceType.getCode()))
+        .filter(instanceType -> StringUtils.isNotBlank(instanceType.getName()) && StringUtils.isNotBlank(
+          instanceType.getCode()))
         .filter(instanceType ->
-          instanceType.getName().equalsIgnoreCase(instanceTypeValue) || instanceType.getCode().equalsIgnoreCase(instanceTypeValue))
+          instanceType.getName().equalsIgnoreCase(instanceTypeValue) || instanceType.getCode()
+            .equalsIgnoreCase(instanceTypeValue))
         .findFirst();
     }
-
   },
 
   SET_ELECTRONIC_ACCESS_RELATIONS_ID() {
     @Override
     public String apply(RuleExecutionContext context) {
-      List<ElectronicAccessRelationship> electronicAccessRelationships = context.getMappingParameters().getElectronicAccessRelationships();
+      List<ElectronicAccessRelationship> electronicAccessRelationships =
+        context.getMappingParameters().getElectronicAccessRelationships();
       if (electronicAccessRelationships == null || context.getDataField() == null) {
         return STUB_FIELD_TYPE_ID;
       }
@@ -635,6 +641,7 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
 
   SET_DELETED() {
     public static final char LEADER_05_DELETED = 'd';
+
     @Override
     public String apply(RuleExecutionContext context) {
       String subFieldValue = context.getSubFieldValue();
@@ -665,7 +672,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
         .orElse(defaultId);
     }
 
-    private String matchIssuanceModeIdViaLeaderSymbol(char seventhChar, List<IssuanceMode> issuanceModes, String defaultId) {
+    private String matchIssuanceModeIdViaLeaderSymbol(char seventhChar, List<IssuanceMode> issuanceModes,
+                                                      String defaultId) {
       IssuanceModeEnum issuanceMode = matchSymbolToIssuanceMode(seventhChar);
       return findIssuanceModeId(issuanceModes, issuanceMode, defaultId);
     }
@@ -776,6 +784,8 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     }
   };
 
+  private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
+
   public IssuanceModeEnum matchSymbolToIssuanceMode(char symbol) {
     for (IssuanceModeEnum issuanceMode : IssuanceModeEnum.values()) {
       for (int i = 0; i < issuanceMode.getSymbols().length; i++) {
@@ -791,6 +801,4 @@ public enum NormalizationFunction implements Function<RuleExecutionContext, Stri
     String[] subfields = concatenatedSubfieldsData.split("~");
     return subfields[subfields.length - 1];
   }
-
-  private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
 }

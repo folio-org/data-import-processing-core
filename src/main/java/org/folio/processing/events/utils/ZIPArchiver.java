@@ -20,6 +20,7 @@ public final class ZIPArchiver {
 
   /**
    * ZIP via GZIOutputStream and encode via Base64-algorithm source string.
+   *
    * @param source - String which should be zipped.
    * @return - resulted zipped and encoded String.
    * @throws IOException - if error while zipping or encoding.
@@ -36,6 +37,7 @@ public final class ZIPArchiver {
 
   /**
    * unZIP via GZIOutputStream and decode via Base64-algorithm source string.
+   *
    * @param zippedString - String which should be unzipped.
    * @return - resulted unzipped and decoded String.
    * @throws IOException - if error while unzipping or decoding.

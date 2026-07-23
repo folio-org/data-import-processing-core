@@ -1,8 +1,7 @@
 package org.folio.processing.events.services.handler;
 
-import org.folio.DataImportEventPayload;
-
 import java.util.concurrent.CompletableFuture;
+import org.folio.DataImportEventPayload;
 
 /**
  * The core interface for event handlers
@@ -42,5 +41,4 @@ public interface EventHandler {
   default String getPostProcessingInitializationEventType() {
     throw new UnsupportedOperationException();
   }
-
 }

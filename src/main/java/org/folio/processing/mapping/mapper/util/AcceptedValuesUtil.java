@@ -1,21 +1,20 @@
 package org.folio.processing.mapping.mapper.util;
 
-import io.vertx.core.json.JsonObject;
-import org.folio.Organization;
-import org.folio.rest.jaxrs.model.StatisticalCodeType;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import static java.util.Map.entry;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.CODE_PROPERTY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.ID_PROPERTY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAME_PROPERTY;
 
+import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static java.util.Map.entry;
-import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.CODE_PROPERTY;
-import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.ID_PROPERTY;
-import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAME_PROPERTY;
+import org.folio.Organization;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
 
 /**
  * Retrieves accepted values from MappingParameters
@@ -93,7 +92,7 @@ public class AcceptedValuesUtil {
     entry(FUND_ID, MappingParameters::getFunds),
     entry(EXPENSE_CLASS_ID, MappingParameters::getExpenseClasses));
 
-  private AcceptedValuesUtil() {}
+  private AcceptedValuesUtil() { }
 
   public static Map<String, String> getAcceptedValues(String ruleName, MappingParameters mappingParameters) {
     HashMap<String, String> acceptedValues = new HashMap<>();
@@ -105,7 +104,8 @@ public class AcceptedValuesUtil {
     List<?> mappingParameter = ruleNameToMappingParameter.get(ruleName).apply(mappingParameters);
 
     mappingParameter.forEach(parameter -> {
-      JsonObject jsonObject = parameter instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(parameter);
+      JsonObject jsonObject =
+        parameter instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(parameter);
 
       String idField = jsonObject.getString(ID_PROPERTY);
       String nameField = jsonObject.getString(NAME_PROPERTY);
@@ -134,7 +134,7 @@ public class AcceptedValuesUtil {
 
   private static List<Organization> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
     return mappingParameters.getOrganizations().stream()
-            .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor())).toList();
+      .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor())).toList();
   }
 
   private static List<JsonObject> getStatisticalCode(MappingParameters mappingParameters) {
@@ -144,8 +144,9 @@ public class AcceptedValuesUtil {
           .getStatisticalCodeTypes().stream()
           .filter(codeType -> codeType.getId().equals(statCode.getStatisticalCodeTypeId())).findAny();
         if (statCodeType.isPresent()) {
-          String formattedStatCode = String.format(STATISTICAL_CODE_TEMPLATE, statCodeType.get().getName(), statCode.getCode(),
-            statCode.getName());
+          String formattedStatCode =
+            String.format(STATISTICAL_CODE_TEMPLATE, statCodeType.get().getName(), statCode.getCode(),
+              statCode.getName());
 
           return new JsonObject().put(ID_PROPERTY, statCode.getId()).put(VALUE_PROPERTY, formattedStatCode);
         }

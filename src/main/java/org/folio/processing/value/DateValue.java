@@ -1,10 +1,10 @@
 package org.folio.processing.value;
 
+import static java.util.Arrays.asList;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public class DateValue implements Value<List<Date>> {
 
@@ -37,5 +37,4 @@ public class DateValue implements Value<List<Date>> {
   public String getToDate() {
     return new SimpleDateFormat(DATE_FORMAT_PATTERN).format(dateRange.get(1));
   }
-
 }

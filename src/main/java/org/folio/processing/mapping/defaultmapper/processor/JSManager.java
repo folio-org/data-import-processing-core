@@ -1,8 +1,7 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import java.util.HashMap;
+import java.util.Map;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
@@ -10,8 +9,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author shale
@@ -27,7 +26,7 @@ public class JSManager {
 
   public static Object runJScript(String jscript, String data) throws ScriptException {
     CompiledScript script = preCompiledJS.get(jscript.hashCode());
-    if(script == null){
+    if (script == null) {
       LOGGER.debug("runJScript:: compiling JS function: {}", jscript);
       script = ((Compilable) engine).compile(jscript);
       preCompiledJS.put(jscript.hashCode(), script);

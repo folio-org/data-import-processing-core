@@ -1,8 +1,7 @@
 package org.folio.processing.mapping.defaultmapper.processor;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Escape text so that it is valid json as well as valid postgres jsonb data
@@ -10,6 +9,43 @@ import java.util.regex.Pattern;
  */
 public class Escaper {
   private static final Pattern ESCAPED_DOUBLE_QUOTES = Pattern.compile("\\\"");
+
+  /**
+   * This function escapes data with two purposes in mind. The Marc data does not need to
+   * conform to json or postgres escaped characters - this function takes Marc data and
+   * escapes it so that it is valid in both a json and a postgres context
+   *
+   * @param data
+   * @return
+   */
+  public static String escape(String data) {
+    return escape(data, false);
+  }
+
+  public static String escape(String data, boolean keepTrailingBackslash) {
+    if (data == null) {
+      return "";
+    }
+    // remove \ char if it is the last char of the text
+    if (!keepTrailingBackslash && data.endsWith("\\")) {
+      data = data.substring(0, data.length() - 1);
+    }
+    data = ESCAPED_DOUBLE_QUOTES.matcher(removeEscapedChars(data)).replaceAll("\\\\\"");
+    return data;
+  }
+
+  /**
+   * Escapes characters within a given json string to be able to 'COPY' to postgres jsonb
+   *
+   * @param s json string to be escaped
+   * @return escaped string
+   */
+  public static String escapeSqlCopyFrom(String s) {
+    return StringUtils.replaceEach(s,
+      new String[] {"\\", "|", "\n", "\r"},
+      new String[] {"\\\\", "\\|", "\\\n", "\\\r"}
+    );
+  }
 
   private static String removeEscapedChars(String text) {
     int len = text.length();
@@ -21,7 +57,7 @@ public class Escaper {
       char t = text.charAt(j);
       //this is our record delimiter '|', so for now as a quick fix,
       //replace it with a blank
-      if( t == '|'){
+      if (t == '|') {
         t = ' ';
       }
       if (slash && isEven && t == '\\') {
@@ -48,41 +84,4 @@ public class Escaper {
     }
     return token.toString();
   }
-
-
-  /**
-   * This function escapes data with two purposes in mind. The Marc data does not need to
-   * conform to json or postgres escaped characters - this function takes Marc data and
-   * escapes it so that it is valid in both a json and a postgres context
-   * @param data
-   * @return
-   */
-  public static String escape(String data){
-    return escape(data, false);
-  }
-
-  public static String escape(String data, boolean keepTrailingBackslash) {
-    if (data == null) {
-      return "";
-    }
-    // remove \ char if it is the last char of the text
-    if (!keepTrailingBackslash && data.endsWith("\\")) {
-      data = data.substring(0, data.length() - 1);
-    }
-    data = ESCAPED_DOUBLE_QUOTES.matcher(removeEscapedChars(data)).replaceAll("\\\\\"");
-    return data;
-  }
-
-  /**
-   * Escapes characters within a given json string to be able to 'COPY' to postgres jsonb
-   * @param s json string to be escaped
-   * @return escaped string
-   */
-  public static String escapeSqlCopyFrom(String s) {
-    return StringUtils.replaceEach(s,
-      new String[]{"\\", "|", "\n", "\r"},
-      new String[]{"\\\\", "\\|", "\\\n", "\\\r"}
-    );
-  }
-
 }

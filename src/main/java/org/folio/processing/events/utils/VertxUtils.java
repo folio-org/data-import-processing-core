@@ -1,9 +1,9 @@
 package org.folio.processing.events.utils;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Context;
 import io.vertx.core.Vertx;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class VertxUtils {
   private static final Logger log = LogManager.getLogger(VertxUtils.class);
@@ -15,6 +15,7 @@ public class VertxUtils {
   /**
    * Return the Vertx of the current context; if there isn't a current context
    * create and return a new Vertx using getVertxWithExceptionHandler().
+   *
    * @return the Vertx
    */
   public static Vertx getVertxFromContextOrNew() {
@@ -29,6 +30,7 @@ public class VertxUtils {
 
   /**
    * Return a new Vertx with an exception handler that writes the exception to VertxUtils' logger.
+   *
    * @return the new Vertx
    */
   public static Vertx getVertxWithExceptionHandler() {

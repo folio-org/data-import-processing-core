@@ -1,14 +1,5 @@
 package org.folio.processing.matching.loader.query;
 
-import org.folio.MatchDetail;
-import org.folio.processing.value.DateValue;
-import org.folio.processing.value.ListValue;
-import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.Qualifier;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
@@ -19,6 +10,14 @@ import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.STRING;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import org.folio.MatchDetail;
+import org.folio.processing.value.DateValue;
+import org.folio.processing.value.ListValue;
+import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Qualifier;
 
 /**
  * Helper class that allows to build sql and cql queries based on MatchCriterion and apply Qualifier
@@ -31,10 +30,9 @@ public class QueryHolder {
 
   private static final String AND_CONDITION = " AND ";
   private static final String WHERE_CLAUSE = "WHERE";
-
+  private final Value value;
   private String sqlQuery;
   private String cqlQuery;
-  private Value value;
 
   public QueryHolder(Value value, MatchDetail.MatchCriterion matchCriterion) {
     this.value = value;
@@ -92,8 +90,22 @@ public class QueryHolder {
     return sqlQuery;
   }
 
+  public void setSqlQuery(String sqlQuery) {
+    this.sqlQuery = sqlQuery;
+  }
+
   public String getCqlQuery() {
     return cqlQuery;
+  }
+
+  public void setCqlQuery(String cqlQuery) {
+    this.cqlQuery = cqlQuery;
+  }
+
+  public QueryHolder applyAdditionalCondition(QueryHolder additionalQuery) {
+    cqlQuery = additionalQuery.getCqlQuery() + AND_CONDITION + "(" + cqlQuery + ")";
+    sqlQuery = sqlQuery + AND_CONDITION + additionalQuery.getSqlQuery().split(WHERE_CLAUSE)[1];
+    return this;
   }
 
   private String replaceJsonFieldNameForSQLQuery(String fieldPath) {
@@ -157,7 +169,8 @@ public class QueryHolder {
   }
 
   private String constructDateRangeSQLQuery(DateValue value) {
-    return format("WHERE FIELD_NAME >= '%s' AND FIELD_NAME <= '%sT23:59:59.999'", value.getFromDate(), value.getToDate());
+    return format("WHERE FIELD_NAME >= '%s' AND FIELD_NAME <= '%sT23:59:59.999'", value.getFromDate(),
+      value.getToDate());
   }
 
   private String constructDateRangeCQLQuery(DateValue value) {
@@ -176,7 +189,8 @@ public class QueryHolder {
   }
 
   private String constructCQLFilterByArrayStringValue(String fieldPath) {
-    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + escapeSpecialCharacters(value.getValue().toString()) + "\\\"";
+    return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + escapeSpecialCharacters(value.getValue().toString())
+           + "\\\"";
   }
 
   private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath) {
@@ -194,25 +208,11 @@ public class QueryHolder {
 
   private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath, String value) {
     return substringBefore(fieldPath, ARRAY_SIGN) + "=\"\\\""
-      + substringAfter(fieldPath, ARRAY_SIGN + ".") +
-      "\\\":\\\"" + escapeSpecialCharacters(value) + "\\\"\"";
+           + substringAfter(fieldPath, ARRAY_SIGN + ".") +
+           "\\\":\\\"" + escapeSpecialCharacters(value) + "\\\"\"";
   }
 
   private String escapeSpecialCharacters(String value) {
     return value.replaceAll("([*?\"^])", "\\\\$0");
-  }
-
-  public QueryHolder applyAdditionalCondition(QueryHolder additionalQuery) {
-    cqlQuery = additionalQuery.getCqlQuery() + AND_CONDITION + "(" + cqlQuery + ")";
-    sqlQuery = sqlQuery + AND_CONDITION + additionalQuery.getSqlQuery().split(WHERE_CLAUSE)[1];
-    return this;
-  }
-
-  public void setSqlQuery(String sqlQuery) {
-    this.sqlQuery = sqlQuery;
-  }
-
-  public void setCqlQuery(String cqlQuery) {
-    this.cqlQuery = cqlQuery;
   }
 }

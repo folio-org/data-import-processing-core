@@ -11,7 +11,8 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 public interface MapperFactory {
 
   /**
-   *  Create a new mapper for the specific type
+   * Create a new mapper for the specific type
+   *
    * @param reader - reader
    * @param writer - writer
    * @return specific Mapper
@@ -20,6 +21,7 @@ public interface MapperFactory {
 
   /**
    * Check if current mapper suits for current payload
+   *
    * @param eventPayload - current DataImportEventPayload
    * @return true if current mapper suits for this payload
    */

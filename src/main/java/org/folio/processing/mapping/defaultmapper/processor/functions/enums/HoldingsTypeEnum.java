@@ -7,16 +7,12 @@ public enum HoldingsTypeEnum {
   SERIAL('y', "serial"),
   UNKNOWN('u', "unknown");
 
-  private char symbol;
-  private String name;
+  private final char symbol;
+  private final String name;
 
   HoldingsTypeEnum(char symbol, String name) {
     this.symbol = symbol;
     this.name = name;
-  }
-
-  public String getValue(){
-    return name;
   }
 
   public static String getNameByCharacter(char marcValue) {
@@ -26,5 +22,9 @@ public enum HoldingsTypeEnum {
       }
     }
     return UNKNOWN.name;
+  }
+
+  public String getValue() {
+    return name;
   }
 }

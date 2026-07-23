@@ -1,7 +1,35 @@
 package org.folio.processing.mapping.mapper.reader.record.marc;
 
-import io.vertx.core.json.JsonObject;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.folio.processing.mapping.mapper.util.AcceptedValuesUtil.getAcceptedValues;
+import static org.folio.processing.value.Value.ValueType.LIST;
+import static org.folio.processing.value.Value.ValueType.MISSING;
 
+import io.vertx.core.json.JsonObject;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,46 +57,15 @@ import org.marc4j.marc.VariableField;
 import org.marc4j.marc.impl.ControlFieldImpl;
 import org.marc4j.marc.impl.DataFieldImpl;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-import static org.folio.processing.mapping.mapper.util.AcceptedValuesUtil.getAcceptedValues;
-import static org.folio.processing.value.Value.ValueType.LIST;
-import static org.folio.processing.value.Value.ValueType.MISSING;
-
 @SuppressWarnings("all")
 public class MarcRecordReader implements Reader {
-  private static final Logger LOGGER = LogManager.getLogger(MarcRecordReader.class);
-
   public final static Pattern MARC_PATTERN = Pattern.compile("(^[0-9]{3}(\\$[a-z0-9]$){0,2})");
-  private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
-  private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
   public final static Pattern STRING_VALUE_PATTERN = Pattern.compile("(\"[^\"]+\")");
   public final static String WHITESPACE_DIVIDER = "\\s(?=(?:[^'\"`]*(['\"`])[^'\"`]*\\1)*[^'\"`]*$)";
   public final static String EXPRESSIONS_DIVIDER = "; else ";
+  private static final Logger LOGGER = LogManager.getLogger(MarcRecordReader.class);
+  private final static Pattern MARC_LEADER = Pattern.compile("^[LDR/]{4}[0-9-]{1,5}");
+  private final static Pattern MARC_CONTROLLED = Pattern.compile("^[/0-9]{4}[0-9-]{1,5}");
   private final static String EXPRESSIONS_ARRAY = "[]";
   private final static String EXPRESSIONS_QUOTE = "\"";
   private final static String MARC_SPLITTER = "/";
@@ -78,11 +75,12 @@ public class MarcRecordReader implements Reader {
   private static final String TODAY_PLACEHOLDER = "###TODAY###";
   private static final String REMOVE_PLACEHOLDER = "###REMOVE###";
   private static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
-  public static final String[] DATE_FORMATS = new String[]{ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
+  public static final String[] DATE_FORMATS = new String[] {ISO_DATE_FORMAT, "MM/dd/yyyy", "dd-MM-yyyy", "dd.MM.yyyy"};
   private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
   private static final String DATE_TIME_FORMAT = "dd-MM-yyyy HH:mm:ss";
   private static final String UTC_TIMEZONE = "UTC";
-  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES = List.of("vendor", "materialSupplier", "accessProvider","relationshipId", "donorOrganizationIds");
+  private static final List<String> NEEDS_VALIDATION_BY_ACCEPTED_VALUES =
+    List.of("vendor", "materialSupplier", "accessProvider", "relationshipId", "donorOrganizationIds");
   private static final String STATISTICAL_CODE_ID_FIELD = "statisticalCodeId";
   private static final String BLANK = "";
   private static final String VENDOR_ID = "vendor";
@@ -105,17 +103,19 @@ public class MarcRecordReader implements Reader {
         String stringRecord = eventPayload.getContext().get(entityType.value());
         org.folio.Record sourceRecord = new JsonObject(stringRecord).mapTo(org.folio.Record.class);
         if (sourceRecord != null
-          && sourceRecord.getParsedRecord() != null
-          && sourceRecord.getParsedRecord().getContent() != null) {
+            && sourceRecord.getParsedRecord() != null
+            && sourceRecord.getParsedRecord().getContent() != null) {
           MarcReader reader = buildMarcReader(sourceRecord);
           if (reader.hasNext()) {
             this.marcRecord = reader.next();
           } else {
-            throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable marc record found in event payload");
+            throw new IllegalArgumentException(
+              "Can not initialize MarcRecordReader, no suitable marc record found in event payload");
           }
         }
       } else {
-        throw new IllegalArgumentException("Can not initialize MarcRecordReader, no suitable entity type found in event payload");
+        throw new IllegalArgumentException(
+          "Can not initialize MarcRecordReader, no suitable entity type found in event payload");
       }
     } catch (Exception e) {
       LOGGER.warn("initialize:: Can not read marc record from context", e);
@@ -133,7 +133,8 @@ public class MarcRecordReader implements Reader {
       } else if (!ruleExpression.getSubfields().isEmpty() && ruleExpression.getRepeatableFieldAction() != null) {
         return readRepeatableField(ruleExpression);
       } else if (ruleExpression.getRepeatableFieldAction() == MappingRule.RepeatableFieldAction.DELETE_EXISTING) {
-        return RepeatableFieldValue.of(Collections.emptyList(), ruleExpression.getRepeatableFieldAction(), ruleExpression.getPath());
+        return RepeatableFieldValue.of(Collections.emptyList(), ruleExpression.getRepeatableFieldAction(),
+          ruleExpression.getPath());
       }
     } catch (Exception e) {
       LOGGER.warn("read:: Error during reading MappingRule expressions ", e);
@@ -155,11 +156,13 @@ public class MarcRecordReader implements Reader {
       String[] expressionParts = expression.split(WHITESPACE_DIVIDER);
       for (String expressionPart : expressionParts) {
         if (MARC_PATTERN.matcher(expressionPart).matches()
-          || (MARC_CONTROLLED.matcher(expressionPart).matches())
-          || (MARC_LEADER.matcher(expressionPart).matches())) {
-          processMARCExpression(arrayValue, isRepeatableField, resultList, sb, sbForMultiple, expressionPart, ruleExpression);
+            || (MARC_CONTROLLED.matcher(expressionPart).matches())
+            || (MARC_LEADER.matcher(expressionPart).matches())) {
+          processMARCExpression(arrayValue, isRepeatableField, resultList, sb, sbForMultiple, expressionPart,
+            ruleExpression);
         } else if (STRING_VALUE_PATTERN.matcher(expressionPart).matches()) {
-          sbForMultiple = processStringExpression(ruleExpression, arrayValue, resultList, sb, sbForMultiple, expressionPart);
+          sbForMultiple =
+            processStringExpression(ruleExpression, arrayValue, resultList, sb, sbForMultiple, expressionPart);
         } else if (TODAY_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
           processTodayExpression(sb, sbForMultiple);
         } else if (REMOVE_PLACEHOLDER.equalsIgnoreCase(expressionPart)) {
@@ -196,11 +199,15 @@ public class MarcRecordReader implements Reader {
    * @param expressionPart        this String must be marc uses for serching values in marcRecord
    * @param ruleExpression        uses for mapping values before processing
    */
-  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart, MappingRule ruleExpression) {
-    List<String> marcValues = readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
+  private void processMARCExpression(boolean arrayValue, boolean isRepeatableField, List<String> resultList,
+                                     StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart,
+                                     MappingRule ruleExpression) {
+    List<String> marcValues =
+      readValuesFromMarcRecord(expressionPart).stream().filter(m -> isNotBlank(m)).collect(Collectors.toList());
     if (arrayValue || (isRepeatableField && marcValues.size() > 1)) {
       if (!resultList.isEmpty() && marcValues.size() == resultList.size()) {
-        List<String> collectedValues = marcValues.stream().map(value -> getFromMappingParameters(ruleExpression, value)).collect(Collectors.toList());
+        List<String> collectedValues = marcValues.stream().map(value -> getFromMappingParameters(ruleExpression, value))
+          .collect(Collectors.toList());
         List<String> tmpResultList = new ArrayList<>(resultList);
         String concatenator = multipleStringBuilder.toString();
         for (int i = 0; i < tmpResultList.size(); i++) {
@@ -209,7 +216,8 @@ public class MarcRecordReader implements Reader {
         }
       } else {
         // TODO This todo for cases where first subfields count not equals second subfields count
-        List<String> collectedValues = marcValues.stream().map(value -> getFromMappingParameters(ruleExpression, value)).collect(Collectors.toList());
+        List<String> collectedValues = marcValues.stream().map(value -> getFromMappingParameters(ruleExpression, value))
+          .collect(Collectors.toList());
         resultList.addAll(collectedValues);
       }
     } else {
@@ -221,19 +229,22 @@ public class MarcRecordReader implements Reader {
 
   private String getFromMappingParameters(MappingRule ruleExpression, String value) {
     AcceptedValuesMatcher acceptedValuesMatcher = Objects.isNull(ruleExpression.getName()) ? null
-      : acceptedValuesMatchers.get(ruleExpression.getName());
+                                                                                           : acceptedValuesMatchers.get(
+                                                                                             ruleExpression.getName());
 
     Map<String, String> acceptedValues = getAcceptedValues(ruleExpression.getName(), mappingParameters);
 
     if (!acceptedValues.isEmpty()) {
       for (Map.Entry<String, String> entry : acceptedValues.entrySet()) {
         if ((acceptedValuesMatcher != null && acceptedValuesMatcher.matches(entry.getValue(), value))
-          || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(ruleExpression.getName(), entry.getValue(), value)) {
+            || entry.getValue().equalsIgnoreCase(value) || equalsBasedOnBrackets(ruleExpression.getName(),
+          entry.getValue(), value)) {
           value = entry.getKey();
         }
       }
     }
-    boolean needsValidationByAcceptedValues = NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
+    boolean needsValidationByAcceptedValues =
+      NEEDS_VALIDATION_BY_ACCEPTED_VALUES.contains(String.valueOf(ruleExpression.getName()));
 
     if (needsValidationByAcceptedValues && !acceptedValues.containsKey(value)) {
       return BLANK;
@@ -251,8 +262,10 @@ public class MarcRecordReader implements Reader {
       } else if (retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(value)) {
         return true;
       } else if (ruleName.equalsIgnoreCase(VENDOR_ID) &&
-        (retrieveCodeWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameOrValueWithoutBrackets(value)) ||
-        retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(retrieveNameOrValueWithoutBrackets(value)))) {
+                 (retrieveCodeWithoutBrackets(mappingParameter).equalsIgnoreCase(
+                   retrieveNameOrValueWithoutBrackets(value)) ||
+                  retrieveNameOrValueWithoutBrackets(mappingParameter).equalsIgnoreCase(
+                    retrieveNameOrValueWithoutBrackets(value)))) {
         return true;
       }
       return false;
@@ -261,13 +274,17 @@ public class MarcRecordReader implements Reader {
   }
 
   private String retrieveStringFromLastBrackets(String mappingParameter) {
-    return mappingParameter.substring(mappingParameter.lastIndexOf(FIRST_BRACKET) + 1, mappingParameter.lastIndexOf(SECOND_BRACKET));
+    return mappingParameter.substring(mappingParameter.lastIndexOf(FIRST_BRACKET) + 1,
+      mappingParameter.lastIndexOf(SECOND_BRACKET));
   }
 
   private String retrieveStringWithBracketsFromLastOne(String mappingParameter) {
-    if (mappingParameter.indexOf(FIRST_BRACKET) > mappingParameter.indexOf(SECOND_BRACKET))
-      return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.lastIndexOf(SECOND_BRACKET) + 1);
-    return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET), mappingParameter.indexOf(SECOND_BRACKET) + 1);
+    if (mappingParameter.indexOf(FIRST_BRACKET) > mappingParameter.indexOf(SECOND_BRACKET)) {
+      return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET),
+        mappingParameter.lastIndexOf(SECOND_BRACKET) + 1);
+    }
+    return mappingParameter.substring(mappingParameter.indexOf(FIRST_BRACKET),
+      mappingParameter.indexOf(SECOND_BRACKET) + 1);
   }
 
   private String retrieveNameOrValueWithoutBrackets(String mappingParameter) {
@@ -308,8 +325,9 @@ public class MarcRecordReader implements Reader {
   /**
    * Finds the index of the first occurrence of either bracket starting from the given index.
    * Returns the input string's length if no brackets are found.
-   * @param input             mapping parameter
-   * @param startIndex        start index of code without parentheses
+   *
+   * @param input      mapping parameter
+   * @param startIndex start index of code without parentheses
    * @return index of first occured parentheses in mapping parameter
    */
   private int findFirstParenthesesIndex(String input, int startIndex) {
@@ -333,7 +351,9 @@ public class MarcRecordReader implements Reader {
    * @param ruleExpression        uses for mapping values before processing
    * @return empty StringBuilder if arrayValue or
    */
-  private StringBuilder processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList, StringBuilder sb, StringBuilder multipleStringBuilder, String expressionPart) {
+  private StringBuilder processStringExpression(MappingRule ruleExpression, boolean arrayValue, List<String> resultList,
+                                                StringBuilder sb, StringBuilder multipleStringBuilder,
+                                                String expressionPart) {
     String value = expressionPart.replace(EXPRESSIONS_QUOTE, EMPTY);
     value = getFromMappingParameters(ruleExpression, value);
     if (isNotEmpty(value)) {
@@ -384,8 +404,7 @@ public class MarcRecordReader implements Reader {
         if (subfieldMapping.getPath().equals(mappingRule.getPath())) {
           if (STRING_VALUE_PATTERN.matcher(mappingRule.getValue()).matches()) {
             var readRepeatableStringField = readRepeatableStringField(mappingRule);
-            if (!readRepeatableStringField.isBlank())
-              repeatableStrings.add(readRepeatableStringField);
+            if (!readRepeatableStringField.isBlank()) { repeatableStrings.add(readRepeatableStringField); }
           } else {
             retrieveValuesFromMarcRecord(repeatableStrings, mappingRule);
             if (repeatableStrings.isEmpty()) {
@@ -394,8 +413,8 @@ public class MarcRecordReader implements Reader {
           }
         } else {
           Value value = mappingRule.getBooleanFieldAction() != null
-            ? BooleanValue.of(mappingRule.getBooleanFieldAction())
-            : readSingleField(mappingRule, isRepeatableField);
+                        ? BooleanValue.of(mappingRule.getBooleanFieldAction())
+                        : readSingleField(mappingRule, isRepeatableField);
 
           if (value.getType() == MISSING && mappingRule.getRequired()) {
             repeatableObjectItems.remove(repeatableObjectItems.size() - 1);
@@ -413,7 +432,7 @@ public class MarcRecordReader implements Reader {
       repeatableObject.addAll(repeatableObjectItems);
     }
     return repeatableStrings.isEmpty() ? RepeatableFieldValue.of(repeatableObject, action, ruleExpression.getPath())
-      : ListValue.of(repeatableStrings, ruleExpression.getRepeatableFieldAction());
+                                       : ListValue.of(repeatableStrings, ruleExpression.getRepeatableFieldAction());
   }
 
   private void retrieveValuesFromMarcRecord(List<String> repeatableStrings, MappingRule mappingRule) {
@@ -442,7 +461,8 @@ public class MarcRecordReader implements Reader {
     }
   }
 
-  private void fillInRepeatableObjectItemsWithValue(List<Map<String, Value>> repeatableObjectItems, String path, ListValue value) {
+  private void fillInRepeatableObjectItemsWithValue(List<Map<String, Value>> repeatableObjectItems, String path,
+                                                    ListValue value) {
     List<String> values = (List<String>) value.getValue();
     for (int i = 0; i < values.size(); i++) {
       repeatableObjectItems.get(i).put(path, StringValue.of(values.get(i)));

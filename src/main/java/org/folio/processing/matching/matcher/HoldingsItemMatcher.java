@@ -4,6 +4,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.processing.exceptions.MatchingException;
@@ -14,11 +18,6 @@ import org.folio.processing.value.ListValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
-
 public class HoldingsItemMatcher extends AbstractMatcher {
   private static final String ERRORS = "ERRORS";
   private static final String EMPTY_JSON_ARRAY = "[]";
@@ -28,7 +27,8 @@ public class HoldingsItemMatcher extends AbstractMatcher {
   }
 
   @Override
-  public CompletableFuture<Boolean> performMatching(Value value, MatchDetail matchDetail, DataImportEventPayload eventPayload) {
+  public CompletableFuture<Boolean> performMatching(Value value, MatchDetail matchDetail,
+                                                    DataImportEventPayload eventPayload) {
     if (value instanceof ListValue) {
       return processMultipleMatching(value, matchDetail, eventPayload);
     }
@@ -46,7 +46,8 @@ public class HoldingsItemMatcher extends AbstractMatcher {
   private CompletableFuture<Boolean> processMultipleMatching(Value genericValue, MatchDetail matchDetail,
                                                              DataImportEventPayload eventPayload) {
     CompletableFuture<Boolean> resultFuture = new CompletableFuture<>();
-    List<Value> values = ((ListValue) genericValue).getValue().stream().distinct().map(StringValue::of).collect(Collectors.toList());
+    List<Value> values =
+      ((ListValue) genericValue).getValue().stream().distinct().map(StringValue::of).collect(Collectors.toList());
     JsonArray matchedEntities = new JsonArray();
     JsonArray errors = new JsonArray();
 
@@ -59,7 +60,7 @@ public class HoldingsItemMatcher extends AbstractMatcher {
           if (throwable != null) {
             errors.add(new PartialError(null, throwable.getMessage()));
           } else {
-            if (loadResult.getValue() != null) matchedEntities.add(new JsonObject(loadResult.getValue()));
+            if (loadResult.getValue() != null) { matchedEntities.add(new JsonObject(loadResult.getValue())); }
           }
           promise.complete();
         });
@@ -73,7 +74,8 @@ public class HoldingsItemMatcher extends AbstractMatcher {
         } else {
           eventPayload.getContext().put(ERRORS, errorsAsStringJson);
           eventPayload.getContext().put(matchDetail.getExistingRecordType().value(), matchedEntities.encode());
-          eventPayload.getContext().put(NOT_MATCHED_NUMBER, String.valueOf(values.size() - matchedEntities.size() - errors.size()));
+          eventPayload.getContext()
+            .put(NOT_MATCHED_NUMBER, String.valueOf(values.size() - matchedEntities.size() - errors.size()));
           resultFuture.complete(!matchedEntities.isEmpty());
         }
       });

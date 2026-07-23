@@ -1,10 +1,9 @@
 package org.folio.processing.mapping.mapper.writer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.value.Value;
-
-import java.io.IOException;
 
 /**
  * The root interface for Writers.

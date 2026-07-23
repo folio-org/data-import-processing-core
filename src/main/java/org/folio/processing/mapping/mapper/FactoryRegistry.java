@@ -1,5 +1,10 @@
 package org.folio.processing.mapping.mapper;
 
+import static java.lang.String.format;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.mappers.AbstractMapper;
 import org.folio.processing.mapping.mapper.mappers.MapperFactory;
@@ -13,12 +18,6 @@ import org.folio.processing.matching.matcher.Matcher;
 import org.folio.processing.matching.matcher.MatcherFactory;
 import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.rest.jaxrs.model.EntityType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static java.lang.String.format;
 
 /**
  * Registry for reader factories and writer factories
@@ -71,7 +70,8 @@ public class FactoryRegistry {
    * @param entityType type of the entity which MatcherFactory produces
    * @return Reader
    */
-  public Matcher createMatcher(EntityType entityType, MatchValueReader matchValueReader, MatchValueLoader matchValueLoader) {
+  public Matcher createMatcher(EntityType entityType, MatchValueReader matchValueReader,
+                               MatchValueLoader matchValueLoader) {
     Optional<MatcherFactory> optionalWriterFactory = MATCHER_FACTORIES.stream()
       .filter(matcherFactory -> matcherFactory.isEligibleForEntityType(entityType))
       .findFirst();
@@ -85,6 +85,7 @@ public class FactoryRegistry {
 
   /**
    * Created specific mapper by given
+   *
    * @param dataImportEventPayload
    * @param reader
    * @param writer

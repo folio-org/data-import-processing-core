@@ -1,5 +1,8 @@
 package org.folio.processing.mapping.defaultmapper.processor.parameters;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.apache.commons.collections4.list.UnmodifiableList;
 import org.folio.AcquisitionMethod;
 import org.folio.AcquisitionsUnit;
@@ -31,17 +34,13 @@ import org.folio.rest.jaxrs.model.ItemDamageStatus;
 import org.folio.rest.jaxrs.model.ItemNoteType;
 import org.folio.rest.jaxrs.model.LoanType;
 import org.folio.rest.jaxrs.model.Location;
+import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
 import org.folio.rest.jaxrs.model.MaterialType;
 import org.folio.rest.jaxrs.model.NatureOfContentTerm;
 import org.folio.rest.jaxrs.model.StatisticalCode;
 import org.folio.rest.jaxrs.model.StatisticalCodeType;
 import org.folio.rest.jaxrs.model.SubjectSource;
 import org.folio.rest.jaxrs.model.SubjectType;
-import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Class to store parameters needed for mapping functions
@@ -98,8 +97,16 @@ public class MappingParameters {
     return initialized;
   }
 
+  public void setInitialized(boolean initialized) {
+    this.initialized = initialized;
+  }
+
   public List<IdentifierType> getIdentifierTypes() {
     return identifierTypes;
+  }
+
+  public void setIdentifierTypes(List<IdentifierType> identifierTypes) {
+    this.identifierTypes = identifierTypes;
   }
 
   public MappingParameters withIdentifierTypes(List<IdentifierType> identifierTypes) {
@@ -111,6 +118,10 @@ public class MappingParameters {
     return classificationTypes;
   }
 
+  public void setClassificationTypes(List<ClassificationType> classificationTypes) {
+    this.classificationTypes = classificationTypes;
+  }
+
   public MappingParameters withClassificationTypes(List<ClassificationType> classificationTypes) {
     this.classificationTypes = new UnmodifiableList<>(classificationTypes);
     return this;
@@ -120,18 +131,27 @@ public class MappingParameters {
     return instanceTypes;
   }
 
+  public void setInstanceTypes(List<InstanceType> instanceTypes) {
+    this.instanceTypes = instanceTypes;
+  }
+
   public MappingParameters withInstanceTypes(List<InstanceType> instanceTypes) {
     this.instanceTypes = new UnmodifiableList<>(instanceTypes);
     return this;
   }
 
-  public MappingParameters withElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationships) {
+  public MappingParameters withElectronicAccessRelationships(
+    List<ElectronicAccessRelationship> electronicAccessRelationships) {
     this.electronicAccessRelationships = new UnmodifiableList<>(electronicAccessRelationships);
     return this;
   }
 
   public List<InstanceFormat> getInstanceFormats() {
     return instanceFormats;
+  }
+
+  public void setInstanceFormats(List<InstanceFormat> instanceFormats) {
+    this.instanceFormats = instanceFormats;
   }
 
   public MappingParameters withInstanceFormats(List<InstanceFormat> instanceFormats) {
@@ -143,6 +163,10 @@ public class MappingParameters {
     return contributorTypes;
   }
 
+  public void setContributorTypes(List<ContributorType> contributorTypes) {
+    this.contributorTypes = contributorTypes;
+  }
+
   public MappingParameters withContributorTypes(List<ContributorType> contributorTypes) {
     this.contributorTypes = new UnmodifiableList<>(contributorTypes);
     return this;
@@ -150,6 +174,10 @@ public class MappingParameters {
 
   public List<ContributorNameType> getContributorNameTypes() {
     return contributorNameTypes;
+  }
+
+  public void setContributorNameTypes(List<ContributorNameType> contributorNameTypes) {
+    this.contributorNameTypes = contributorNameTypes;
   }
 
   public MappingParameters withContributorNameTypes(List<ContributorNameType> contributorNameTypes) {
@@ -161,6 +189,10 @@ public class MappingParameters {
     return instanceNoteTypes;
   }
 
+  public void setInstanceNoteTypes(List<InstanceNoteType> instanceNoteTypes) {
+    this.instanceNoteTypes = instanceNoteTypes;
+  }
+
   public MappingParameters withInstanceNoteTypes(List<InstanceNoteType> instanceNoteTypes) {
     this.instanceNoteTypes = new UnmodifiableList<>(instanceNoteTypes);
     return this;
@@ -168,6 +200,10 @@ public class MappingParameters {
 
   public List<AlternativeTitleType> getAlternativeTitleTypes() {
     return alternativeTitleTypes;
+  }
+
+  public void setAlternativeTitleTypes(List<AlternativeTitleType> alternativeTitleTypes) {
+    this.alternativeTitleTypes = alternativeTitleTypes;
   }
 
   public MappingParameters withAlternativeTitleTypes(List<AlternativeTitleType> alternativeTitleTypes) {
@@ -179,38 +215,26 @@ public class MappingParameters {
     return issuanceModes;
   }
 
+  public void setIssuanceModes(List<IssuanceMode> issuanceModes) {
+    this.issuanceModes = issuanceModes;
+  }
+
   public MappingParameters withIssuanceModes(List<IssuanceMode> issuanceModes) {
     this.issuanceModes = new UnmodifiableList<>(issuanceModes);
     return this;
-  }
-
-  public void setInstanceDateTypes(List<InstanceDateType> instanceDateTypes) {
-    this.instanceDateTypes = instanceDateTypes;
   }
 
   public List<InstanceDateType> getInstanceDateTypes() {
     return instanceDateTypes;
   }
 
+  public void setInstanceDateTypes(List<InstanceDateType> instanceDateTypes) {
+    this.instanceDateTypes = instanceDateTypes;
+  }
+
   public MappingParameters withInstanceDateTypes(List<InstanceDateType> instanceDateTypes) {
     this.instanceDateTypes = new UnmodifiableList<>(instanceDateTypes);
     return this;
-  }
-
-  public void setInitialized(boolean initialized) {
-    this.initialized = initialized;
-  }
-
-  public void setIdentifierTypes(List<IdentifierType> identifierTypes) {
-    this.identifierTypes = identifierTypes;
-  }
-
-  public void setClassificationTypes(List<ClassificationType> classificationTypes) {
-    this.classificationTypes = classificationTypes;
-  }
-
-  public void setInstanceTypes(List<InstanceType> instanceTypes) {
-    this.instanceTypes = instanceTypes;
   }
 
   public List<ElectronicAccessRelationship> getElectronicAccessRelationships() {
@@ -219,30 +243,6 @@ public class MappingParameters {
 
   public void setElectronicAccessRelationships(List<ElectronicAccessRelationship> electronicAccessRelationships) {
     this.electronicAccessRelationships = electronicAccessRelationships;
-  }
-
-  public void setInstanceFormats(List<InstanceFormat> instanceFormats) {
-    this.instanceFormats = instanceFormats;
-  }
-
-  public void setContributorTypes(List<ContributorType> contributorTypes) {
-    this.contributorTypes = contributorTypes;
-  }
-
-  public void setContributorNameTypes(List<ContributorNameType> contributorNameTypes) {
-    this.contributorNameTypes = contributorNameTypes;
-  }
-
-  public void setInstanceNoteTypes(List<InstanceNoteType> instanceNoteTypes) {
-    this.instanceNoteTypes = instanceNoteTypes;
-  }
-
-  public void setAlternativeTitleTypes(List<AlternativeTitleType> alternativeTitleTypes) {
-    this.alternativeTitleTypes = alternativeTitleTypes;
-  }
-
-  public void setIssuanceModes(List<IssuanceMode> issuanceModes) {
-    this.issuanceModes = issuanceModes;
   }
 
   public List<InstanceStatus> getInstanceStatuses() {
@@ -371,16 +371,16 @@ public class MappingParameters {
     return marcFieldProtectionSettings;
   }
 
+  public void setMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
+    this.marcFieldProtectionSettings = marcFieldProtectionSettings;
+  }
+
   public String getTenantConfigurationZone() {
     return tenantConfigurationZone;
   }
 
   public void setTenantConfigurationZone(String tenantConfigurationZone) {
     this.tenantConfigurationZone = tenantConfigurationZone;
-  }
-
-  public void setMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
-    this.marcFieldProtectionSettings = marcFieldProtectionSettings;
   }
 
   public List<AuthorityNoteType> getAuthorityNoteTypes() {
@@ -464,7 +464,8 @@ public class MappingParameters {
     return this;
   }
 
-  public MappingParameters withMarcFieldProtectionSettings(List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
+  public MappingParameters withMarcFieldProtectionSettings(
+    List<MarcFieldProtectionSetting> marcFieldProtectionSettings) {
     this.marcFieldProtectionSettings = new UnmodifiableList<>(marcFieldProtectionSettings);
     return this;
   }
@@ -478,6 +479,7 @@ public class MappingParameters {
     this.authoritySourceFiles = Collections.unmodifiableList(authoritySourceFiles);
     return this;
   }
+
   public List<Organization> getOrganizations() {
     return organizations;
   }

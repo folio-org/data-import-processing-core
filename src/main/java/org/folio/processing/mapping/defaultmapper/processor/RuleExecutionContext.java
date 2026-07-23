@@ -14,7 +14,6 @@ public class RuleExecutionContext {
   private MappingParameters mappingParameters;
   private JsonObject ruleParameter;
 
-
   public DataField getDataField() {
     return dataField;
   }
