@@ -15,9 +15,7 @@ import org.folio.rest.jaxrs.model.Qualifier;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -34,15 +32,14 @@ import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXIST
 import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
 import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(JUnit4.class)
-public class LoadQueryBuilderTest {
+class LoadQueryBuilderTest {
 
   private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd";
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValue() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -65,7 +62,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingStringValue() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -89,7 +86,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValue() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValue() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "ybp74064123"));
     MatchDetail matchDetail = new MatchDetail()
@@ -113,7 +110,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueContains_IncomingStringValue() {
+  void shouldBuildQuery_ExistingValueContains_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -136,7 +133,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValue_ContainsExistingValue() {
+  void shouldBuildQuery_IncomingStringValue_ContainsExistingValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -159,7 +156,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueEndsWith_IncomingStringValue() {
+  void shouldBuildQuery_ExistingValueEndsWith_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -182,7 +179,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -205,7 +202,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -228,7 +225,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -252,7 +249,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueContains_IncomingStringValue_JsonArrayPath() {
+  void shouldBuildQuery_ExistingValueContains_IncomingStringValue_JsonArrayPath() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -272,7 +269,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_JsonArrayPath() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_JsonArrayPath() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -293,7 +290,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -315,7 +312,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath_WithQualifier() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath_WithQualifier() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -340,7 +337,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue_JsonArrayPath() {
+  void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue_JsonArrayPath() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -366,7 +363,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue() {
+  void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -391,7 +388,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue_WithQualifier() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue_WithQualifier() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -417,7 +414,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifier() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifier() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -440,7 +437,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifierComparisonPart() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifierComparisonPart() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -464,7 +461,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_WithQualifierComparisonPart() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_WithQualifierComparisonPart() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -488,7 +485,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfPassedNullValue() {
+  void shouldReturnNullIfPassedNullValue() {
     // given
     Value<?> value = null;
     MatchDetail matchDetail = new MatchDetail()
@@ -505,7 +502,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfPassedMissingValue() {
+  void shouldReturnNullIfPassedMissingValue() {
     // given
     Value<?> value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
@@ -522,7 +519,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfMatchingByExistingStaticValue() {
+  void shouldReturnNullIfMatchingByExistingStaticValue() {
     // given
     Value<?> value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
@@ -538,7 +535,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void dummyTestForDefaultLoadQuery() {
+  void dummyTestForDefaultLoadQuery() {
     // given
     String tableName = "instance";
     String whereClause = "WHERE TABLE_NAME.hrid = 'ybp7406411'";
@@ -556,7 +553,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingDateValue() throws ParseException {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingDateValue() throws ParseException {
     // given
     SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT_PATTERN);
     Date fromDate = df.parse("2020-04-01");
@@ -583,7 +580,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayElement() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayElement() {
     // given
     StringValue value = StringValue.of("boo");
     MatchDetail matchDetail = new MatchDetail()
@@ -606,7 +603,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayPath() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayPath() {
     // given
     StringValue value = StringValue.of("https://www.emeraldinsight.com/loi/jepp");
     MatchDetail matchDetail = new MatchDetail()
@@ -629,7 +626,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueWithSpecialCharactersJsonArrayPath() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueWithSpecialCharactersJsonArrayPath() {
     // given
     StringValue value = StringValue.of("http://proxy2.missouristate.edu/login?url=https://fod.infobase.com/PortalPlaylists.aspx?wID=97835%26xtid=207292");
     MatchDetail matchDetail = new MatchDetail()
@@ -652,7 +649,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValueWithNewCQLQuery() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValueWithNewCQLQuery() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -697,7 +694,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithParenthesesInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithParenthesesInValue() {
     // given
     StringValue value = StringValue.of("(OCoLC)1024095011");
     String identifierTypeFieldValue = "7e591197-f335-4afb-bc6d-a6d76ca3bace";
@@ -721,7 +718,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithQuotesInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithQuotesInValue() {
     // given
     StringValue value = StringValue.of("test\"quote\"value");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -745,7 +742,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithBackslashesInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithBackslashesInValue() {
     // given
     StringValue value = StringValue.of("path\\to\\resource");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -769,7 +766,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithWildcardsInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithWildcardsInValue() {
     // given
     StringValue value = StringValue.of("test*value?");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -793,7 +790,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithMultipleSpecialCharacters() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithMultipleSpecialCharacters() {
     // given
     StringValue value = StringValue.of("(test*)\\query?");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -817,7 +814,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_ListWithSpecialCharacters() {
+  void shouldBuildQueryWhere_IdentifierMatching_ListWithSpecialCharacters() {
     // given
     ListValue value = ListValue.of(Arrays.asList("(OCoLC)123", "test*value", "path\\file"));
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -841,7 +838,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithApostropheInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithApostropheInValue() {
     // given
     StringValue value = StringValue.of("O'Reilly's Book");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -866,7 +863,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_EmptyValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_EmptyValue() {
     // given
     StringValue value = StringValue.of("");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -890,7 +887,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_PreEscapedValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_PreEscapedValue() {
     // given
     StringValue value = StringValue.of("already\\\\escaped");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -915,7 +912,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_RealWorldExampleFromProblem() {
+  void shouldBuildQueryWhere_IdentifierMatching_RealWorldExampleFromProblem() {
     // Test the exact values from problem.md
     ListValue value = ListValue.of(Arrays.asList(
       "(CStRLIN)NYCX1604275S",

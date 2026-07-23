@@ -3,7 +3,6 @@ package org.folio.processing.events.services.publisher;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.folio.DataImportEventPayload;
@@ -11,10 +10,9 @@ import org.folio.kafka.KafkaConfig;
 import org.folio.kafka.KafkaTopicNameHelper;
 import org.folio.processing.TestUtil;
 import org.folio.rest.jaxrs.model.Event;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.kafka.KafkaContainer;
 import java.time.Duration;
 import java.util.HashMap;
@@ -31,24 +29,24 @@ import static org.folio.processing.events.services.publisher.KafkaEventPublisher
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.RECORD_ID_HEADER;
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.REQUEST_ID_HEADER;
 import static org.folio.processing.events.services.publisher.KafkaEventPublisher.USER_ID_HEADER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(VertxUnitRunner.class)
-public class KafkaEventPublisherTest {
+class KafkaEventPublisherTest {
   private static final String KAFKA_ENV = "folio";
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
 
-  public static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
+  static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static KafkaConfig kafkaConfig;
   private static Properties consumerConfig = new Properties();
   private Vertx vertx = Vertx.vertx();
 
-  @BeforeClass
-  public static void setUpClass() {
+  @BeforeAll
+  static void setUpClass() {
     kafkaContainer.start();
     kafkaConfig = KafkaConfig.builder()
       .kafkaHost(kafkaContainer.getHost())
@@ -63,13 +61,13 @@ public class KafkaEventPublisherTest {
     consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
   }
 
-  @AfterClass
-  public static void tearDownClass() {
+  @AfterAll
+  static void tearDownClass() {
     kafkaContainer.stop();
   }
 
   @Test
-  public void shouldPublishPayload() throws Exception {
+  void shouldPublishPayload() throws Exception {
     var tenant = "shouldPublishPayload";
     String expectedPermissionsHeader = JsonArray.of("test-permission").encode();
     String expectedUserId = UUID.randomUUID().toString();
@@ -106,7 +104,7 @@ public class KafkaEventPublisherTest {
   }
 
   @Test
-  public void shouldPublishPayloadIfTokenIsNull() throws Exception {
+  void shouldPublishPayloadIfTokenIsNull() throws Exception {
     var tenant = "shouldPublishPayloadIfTokenIsNull";
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
@@ -130,17 +128,17 @@ public class KafkaEventPublisherTest {
     }
   }
 
-  @Test(expected = ExecutionException.class)
-  public void shouldReturnFailedFutureWhenPayloadIsNull() throws Exception {
+  @Test
+  void shouldReturnFailedFutureWhenPayloadIsNull() throws Exception {
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       CompletableFuture<Event> future = eventPublisher.publish(null);
       assertTrue(future.isCompletedExceptionally());
-      future.get();
+      assertThrows(ExecutionException.class, future::get);
     }
   }
 
-  @Test(expected = ExecutionException.class)
-  public void shouldReturnFailedFutureWhenPayloadParameterIsNull() throws Exception {
+  @Test
+  void shouldReturnFailedFutureWhenPayloadParameterIsNull() throws Exception {
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
@@ -153,12 +151,12 @@ public class KafkaEventPublisherTest {
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
       assertTrue(future.isCompletedExceptionally());
-      future.get();
+      assertThrows(ExecutionException.class, future::get);
     }
   }
 
   @Test
-  public void shouldReturnFailedFutureWhenRecordIdIsNull() throws Exception {
+  void shouldReturnFailedFutureWhenRecordIdIsNull() throws Exception {
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())
@@ -176,7 +174,7 @@ public class KafkaEventPublisherTest {
   }
 
   @Test
-  public void shouldReturnFailedFutureWhenChunkIdIsNull() throws Exception {
+  void shouldReturnFailedFutureWhenChunkIdIsNull() throws Exception {
     try(KafkaEventPublisher eventPublisher = new KafkaEventPublisher(kafkaConfig, vertx, 100)) {
       DataImportEventPayload eventPayload = new DataImportEventPayload()
         .withEventType(DI_COMPLETED.value())

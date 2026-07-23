@@ -23,10 +23,8 @@ import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,23 +38,23 @@ import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(JUnit4.class)
-public class MappingManagerUnitTest {
+class MappingManagerUnitTest {
 
   private final MappingContext mappingContext = new MappingContext();
 
-  @Before
-  public void beforeTest() {
+  @BeforeEach
+  void beforeTest() {
     MappingManager.clearReaderFactories();
     MappingManager.clearWriterFactories();
     MappingManager.clearMapperFactories();
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstance() throws IOException {
+  void shouldMap_MarcBibliographicToInstance() throws IOException {
     // given
     MappingProfile mappingProfile = new MappingProfile()
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
@@ -88,40 +86,42 @@ public class MappingManagerUnitTest {
     assertNotNull(mappedInstance.getIndexTitle());
   }
 
-  @Test(expected = RuntimeException.class)
-  public void shouldThrowException_ifNoReaderEligible() {
-    // given
-    MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
-    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
-    mappingProfileWrapper.setContent(mappingProfile);
-    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
+  @Test
+  void shouldThrowException_ifNoReaderEligible() {
+    assertThrows(RuntimeException.class, () -> {
+      // given
+      MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
+      ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
+      mappingProfileWrapper.setContent(mappingProfile);
+      mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    eventPayload.setCurrentNode(mappingProfileWrapper);
-    // when
-    MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
-    MappingManager.map(eventPayload, mappingContext);
-    // then expect runtime exception
-  }
-
-  @Test(expected = RuntimeException.class)
-  public void shouldThrowException_ifNoWriterEligible() {
-    // given
-    MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
-    ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
-    mappingProfileWrapper.setContent(mappingProfile);
-    mappingProfileWrapper.setContentType(MAPPING_PROFILE);
-
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    eventPayload.setCurrentNode(mappingProfileWrapper);
-    // when
-    MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
-    MappingManager.map(eventPayload, mappingContext);
-    // then expect runtime exception
+      DataImportEventPayload eventPayload = new DataImportEventPayload();
+      eventPayload.setCurrentNode(mappingProfileWrapper);
+      // when
+      MappingManager.registerWriterFactory(new TestInstanceWriterFactory());
+      MappingManager.map(eventPayload, mappingContext);
+    });
   }
 
   @Test
-  public void shouldNotMap_IfNoContentType() throws IOException {
+  void shouldThrowException_ifNoWriterEligible() {
+    assertThrows(RuntimeException.class, () -> {
+      // given
+      MappingProfile mappingProfile = new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE);
+      ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
+      mappingProfileWrapper.setContent(mappingProfile);
+      mappingProfileWrapper.setContentType(MAPPING_PROFILE);
+
+      DataImportEventPayload eventPayload = new DataImportEventPayload();
+      eventPayload.setCurrentNode(mappingProfileWrapper);
+      // when
+      MappingManager.registerReaderFactory(new TestMarcBibliographicReaderFactory());
+      MappingManager.map(eventPayload, mappingContext);
+    });
+  }
+
+  @Test
+  void shouldNotMap_IfNoContentType() throws IOException {
     // given
     MappingProfile mappingProfile = new MappingProfile()
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
@@ -150,34 +150,34 @@ public class MappingManagerUnitTest {
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromMultipleMarcFieldsByCode() {
+  void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromMultipleMarcFieldsByCode() {
     shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(), null, List.of(0, 1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcFieldByName() {
+  void shouldMap_MarcBibliographicToHoldingsStatisticalCodeFromMarcFieldByName() {
     shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abd"), new HoldingsRecord(), null, List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCodeFromMarcFieldByCode() {
+  void shouldMap_MarcBibliographicToInstanceStatisticalCodeFromMarcFieldByCode() {
     shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbc"), new Instance(), null, List.of(1));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromStringValue() {
+  void shouldMap_MarcBibliographicToInstanceStatisticalCodesFromStringValue() {
     shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("abc", "bbc"), new Instance(),
       "\"TEST (test code type): abc - abd\"", List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToHoldingsStatisticalCodesFromStringValue() {
+  void shouldMap_MarcBibliographicToHoldingsStatisticalCodesFromStringValue() {
     shouldMap_MarcBibliographicStatisticalCodes(HOLDINGS, List.of("abc", "bbc"), new HoldingsRecord(),
       "\"TEST (test code type): abc - abd\"", List.of(0));
   }
 
   @Test
-  public void shouldMap_MarcBibliographicToStatisticalCodesFromStringValueSpecifiedInElsePart() {
+  void shouldMap_MarcBibliographicToStatisticalCodesFromStringValueSpecifiedInElsePart() {
     shouldMap_MarcBibliographicStatisticalCodes(INSTANCE, List.of("bbc"), new Instance(),
       "990$a; else \"TEST (test code type): abc - abd\"", List.of(0));
   }

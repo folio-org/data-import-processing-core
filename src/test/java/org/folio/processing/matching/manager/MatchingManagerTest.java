@@ -1,7 +1,5 @@
 package org.folio.processing.matching.manager;
 
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.MatchProfile;
@@ -14,9 +12,8 @@ import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,13 +23,16 @@ import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
 import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(VertxUnitRunner.class)
-public class MatchingManagerTest {
+class MatchingManagerTest {
   private MatchValueLoader instanceValueLoader;
 
-  @Before
-  public void beforeTest() {
+  @BeforeEach
+  void beforeTest() {
     MatchValueReaderFactory.clearReaderFactory();
     MatchValueLoaderFactory.clearLoaderFactory();
     instanceValueLoader = new MatchValueLoader() {
@@ -54,7 +54,7 @@ public class MatchingManagerTest {
   }
 
   @Test
-  public void shouldMatch_MarcBibliographicAndEdifact(TestContext testContext) {
+  void shouldMatch_MarcBibliographicAndEdifact() {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
@@ -80,13 +80,13 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNull(throwable);
-      testContext.assertTrue(matched);
+      assertNull(throwable);
+      assertTrue(matched);
     });
   }
 
   @Test
-  public void shouldCompleteExceptionally_ifNoEligibleReader(TestContext testContext) {
+  void shouldCompleteExceptionally_ifNoEligibleReader() {
     // given
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
 
@@ -105,13 +105,13 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNotNull(throwable);
-      testContext.assertTrue(throwable instanceof MatchingException);
+      assertNotNull(throwable);
+      assertTrue(throwable instanceof MatchingException);
     });
   }
 
   @Test
-  public void shouldCompleteExceptionally_ifNoEligibleLoader(TestContext testContext) {
+  void shouldCompleteExceptionally_ifNoEligibleLoader() {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
 
@@ -131,13 +131,13 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNotNull(throwable);
-      testContext.assertTrue(throwable instanceof MatchingException);
+      assertNotNull(throwable);
+      assertTrue(throwable instanceof MatchingException);
     });
   }
 
   @Test
-  public void shouldNotMatchIfWrongContentType(TestContext testContext) {
+  void shouldNotMatchIfWrongContentType() {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
@@ -162,8 +162,8 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNull(throwable);
-      testContext.assertFalse(matched);
+      assertNull(throwable);
+      assertFalse(matched);
     });
   }
 }

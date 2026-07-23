@@ -1,9 +1,7 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
 import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,16 +9,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
-public class ProtectedMarcRecordModifierTest {
+class ProtectedMarcRecordModifierTest {
 
   private MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
   @Test
-  public void shouldReturnEmptyListIfThereIsNoSettings() {
+  void shouldReturnEmptyListIfThereIsNoSettings() {
     List<MarcFieldProtectionSetting> marcFieldProtectionSettings = new ArrayList<>();
     List<MarcFieldProtectionSetting> protectionSettingsOverrides = Collections.singletonList(
       new MarcFieldProtectionSetting()
@@ -37,7 +34,7 @@ public class ProtectedMarcRecordModifierTest {
   }
 
   @Test
-  public void shouldReturnSameSettingsIfNoOverrides() {
+  void shouldReturnSameSettingsIfNoOverrides() {
     List<MarcFieldProtectionSetting> marcFieldProtectionSettings = Collections.singletonList(
       new MarcFieldProtectionSetting()
         .withId(UUID.randomUUID().toString())
@@ -54,7 +51,7 @@ public class ProtectedMarcRecordModifierTest {
   }
 
   @Test
-  public void shouldFilterOutOverriddenFieldProtectionSettings() {
+  void shouldFilterOutOverriddenFieldProtectionSettings() {
     List<MarcFieldProtectionSetting> marcFieldProtectionSettings = Arrays.asList(
       new MarcFieldProtectionSetting()
         .withId("76669a02-a3d4-41af-9392-58502eaacd10")

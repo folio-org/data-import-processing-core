@@ -24,20 +24,17 @@ import org.folio.rest.jaxrs.model.StatisticalCode;
 import org.folio.rest.jaxrs.model.StatisticalCodeType;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 import org.folio.processing.mapping.mapper.util.AcceptedValuesUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
-public class AcceptedValuesUtilTest {
+class AcceptedValuesUtilTest {
   private static final List<String> INSTANCE_ACCEPTED_VALUES_RULES =
     List.of("statusId", "natureOfContentTermId", "instanceRelationshipTypeId");
   private static final List<String> HOLDINGS_ACCEPTED_VALUES_RULES =
@@ -49,10 +46,10 @@ public class AcceptedValuesUtilTest {
     List.of("acqUnitIds", "billTo", "shipTo", "contributorNameTypeId", "productIdType",
       "acquisitionMethod", "fundId", "expenseClassId", "locationId", "materialType", "accessProvider", "vendor", "materialSupplier", "donorOrganizationIds");
   private static final String TEST_NAME = "testName";
-  public static final String TEST_ADDRESS_TEMPLATE = "{\"id\":\"%s\", \"name\":\"%s\",\"address\":\"Test2\"}";
+  private static final String TEST_ADDRESS_TEMPLATE = "{\"id\":\"%s\", \"name\":\"%s\",\"address\":\"Test2\"}";
 
   @Test
-  public void testInstanceAcceptedValues() {
+  void testInstanceAcceptedValues() {
     String testUUID = UUID.randomUUID().toString();
 
     MappingParameters mappingParameters = new MappingParameters()
@@ -64,7 +61,7 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
-  public void testHoldingsAcceptedValues() {
+  void testHoldingsAcceptedValues() {
     String testUUID = UUID.randomUUID().toString();
 
     MappingParameters mappingParameters = new MappingParameters()
@@ -79,7 +76,7 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
-  public void testItemAcceptedValues() {
+  void testItemAcceptedValues() {
     String testUUID = UUID.randomUUID().toString();
 
     MappingParameters mappingParameters = new MappingParameters()
@@ -94,7 +91,7 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
-  public void testOrderAcceptedValues() {
+  void testOrderAcceptedValues() {
     String testUUID = UUID.randomUUID().toString();
 
     MappingParameters mappingParameters = new MappingParameters()
@@ -117,7 +114,7 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
-  public void shouldReturnEmptyAcceptedValuesIfIdIsNull() {
+  void shouldReturnEmptyAcceptedValuesIfIdIsNull() {
     Map<String, String> map = AcceptedValuesUtil.getAcceptedValues("billTo",
       new MappingParameters().withTenantConfigurationAddresses(List.of("{\"name\":\"test\",\"address\":\"Test2\"}")));
 
@@ -125,7 +122,7 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
-  public void shouldReturnEmptyAcceptedValuesIfNameIsNull() {
+  void shouldReturnEmptyAcceptedValuesIfNameIsNull() {
     Map<String, String> map = AcceptedValuesUtil.getAcceptedValues("billTo",
       new MappingParameters().withTenantConfigurationAddresses(List.of("{\"id\":\"test\",\"address\":\"Test2\"}")));
 
@@ -133,14 +130,14 @@ public class AcceptedValuesUtilTest {
   }
 
   @Test
-  public void shouldReturnEmptyAcceptedValuesIfRuleNameIsNull() {
+  void shouldReturnEmptyAcceptedValuesIfRuleNameIsNull() {
     Map<String, String> map = AcceptedValuesUtil.getAcceptedValues(null, new MappingParameters());
 
     assertTrue(map.isEmpty());
   }
 
   @Test
-  public void testStatisticalCodeFormation() {
+  void testStatisticalCodeFormation() {
     String statCodeUUID = UUID.randomUUID().toString();
     String statCodeTypeUUID = UUID.randomUUID().toString();
 

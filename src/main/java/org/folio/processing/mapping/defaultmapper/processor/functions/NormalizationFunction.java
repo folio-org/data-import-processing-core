@@ -3,7 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor.functions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.AuthorityIdentifierType;
 import org.folio.rest.jaxrs.model.AlternativeTitleType;
 import org.folio.AuthorityNoteType;
@@ -44,7 +44,7 @@ import java.util.stream.IntStream;
 
 import static io.netty.util.internal.StringUtil.EMPTY_STRING;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 /**

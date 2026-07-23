@@ -19,17 +19,36 @@
   </licenses>
 
   <properties>
+    <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <commons.lang.version>2.6</commons.lang.version>
-    <logger.version>2.0.18</logger.version>
-    <junit.version>4.13.2</junit.version>
-    <wiremock.version>3.13.2</wiremock.version>
-    <raml-module-builder.version>36.0.0</raml-module-builder.version>
     <sonar.exclusions>org.folio.processing.mapping.defaultmapper.**</sonar.exclusions>
-    <sonar.exclusions>**/OkapiConnectionParams.java</sonar.exclusions>
+    <sonar.exclusions>**/schemas/*</sonar.exclusions>
     <sonar.coverage.exclusions>**/parameters/MappingParameters.java</sonar.coverage.exclusions>
     <jsonschema2pojo_output_dir>${project.build.directory}/generated-sources/jsonschema2pojo</jsonschema2pojo_output_dir>
-    <sonar.exclusions>**/schemas/*</sonar.exclusions>
+
+    <raml-module-builder.version>36.0.0</raml-module-builder.version>
+    <folio-kafka-wrapper.version>4.1.0-SNAPSHOT</folio-kafka-wrapper.version>
+    <mod-inventory-storage-dto.version>30.1.0-SNAPSHOT</mod-inventory-storage-dto.version>
+    <vertx.version>5.1.5</vertx.version>
+    <marc4j.version>2.9.6</marc4j.version>
+    <maven-model.version>3.9.16</maven-model.version>
+    <commons-io.version>2.22.0</commons-io.version>
+    <guava.version>33.6.0-jre</guava.version>
+
+    <junit.version>6.1.2</junit.version>
+    <mockito-core.version>5.23.0</mockito-core.version>
+    <testcontainers.version>2.0.5</testcontainers.version>
+
+    <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
+    <properties-maven-plugin.version>1.3.0</properties-maven-plugin.version>
+    <jsonschema2pojo-maven-plugin.version>0.5.1</jsonschema2pojo-maven-plugin.version>
+    <maven-enforcer-plugin.version>3.6.3</maven-enforcer-plugin.version>
+    <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+    <maven-release-plugin.version>3.3.1</maven-release-plugin.version>
+    <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+    <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+    <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+    <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
   </properties>
 
   <repositories>
@@ -45,14 +64,14 @@
       <dependency>
         <groupId>io.vertx</groupId>
         <artifactId>vertx-stack-depchain</artifactId>
-        <version>5.1.5</version>
+        <version>${vertx.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
-        <version>6.1.2</version>
+        <version>${junit.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -61,14 +80,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons.lang.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.folio</groupId>
       <artifactId>folio-kafka-wrapper</artifactId>
-      <version>4.1.0-SNAPSHOT</version>
+      <version>${folio-kafka-wrapper.version}</version>
     </dependency>
     <dependency>
       <groupId>org.folio</groupId>
@@ -78,31 +92,16 @@
     <dependency>
       <groupId>org.folio</groupId>
       <artifactId>mod-inventory-storage-dto</artifactId>
-      <version>30.0.3</version>
+      <version>${mod-inventory-storage-dto.version}</version>
     </dependency>
     <dependency>
       <groupId>org.marc4j</groupId>
       <artifactId>marc4j</artifactId>
-      <version>2.9.6</version>
+      <version>${marc4j.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-common</artifactId>
-      <version>4.0.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${logger.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -111,28 +110,17 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-model</artifactId>
-      <version>3.9.16</version>
+      <version>${maven-model.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.22.0</version>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>33.6.0-jre</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graalvm.js</groupId>
-      <artifactId>js</artifactId>
-      <version>25.1.3</version>
-      <type>pom</type>
-    </dependency>
-    <dependency>
-      <groupId>org.graalvm.js</groupId>
-      <artifactId>js-scriptengine</artifactId>
-      <version>25.1.3</version>
+      <version>${guava.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -140,48 +128,25 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.wiremock</groupId>
-      <artifactId>wiremock</artifactId>
-      <version>${wiremock.version}</version>
+      <artifactId>vertx-junit5</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.23.0</version>
+      <version>${mockito-core.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <version>3.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers-kafka</artifactId>
-      <version>2.0.5</version>
+      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -198,7 +163,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.3</version>
+        <version>${exec-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>git submodule update</id>
@@ -222,7 +187,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>properties-maven-plugin</artifactId>
-        <version>1.3.0</version>
+        <version>${properties-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>set-system-properties</id>
@@ -241,10 +206,11 @@
         </executions>
       </plugin>
 
+
       <plugin>
         <groupId>org.jsonschema2pojo</groupId>
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-        <version>0.5.1</version>
+        <version>${jsonschema2pojo-maven-plugin.version}</version>
         <configuration>
           <outputDirectory>${jsonschema2pojo_output_dir}</outputDirectory>
         </configuration>
@@ -255,6 +221,7 @@
               <goal>generate</goal>
             </goals>
             <configuration>
+              <useCommonsLang3>true</useCommonsLang3>
               <sourcePaths>
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventPayload.json</path>
                 <path>${basedir}/ramls/raml-storage/schemas/common/dataImportEventTypes.json</path>
@@ -297,7 +264,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.6.3</version>
+        <version>${maven-enforcer-plugin.version}</version>
         <executions>
           <execution>
             <id>enforce-maven</id>
@@ -317,36 +284,17 @@
 
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
+        <version>${maven-compiler-plugin.version}</version>
         <configuration>
-          <release>21</release>
+          <release>${java.version}</release>
           <compilerArgument>-Xlint:unchecked</compilerArgument>
         </configuration>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.6.2</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <artifactSet />
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <outputFile>${project.build.directory}/${project.artifactId}-fat.jar</outputFile>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>${maven-release-plugin.version}</version>
         <configuration>
           <preparationGoals>clean verify</preparationGoals>
           <tagNameFormat>v@{project.version}</tagNameFormat>
@@ -358,11 +306,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.6</version>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <useSystemClassLoader>false</useSystemClassLoader>
           <systemPropertyVariables>
-            <!-- <api.version>1.44</api.version>-->
             <vertx.logger-delegate-factory-class-name>
               io.vertx.core.logging.Log4j2LogDelegateFactory
             </vertx.logger-delegate-factory-class-name>
@@ -371,9 +318,8 @@
       </plugin>
 
       <plugin>
-        <!-- *-source.jar for https://repository.folio.org -->
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.4.0</version>
+        <version>${maven-source-plugin.version}</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -386,9 +332,8 @@
       </plugin>
 
       <plugin>
-        <!-- *-javadoc.jar for https://repository.folio.org -->
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.12.0</version>
+        <version>${maven-javadoc-plugin.version}</version>
         <executions>
           <execution>
             <id>attach-javadocs</id>
@@ -403,7 +348,7 @@
       <plugin>
         <!-- Enforce that this deploy runs AFTER attach-sources and attach-javadocs -->
         <artifactId>maven-deploy-plugin</artifactId>
-        <version>3.1.4</version>
+        <version>${maven-deploy-plugin.version}</version>
         <executions>
           <execution>
             <id>deploy</id>

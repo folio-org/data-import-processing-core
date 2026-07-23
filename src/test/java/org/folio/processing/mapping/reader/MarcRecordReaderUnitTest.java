@@ -28,9 +28,7 @@ import org.folio.processing.value.Value;
 import org.folio.processing.value.Value.ValueType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -54,15 +52,12 @@ import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
-public class MarcRecordReaderUnitTest {
+class MarcRecordReaderUnitTest {
 
   private final String RECORD = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"3\": \"test\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
   private final String RECORD_WITH_DATE_DATA = "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
@@ -88,7 +83,7 @@ public class MarcRecordReaderUnitTest {
   private MappingContext mappingContext = new MappingContext();
 
   @Test
-  public void shouldRead_Strings_FromRules() throws IOException {
+  void shouldRead_Strings_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -105,7 +100,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_Leader() throws IOException {
+  void shouldRead_Marc_Leader() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -122,7 +117,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_Leader_2() throws IOException {
+  void shouldRead_Marc_Leader_2() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -139,7 +134,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_LeaderRange() throws IOException {
+  void shouldRead_Marc_LeaderRange() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -156,7 +151,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_LeaderRange_2() throws IOException {
+  void shouldRead_Marc_LeaderRange_2() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -173,7 +168,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_Controlled() throws IOException {
+  void shouldRead_Marc_Controlled() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -190,7 +185,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_Controlled_2() throws IOException {
+  void shouldRead_Marc_Controlled_2() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -207,7 +202,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_ControlledRange() throws IOException {
+  void shouldRead_Marc_ControlledRange() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -224,7 +219,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_Marc_ControlledRange_2() throws IOException {
+  void shouldRead_Marc_ControlledRange_2() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -241,7 +236,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_ArraysStrings_FromRules() throws IOException {
+  void shouldRead_ArraysStrings_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -258,7 +253,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_ArraysStrings_FromRulesConditions() throws IOException {
+  void shouldRead_ArraysStrings_FromRulesConditions() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -275,7 +270,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_ArraysStrings_asMissing_FromRules() throws IOException {
+  void shouldRead_ArraysStrings_asMissing_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -291,7 +286,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_AcceptedStrings_FromRules() throws IOException {
+  void shouldRead_AcceptedStrings_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -316,7 +311,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_BooleanFields_FromRules() throws IOException {
+  void shouldRead_BooleanFields_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -335,7 +330,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFields_FromRules() throws IOException {
+  void shouldRead_MARCFields_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -355,7 +350,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFields_numeric_FromRules() throws IOException {
+  void shouldRead_MARCFields_numeric_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -375,7 +370,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldsArray_FromRules() throws IOException {
+  void shouldRead_MARCFieldsArray_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -397,7 +392,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFields_FromRulesWithConditions() throws IOException {
+  void shouldRead_MARCFields_FromRulesWithConditions() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -417,7 +412,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRulesWithWrongSyntax() throws IOException {
+  void shouldReadRulesWithWrongSyntax() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -435,7 +430,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableFields() throws IOException {
+  void shouldReadRepeatableFields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -496,7 +491,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableFieldAndCreateFieldItemPerEverySpecifiedField() throws IOException {
+  void shouldReadRepeatableFieldAndCreateFieldItemPerEverySpecifiedField() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -555,7 +550,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldLeftAnEmptyValueIfRelationShipIdIsInvalid() throws IOException {
+  void shouldLeftAnEmptyValueIfRelationShipIdIsInvalid() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -614,7 +609,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableField() throws IOException {
+  void shouldReadRepeatableField() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -672,7 +667,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldUri() throws IOException {
+  void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldUri() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -714,7 +709,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsDeleteExisting() throws IOException {
+  void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsDeleteExisting() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -737,7 +732,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldStatisticalCodeIds() throws IOException {
+  void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldStatisticalCodeIds() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
@@ -761,7 +756,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsEmpty() throws IOException {
+  void shouldReadRepeatableFieldsIfSubfieldsAreEmptyAndActionIsEmpty() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -780,7 +775,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadMARCFieldsFromRulesWithTodayExpression() throws IOException {
+  void shouldReadMARCFieldsFromRulesWithTodayExpression() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -800,7 +795,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadMARCFieldsFromRulesWithTodayExpressionWithoutTenantConfiguration() throws IOException {
+  void shouldReadMARCFieldsFromRulesWithTodayExpressionWithoutTenantConfiguration() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -824,7 +819,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadMARCFieldsFromRulesWithTodayExpressionAndTenantConfigurationWithDayDifferenceLessThan2days() throws IOException {
+  void shouldReadMARCFieldsFromRulesWithTodayExpressionAndTenantConfigurationWithDayDifferenceLessThan2days() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -856,7 +851,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldNotReadMARCFieldsFromRulesWithTodayExpressionAndInvalidTimezone() throws IOException {
+  void shouldNotReadMARCFieldsFromRulesWithTodayExpressionAndInvalidTimezone() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -880,7 +875,7 @@ public class MarcRecordReaderUnitTest {
 
 
   @Test
-  public void shouldRead_MARCFieldsArrayAndFormatToISOFormat() throws IOException {
+  void shouldRead_MARCFieldsArrayAndFormatToISOFormat() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -946,7 +941,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldsArrayWithRepeatableFieldAction_FromRules() throws IOException {
+  void shouldRead_MARCFieldsArrayWithRepeatableFieldAction_FromRules() throws IOException {
     // given
     List<String> expectedFields = Arrays.asList("UUID2", "UUID3");
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -996,7 +991,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValue_FromRules() throws IOException {
+  void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValue_FromRules() throws IOException {
     // given
     List<String> expectedFields = Arrays.asList("pcc", "literature report");
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -1042,7 +1037,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadRemoveExpressionFromRules() throws IOException {
+  void shouldReadRemoveExpressionFromRules() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1060,7 +1055,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadSpecificPermanentLocationWithBrackets() throws IOException {
+  void shouldReadSpecificPermanentLocationWithBrackets() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1087,7 +1082,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadEqualsPermanentLocationWithBracketsIfContainsSameCode() throws IOException {
+  void shouldReadEqualsPermanentLocationWithBracketsIfContainsSameCode() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1114,7 +1109,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldNotReadPermanentLocationWithBracketsNotEqualsCode() throws IOException {
+  void shouldNotReadPermanentLocationWithBracketsNotEqualsCode() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1141,7 +1136,7 @@ public class MarcRecordReaderUnitTest {
 
 
   @Test
-  public void shouldNotReadPermanentLocationWithoutBrackets() throws IOException {
+  void shouldNotReadPermanentLocationWithoutBrackets() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1167,7 +1162,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadPermanentLocationIfRecordContainsBrackets() throws IOException {
+  void shouldReadPermanentLocationIfRecordContainsBrackets() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1193,7 +1188,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadPermanentLocationFromTheLastBracketsEvenIfThereIsCommonValueInBracketsFromName() throws IOException {
+  void shouldReadPermanentLocationFromTheLastBracketsEvenIfThereIsCommonValueInBracketsFromName() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1220,7 +1215,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadPermanentLocationFromTheLastBracketsWithSpecificLocation() throws IOException {
+  void shouldReadPermanentLocationFromTheLastBracketsWithSpecificLocation() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1247,7 +1242,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadPermanentLocationFromTheLastBracketsEvenIfThereMoreThan2() throws IOException {
+  void shouldReadPermanentLocationFromTheLastBracketsEvenIfThereMoreThan2() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1274,7 +1269,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldNotReadPermanentLocationEvenIfNameContainsBracketsButNotEquals() throws IOException {
+  void shouldNotReadPermanentLocationEvenIfNameContainsBracketsButNotEquals() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1301,7 +1296,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldNotReadPermanentLocationWhenRecordContainsInvalidBrackets() throws IOException {
+  void shouldNotReadPermanentLocationWhenRecordContainsInvalidBrackets() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1327,7 +1322,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_OrderComplexField() throws IOException {
+  void shouldRead_OrderComplexField() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1352,7 +1347,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_OrderArrayNonRepeatableField() throws IOException {
+  void shouldRead_OrderArrayNonRepeatableField() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1378,7 +1373,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_OrderLineComplexField() throws IOException {
+  void shouldRead_OrderLineComplexField() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1400,7 +1395,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByMappingParametersAndIsNotValid() throws IOException {
+  void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByMappingParametersAndIsNotValid() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1446,7 +1441,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByMappingParametersAndIsValid() throws IOException {
+  void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByMappingParametersAndIsValid() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1492,7 +1487,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead_IfVendorNameContainsParenthesis() throws IOException {
+  void shouldRead_IfVendorNameContainsParenthesis() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1520,7 +1515,7 @@ public class MarcRecordReaderUnitTest {
 
 
   @Test
-  public void shouldRead_IfVendorCodeContainsParenthesis() throws IOException {
+  void shouldRead_IfVendorCodeContainsParenthesis() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -1549,7 +1544,7 @@ public class MarcRecordReaderUnitTest {
 
 
   @Test
-  public void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldProductId() throws IOException {
+  void shouldReturnEmptyRepeatableFieldValueWhenHasNoDataForRequiredFieldProductId() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
 
@@ -1602,7 +1597,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnRepeatableFieldValueWhenHasNoDataForNotRequiredFieldProductId() throws IOException {
+  void shouldReturnRepeatableFieldValueWhenHasNoDataForNotRequiredFieldProductId() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
 
@@ -1655,7 +1650,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadAndConcatenate2Multiple028Fields() throws IOException {
+  void shouldReadAndConcatenate2Multiple028Fields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1696,7 +1691,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadAndConcatenate3Multiple028Fields() throws IOException {
+  void shouldReadAndConcatenate3Multiple028Fields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1739,7 +1734,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldRead2Multiple028FieldsWithTheSameSubfield() throws IOException {
+  void shouldRead2Multiple028FieldsWithTheSameSubfield() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1780,7 +1775,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnMissingValueOnlyForRuleWithNullValueOnProcessingRepeatableFieldRule() throws IOException {
+  void shouldReturnMissingValueOnlyForRuleWithNullValueOnProcessingRepeatableFieldRule() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1824,7 +1819,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnStringValueFromFirstSubfieldOnlyOnProcessingNonRepeatableFieldRuleWhenFieldHasMultipleSpecifiedSubfields() throws IOException {
+  void shouldReturnStringValueFromFirstSubfieldOnlyOnProcessingNonRepeatableFieldRuleWhenFieldHasMultipleSpecifiedSubfields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1847,7 +1842,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldMapElectronicAccessUrlAndLinkText() throws IOException {
+  void shouldMapElectronicAccessUrlAndLinkText() throws IOException {
     MappingRule mappingRule = new MappingRule().withName("electronicAccess")
       .withPath("holdings.electronicAccess[]")
       .withValue("")
@@ -1924,7 +1919,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReadAndConcatenateDataFromSpecifiedSubfieldsIntoOneAdminNote() throws IOException {
+  void shouldReadAndConcatenateDataFromSpecifiedSubfieldsIntoOneAdminNote() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -1956,7 +1951,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnListValueWithMultipleAdminNotesWhenArrayFieldMappingRuleContainsMultipleRepeatableSubfieldMappingEntries() throws IOException {
+  void shouldReturnListValueWithMultipleAdminNotesWhenArrayFieldMappingRuleContainsMultipleRepeatableSubfieldMappingEntries() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
@@ -2000,7 +1995,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldReturnListValueWithMultipleDonorsIdsIfMarcFieldMappingSpecified() throws IOException {
+  void shouldReturnListValueWithMultipleDonorsIdsIfMarcFieldMappingSpecified() throws IOException {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
       .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
@@ -2046,11 +2041,12 @@ public class MarcRecordReaderUnitTest {
     ListValue actualValue = (ListValue) value;
     assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
     assertEquals(2, actualValue.getValue().size());
-    assertThat(actualValue.getValue(), contains(expectedId1, expectedId2));
+    assertEquals(expectedId1, actualValue.getValue().get(0));
+    assertEquals(expectedId2, actualValue.getValue().get(1));
   }
 
   @Test
-  public void shouldReturnEmptyRepeatableFieldValueIfMappingValueDoesNotMatchAcceptedValues() throws IOException {
+  void shouldReturnEmptyRepeatableFieldValueIfMappingValueDoesNotMatchAcceptedValues() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
@@ -2083,7 +2079,7 @@ public class MarcRecordReaderUnitTest {
   }
 
   @Test
-  public void shouldNotReturnEmptyDonorOrganizationIdIfAcceptedValueIsEmpty() throws IOException {
+  void shouldNotReturnEmptyDonorOrganizationIdIfAcceptedValueIsEmpty() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()

@@ -1,10 +1,11 @@
 package org.folio.processing.mapping;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,17 +43,13 @@ import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcStreamReader;
 import org.marc4j.marc.Record;
 
-@RunWith(JUnit4.class)
-public class InstanceMappingTest {
+class InstanceMappingTest {
 
   private final RecordMapper<Instance> mapper = RecordMapperBuilder.buildMapper("MARC_BIB");
 
@@ -77,7 +74,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_720_FIELDS = "src/test/resources/org/folio/processing/mapping/instance/720_fields_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS = "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations.mrc";
-  public static final String BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/subject_source_codes_in_2_subfield.mrc";
+  static final String BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD = "src/test/resources/org/folio/processing/mapping/instance/subject_source_codes_in_2_subfield.mrc";
   private static final String CLASSIFICATIONS_TEST = "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
   private static final String INSTANCES_CLASSIFICATIONS_PATH = "src/test/resources/org/folio/processing/mapping/instance/classificationsTestInstance.json";
   private static final String DEFAULT_MAPPING_RULES_PATH = "src/test/resources/org/folio/processing/mapping/instance/rules.json";
@@ -99,7 +96,7 @@ public class InstanceMappingTest {
   private static final String BIB_WITH_MISSING_001 = "src/test/resources/org/folio/processing/mapping/instance/recordWithout001Field.mrc";
 
   @Test
-  public void testMarcToInstance() throws IOException {
+  void testMarcToInstance() throws IOException {
     var reader = new MarcStreamReader(
       new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_PATH).getBytes(StandardCharsets.UTF_8)));
     var expected = new JsonArray(TestUtil.readFileFromPath(INSTANCES_PATH));
@@ -125,7 +122,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceClassifications() throws IOException {
+  void testMarcToInstanceClassifications() throws IOException {
     var reader = new MarcStreamReader(
       new ByteArrayInputStream(TestUtil.readFileFromPath(CLASSIFICATIONS_TEST).getBytes(StandardCharsets.UTF_8)));
     var expected = new JsonArray(TestUtil.readFileFromPath(INSTANCES_CLASSIFICATIONS_PATH));
@@ -151,7 +148,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithWrongRecords() throws IOException {
+  void testMarcToInstanceWithWrongRecords() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIBS_ERRORS_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     int i = 0;
@@ -175,7 +172,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceIgnoreSubsequentSubfieldsForInstanceTypeId() throws IOException {
+  void testMarcToInstanceIgnoreSubsequentSubfieldsForInstanceTypeId() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_REPEATED_SUBFIELDS_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -197,7 +194,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceLeaderToModeIssuance() throws IOException {
+  void testMarcToInstanceLeaderToModeIssuance() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_001).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     IssuanceMode issuanceMode = new IssuanceMode().withId(UUID.randomUUID().toString())
@@ -221,7 +218,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstance880FieldToContributorMeetingName() throws IOException {
+  void testMarcToInstance880FieldToContributorMeetingName() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_WITH_111_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -246,7 +243,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstance880FieldToAlternativeTitleName() throws IOException {
+  void testMarcToInstance880FieldToAlternativeTitleName() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_2_WITH_245_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -270,7 +267,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstance880FieldToSeriesStatement() throws IOException {
+  void testMarcToInstance880FieldToSeriesStatement() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_880_3_WITH_830_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -296,7 +293,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceNoteStaffOnlyViaIndicator() throws IOException {
+  void testMarcToInstanceNoteStaffOnlyViaIndicator() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_5xx_STAFF_ONLY_INDICATORS).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -331,7 +328,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceRemoveElectronicAccessEntriesWithNoUri() throws IOException {
+  void testMarcToInstanceRemoveElectronicAccessEntriesWithNoUri() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_URI).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -353,7 +350,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstance100requiredSubfield() throws IOException {
+  void testMarcToInstance100requiredSubfield() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_MISSING_SUBFIELD_A).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -366,7 +363,7 @@ public class InstanceMappingTest {
       JsonObject marc = new JsonObject(os.toString());
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       instance.getContributors()
-        .forEach(Assert::assertNull);
+        .forEach(Assertions::assertNull);
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
@@ -374,7 +371,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstancePrecedingTitles() throws IOException {
+  void testMarcToInstancePrecedingTitles() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(PRECEDING_FILE_PATH).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -415,7 +412,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceNotMappedSubFields() throws IOException {
+  void testMarcToInstanceNotMappedSubFields() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_NOT_MAPPED_590_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -439,7 +436,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceResourceTypeIdMapping() throws IOException {
+  void testMarcToInstanceResourceTypeIdMapping() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_RESOURCE_TYPE_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
@@ -468,7 +465,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceFormatIdMapping() throws IOException {
+  void testMarcToInstanceFormatIdMapping() throws IOException {
     MarcReader reader = new MarcStreamReader(
       new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FORMAT_SUBFIELD_VALUE).getBytes(StandardCharsets.UTF_8))
     );
@@ -510,7 +507,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithRepeatableISBN() throws IOException {
+  void testMarcToInstanceWithRepeatableISBN() throws IOException {
     final String ISBN_IDENTIFIER_ID = "8261054f-be78-422d-bd51-4ed9f33c3422";
     final String INVALID_ISBN_IDENTIFIER_ID = "fcca2643-406a-482a-b760-7a7f8aec640e";
     final List<Map.Entry<String, String>> expectedResults = List.of(
@@ -553,7 +550,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithRepeatableSubjects() throws IOException {
+  void testMarcToInstanceWithRepeatableSubjects() throws IOException {
     final String FIRST_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
     final String SECOND_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
     final String THIRD_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
@@ -639,7 +636,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWith008Date() throws IOException {
+  void testMarcToInstanceWith008Date() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_008_DATE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
@@ -672,7 +669,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithDeletedLeader() throws IOException {
+  void testMarcToInstanceWithDeletedLeader() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_DELETED_LEADER).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
@@ -705,7 +702,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithEmpty008Date() throws IOException {
+  void testMarcToInstanceWithEmpty008Date() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITHOUT_008_DATE).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceDateTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_DATE_TYPES_PATH);
@@ -738,7 +735,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithEmpty008Field() throws IOException {
+  void testMarcToInstanceWithEmpty008Field() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(
       BIB_WITH_INVALID_008_FIELD).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -770,7 +767,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceWithRepeatableSubjectsMappedWithTypeButWithoutIndicators() throws IOException {
+  void testMarcToInstanceWithRepeatableSubjectsMappedWithTypeButWithoutIndicators() throws IOException {
     final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
     final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
     final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
@@ -831,7 +828,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToSubjectSourceIdMappingByCodeFrom2Subfield() throws IOException {
+  void testMarcToSubjectSourceIdMappingByCodeFrom2Subfield() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
       TestUtil.readFileFromPath(BIB_WITH_SUBJECT_SOURCES_CODE_IN_2_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
 
@@ -874,7 +871,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarc720ToInstanceContributors() throws IOException {
+  void testMarc720ToInstanceContributors() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_720_FIELDS)
       .getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -939,7 +936,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcAlternativeMappingForInstanceContributors() throws IOException {
+  void testMarcAlternativeMappingForInstanceContributors() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING)
       .getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -1062,7 +1059,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcAlternativeMappingForInstanceContributorsWithPunctuations() throws IOException {
+  void testMarcAlternativeMappingForInstanceContributorsWithPunctuations() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS)
       .getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -1163,7 +1160,7 @@ public class InstanceMappingTest {
   }
 
   @Test
-  public void testMarcToInstanceForInstanceTypeIds() throws IOException {
+  void testMarcToInstanceForInstanceTypeIds() throws IOException {
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(TestUtil.readFileFromPath(BIB_WITH_010Z_SUBFIELD).getBytes(StandardCharsets.UTF_8)));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
     String rawInstanceTypes = TestUtil.readFileFromPath(DEFAULT_INSTANCE_TYPES_PATH);
@@ -1188,7 +1185,7 @@ public class InstanceMappingTest {
       assertFalse(mappedInstances.isEmpty());
       assertEquals(1, mappedInstances.size());
       assertEquals(expectedSizeOfIdentifiers, mappedInstances.getFirst().getIdentifiers().size());
-      mappedInstances.getFirst().getIdentifiers().forEach(Assert::assertNotNull);
+      mappedInstances.getFirst().getIdentifiers().forEach(Assertions::assertNotNull);
 
       var identifiers = mappedInstances.getFirst().getIdentifiers();
       assertTrue(identifiers.stream().map(Identifier::getValue).anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));

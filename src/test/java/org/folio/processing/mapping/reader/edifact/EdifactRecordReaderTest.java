@@ -18,8 +18,8 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
 import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
 
-public class EdifactRecordReaderTest {
+class EdifactRecordReaderTest {
 
   private static final String EDIFACT_PARSED_CONTENT = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACADEMY OF MANAGEMENT ANNALS -   ON\"}, {\"data\": \"LINE FOR INSTITUTIONS\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006288237\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-737X\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-737X(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-737X(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI MATERIALS JOURNAL - ONLINE   -\"}, {\"data\": \"MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283902\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498295\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"3\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006289532\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-7361\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-7361(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-7361(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"GRADUATE PROGRAMS IN PHYSICS, ASTRO\"}, {\"data\": \"NOMY AND \"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"RELATED FIELDS.\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283901\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498296\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
   private static final String INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162-1\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACADEMY OF MANAGEMENT ANNALS -   ON\"}, {\"data\": \"LINE FOR INSTITUTIONS\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006288237\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-737X\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-737X(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-737X(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI MATERIALS JOURNAL - ONLINE   -\"}, {\"data\": \"MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283902\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498295\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"3\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006289532\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-7361\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-7361(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-7361(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI STRUCTURAL JOURNAL -   ON\"}, {\"data\": \"LINE - MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283901\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498296\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
@@ -44,28 +44,30 @@ public class EdifactRecordReaderTest {
   private final ReaderFactory readerFactory = new EdifactReaderFactory();
   private final MappingContext mappingContext = new MappingContext();
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenPayloadHasNoRecord() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenPayloadHasNoRecord() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(new HashMap<>());
 
     Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload, mappingContext);
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.initialize(dataImportEventPayload, mappingContext));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord())));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload, mappingContext);
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.initialize(dataImportEventPayload, mappingContext));
   }
 
   @Test
-  public void shouldReadStringConstantFromMappingRule() throws IOException {
+  void shouldReadStringConstantFromMappingRule() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -76,12 +78,12 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.status").withValue("\"Open\""));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("Open", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("Open", value.getValue());
   }
 
   @Test
-  public void shouldReturnStringValue() throws IOException {
+  void shouldReturnStringValue() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -92,12 +94,12 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.lockTotal").withValue("MOA+9[2]"));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("18929.07", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("18929.07", value.getValue());
   }
 
   @Test
-  public void shouldReadMappingRuleWithDataPositionsRange() throws IOException {
+  void shouldReadMappingRuleWithDataPositionsRange() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -108,12 +110,12 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[1-3]"));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("INVOICD96A", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("INVOICD96A", value.getValue());
   }
 
   @Test
-  public void shouldReturnMissingValueWhenMappingRuleHasNoMappingExpression() throws IOException {
+  void shouldReturnMissingValueWhenMappingRuleHasNoMappingExpression() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -124,11 +126,11 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.note").withValue(""));
 
-    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+    Assertions.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenMappingRuleHasInvalidPositionsRange() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenMappingRuleHasInvalidPositionsRange() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -137,11 +139,12 @@ public class EdifactRecordReaderTest {
     Reader reader = readerFactory.createReader();
     reader.initialize(dataImportEventPayload, mappingContext);
 
-    reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[2-1]"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[2-1]")));
   }
 
   @Test
-  public void shouldFormatDateToIsoFormatWhenDateTimeSegmentIsSpecifiedInMappingRule() throws IOException {
+  void shouldFormatDateToIsoFormatWhenDateTimeSegmentIsSpecifiedInMappingRule() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -152,12 +155,12 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.invoiceDate").withValue("DTM+137[2]"));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("2019-10-02T00:00:00.000+0000", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("2019-10-02T00:00:00.000+0000", value.getValue());
   }
 
   @Test
-  public void shouldReturnStringValueWhenMappingExpressionHasQualifier() throws IOException {
+  void shouldReturnStringValueWhenMappingExpressionHasQualifier() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -170,12 +173,12 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(new MappingRule().withPath("invoice.lockTotal").withValue("CUX+2?4[2]"));
 
     // then
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("USD", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("USD", value.getValue());
   }
 
   @Test
-  public void shouldReadBooleanValueWhenMappingRuleHasBooleanFieldAction() throws IOException {
+  void shouldReadBooleanValueWhenMappingRuleHasBooleanFieldAction() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -188,12 +191,12 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap").withBooleanFieldAction(ALL_TRUE));
 
     // then
-    Assert.assertEquals(Value.ValueType.BOOLEAN, value.getType());
-    Assert.assertEquals(ALL_TRUE, value.getValue());
+    Assertions.assertEquals(Value.ValueType.BOOLEAN, value.getType());
+    Assertions.assertEquals(ALL_TRUE, value.getValue());
   }
 
   @Test
-  public void shouldReadAndReturnMissingValueIfMappingExpressionIsEmpty() throws IOException {
+  void shouldReadAndReturnMissingValueIfMappingExpressionIsEmpty() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -206,11 +209,11 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap"));
 
     // then
-    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+    Assertions.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
   @Test
-  public void shouldReturnListValueWhenMappingRuleHasArrayFieldPath() throws IOException {
+  void shouldReturnListValueWhenMappingRuleHasArrayFieldPath() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -249,12 +252,12 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.LIST, value.getType());
-    Assert.assertEquals(Arrays.asList("b2c0e100-0485-43f2-b161-3c60aac9f68a", "b2c0e100-0485-43f2-b161-3c60aac9f128"), value.getValue());
+    Assertions.assertEquals(Value.ValueType.LIST, value.getType());
+    Assertions.assertEquals(Arrays.asList("b2c0e100-0485-43f2-b161-3c60aac9f68a", "b2c0e100-0485-43f2-b161-3c60aac9f128"), value.getValue());
   }
 
   @Test
-  public void shouldReturnMissingValueWhenMappingRuleHasArrayFieldPathAndSubfieldRulesHaveNoValue() throws IOException {
+  void shouldReturnMissingValueWhenMappingRuleHasArrayFieldPathAndSubfieldRulesHaveNoValue() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -286,11 +289,11 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+    Assertions.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
   @Test
-  public void shouldReturnRepeatableFieldValue() throws IOException {
+  void shouldReturnRepeatableFieldValue() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -340,10 +343,10 @@ public class EdifactRecordReaderTest {
     Value actualValue = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
     RepeatableFieldValue repeatableFieldValue = (RepeatableFieldValue) actualValue;
-    Assert.assertEquals(rootPath, repeatableFieldValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, repeatableFieldValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedFundDistributionElement = Map.of(
       "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f777"),
@@ -355,11 +358,11 @@ public class EdifactRecordReaderTest {
       "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadMappingRuleWithElseClause() throws IOException {
+  void shouldReadMappingRuleWithElseClause() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -401,10 +404,10 @@ public class EdifactRecordReaderTest {
     Value actualValue = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
     RepeatableFieldValue repeatableFieldValue = (RepeatableFieldValue) actualValue;
-    Assert.assertEquals(rootPath, repeatableFieldValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, repeatableFieldValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedFundDistributionElement = Map.of(
       "invoice.adjustments[].fundDistributions[].value", StringValue.of("18929.07"),
@@ -415,11 +418,11 @@ public class EdifactRecordReaderTest {
       "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenMappingRuleHasInvalidMappingSyntax() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenMappingRuleHasInvalidMappingSyntax() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -427,11 +430,12 @@ public class EdifactRecordReaderTest {
 
     Reader reader = readerFactory.createReader();
     reader.initialize(dataImportEventPayload, mappingContext);
-    reader.read(new MappingRule().withPath("invoice.status").withValue("bla expression"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.read(new MappingRule().withPath("invoice.status").withValue("bla expression")));
   }
 
   @Test
-  public void shouldReturnRepeatableFieldValueForInvoiceLineMappingRule() throws IOException {
+  void shouldReturnRepeatableFieldValueForInvoiceLineMappingRule() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -505,10 +509,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedAdjustment1 = Map.of(
       "invoice.invoiceLines[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
@@ -555,11 +559,11 @@ public class EdifactRecordReaderTest {
         referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber3), EXTEND_EXISTING, referenceNumbersPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldSetMissingValueToInvoiceLineAdjustmentsWhenRecordHasNoAdjustmentsData() throws IOException {
+  void shouldSetMissingValueToInvoiceLineAdjustmentsWhenRecordHasNoAdjustmentsData() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -596,10 +600,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedAdjustment1 = Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"));
     Map<String, Value> expectedAdjustment3 = Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("12.5"));
@@ -613,11 +617,11 @@ public class EdifactRecordReaderTest {
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadInvoiceLineDescriptionFromPOLineExternalData() throws IOException {
+  void shouldReadInvoiceLineDescriptionFromPOLineExternalData() throws IOException {
     // given
     String expectedPOLineTitle1 = "POLineTitle-1";
     String expectedPOLineTitle3 = "POLineTitle-3";
@@ -650,10 +654,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle1),
@@ -664,11 +668,11 @@ public class EdifactRecordReaderTest {
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadInvoiceLineDescriptionWhenFieldWithoutSeparatorSymbol() throws IOException {
+  void shouldReadInvoiceLineDescriptionWhenFieldWithoutSeparatorSymbol() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -694,10 +698,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].description", StringValue.of("Die Angst vor der Penetranz des Wiklichen")),
@@ -705,11 +709,11 @@ public class EdifactRecordReaderTest {
       Map.of("invoice.invoiceLines[].description", StringValue.of("Das Zeitalter der Ambiguitaet")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadInvoiceLineFundDistributionFromPOLineExternalData() throws IOException {
+  void shouldReadInvoiceLineFundDistributionFromPOLineExternalData() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -749,10 +753,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedFundDistributions1 = Map.of(
       "invoice.invoiceLines[].fundDistributions[].fundId", StringValue.of("1d1574f1-9196-4a57-8d1f-3b2e4309eb81"),
@@ -770,11 +774,11 @@ public class EdifactRecordReaderTest {
         fundDistributionsPath, RepeatableFieldValue.of(List.of(expectedFundDistributions3), EXTEND_EXISTING, fundDistributionsPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReturnValueWhenTargetSegmentDataElementDoesNotExist() throws IOException {
+  void shouldReturnValueWhenTargetSegmentDataElementDoesNotExist() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -799,18 +803,18 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].description", StringValue.of("LAW IN CONTEXT SERIES")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadMappingRuleWhenMultipleSegmentsAreSpecified() throws IOException {
+  void shouldReadMappingRuleWhenMultipleSegmentsAreSpecified() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -835,18 +839,18 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].comment", StringValue.of("01.Jan.2021 iss.1--31.Dec.2021 iss.24")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadMappingRuleWhenMultipleSegmentsAreSpecifiedWithSpaceAsSeparator() throws IOException {
+  void shouldReadMappingRuleWhenMultipleSegmentsAreSpecifiedWithSpaceAsSeparator() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -871,88 +875,91 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].comment", StringValue.of("01.Jan.2021 iss.1 31.Dec.2021 iss.24")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReturnCorrespondingValueForAllInvoiceLines() {
+  void shouldReturnCorrespondingValueForAllInvoiceLines() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
     Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+LI[2]");
 
-    Assert.assertEquals(3, actualSegmentsValues.size());
-    Assert.assertEquals("S255699", actualSegmentsValues.get(1));
-    Assert.assertEquals("S283902", actualSegmentsValues.get(2));
-    Assert.assertEquals("S283901", actualSegmentsValues.get(3));
+    Assertions.assertEquals(3, actualSegmentsValues.size());
+    Assertions.assertEquals("S255699", actualSegmentsValues.get(1));
+    Assertions.assertEquals("S283902", actualSegmentsValues.get(2));
+    Assertions.assertEquals("S283901", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnValuesForExistingInvoiceLinesSegments() {
+  void shouldReturnValuesForExistingInvoiceLinesSegments() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT);
 
     Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "MOA+8[2]");
 
-    Assert.assertEquals(2, actualSegmentsValues.size());
-    Assert.assertEquals("3.59", actualSegmentsValues.get(1));
-    Assert.assertEquals("12.5", actualSegmentsValues.get(3));
+    Assertions.assertEquals(2, actualSegmentsValues.size());
+    Assertions.assertEquals("3.59", actualSegmentsValues.get(1));
+    Assertions.assertEquals("12.5", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnValuesWhenMappingExpressionHasQualifier() {
+  void shouldReturnValuesWhenMappingExpressionHasQualifier() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
     Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "MOA+203?4[2]");
 
-    Assert.assertEquals(3, actualSegmentsValues.size());
-    Assert.assertEquals("208.59", actualSegmentsValues.get(1));
-    Assert.assertEquals("726.5", actualSegmentsValues.get(2));
-    Assert.assertEquals("726.5", actualSegmentsValues.get(3));
+    Assertions.assertEquals(3, actualSegmentsValues.size());
+    Assertions.assertEquals("208.59", actualSegmentsValues.get(1));
+    Assertions.assertEquals("726.5", actualSegmentsValues.get(2));
+    Assertions.assertEquals("726.5", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnValuesByDataPositionsRange() {
+  void shouldReturnValuesByDataPositionsRange() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
     Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[4-5]");
 
-    Assert.assertEquals(3, actualSegmentsValues.size());
-    Assert.assertEquals("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS", actualSegmentsValues.get(1));
-    Assert.assertEquals("ACI MATERIALS JOURNAL - ONLINE   -MULTI USER", actualSegmentsValues.get(2));
-    Assert.assertEquals("GRADUATE PROGRAMS IN PHYSICS, ASTRONOMY AND RELATED FIELDS.", actualSegmentsValues.get(3));
+    Assertions.assertEquals(3, actualSegmentsValues.size());
+    Assertions.assertEquals("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS", actualSegmentsValues.get(1));
+    Assertions.assertEquals("ACI MATERIALS JOURNAL - ONLINE   -MULTI USER", actualSegmentsValues.get(2));
+    Assertions.assertEquals("GRADUATE PROGRAMS IN PHYSICS, ASTRONOMY AND RELATED FIELDS.", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnEmptyMapWhenInvoiceLinesHaveNoSpecifiedSegment() {
+  void shouldReturnEmptyMapWhenInvoiceLinesHaveNoSpecifiedSegment() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
     Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+F+050+[4]");
 
-    Assert.assertTrue(actualSegmentsValues.isEmpty());
+    Assertions.assertTrue(actualSegmentsValues.isEmpty());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenParsedRecordHasNoParsedContent() {
+  @Test
+  void shouldThrowExceptionWhenParsedRecordHasNoParsedContent() {
     ParsedRecord parsedRecord = new ParsedRecord();
-    EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+SNA[2]");
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+SNA[2]"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenMappingExpressionHasInvalidPositionsRange() {
+  @Test
+  void shouldThrowExceptionWhenMappingExpressionHasInvalidPositionsRange() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
-    EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[5-4]");
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[5-4]"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenInvalidMappingExpressionIsSpecified() {
+  @Test
+  void shouldThrowExceptionWhenInvalidMappingExpressionIsSpecified() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
-    EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050");
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050"));
   }
 
 }

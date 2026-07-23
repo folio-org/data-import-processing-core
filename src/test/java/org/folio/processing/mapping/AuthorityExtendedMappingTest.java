@@ -11,16 +11,13 @@ import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.marc4j.MarcJsonReader;
 import org.marc4j.MarcJsonWriter;
 import org.marc4j.marc.Record;
 
-@RunWith(JUnit4.class)
-public class AuthorityExtendedMappingTest {
+class AuthorityExtendedMappingTest {
 
   private static final String MAPPED_AUTHORITY_RECORD_EXTENDED =
     "src/test/resources/org/folio/processing/mapping/authority/mappedRecordExtended.json";
@@ -32,13 +29,13 @@ public class AuthorityExtendedMappingTest {
   private final RecordMapper<Authority> mapper = RecordMapperBuilder.buildMapper("MARC_AUTHORITY_EXTENDED");
 
   @Test
-  public void testMarcToAuthorityExtendedMapping() throws IOException {
+  void testMarcToAuthorityExtendedMapping() throws IOException {
     JsonObject expectedMappedAuthority = new JsonObject(TestUtil.readFileFromPath(MAPPED_AUTHORITY_RECORD_EXTENDED));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
     Authority actualMappedAuthority = mapper
       .mapRecord(getJsonMarcRecord(), new MappingParameters(), mappingRules);
-    Assert.assertEquals(expectedMappedAuthority.encode(), JsonObject.mapFrom(actualMappedAuthority).encode());
+    Assertions.assertEquals(expectedMappedAuthority.encode(), JsonObject.mapFrom(actualMappedAuthority).encode());
   }
 
   private JsonObject getJsonMarcRecord() throws IOException {

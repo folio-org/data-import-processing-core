@@ -12,9 +12,7 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,15 +28,15 @@ import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELET
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.DELETE_INCOMING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXCHANGE_EXISTING;
 import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(JUnit4.class)
-public class JsonBasedWriterUnitTest {
+class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
   private static final JsonBasedWriter ORDER_WRITER = new JsonBasedWriter(EntityType.ORDER);
 
   @Test
-  public void shouldWrite_Values() throws IOException {
+  void shouldWrite_Values() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -67,7 +65,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_RepeatableDeleteValues() throws IOException {
+  void shouldWrite_RepeatableDeleteValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -99,7 +97,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_RepeatableDeleteIncomingValues() throws IOException {
+  void shouldWrite_RepeatableDeleteIncomingValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -131,7 +129,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_RepeatableDeleteIncomingValuesIfThereAreSomeAdditionalFieldsExistsInEntity() throws IOException {
+  void shouldWrite_RepeatableDeleteIncomingValuesIfThereAreSomeAdditionalFieldsExistsInEntity() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -161,7 +159,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_RepeatableExchangeValues() throws IOException {
+  void shouldWrite_RepeatableExchangeValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -194,7 +192,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_RepeatableExtendValues() throws IOException {
+  void shouldWrite_RepeatableExtendValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -227,7 +225,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_RepeatableDeleteValuesIfSubfieldsAreEmpty() throws IOException {
+  void shouldWrite_RepeatableDeleteValuesIfSubfieldsAreEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -246,7 +244,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableExtendValuesIfEntityIsEmpty() throws IOException {
+  void shouldNotChangeContext_RepeatableExtendValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -279,7 +277,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableDeleteIncomingValuesIfEntityIsEmpty() throws IOException {
+  void shouldNotChangeContext_RepeatableDeleteIncomingValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -311,7 +309,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableExchangeValuesIfEntityIsEmpty() throws IOException {
+  void shouldNotChangeContext_RepeatableExchangeValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -344,7 +342,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_RepeatableDeleteValuesIfEntityIsEmpty() throws IOException {
+  void shouldNotChangeContext_RepeatableDeleteValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -377,7 +375,7 @@ public class JsonBasedWriterUnitTest {
 
 
   @Test
-  public void shouldOverride_StringValue() throws IOException {
+  void shouldOverride_StringValue() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -395,7 +393,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldAddValues_OnArrayOverride() throws IOException {
+  void shouldAddValues_OnArrayOverride() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -412,8 +410,8 @@ public class JsonBasedWriterUnitTest {
     assertEquals(expectedInstance, resultInstance);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldFailOnEmptyFieldPath() throws IOException {
+  @Test
+  void shouldFailOnEmptyFieldPath() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -421,55 +419,63 @@ public class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    WRITER.write("", StringValue.of("The Journal of ecclesiastical history."));
-    WRITER.getResult(eventContext);
-    // then expect IllegalStateException
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void shouldFailIfArrayIsNotLast() throws IOException {
-    // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{}");
-    eventContext.setContext(context);
-    // when
-    WRITER.initialize(eventContext);
-    WRITER.write("contributors[].name", StringValue.of("Ernst"));
-    WRITER.getResult(eventContext);
-    // then expect IllegalStateException
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void shouldFailOnWrite_ListValue_To_ObjectField() throws IOException {
-    // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{}");
-    eventContext.setContext(context);
-    // when
-    WRITER.initialize(eventContext);
-    WRITER.write("indexTitle", ListValue.of(List.of("The Journal of ecclesiastical history.")));
-    WRITER.getResult(eventContext);
-    // then expect IllegalStateException
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void shouldFailOnWrite_StringValue_To_ArrayField() throws IOException {
-    // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{}");
-    eventContext.setContext(context);
-    // when
-    WRITER.initialize(eventContext);
-    WRITER.write("languages[]", StringValue.of("eng"));
-    WRITER.getResult(eventContext);
+    assertThrows(IllegalArgumentException.class, () -> {
+      WRITER.write("", StringValue.of("The Journal of ecclesiastical history."));
+      WRITER.getResult(eventContext);
+    });
     // then expect IllegalStateException
   }
 
   @Test
-  public void shouldWrite_ListExtendValues() throws IOException {
+  void shouldFailIfArrayIsNotLast() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    assertThrows(IllegalStateException.class, () -> {
+      WRITER.write("contributors[].name", StringValue.of("Ernst"));
+      WRITER.getResult(eventContext);
+    });
+    // then expect IllegalStateException
+  }
+
+  @Test
+  void shouldFailOnWrite_ListValue_To_ObjectField() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    assertThrows(IllegalStateException.class, () -> {
+      WRITER.write("indexTitle", ListValue.of(List.of("The Journal of ecclesiastical history.")));
+      WRITER.getResult(eventContext);
+    });
+    // then expect IllegalStateException
+  }
+
+  @Test
+  void shouldFailOnWrite_StringValue_To_ArrayField() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(), "{}");
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    assertThrows(IllegalStateException.class, () -> {
+      WRITER.write("languages[]", StringValue.of("eng"));
+      WRITER.getResult(eventContext);
+    });
+    // then expect IllegalStateException
+  }
+
+  @Test
+  void shouldWrite_ListExtendValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -486,7 +492,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListExchangeValues() throws IOException {
+  void shouldWrite_ListExchangeValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -503,7 +509,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListDeleteIncomingValues() throws IOException {
+  void shouldWrite_ListDeleteIncomingValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -520,7 +526,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListDeleteIncomingValuesIfNonMatch() throws IOException {
+  void shouldWrite_ListDeleteIncomingValuesIfNonMatch() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -537,7 +543,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListDeleteExistingValues() throws IOException {
+  void shouldWrite_ListDeleteExistingValues() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -553,7 +559,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListExtendValuesIfEntityIsEmpty() throws IOException {
+  void shouldWrite_ListExtendValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -570,7 +576,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListExtendValuesIfContextIsWithAnotherField() throws IOException {
+  void shouldWrite_ListExtendValuesIfContextIsWithAnotherField() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -587,7 +593,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ListExchangeValuesAsExtendIfEntityIsEmpty() throws IOException {
+  void shouldWrite_ListExchangeValuesAsExtendIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -604,7 +610,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_ListDeleteIncomingValuesIfEntityIsEmpty() throws IOException {
+  void shouldNotChangeContext_ListDeleteIncomingValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -621,7 +627,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldNotChangeContext_ListDeleteExistingValuesIfEntityIsEmpty() throws IOException {
+  void shouldNotChangeContext_ListDeleteExistingValuesIfEntityIsEmpty() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -638,7 +644,7 @@ public class JsonBasedWriterUnitTest {
 
 
   @Test
-  public void shouldDeleteOnWrite_StringValue() throws IOException {
+  void shouldDeleteOnWrite_StringValue() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -655,7 +661,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldDeleteOnWrite_WhenObjectNodePathIsSpecified() throws IOException {
+  void shouldDeleteOnWrite_WhenObjectNodePathIsSpecified() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -672,7 +678,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldProcessRemoveOnWriteOption_WhenHasNoSpecifiedField() throws IOException {
+  void shouldProcessRemoveOnWriteOption_WhenHasNoSpecifiedField() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -689,7 +695,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWriteNestedRepeatableFieldValue() throws IOException {
+  void shouldWriteNestedRepeatableFieldValue() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -735,7 +741,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldWrite_ValuesIntoOrderEntity() throws IOException {
+  void shouldWrite_ValuesIntoOrderEntity() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -761,7 +767,7 @@ public class JsonBasedWriterUnitTest {
   }
 
   @Test
-  public void shouldSkipEmptyRepeatableFieldValue() throws IOException {
+  void shouldSkipEmptyRepeatableFieldValue() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();

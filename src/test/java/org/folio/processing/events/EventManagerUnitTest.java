@@ -1,9 +1,8 @@
 package org.folio.processing.events;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.ActionProfile;
@@ -22,9 +21,9 @@ import org.folio.processing.events.services.handler.EventHandler;
 import org.folio.processing.events.services.publisher.EventPublisher;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
@@ -50,20 +49,22 @@ import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
 import static org.folio.rest.jaxrs.model.ReactToType.MATCH;
 import static org.folio.rest.jaxrs.model.ReactToType.NON_MATCH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(VertxUnitRunner.class)
-public class EventManagerUnitTest {
+@ExtendWith(VertxExtension.class)
+class EventManagerUnitTest {
   private static final Logger LOGGER = LogManager.getLogger(EventManagerUnitTest.class);
 
   private static final String TOKEN = "token";
   private static final String TENANT_ID = "diku";
   private static final String CONNECTION_URL = "http://localhost:9000";
 
-  @Before
-  public void beforeTest() {
+  @BeforeEach
+  void beforeTest() {
     EventManager.clearEventHandlers();
     var eventPublisher = mock(EventPublisher.class);
     EventManager.registerCustomKafkaEventPublisher(eventPublisher);
@@ -71,9 +72,8 @@ public class EventManagerUnitTest {
   }
 
   @Test
-  public void shouldHandleEvent(TestContext testContext) {
+  void shouldHandleEvent(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleEvent");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
@@ -111,22 +111,23 @@ public class EventManagerUnitTest {
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot)
       .whenComplete((nextEventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(1, nextEventContext.getEventsChain().size());
-      testContext.assertEquals(
+      assertNull(throwable);
+      assertEquals(1, nextEventContext.getEventsChain().size());
+      assertEquals(
         nextEventContext.getEventsChain(),
         Collections.singletonList("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       );
-      testContext.assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
-      async.complete();
+      assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleLastEvent(TestContext testContext) {
+  void shouldHandleLastEvent(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleLastEvent");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
@@ -151,22 +152,23 @@ public class EventManagerUnitTest {
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(2, nextEventContext.getEventsChain().size());
-      testContext.assertEquals(
+      assertNull(throwable);
+      assertEquals(2, nextEventContext.getEventsChain().size());
+      assertEquals(
         nextEventContext.getEventsChain(),
         Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
       );
-      testContext.assertEquals("DI_COMPLETED", nextEventContext.getEventType());
-      async.complete();
+      assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldIgnoreEventIfNoHandlersDefined(TestContext testContext) {
+  void shouldIgnoreEventIfNoHandlersDefined(VertxTestContext testContext) {
     LOGGER.info("test:: shouldIgnoreEventIfNoHandlersDefined");
-    Async async = testContext.async();
     // given
     ProfileSnapshotWrapper profileSnapshot = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -186,18 +188,19 @@ public class EventManagerUnitTest {
 
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot).whenComplete((nextEventContext, throwable) -> {
+      testContext.verify(() -> {
       // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(0, eventPayload.getEventsChain().size());
-      testContext.assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
-      async.complete();
+      assertNull(throwable);
+      assertEquals(0, eventPayload.getEventsChain().size());
+      assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAsErrorEventIfHandlerCompletedExceptionally(TestContext testContext) {
+  void shouldHandleAsErrorEventIfHandlerCompletedExceptionally(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAsErrorEventIfHandlerCompletedExceptionally");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new FailExceptionallyHandler());
 
@@ -218,18 +221,19 @@ public class EventManagerUnitTest {
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(1, eventPayload.getEventsChain().size());
-      testContext.assertEquals("DI_ERROR", eventPayload.getEventType());
-      async.complete();
+      assertNull(throwable);
+      assertEquals(1, eventPayload.getEventsChain().size());
+      assertEquals("DI_ERROR", eventPayload.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleFirstEventInJobProfile(TestContext testContext) {
+  void shouldHandleFirstEventInJobProfile(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleFirstEventInJobProfile");
-    Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
@@ -253,27 +257,28 @@ public class EventManagerUnitTest {
       .withContext(new HashMap<>());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((eventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(2, eventContext.getEventsChain().size());
-      testContext.assertEquals(2, eventContext.getCurrentNodePath().size());
-      testContext.assertEquals(
+      assertNull(throwable);
+      assertEquals(2, eventContext.getEventsChain().size());
+      assertEquals(2, eventContext.getCurrentNodePath().size());
+      assertEquals(
         eventContext.getCurrentNodePath(),
         Arrays.asList(jobProfileId, actionProfileId)
       );
-      testContext.assertEquals(
+      assertEquals(
         eventContext.getEventsChain(),
         Arrays.asList("DI_INCOMING_MARC_BIB_RECORD_PARSED", "DI_INVENTORY_INSTANCE_CREATED")
       );
-      testContext.assertEquals("DI_COMPLETED", eventContext.getEventType());
-      async.complete();
+      assertEquals("DI_COMPLETED", eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAndSetToCurrentNodeAction2Wrapper(TestContext testContext) {
+  void shouldHandleAndSetToCurrentNodeAction2Wrapper(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction2Wrapper");
-    Async async = testContext.async();
     // given
     CreateInstanceEventHandler createInstanceHandler = Mockito.spy(new CreateInstanceEventHandler());
     Mockito.doAnswer(invocationOnMock -> {
@@ -333,23 +338,24 @@ public class EventManagerUnitTest {
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(action2Wrapper.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(1, eventContext.getEventsChain().size());
-      testContext.assertEquals(
+      assertNull(throwable);
+      assertEquals(action2Wrapper.getId(), eventContext.getCurrentNode().getId());
+      assertEquals(1, eventContext.getEventsChain().size());
+      assertEquals(
         Collections.singletonList(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()),
         eventContext.getEventsChain()
       );
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_CREATED.value(), eventContext.getEventType());
-      async.complete();
+      assertEquals(DI_INVENTORY_INSTANCE_CREATED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAndSetToCurrentNodeAction1Wrapper(TestContext testContext) {
+  void shouldHandleAndSetToCurrentNodeAction1Wrapper(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction1Wrapper");
-    Async async = testContext.async();
     // given
     EventHandler matchInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
@@ -396,18 +402,19 @@ public class EventManagerUnitTest {
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
-      async.complete();
+      assertNull(throwable);
+      assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
+      assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleEventInCascadingProfilesAndSwitchNode(TestContext testContext) {
+  void shouldHandleEventInCascadingProfilesAndSwitchNode(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleEventInCascadingProfilesAndSwitchNode");
-    Async async = testContext.async();
     // given
     EventHandler updateInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
@@ -538,18 +545,19 @@ public class EventManagerUnitTest {
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
+      testContext.verify(() -> {
       // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
-      async.complete();
+      assertNull(throwable);
+      assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
+      assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAndSetToCurrentNodeMatchWrapper2(TestContext testContext) {
+  void shouldHandleAndSetToCurrentNodeMatchWrapper2(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeMatchWrapper2");
-    Async async = testContext.async();
     // given
     EventHandler updateInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
@@ -604,18 +612,19 @@ public class EventManagerUnitTest {
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
-      async.complete();
+      assertNull(throwable);
+      assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
+      assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleEventAndPreparePayloadForPostProcessing(TestContext testContext) {
+  void shouldHandleEventAndPreparePayloadForPostProcessing(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleEventAndPreparePayloadForPostProcessing");
-    Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
@@ -639,24 +648,25 @@ public class EventManagerUnitTest {
       .withContext(new HashMap<>());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((payload, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
+      assertNull(throwable);
       HashMap<String, String> context = payload.getContext();
-      testContext.assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
-      testContext.assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT, context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+      assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
+      assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT, context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
 
-      testContext.assertEquals(1, payload.getEventsChain().size());
-      testContext.assertEquals(1, payload.getCurrentNodePath().size());
-      testContext.assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
-      testContext.assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
-      async.complete();
+      assertEquals(1, payload.getEventsChain().size());
+      assertEquals(1, payload.getCurrentNodePath().size());
+      assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
+      assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing(TestContext testContext) {
+  void shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing(VertxTestContext testContext) {
     LOGGER.info("test:: shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing");
-    Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
@@ -684,25 +694,26 @@ public class EventManagerUnitTest {
       .withContext(payloadContext);
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((payload, throwable) -> {
+      testContext.verify(() -> {
     // then
-      testContext.assertNull(throwable);
+      assertNull(throwable);
       HashMap<String, String> context = payload.getContext();
-      testContext.assertEquals(DI_COMPLETED.value(), payload.getEventType());
-      testContext.assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+      assertEquals(DI_COMPLETED.value(), payload.getEventType());
+      assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
 
-      testContext.assertEquals(2, payload.getEventsChain().size());
-      testContext.assertEquals(2, payload.getCurrentNodePath().size());
-      testContext.assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
-      testContext.assertEquals(payload.getEventsChain(),
+      assertEquals(2, payload.getEventsChain().size());
+      assertEquals(2, payload.getCurrentNodePath().size());
+      assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
+      assertEquals(payload.getEventsChain(),
         Arrays.asList(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT));
-      async.complete();
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldClearExtraOLKeyFromPayload(TestContext testContext) {
+  void shouldClearExtraOLKeyFromPayload(VertxTestContext testContext) {
     LOGGER.info("test:: shouldClearExtraOLKeyFromPayload");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
@@ -729,16 +740,18 @@ public class EventManagerUnitTest {
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
+      testContext.verify(() -> {
       // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(2, nextEventContext.getEventsChain().size());
-      testContext.assertEquals(
+      assertNull(throwable);
+      assertEquals(2, nextEventContext.getEventsChain().size());
+      assertEquals(
         nextEventContext.getEventsChain(),
         Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
       );
-      testContext.assertEquals("DI_COMPLETED", nextEventContext.getEventType());
-      testContext.assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
-      async.complete();
+      assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+      assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
+      });
+      testContext.completeNow();
     });
   }
 }

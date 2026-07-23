@@ -1,6 +1,6 @@
 package org.folio.processing.matching.reader.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.jaxrs.model.Qualifier;
 
 import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.ALPHANUMERICS_ONLY;

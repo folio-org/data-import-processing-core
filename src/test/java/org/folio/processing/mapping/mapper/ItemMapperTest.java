@@ -15,9 +15,7 @@ import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
 import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,16 +25,15 @@ import java.util.UUID;
 import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
 import static org.folio.rest.jaxrs.model.EntityType.ITEM;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(JUnit4.class)
-public class ItemMapperTest {
+class ItemMapperTest {
   private final String PARSED_CONTENT_WITH_MULTIPLE_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"}, {\"b\":\"123\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"}, {\"b\":\"1234\"}, {\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
   @Test
-  public void shouldCreateOneItem() throws IOException {
+  void shouldCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
@@ -78,7 +75,7 @@ public class ItemMapperTest {
   }
 
   @Test
-  public void shouldMapExistingItemFromContext() throws IOException {
+  void shouldMapExistingItemFromContext() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
@@ -129,7 +126,7 @@ public class ItemMapperTest {
   }
 
   @Test
-  public void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
+  void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
@@ -206,7 +203,7 @@ public class ItemMapperTest {
   }
 
   @Test
-  public void shouldNotCreateOneItem() throws IOException {
+  void shouldNotCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
       .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));

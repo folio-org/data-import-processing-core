@@ -18,9 +18,7 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,14 +27,13 @@ import java.util.UUID;
 
 import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(JUnit4.class)
-public class HoldingsMapperTest {
+class HoldingsMapperTest {
   @Test
-  public void shouldCreateOneHoldingIfOnlySingleMARCfieldContainsLocation() throws IOException {
+  void shouldCreateOneHoldingIfOnlySingleMARCfieldContainsLocation() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -104,7 +101,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateOneHoldingIfPermanentLocationIsStringValue() throws IOException {
+  void shouldCreateOneHoldingIfPermanentLocationIsStringValue() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -166,7 +163,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldMapMultipleHoldingInExistingHoldings() throws IOException {
+  void shouldMapMultipleHoldingInExistingHoldings() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -237,7 +234,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldMapOneHoldingInExistingHoldingIfPermanentLocationIsStringValue() throws IOException {
+  void shouldMapOneHoldingInExistingHoldingIfPermanentLocationIsStringValue() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -305,7 +302,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateMultipleHoldingsButWithoutDuplicatedLocations() throws IOException {
+  void shouldCreateMultipleHoldingsButWithoutDuplicatedLocations() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -408,7 +405,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateMultipleHoldingsButIfLocationMappingRuleContainsElseStatement() throws IOException {
+  void shouldCreateMultipleHoldingsButIfLocationMappingRuleContainsElseStatement() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -513,7 +510,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateMultipleHoldingsUsingMappingRuleWithElseStatement() throws IOException {
+  void shouldCreateMultipleHoldingsUsingMappingRuleWithElseStatement() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -617,7 +614,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateOneHoldingIfNoLocationMarcField() throws IOException {
+  void shouldCreateOneHoldingIfNoLocationMarcField() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -704,7 +701,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldCreateSingleHoldingIfLocationsAreTheSame() throws IOException {
+  void shouldCreateSingleHoldingIfLocationsAreTheSame() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"AM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"asdf\"},{\"h\":\"fcd64ce1-6995-48f0-840e-89ffa2288371\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -768,7 +765,7 @@ public class HoldingsMapperTest {
   }
 
   @Test
-  public void shouldNotCreateOneHoldingsIfProfileIsInvalid() throws IOException {
+  void shouldNotCreateOneHoldingsIfProfileIsInvalid() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"OM\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()
@@ -819,7 +816,7 @@ public class HoldingsMapperTest {
 
 
   @Test
-  public void shouldUpdateSingleHoldingsButWithoutDuplicatedLocations() throws IOException {
+  void shouldUpdateSingleHoldingsButWithoutDuplicatedLocations() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Record record = new Record().withParsedRecord(new ParsedRecord()

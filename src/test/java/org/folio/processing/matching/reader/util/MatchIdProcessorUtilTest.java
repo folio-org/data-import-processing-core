@@ -8,14 +8,12 @@ import java.util.HashMap;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@RunWith(JUnit4.class)
-public class MatchIdProcessorUtilTest extends TestCase {
+class MatchIdProcessorUtilTest {
 
   private static final String MAPPING_PARAMS = "MAPPING_PARAMS";
   private static final String RELATIONS = "MATCHING_PARAMETERS_RELATIONS";
@@ -25,7 +23,7 @@ public class MatchIdProcessorUtilTest extends TestCase {
   private static final String ITEM_NOTE_TYPES_PARAMS = "{\"initialized\":true,\"itemNoteTypes\":[{\"id\":\"87c450be-2033-41fb-80ba-dd2409883681\",\"name\":\"Binding\",\"source\":\"folio\",\"metadata\":{\"createdDate\":1592219267545,\"updatedDate\":1592219267545}},{\"id\":\"8d0a5eca-25de-4391-81a9-236eeefdd20b\",\"name\":\"Note\",\"source\":\"folio\",\"metadata\":{\"createdDate\":1592219267556,\"updatedDate\":1592219267556}}]}";
 
   @Test
-  public void shouldReadStringLocationValueAndReturnId() {
+  void shouldReadStringLocationValueAndReturnId() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
 
@@ -45,7 +43,7 @@ public class MatchIdProcessorUtilTest extends TestCase {
   }
 
   @Test
-  public void shouldReadStringLocationValueAndReturnMissingIfCantFindId() {
+  void shouldReadStringLocationValueAndReturnMissingIfCantFindId() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
 
@@ -63,7 +61,7 @@ public class MatchIdProcessorUtilTest extends TestCase {
   }
 
   @Test
-  public void shouldReadStringValueAndReturnId() {
+  void shouldReadStringValueAndReturnId() {
     // given
     String textValue = "Note";
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -82,7 +80,7 @@ public class MatchIdProcessorUtilTest extends TestCase {
   }
 
   @Test
-  public void shouldReadStringValueAndReturnMissingIfCantFindId() {
+  void shouldReadStringValueAndReturnMissingIfCantFindId() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
 
@@ -100,7 +98,7 @@ public class MatchIdProcessorUtilTest extends TestCase {
   }
 
   @Test
-  public void shouldReadStringSimpleValueAndReturnIt() {
+  void shouldReadStringSimpleValueAndReturnIt() {
     // given
     String textValue = "Some text value";
     DataImportEventPayload eventPayload = new DataImportEventPayload();

@@ -1,20 +1,17 @@
 package org.folio.processing.events;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.RunTestOnContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 import org.folio.DataImportEventPayload;
 import org.folio.kafka.KafkaConfig;
 import org.folio.processing.TestUtil;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.junit.Before;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.kafka.KafkaContainer;
 
 import java.util.Collections;
@@ -24,19 +21,19 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(VertxUnitRunner.class)
-public class EventManagerTest {
+@ExtendWith(VertxExtension.class)
+class EventManagerTest {
   private static final String KAFKA_ENV = "folio";
 
-  public static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
+  static KafkaContainer kafkaContainer = new KafkaContainer(TestUtil.KAFKA_CONTAINER_NAME);
   private static KafkaConfig kafkaConfig;
 
-  @Rule
-  public RunTestOnContext rule = new RunTestOnContext();
-
-  @BeforeClass
-  public static void setUpClass() {
+  @BeforeAll
+  static void setUpClass() {
     kafkaContainer.start();
     kafkaConfig = KafkaConfig.builder()
         .kafkaHost(kafkaContainer.getHost())
@@ -45,28 +42,26 @@ public class EventManagerTest {
         .build();
   }
 
-  @AfterClass
-  public static void tearDownClass() {
+  @AfterAll
+  static void tearDownClass() {
     kafkaContainer.stop();
   }
 
-  @Before
-  public void setUp() {
+  @BeforeEach
+  void setUp() {
     EventManager.clearEventHandlers();
   }
 
   @Test
-  public void registerKafkaEventPublisher(TestContext context) {
-    Vertx vertx = rule.vertx();
+  void registerKafkaEventPublisher(Vertx vertx) {
     EventManager.registerKafkaEventPublisher(kafkaConfig, vertx, 100);
-    context.assertEquals(1, EventManager.getEventPublishers().size());
+    assertEquals(1, EventManager.getEventPublishers().size());
     EventManager.registerKafkaEventPublisher(kafkaConfig, vertx, 100);
-    context.assertEquals(1, EventManager.getEventPublishers().size());
+    assertEquals(1, EventManager.getEventPublishers().size());
   }
 
   @Test
-  public void shouldCompleteSuccessfullyIfNoEventHandlersFound(TestContext context) {
-    Async async = context.async();
+  void shouldCompleteSuccessfullyIfNoEventHandlersFound(VertxTestContext testContext) {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_SRS_MARC_BIB_RECORD_CREATED")
@@ -92,9 +87,11 @@ public class EventManagerTest {
 
     // then
     future.whenComplete((payload, throwable) -> {
-      context.assertNull(throwable);
-      context.assertNotNull(payload);
-      async.complete();
+      testContext.verify(() -> {
+        assertNull(throwable);
+        assertNotNull(payload);
+      });
+      testContext.completeNow();
     });
   }
 }

@@ -1,11 +1,10 @@
 package org.folio.processing.events.utils;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.text.MatchesPattern.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,12 +24,12 @@ class PomReaderUtilTest {
 
   @Test
   void testGetModuleName() {
-    assertThat(PomReaderUtil.INSTANCE.getModuleName(), is("data_import_processing_core"));
+    assertEquals("data_import_processing_core", PomReaderUtil.INSTANCE.getModuleName());
   }
 
   @Test
   void testGetVersion() {
-    assertThat(PomReaderUtil.INSTANCE.getVersion(), matchesPattern("[0-9]+\\.[0-9]+\\..*"));
+    assertTrue(PomReaderUtil.INSTANCE.getVersion().matches("[0-9]+\\.[0-9]+\\..*"));
   }
 
   @Test
@@ -50,7 +49,7 @@ class PomReaderUtilTest {
 
     pom.readIt(null, "META-INF/maven/io.vertx");  // force reading from Jar
     // first dependency in main pom
-    assertThat(pom.getModuleName(), is("vertx_core_aggregator"));
+    assertEquals("vertx_core_aggregator", pom.getModuleName());
   }
 
   @Test
@@ -79,7 +78,7 @@ class PomReaderUtilTest {
     PomReaderUtil pom = PomReaderUtil.INSTANCE;
 
     pom.init("src/test/resources/org/folio/processing/pom/pom-sample.xml");
-    assertThat(PomReaderUtil.INSTANCE.getModuleName(), is("mod_inventory_storage"));
-    assertThat(PomReaderUtil.INSTANCE.getVersion(), is("19.4.0"));
+    assertEquals("mod_inventory_storage", PomReaderUtil.INSTANCE.getModuleName());
+    assertEquals("19.4.0", PomReaderUtil.INSTANCE.getVersion());
   }
 }
