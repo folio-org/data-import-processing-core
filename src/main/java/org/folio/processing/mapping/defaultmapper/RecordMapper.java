@@ -9,7 +9,7 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 public interface RecordMapper<T> {
 
   /**
-   * Maps Parsed Record to Instance Record
+   * Maps Parsed Record to Instance Record.
    *
    * @param parsedRecord      - JsonObject containing Parsed Record
    * @param mappingParameters - parameters needed for mapping functions
@@ -20,7 +20,7 @@ public interface RecordMapper<T> {
   T mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules);
 
   /**
-   * Provides access to the MapperFormat
+   * Provides access to the MapperFormat.
    *
    * @return - format which RecordMapper can map
    */

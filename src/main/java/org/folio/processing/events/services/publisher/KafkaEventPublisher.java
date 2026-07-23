@@ -34,7 +34,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
   public static final String REQUEST_ID_HEADER = "X-Okapi-Request-Id";
   public static final String PERMISSIONS_HEADER = "X-Okapi-Permissions";
   private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
-  private static final AtomicLong indexer = new AtomicLong();
+  private static final AtomicLong INDEXER = new AtomicLong();
 
   private final KafkaConfig kafkaConfig;
   private final Integer maxDistributionNum;
@@ -83,13 +83,15 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
         .<Void>mapEmpty()
         .onSuccess(ar -> {
           LOGGER.info(
-            "publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ",
+            "publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' "
+              + "with chunkId: '{}' was sent to the topic '{}' ",
             eventType, jobExecutionId, recordId, chunkId, topicName);
           future.complete(event);
         })
         .onFailure(error -> {
           LOGGER.warn(
-            "publish:: {} send error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' and with chunkId: '{}' ",
+            "publish:: {} send error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' "
+              + "and with chunkId: '{}' ",
             eventType + "_Producer", eventType, jobExecutionId, recordId, chunkId, error);
           future.completeExceptionally(error);
         });
@@ -107,7 +109,7 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
 
   private KafkaProducerRecord<String, String> buildRecord(DataImportEventPayload eventPayload, Event event,
                                                           String topicName) {
-    String key = String.valueOf(indexer.incrementAndGet() % maxDistributionNum);
+    String key = String.valueOf(INDEXER.incrementAndGet() % maxDistributionNum);
     return new KafkaProducerRecordBuilder<String, Object>(eventPayload.getTenant())
       .key(key)
       .value(event)

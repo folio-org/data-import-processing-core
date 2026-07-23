@@ -73,7 +73,7 @@ public final class MappingManager {
   }
 
   /**
-   * Registers reader factory
+   * Registers reader factory.
    *
    * @param factory reader factory
    * @return true if registry changed as a result of the call
@@ -83,7 +83,7 @@ public final class MappingManager {
   }
 
   /**
-   * Registers writer factory
+   * Registers writer factory.
    *
    * @param factory writer factory
    * @return true if registry changed as a result of the call
@@ -97,14 +97,14 @@ public final class MappingManager {
   }
 
   /**
-   * Clears the registry of reader factories
+   * Clears the registry of reader factories.
    */
   public static void clearReaderFactories() {
     FACTORY_REGISTRY.getReaderFactories().clear();
   }
 
   /**
-   * Clears the registry of writer factories
+   * Clears the registry of writer factories.
    */
   public static void clearWriterFactories() {
     FACTORY_REGISTRY.getWriterFactories().clear();

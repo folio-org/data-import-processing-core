@@ -5,7 +5,7 @@ import org.folio.DataImportEventPayload;
 import org.folio.rest.jaxrs.model.Event;
 
 /**
- * Event publisher
+ * Event publisher.
  */
 @FunctionalInterface
 public interface EventPublisher {

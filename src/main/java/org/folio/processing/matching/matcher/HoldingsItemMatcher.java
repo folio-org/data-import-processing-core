@@ -60,7 +60,9 @@ public class HoldingsItemMatcher extends AbstractMatcher {
           if (throwable != null) {
             errors.add(new PartialError(null, throwable.getMessage()));
           } else {
-            if (loadResult.getValue() != null) { matchedEntities.add(new JsonObject(loadResult.getValue())); }
+            if (loadResult.getValue() != null) {
+              matchedEntities.add(new JsonObject(loadResult.getValue()));
+            }
           }
           promise.complete();
         });

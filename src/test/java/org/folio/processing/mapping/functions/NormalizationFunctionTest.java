@@ -40,7 +40,7 @@ class NormalizationFunctionTest {
   private static final String STUB_FIELD_TYPE_ID = "fe19bae4-da28-472b-be90-d442e2428ead";
 
   @Test
-  void CHAR_SELECT_shouldReturnExpectedResult() {
+  void charSelectShouldReturnExpectedResult() {
     // given
     String givenSubField = "890411m19309999pau      l    001 0 eng  ";
     String expectedSubField = "eng";
@@ -55,25 +55,25 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void CHAR_SELECT_shouldReturnGivenSubFieldIfWrongParameterSpecified() {
+  void charSelectShouldReturnGivenSubFieldIfWrongParameterSpecified() {
     // given
     String givenSubField = "890411m19309999pau      l    001 0 eng  ";
-    String expectedSubField = givenSubField;
     RuleExecutionContext context = new RuleExecutionContext();
     context.setSubFieldValue(givenSubField);
     // when
     context.setRuleParameter(null);
-    String actualSubField_ifParameterNoParameterSpecified = runFunction("char_select", context);
+    String expectedSubField = givenSubField;
+    String actualSubFieldIfParameterNoParameterSpecified = runFunction("char_select", context);
 
     context.setRuleParameter(new JsonObject().put("from", -5).put("to", -1));
-    String actualSubField_ifNegativeArgumentsSpecified = runFunction("char_select", context);
+    String actualSubFieldIfNegativeArgumentsSpecified = runFunction("char_select", context);
     // then
-    assertEquals(expectedSubField, actualSubField_ifParameterNoParameterSpecified);
-    assertEquals(expectedSubField, actualSubField_ifNegativeArgumentsSpecified);
+    assertEquals(expectedSubField, actualSubFieldIfParameterNoParameterSpecified);
+    assertEquals(expectedSubField, actualSubFieldIfNegativeArgumentsSpecified);
   }
 
   @Test
-  void REMOVE_ENDING_PUNC_shouldReturnExpectedResult() {
+  void removeEndingPuncShouldReturnExpectedResult() {
     // given
     Map<String, String> givenFieldToExpectedFieldMap = new HashMap<>();
     givenFieldToExpectedFieldMap.put("Research Publications,", "Research Publications");
@@ -107,7 +107,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void TRIM_shouldReturnExpectedResult() {
+  void trimShouldReturnExpectedResult() {
     // given
     Map<String, String> givenFieldToExpectedFieldMap = new HashMap<>();
     givenFieldToExpectedFieldMap.put(" Dugmore, C. W. (Clifford William), ", "Dugmore, C. W. (Clifford William),");
@@ -129,7 +129,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void TRIM_PERIOD_shouldReturnExpectedResult() {
+  void trimPeriodShouldReturnExpectedResult() {
     // given
     String givenSubField = " . 99.082/x12/. .";
     String expectedSubField = " . 99.082/x12/. ";
@@ -142,7 +142,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void TRIM_PUNCTUATION_shouldReturnExpectedResult() {
+  void trimPunctuationShouldReturnExpectedResult() {
     // given
     Map<String, String> givenAndExpectedSubFieldMap = new HashMap<>();
     givenAndExpectedSubFieldMap.put(" test ", "test");
@@ -166,9 +166,8 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void REMOVE_SUBSTRING_shouldReturnExpectedResult() {
+  void removeSubstringShouldReturnExpectedResult() {
     // given
-    String givenSubField = "362 .2/92 ./8";
     Map<String, String> givenRuleParameterToExpectedFieldMap = new HashMap<>();
     givenRuleParameterToExpectedFieldMap.put("/", "362 .292 .8");
     givenRuleParameterToExpectedFieldMap.put(".", "362 2/92 /8");
@@ -177,6 +176,7 @@ class NormalizationFunctionTest {
     givenRuleParameterToExpectedFieldMap.put(EMPTY_STRING, "362 .2/92 ./8");
 
     RuleExecutionContext context = new RuleExecutionContext();
+    String givenSubField = "362 .2/92 ./8";
     context.setSubFieldValue(givenSubField);
     for (Map.Entry<String, String> entry : givenRuleParameterToExpectedFieldMap.entrySet()) {
       JsonObject givenRuleParameter = new JsonObject().put("substring", entry.getKey());
@@ -190,7 +190,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void REMOVE_SUBSTRING_shouldReturnGivenSubFieldIfWrongParameterSpecified() {
+  void removeSubstringShouldReturnGivenSubFieldIfWrongParameterSpecified() {
     // given
     String givenSubField = "305.2309599";
     String expectedSubField = givenSubField;
@@ -205,9 +205,8 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void REMOVE_PREFIX_BY_INDICATOR_shouldReturnExpectedResult() {
+  void removePrefixByIndicatorShouldReturnExpectedResult() {
     // given
-    String givenSubField = "Dugmore, C. W. (Clifford William),";
     Map<Character, String> givenIndicatorToExpectedFieldMap = new HashMap<>();
     givenIndicatorToExpectedFieldMap.put('0', "Dugmore, C. W. (Clifford William),");
     givenIndicatorToExpectedFieldMap.put('1', "ugmore, C. W. (Clifford William),");
@@ -217,6 +216,7 @@ class NormalizationFunctionTest {
     givenIndicatorToExpectedFieldMap.put('9', "C. W. (Clifford William),");
 
     RuleExecutionContext context = new RuleExecutionContext();
+    String givenSubField = "Dugmore, C. W. (Clifford William),";
     context.setSubFieldValue(givenSubField);
     for (Map.Entry<Character, String> givenIndicatorAndExpectedSubField : givenIndicatorToExpectedFieldMap.entrySet()) {
       char givenIndicator = givenIndicatorAndExpectedSubField.getKey();
@@ -230,7 +230,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void REMOVE_PREFIX_BY_INDICATOR_shouldReturnGivenSubFieldIfWrongIndicatorSpecified() {
+  void removePrefixByIndicatorShouldReturnGivenSubFieldIfWrongIndicatorSpecified() {
     // given
     String givenSubField = "London.";
     DataField givenDataField = new DataFieldImpl("100", '0', '9');
@@ -245,7 +245,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void CAPITALIZE_shouldReturnExpectedResult() {
+  void capitalizeShouldReturnExpectedResult() {
     // given
     Map<String, String> givenAndExpectedSubFieldMap = new HashMap<>();
     givenAndExpectedSubFieldMap.put("journal of ecclesiastical history.", "Journal of ecclesiastical history.");
@@ -268,7 +268,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_DATE_TYPE_ID_shouldReturnExpectedResult() {
+  void setDateTypeIdShouldReturnExpectedResult() {
     // given
     String expectedInstanceDateTypeId = UUID.randomUUID().toString();
     InstanceDateType firstInstanceDateType = new InstanceDateType()
@@ -297,7 +297,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_DATE_TYPE_ID_shouldReturnNoAttemptToCodeIfNoMatchedExists() {
+  void setDateTypeIdShouldReturnNoAttemptToCodeIfNoMatchedExists() {
     // given
     String expectedInstanceDateTypeId = UUID.randomUUID().toString();
     InstanceDateType instanceDateType = new InstanceDateType()
@@ -316,7 +316,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_DATE_TYPE_ID_shouldReturnEmptyStringIfNoMatchedExistsAndUnspecifiedInstanceTypeIdNotExists() {
+  void setDateTypeIdShouldReturnEmptyStringIfNoMatchedExistsAndUnspecifiedInstanceTypeIdNotExists() {
     // given
     String expectedInstanceDateTypeId = UUID.randomUUID().toString();
     InstanceDateType instanceDateTypeId = new InstanceDateType()
@@ -335,7 +335,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_DATE_TYPE_MODE_ID_shouldReturnEmptyStringIfNoSettingsSpecified() {
+  void setDateTypeModeIdShouldReturnEmptyStringIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -347,7 +347,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_PUBLISHER_ROLE_shouldReturnExpectedResult() {
+  void setPublisherRoleShouldReturnExpectedResult() {
     // given
     Map<Character, String> givenIndicatorToExpectedRoleMap = new HashMap<>();
     givenIndicatorToExpectedRoleMap.put('0', "Production");
@@ -369,7 +369,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CLASSIFICATION_TYPE_ID_shouldReturnExpectedResult() {
+  void setClassificationTypeIdShouldReturnExpectedResult() {
     // given
     String expectedClassificationTypeId = UUID.randomUUID().toString();
     ClassificationType givenClassificationType = new ClassificationType()
@@ -387,7 +387,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CLASSIFICATION_TYPE_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setClassificationTypeIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -399,7 +399,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_INSTANCE_TYPE_ID_shouldReturnExpectedResult() {
+  void setInstanceTypeIdShouldReturnExpectedResult() {
     // given
     String expectedInstanceTypeId = UUID.randomUUID().toString();
     InstanceType instanceType = new InstanceType()
@@ -418,7 +418,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_INSTANCE_TYPE_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setInstanceTypeIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     InstanceType instanceType = new InstanceType()
       .withId(UUID.randomUUID().toString())
@@ -434,7 +434,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ELECTRONIC_ACCESS_RELATIONS_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setElectronicAccessRelationsIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     ElectronicAccessRelationship electronicAccessRelationship = new ElectronicAccessRelationship()
       .withId(UUID.randomUUID().toString())
@@ -450,7 +450,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ELECTRONIC_ACCESS_RELATIONS_ID_shouldReturnValidId() {
+  void setElectronicAccessRelationsIdShouldReturnValidId() {
     // given
     String uuid = UUID.randomUUID().toString();
     ElectronicAccessRelationship electronicAccessRelationship = new ElectronicAccessRelationship()
@@ -467,7 +467,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ELECTRONIC_ACCESS_RELATIONS_ID_shouldReturnValidIdForUnfounded() {
+  void setElectronicAccessRelationsIdShouldReturnValidIdForUnfounded() {
     // given
     String uuid = UUID.randomUUID().toString();
     ElectronicAccessRelationship electronicAccessRelationship = new ElectronicAccessRelationship()
@@ -484,7 +484,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_INSTANCE_FORMAT_ID_shouldReturnExpectedResult() {
+  void setInstanceFormatIdShouldReturnExpectedResult() {
     // given
     String expectedInstanceFormatId = UUID.randomUUID().toString();
     InstanceFormat instanceFormat = new InstanceFormat()
@@ -501,7 +501,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_INSTANCE_FORMAT_ID_shouldReturnExpectedResultIfCodeInSubfieldA() {
+  void setInstanceFormatIdShouldReturnExpectedResultIfCodeInSubfieldA() {
     // given
     String expectedInstanceFormatId = UUID.randomUUID().toString();
     InstanceFormat instanceFormat = new InstanceFormat()
@@ -518,7 +518,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_INSTANCE_FORMAT_ID_shouldReturnEmptyStringIfNoSettingsSpecified() {
+  void setInstanceFormatIdShouldReturnEmptyStringIfNoSettingsSpecified() {
     // given
     InstanceFormat instanceFormat = new InstanceFormat()
       .withId(UUID.randomUUID().toString())
@@ -534,7 +534,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_TYPE_ID_shouldReturnExpectedResult() {
+  void setContributorTypeIdShouldReturnExpectedResult() {
     // given
     String expectedContributorTypeId = UUID.randomUUID().toString();
     ContributorType givenContributorType = new ContributorType()
@@ -552,7 +552,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_TYPE_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setContributorTypeIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -563,7 +563,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_TYPE_TEXT_shouldReturnExpectedResult() {
+  void setContributorTypeTextShouldReturnExpectedResult() {
     // given
     String expectedContributorTypeText = "Arranger";
     ContributorType givenContributorType = new ContributorType()
@@ -581,7 +581,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_TYPE_TEXT_shouldReturnGivenSubFieldIfNoSettingsSpecified() {
+  void setContributorTypeTextShouldReturnGivenSubFieldIfNoSettingsSpecified() {
     // given
     String expectedSubField = "arr";
     RuleExecutionContext context = new RuleExecutionContext();
@@ -594,7 +594,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_TYPE_TEXT_shouldReturnGivenSubFieldIfNoMatchInSettings() {
+  void setContributorTypeTextShouldReturnGivenSubFieldIfNoMatchInSettings() {
     // given
     String expectedContributorTypeText = "arr";
     ContributorType givenContributorType = new ContributorType()
@@ -612,7 +612,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_NAME_TYPE_ID_shouldReturnExpectedResult() {
+  void setContributorNameTypeIdShouldReturnExpectedResult() {
     // given
     String expectedContributorNameTypeId = UUID.randomUUID().toString();
     ContributorNameType givenContributorNameType = new ContributorNameType()
@@ -629,7 +629,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CONTRIBUTOR_NAME_TYPE_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setContributorNameTypeIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -641,7 +641,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_AUTHORITY_IDENTIFIER_TYPE_ID_BY_CODE_shouldReturnExpectedResult() {
+  void setAuthorityIdentifierTypeIdByCodeShouldReturnExpectedResult() {
     // given
     String expectedIdentifierTypeId = UUID.randomUUID().toString();
     var identifierType = new AuthorityIdentifierType()
@@ -659,7 +659,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_IDENTIFIER_TYPE_ID_BY_NAME_shouldReturnExpectedResult() {
+  void setIdentifierTypeIdByNameShouldReturnExpectedResult() {
     // given
     String expectedIdentifierTypeId = UUID.randomUUID().toString();
     IdentifierType identifierType = new IdentifierType()
@@ -676,7 +676,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_IDENTIFIER_TYPE_ID_BY_NAME_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setIdentifierTypeIdByNameShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -688,13 +688,9 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_IDENTIFIER_TYPE_ID_BY_VALUE_shouldReturnExpectedResult() {
+  void setIdentifierTypeIdByValueShouldReturnExpectedResult() {
     // given
     String identifierTypeId = UUID.randomUUID().toString();
-    String oclcIdentifierTypeId = UUID.randomUUID().toString();
-    IdentifierType oclcIdentifierType = new IdentifierType()
-      .withId(oclcIdentifierTypeId)
-      .withName("OCLC");
     IdentifierType identifierType = new IdentifierType()
       .withId(identifierTypeId)
       .withName("System control number");
@@ -704,6 +700,10 @@ class NormalizationFunctionTest {
     context.setRuleParameter(new JsonObject().put("names", new JsonArray().add("System control number").add("OCLC"))
       .put("oclc_regex", "(\\(OCoLC\\)|ocm|ocn|on).*"));
     context.setSubFieldValue("910504526");
+    String oclcIdentifierTypeId = UUID.randomUUID().toString();
+    IdentifierType oclcIdentifierType = new IdentifierType()
+      .withId(oclcIdentifierTypeId)
+      .withName("OCLC");
     RuleExecutionContext oclcContext = new RuleExecutionContext();
     oclcContext.setMappingParameters(
       new MappingParameters().withIdentifierTypes(Collections.singletonList(oclcIdentifierType)));
@@ -719,7 +719,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_IDENTIFIER_TYPE_ID_BY_VALUE_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setIdentifierTypeIdByValueShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -733,7 +733,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_NOTE_TYPE_ID_shouldReturnExpectedResult() {
+  void setNoteTypeIdShouldReturnExpectedResult() {
     // given
     String expectedInstanceNoteTypeId = UUID.randomUUID().toString();
     InstanceNoteType instanceNoteType = new InstanceNoteType()
@@ -750,7 +750,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_NOTE_TYPE_ID_shouldReturnDefaultNoteTypeResultIfNoSettingsSpecified() {
+  void setNoteTypeIdShouldReturnDefaultNoteTypeResultIfNoSettingsSpecified() {
     // given
     String expectedInstanceNoteTypeId = UUID.randomUUID().toString();
     InstanceNoteType defaultNoteType = new InstanceNoteType()
@@ -767,7 +767,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_NOTE_TYPE_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setNoteTypeIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -779,7 +779,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ALTERNATIVE_TITLE_TYPE_ID_shouldReturnExpectedResult() {
+  void setAlternativeTitleTypeIdShouldReturnExpectedResult() {
     // given
     String expectedAlternativeTitleTypeId = UUID.randomUUID().toString();
     AlternativeTitleType alternativeTitleType = new AlternativeTitleType()
@@ -796,7 +796,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ALTERNATIVE_TITLE_TYPE_ID_shouldReturnStubIdIfNoSettingsSpecified() {
+  void setAlternativeTitleTypeIdShouldReturnStubIdIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -808,7 +808,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ISSUANCE_MODE_ID_shouldReturnExpectedResult() {
+  void setIssuanceModeIdShouldReturnExpectedResult() {
     // given
     String expectedIssuanceModeId = UUID.randomUUID().toString();
     IssuanceMode issuanceMode = new IssuanceMode()
@@ -825,7 +825,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ISSUANCE_MODE_ID_shouldReturnUnspecifiedIssuanceModeIdIfNoMatchedExists() {
+  void setIssuanceModeIdShouldReturnUnspecifiedIssuanceModeIdIfNoMatchedExists() {
     // given
     String expectedIssuanceModeId = UUID.randomUUID().toString();
     IssuanceMode issuanceMode = new IssuanceMode()
@@ -842,7 +842,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ISSUANCE_MODE_ID_shouldReturnEmptyStringIfNoMatchedExistsAndUnspecifiedIssuanceModeIdNotExists() {
+  void setIssuanceModeIdShouldReturnEmptyStringIfNoMatchedExistsAndUnspecifiedIssuanceModeIdNotExists() {
     // given
     String expectedIssuanceModeId = UUID.randomUUID().toString();
     IssuanceMode issuanceMode = new IssuanceMode()
@@ -859,7 +859,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_ISSUANCE_MODE_ID_shouldReturnEmptyStringIfNoSettingsSpecified() {
+  void setIssuanceModeIdShouldReturnEmptyStringIfNoSettingsSpecified() {
     // given
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -871,7 +871,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_HOLDINGS_TYPE_ID_shouldReturnValidId() {
+  void setHoldingsTypeIdShouldReturnValidId() {
     // given
     List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
     String expectedSerialHoldingsId = holdingsMappingParameter.getFirst().getId();
@@ -885,7 +885,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfUnknownChar() {
+  void setHoldingsTypeIdShouldReturnEmptyStringIfUnknownChar() {
     // given
     List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
     RuleExecutionContext context = new RuleExecutionContext();
@@ -898,7 +898,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_HOLDINGS_TYPE_ID_shouldReturnEmptyStringIfNotMappedChar() {
+  void setHoldingsTypeIdShouldReturnEmptyStringIfNotMappedChar() {
     // given
     List<HoldingsType> holdingsMappingParameter = getHoldingsMappingParameter();
     RuleExecutionContext context = new RuleExecutionContext();
@@ -911,7 +911,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_HOLDINGS_TYPE_ID_shouldReturnNullStringIfMappingParametersEmpty() {
+  void setHoldingsTypeIdShouldReturnNullStringIfMappingParametersEmpty() {
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
     context.setSubFieldValue("00379cy  a22001334  4500");
@@ -922,7 +922,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CALL_NUMBER_TYPE_ID_shouldReturnValidValue() {
+  void setCallNumberTypeIdShouldReturnValidValue() {
     RuleExecutionContext context = new RuleExecutionContext();
     List<CallNumberType> callNumberTypeMappingParameter = getCallNumberTypeMappingParameter();
     String expectedLibraryOfCongressId = callNumberTypeMappingParameter.getFirst().getId();
@@ -935,7 +935,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_CALL_NUMBER_TYPE_ID_shouldReturnEmptyStringWhenNoMappingParams() {
+  void setCallNumberTypeIdShouldReturnEmptyStringWhenNoMappingParams() {
     RuleExecutionContext context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
     context.setDataField(new DataFieldImpl("852", '0', '1'));
@@ -946,7 +946,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnExpectedResult() {
+  void setAuthorityNoteTypeIdShouldReturnExpectedResult() {
     // given
     var expectedAuthorityNoteTypeId = UUID.randomUUID().toString();
     var authorityNoteType = new AuthorityNoteType()
@@ -963,7 +963,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnStubIfNoMappingsSpecified() {
+  void setAuthorityNoteTypeIdShouldReturnStubIfNoMappingsSpecified() {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -975,7 +975,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnStubIfNoNameSpecified() {
+  void setAuthorityNoteTypeIdShouldReturnStubIfNoNameSpecified() {
     // given
     var expectedAuthorityNoteTypeId = UUID.randomUUID().toString();
     var authorityNoteType = new AuthorityNoteType()
@@ -992,7 +992,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_AUTHORITY_NOTE_TYPE_ID_shouldReturnStubIfNoMatchingMappingSpecified() {
+  void setAuthorityNoteTypeIdShouldReturnStubIfNoMatchingMappingSpecified() {
     // given
     var authorityNoteType = new AuthorityNoteType()
       .withId(UUID.randomUUID().toString())
@@ -1008,7 +1008,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_SOURCE_ID_shouldReturnExpectedResult() {
+  void setSubjectSourceIdShouldReturnExpectedResult() {
     // given
     var expectedSubjectSourceId = UUID.randomUUID().toString();
     var subjectSource = new SubjectSource()
@@ -1024,7 +1024,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_SOURCE_ID_shouldReturnEmptyIfNoMappingsSpecified() {
+  void setSubjectSourceIdShouldReturnEmptyIfNoMappingsSpecified() {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -1036,7 +1036,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_SOURCE_ID_shouldReturnEmptyIfNoNameSpecified() {
+  void setSubjectSourceIdShouldReturnEmptyIfNoNameSpecified() {
     // given
     var expectedSubjectSourceId = UUID.randomUUID().toString();
     var subjectSource = new SubjectSource()
@@ -1052,7 +1052,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_SOURCE_ID_shouldReturnEmptyIfNoMatchingMappingSpecified() {
+  void setSubjectSourceIdShouldReturnEmptyIfNoMatchingMappingSpecified() {
     // given
     var subjectSource = new SubjectSource()
       .withId(UUID.randomUUID().toString())
@@ -1067,7 +1067,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_SOURCE_ID_BY_CODE_shouldReturnEmptyStringIfMappingParametersHasNoSubjectSources() {
+  void setSubjectSourceIdByCodeShouldReturnEmptyStringIfMappingParametersHasNoSubjectSources() {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -1078,7 +1078,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_SOURCE_ID_BY_CODE_shouldReturnEmptyStringIfSubfieldValueDoesNotMatchNoSubjectSourceCode() {
+  void setSubjectSourceIdByCodeShouldReturnEmptyStringIfSubfieldValueDoesNotMatchNoSubjectSourceCode() {
     // given
     var subjectSource = new SubjectSource()
       .withId(UUID.randomUUID().toString())
@@ -1093,7 +1093,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_TYPE_ID_shouldReturnExpectedResult() {
+  void setSubjectTypeIdShouldReturnExpectedResult() {
     // given
     var expectedSubjectTypeId = UUID.randomUUID().toString();
     var subjectType = new SubjectType()
@@ -1109,7 +1109,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_TYPE_ID_shouldReturnEmptyIfNoMappingsSpecified() {
+  void setSubjectTypeIdShouldReturnEmptyIfNoMappingsSpecified() {
     // given
     var context = new RuleExecutionContext();
     context.setMappingParameters(new MappingParameters());
@@ -1121,7 +1121,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_TYPE_ID_shouldReturnEmptyIfNoNameSpecified() {
+  void setSubjectTypeIdShouldReturnEmptyIfNoNameSpecified() {
     // given
     var expectedSubjectTypeId = UUID.randomUUID().toString();
     var subjectType = new SubjectType()
@@ -1137,7 +1137,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_SUBJECT_TYPE_ID_shouldReturnEmptyIfNoMatchingMappingSpecified() {
+  void setSubjectTypeIdShouldReturnEmptyIfNoMatchingMappingSpecified() {
     // given
     var subjectType = new SubjectType()
       .withId(UUID.randomUUID().toString())
@@ -1152,7 +1152,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_DELETED_shouldReturnTrueWhenFifthCharIsDeleted() {
+  void setDeletedShouldReturnTrueWhenFifthCharIsDeleted() {
     // given
     String givenSubField = "12345d7890";
     RuleExecutionContext context = new RuleExecutionContext();
@@ -1164,7 +1164,7 @@ class NormalizationFunctionTest {
   }
 
   @Test
-  void SET_DELETED_shouldReturnFalseWhenFifthCharIsNotDeleted() {
+  void setDeletedShouldReturnFalseWhenFifthCharIsNotDeleted() {
     // given
     String givenSubField = "12345n7890";
     RuleExecutionContext context = new RuleExecutionContext();
@@ -1218,7 +1218,7 @@ class NormalizationFunctionTest {
     CallNumberType shelvedSeparately = new CallNumberType()
       .withId(UUID.randomUUID().toString())
       .withName("Shelved separately");
-    CallNumberType sourceSpecifiedInSubfield_2 = new CallNumberType()
+    CallNumberType sourceSpecifiedInSubfield2 = new CallNumberType()
       .withId(UUID.randomUUID().toString())
       .withName("Source specified in subfield $2");
     CallNumberType otherScheme = new CallNumberType()
@@ -1227,6 +1227,6 @@ class NormalizationFunctionTest {
 
     return Arrays.asList(libraryOfCongressClassification, deweyDecimalClassification,
       nationalLibraryOfMedicineClassification, superintendentOfDocumentsClassification, shelvingControlNumber,
-      title, shelvedSeparately, sourceSpecifiedInSubfield_2, otherScheme);
+      title, shelvedSeparately, sourceSpecifiedInSubfield2, otherScheme);
   }
 }

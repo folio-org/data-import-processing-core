@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Authority;
 import org.folio.AuthoritySourceFile;
@@ -55,10 +54,10 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     String sourceFileId = null;
     String naturalId = null;
 
-    var tag010ASubfieldValues = getTag010ASubfieldValues(marcRecord);
-    for (var aSubfieldValue : tag010ASubfieldValues) {
-      if ((sourceFileId = findSourceFileByTagValue(sourceFiles, aSubfieldValue)) != null) {
-        naturalId = aSubfieldValue;
+    var tag010aSubfieldValues = getTag010aSubfieldValues(marcRecord);
+    for (var valueFromSubfieldA : tag010aSubfieldValues) {
+      if ((sourceFileId = findSourceFileByTagValue(sourceFiles, valueFromSubfieldA)) != null) {
+        naturalId = valueFromSubfieldA;
         break;
       }
     }
@@ -74,7 +73,7 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     authority.setNaturalId(sanitizedAlphaNumericValue(naturalId));
   }
 
-  private List<String> getTag010ASubfieldValues(Record marcRecord) {
+  private List<String> getTag010aSubfieldValues(Record marcRecord) {
     return marcRecord.getDataFields().stream().filter(f -> f.getTag().equals("010"))
       .map(tag -> tag.getSubfields('a'))
       .flatMap(List::stream)
@@ -101,10 +100,12 @@ public class MarcToAuthorityMapper implements RecordMapper<Authority> {
     }
     var sourceFilePrefix = sanitizedTagValue.substring(matcher.start(), matcher.end());
 
-    var codeIdsMap = sourceFiles.stream().map(file -> {
+    var codeIdsMap = sourceFiles.stream()
+      .map(file -> {
         var id = file.getId();
         return file.getCodes().stream().collect(Collectors.toMap(code -> code, code -> id));
-      }).flatMap(map -> map.entrySet().stream())
+      })
+      .flatMap(map -> map.entrySet().stream())
       .sorted(Comparator.comparing(codeIdEntry -> -codeIdEntry.getKey().length()))
       .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
         (v1, v2) -> v2,

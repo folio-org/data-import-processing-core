@@ -50,15 +50,11 @@ class JsonBasedWriterUnitTest {
     WRITER.write("contributor.active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"" +
-                              "indexTitle\":\"The Journal of ecclesiastical history.\",\"" +
-                              "classification\":{\"number\":\"N7326 .T12 1991\"},\"" +
-                              "languages\":[\"eng\",\"lat\"],\"" +
-                              "contributor\":{\"" +
-                              "names\":[\"Heins\",\"Rattu\",\"Tabrani\"]," +
-                              "\"active\":false" +
-                              "}" +
-                              "}";
+    String expectedInstance = """
+      {"indexTitle":"The Journal of ecclesiastical history.","classification":{"number":"N7326 .T12 \
+      1991"},"languages":["eng","lat"],"contributor":{"names":["Heins","Rattu","Tabrani"],"active":\
+      false}}\
+      """;
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -73,17 +69,17 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -103,21 +99,25 @@ class JsonBasedWriterUnitTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EntityType.INSTANCE.value(),
-      "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
+      """
+      {"instance": {"contributor": [{"active": true,"id": "UUID2","names": ["1", "2", "3"]},{"acti\
+      ve": false,"id": "UUID","names": ["Heins", "Rattu", "Tabrani"]},{"active": true,"id": "UUID1"\
+      ,"names": [ "2"]}]}}\
+      """);
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
     object2.put("instance.contributor[].id", StringValue.of("UUID3"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -129,7 +129,10 @@ class JsonBasedWriterUnitTest {
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(
-      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}",
+      """
+      {"instance":{"contributor":[{"active":true,"id":"UUID2","names":["1","2","3"]},{"active":true,\
+      "id":"UUID1","names":["2"]}]}}\
+      """,
       resultInstance);
   }
 
@@ -139,19 +142,23 @@ class JsonBasedWriterUnitTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EntityType.INSTANCE.value(),
-      "{\"instance\": {\"contributor\": [{\"active\": true,\"id\": \"UUID2\",\"names\": [\"1\", \"2\", \"3\"]},{\"active\": false,\"id\": \"UUID\",\"names\": [\"Heins\", \"Rattu\", \"Tabrani\"]},{\"active\": true,\"id\": \"UUID1\",\"names\": [ \"2\"]}]}}\n");
+      """
+      {"instance": {"contributor": [{"active": true,"id": "UUID2","names": ["1", "2", "3"]},{"acti\
+      ve": false,"id": "UUID","names": ["Heins", "Rattu", "Tabrani"]},{"active": true,"id": "UUID1"\
+      ,"names": [ "2"]}]}}\
+      """);
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -163,7 +170,10 @@ class JsonBasedWriterUnitTest {
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(
-      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID2\",\"names\":[\"1\",\"2\",\"3\"]},{\"active\":true,\"id\":\"UUID1\",\"names\":[\"2\"]}]}}",
+      """
+      {"instance":{"contributor":[{"active":true,"id":"UUID2","names":["1","2","3"]},{"active":true,\
+      "id":"UUID1","names":["2"]}]}}\
+      """,
       resultInstance);
   }
 
@@ -173,21 +183,24 @@ class JsonBasedWriterUnitTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EntityType.INSTANCE.value(),
-      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]}]}}");
+      """
+      {"instance":{"contributor":[{"active":true,"id":"UUID4","names":["Tabrani"]},{"active":false,\
+      "id":"UUID3","names":["3"]}]}}\
+      """);
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -198,7 +211,10 @@ class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance =
-      "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+      """
+      {"instance":{"contributor":[{"active":false,"names":["Heins","Rattu","Tabrani"],"id":"UUID"},\
+      {"active":true,"names":["1","2","3"],"id":"UUID2"}]}}\
+      """;
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -209,21 +225,24 @@ class JsonBasedWriterUnitTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EntityType.INSTANCE.value(),
-      "{\"instance\": {\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]}]}}");
+      """
+      {"instance": {"contributor":[{"active":true,"id":"UUID4","names":["Tabrani"]},{"active":false\
+      ,"id":"UUID3","names":["3"]}]}}\
+      """);
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -233,7 +252,11 @@ class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance =
-      "{\"instance\":{\"contributor\":[{\"active\":true,\"id\":\"UUID4\",\"names\":[\"Tabrani\"]},{\"active\":false,\"id\":\"UUID3\",\"names\":[\"3\"]},{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+      """
+      {"instance":{"contributor":[{"active":true,"id":"UUID4","names":["Tabrani"]},{"active":false,\
+      "id":"UUID3","names":["3"]},{"active":false,"names":["Heins","Rattu","Tabrani"],"id":"UUID"},\
+      {"active":true,"names":["1","2","3"],"id":"UUID2"}]}}\
+      """;
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -269,17 +292,17 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -289,7 +312,10 @@ class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance =
-      "{\"instance\":{\"contributor\":[{\"active\":false,\"names\":[\"Heins\",\"Rattu\",\"Tabrani\"],\"id\":\"UUID\"},{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+      """
+      {"instance":{"contributor":[{"active":false,"names":["Heins","Rattu","Tabrani"],"id":"UUID"},\
+      {"active":true,"names":["1","2","3"],"id":"UUID2"}]}}\
+      """;
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -303,17 +329,17 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2")));
     object2.put("instance.contributor[].id", StringValue.of("UUID3"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -336,17 +362,17 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -357,7 +383,9 @@ class JsonBasedWriterUnitTest {
     WRITER.getResult(eventContext);
     // then
     String expectedInstance =
-      "{\"instance\":{\"contributor\":[{\"active\":true,\"names\":[\"1\",\"2\",\"3\"],\"id\":\"UUID2\"}]}}";
+      """
+      {"instance":{"contributor":[{"active":true,"names":["1","2","3"],"id":"UUID2"}]}}\
+      """;
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -371,17 +399,17 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    List<Map<String, Value>> objects = new ArrayList<>();
     Map<String, Value> object1 = new HashMap<>();
-    Map<String, Value> object2 = new HashMap<>();
     object1.put("instance.contributor[].names[]", ListValue.of(asList("Heins", "Rattu", "Tabrani")));
     object1.put("instance.contributor[].id", StringValue.of("UUID"));
     object1.put("instance.contributor[].active", BooleanValue.of(MappingRule.BooleanFieldAction.ALL_FALSE));
 
+    Map<String, Value> object2 = new HashMap<>();
     object2.put("instance.contributor[].names[]", ListValue.of(asList("1", "2", "3")));
     object2.put("instance.contributor[].id", StringValue.of("UUID2"));
     object2.put("instance.contributor[].active", BooleanValue.of(ALL_TRUE));
 
+    List<Map<String, Value>> objects = new ArrayList<>();
     objects.add(object1);
     objects.add(object2);
 
@@ -696,7 +724,10 @@ class JsonBasedWriterUnitTest {
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EntityType.INSTANCE.value(),
-      "{\"item\": {\"temporaryLoanType\": {\"id\": \"8d0a5eca-25de-4391-81a9-236eeefdd20b\", \"name\": \"Can circulate\"}, \"hrid\": \"it00000000001\"}}");
+      """
+      {"item": {"temporaryLoanType": {"id": "8d0a5eca-25de-4391-81a9-236eeefdd20b", "name": "Can cir\
+      culate"}, "hrid": "it00000000001"}}\
+      """);
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
@@ -735,16 +766,16 @@ class JsonBasedWriterUnitTest {
 
     String rootPath = "invoice.adjustments[]";
     String fundDistributionsRootPath = "invoice.adjustments[].fundDistributions[]";
-    Map<String, Value> fundDistributionElement1_1 = Map.of(
+    Map<String, Value> fundDistributionElement11 = Map.of(
       "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f711"),
       "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-1.1"));
-    Map<String, Value> fundDistributionElement1_2 = Map.of(
+    Map<String, Value> fundDistributionElement12 = Map.of(
       "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f712"),
       "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-1.2"));
-    Map<String, Value> fundDistributionElement2_1 = Map.of(
+    Map<String, Value> fundDistributionElement21 = Map.of(
       "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f721"),
       "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-2.1"));
-    Map<String, Value> fundDistributionElement2_2 = Map.of(
+    Map<String, Value> fundDistributionElement22 = Map.of(
       "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f722"),
       "invoice.adjustments[].fundDistributions[].code", StringValue.of("USHIST-2.2"));
 
@@ -752,13 +783,13 @@ class JsonBasedWriterUnitTest {
       "invoice.adjustments[].description", StringValue.of("description-1"),
       "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE),
       "invoice.adjustments[].fundDistributions[]",
-      RepeatableFieldValue.of(List.of(fundDistributionElement1_1, fundDistributionElement1_2), EXTEND_EXISTING,
+      RepeatableFieldValue.of(List.of(fundDistributionElement11, fundDistributionElement12), EXTEND_EXISTING,
         fundDistributionsRootPath));
     Map<String, Value> adjustment2 = Map.of(
       "invoice.adjustments[].description", StringValue.of("description-2"),
       "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_FALSE),
       "invoice.adjustments[].fundDistributions[]",
-      RepeatableFieldValue.of(List.of(fundDistributionElement2_1, fundDistributionElement2_2), EXTEND_EXISTING,
+      RepeatableFieldValue.of(List.of(fundDistributionElement21, fundDistributionElement22), EXTEND_EXISTING,
         fundDistributionsRootPath));
 
     RepeatableFieldValue value = RepeatableFieldValue.of(List.of(adjustment1, adjustment2), EXTEND_EXISTING, rootPath);
@@ -771,7 +802,14 @@ class JsonBasedWriterUnitTest {
 
     // then
     String expectedInvoiceAsString =
-      "{\"invoice\":{\"adjustments\":[{\"fundDistributions\":[{\"code\":\"USHIST-1.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f711\"},{\"code\":\"USHIST-1.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f712\"}],\"exportToAccounting\":true,\"description\":\"description-1\"},{\"fundDistributions\":[{\"code\":\"USHIST-2.1\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f721\"},{\"code\":\"USHIST-2.2\",\"fundId\":\"b2c0e100-0485-43f2-b161-3c60aac9f722\"}],\"exportToAccounting\":false,\"description\":\"description-2\"}]}}";
+      """
+      {"invoice":{"adjustments":[{"fundDistributions":[{"code":"USHIST-1.1","fundId":"b2c0e100-0485\
+      -43f2-b161-3c60aac9f711"},{"code":"USHIST-1.2","fundId":"b2c0e100-0485-43f2-b161-3c60aac9f712\
+      "}],"exportToAccounting":true,"description":"description-1"},{"fundDistributions":[{"code":"U\
+      SHIST-2.1","fundId":"b2c0e100-0485-43f2-b161-3c60aac9f721"},{"code":"USHIST-2.2","fundId":"b2\
+      c0e100-0485-43f2-b161-3c60aac9f722"}],"exportToAccounting":false,"description":"description-2\
+      "}]}}\
+      """;
     String resultInvoice = eventContext.getContext().get(EntityType.INVOICE.value());
     assertEquals(new JsonObject(expectedInvoiceAsString), new JsonObject(resultInvoice));
   }
@@ -798,7 +836,13 @@ class JsonBasedWriterUnitTest {
     ORDER_WRITER.getResult(eventContext);
     // then
     String expectedOrder =
-      "{\"order\":{\"po\":{\"workflowStatus\":\"Pending\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
+      """
+      {"order":{"po":{"workflowStatus":"Pending","vendor":"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1","o\
+      rderType":"One-Time","poNumberPrefix":"db9f5d17-0ca3-4d14-ae49-16b63c8fc083","acqUnitIds":["0\
+      ebb1f7d-983f-3026-8a4c-5318e0ebc041"]},"poLine":{"titleOrPackage":"TestingTitle","acquisitionM\
+      ethod":"796596c4-62b5-4b64-a2ce-524c747afaa2","orderFormat":"P/E Mix","source":"MARC","cost":\
+      {"currency":"UAH"}}}}\
+      """;
     String resultOrder = eventContext.getContext().get(EntityType.ORDER.value());
     assertEquals(expectedOrder, resultOrder);
   }
@@ -827,7 +871,13 @@ class JsonBasedWriterUnitTest {
     ORDER_WRITER.getResult(eventContext);
     // then
     String expectedOrder =
-      "{\"order\":{\"po\":{\"workflowStatus\":\"Open\",\"vendor\":\"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1\",\"orderType\":\"One-Time\",\"poNumberPrefix\":\"db9f5d17-0ca3-4d14-ae49-16b63c8fc083\",\"acqUnitIds\":[\"0ebb1f7d-983f-3026-8a4c-5318e0ebc041\"]},\"poLine\":{\"titleOrPackage\":\"TestingTitle\",\"acquisitionMethod\":\"796596c4-62b5-4b64-a2ce-524c747afaa2\",\"orderFormat\":\"P/E Mix\",\"source\":\"MARC\",\"cost\":{\"currency\":\"UAH\"}}}}";
+      """
+      {"order":{"po":{"workflowStatus":"Open","vendor":"11fb627a-cdf1-11e8-a8d5-f2801f1b9fd1","orde\
+      rType":"One-Time","poNumberPrefix":"db9f5d17-0ca3-4d14-ae49-16b63c8fc083","acqUnitIds":["0ebb\
+      1f7d-983f-3026-8a4c-5318e0ebc041"]},"poLine":{"titleOrPackage":"TestingTitle","acquisitionMeth\
+      od":"796596c4-62b5-4b64-a2ce-524c747afaa2","orderFormat":"P/E Mix","source":"MARC","cost":{"c\
+      urrency":"UAH"}}}}\
+      """;
     String resultOrder = eventContext.getContext().get(EntityType.ORDER.value());
     assertEquals(expectedOrder, resultOrder);
   }

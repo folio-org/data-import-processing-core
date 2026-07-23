@@ -31,7 +31,8 @@ class AuthorityMappingTest {
   private static final String PARSED_AUTHORITY_WITH_SOURCE_FILE_AT_010 =
     "src/test/resources/org/folio/processing/mapping/authority/parsedRecordWithSourceFileAt010.json";
   private static final String PARSED_AUTHORITY_WITH_SOURCE_FILE_AT_010_WITH_MULTIPLE_SUBFIELDS =
-    "src/test/resources/org/folio/processing/mapping/authority/parsedRecordWithSourceFileAt010WithMultipleSubfields.json";
+    "src/test/resources/org/folio/processing/mapping/authority/"
+      + "parsedRecordWithSourceFileAt010WithMultipleSubfields.json";
   private static final String PARSED_AUTHORITY_WITHOUT_SOURCE_FILE =
     "src/test/resources/org/folio/processing/mapping/authority/parsedRecordWithoutSourceFile.json";
   private static final String MAPPED_AUTHORITY_WITH_TITLES_PATH =
@@ -45,7 +46,8 @@ class AuthorityMappingTest {
   private static final String MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_010 =
     "src/test/resources/org/folio/processing/mapping/authority/mappedRecordWithSourceFileAt010.json";
   private static final String MAPPED_AUTHORITY_WITH_SOURCE_FILE_AT_010_WITH_MULTIPLE_SUBFIELDS =
-    "src/test/resources/org/folio/processing/mapping/authority/mappedRecordWithSourceFileAt010WithMultipleSubfields.json";
+    "src/test/resources/org/folio/processing/mapping/authority/"
+      + "mappedRecordWithSourceFileAt010WithMultipleSubfields.json";
   private static final String MAPPED_AUTHORITY_WITHOUT_SOURCE_FILE =
     "src/test/resources/org/folio/processing/mapping/authority/mappedRecordWithoutSourceFile.json";
   private static final String DEFAULT_MAPPING_RULES_PATH =

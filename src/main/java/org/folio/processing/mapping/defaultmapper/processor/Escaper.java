@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Escape text so that it is valid json as well as valid postgres jsonb data
+ * Escape text so that it is valid json as well as valid postgres jsonb data.
  *
  */
 public class Escaper {
@@ -13,10 +13,10 @@ public class Escaper {
   /**
    * This function escapes data with two purposes in mind. The Marc data does not need to
    * conform to json or postgres escaped characters - this function takes Marc data and
-   * escapes it so that it is valid in both a json and a postgres context
+   * escapes it so that it is valid in both a json and a postgres context.
    *
-   * @param data
-   * @return
+   * @param data data to escape
+   * @return escaped data
    */
   public static String escape(String data) {
     return escape(data, false);
@@ -35,7 +35,7 @@ public class Escaper {
   }
 
   /**
-   * Escapes characters within a given json string to be able to 'COPY' to postgres jsonb
+   * Escapes characters within a given json string to be able to 'COPY' to postgres jsonb.
    *
    * @param s json string to be escaped
    * @return escaped string

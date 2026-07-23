@@ -3,7 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor.publisher;
 import java.util.Arrays;
 
 /**
- * Publisher role
+ * Publisher role.
  */
 public enum PublisherRole {
 

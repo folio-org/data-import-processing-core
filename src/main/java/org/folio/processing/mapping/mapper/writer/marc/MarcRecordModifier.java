@@ -97,6 +97,9 @@ public class MarcRecordModifier {
         break;
       case UPDATE:
         initializeForUpdateOption(eventPayload, mappingParameters, mappingProfile);
+        break;
+      default:
+        break;
     }
   }
 
@@ -107,6 +110,9 @@ public class MarcRecordModifier {
         break;
       case UPDATE:
         processUpdateMappingOption(mappingDetails);
+        break;
+      default:
+        break;
     }
   }
 
@@ -167,6 +173,7 @@ public class MarcRecordModifier {
    * Non-repeatable fields: 001, 002, 003, 004, 005, 008, 009, 010, 018, 036, 038, 040, 042, 044, 045, 066, 073,
    * all 1xx fields, 240, 243, 245, 254, 256, 263, 306, 357, 378, 384, 507, 514, 663, 664, 665, 666, 675, 682, 788,
    * 841, 842, 844, 882, and 999 with indicators = ff. Repeatable fields: all other MARC fields.
+   *
    * <p>
    * Record update logic is described by following conditions:
    * if field of {@code recordToUpdate} is not protected and there is incoming field with same tag, then delete
@@ -197,9 +204,9 @@ public class MarcRecordModifier {
     return mapRecordRepresentationToJsonString(marcRecordToChange);
   }
 
-  protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings
-    (List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
-     List<MarcFieldProtectionSetting> protectionOverrides) {
+  protected List<MarcFieldProtectionSetting> filterOutOverriddenProtectionSettings(
+    List<MarcFieldProtectionSetting> marcFieldProtectionSettings,
+    List<MarcFieldProtectionSetting> protectionOverrides) {
     return marcFieldProtectionSettings.stream()
       .filter(originalSetting -> protectionOverrides.stream()
         .noneMatch(overriddenSetting -> overriddenSetting.getId().equals(originalSetting.getId())
@@ -255,10 +262,6 @@ public class MarcRecordModifier {
 
   protected boolean unUpdatedFieldShouldBeRemoved(DataField dataField) {
     return !updatedFields.contains(dataField) && isNotProtected(dataField);
-  }
-
-  boolean isNonRepeatableField(DataField field) {
-    return isNonRepeatableDataField(field.getTag(), field.getIndicator1(), field.getIndicator2());
   }
 
   boolean isNonRepeatableDataField(String tag, char indicator1, char indicator2) {
@@ -368,6 +371,9 @@ public class MarcRecordModifier {
           break;
         case MOVE:
           processMoveAction(mappingDetail);
+          break;
+        default:
+          break;
       }
     }
   }
@@ -388,7 +394,8 @@ public class MarcRecordModifier {
       DataField dataField = marcFactory.newDataField(fieldTag, ind1, ind2);
 
       for (MarcSubfield subfield : detail.getField().getSubfields()) {
-        dataField.addSubfield(marcFactory.newSubfield(subfield.getSubfield().charAt(0), subfield.getData().getText()));
+        dataField.addSubfield(
+          marcFactory.newSubfield(subfield.getSubfield().charAt(0), subfield.getData().getText()));
       }
       addDataFieldInNumericalOrder(dataField);
     }
@@ -406,7 +413,8 @@ public class MarcRecordModifier {
   }
 
   /**
-   * Adds data field to record in numerical order when the specified field is kind of sortable field (0xx, 1xx, 2xx, 3xx, 9xx),
+   * Adds data field to record in numerical order when the specified field is kind of
+   * sortable field (0xx, 1xx, 2xx, 3xx, 9xx),
    * which can be placed in numerical order. If the specified field should not be sorted (4xx, 5xx, 6xx, 7xx, 8xx),
    * then the field is added at the end of other fields (7xx) with the same first digit (7).
    * For instance, specified field 500 will be added to existing record fields in such order:
@@ -472,16 +480,6 @@ public class MarcRecordModifier {
     }
   }
 
-  private boolean fieldMatches(DataField field, String tag, char ind1, char ind2) {
-    if (!String.valueOf(ANY_CHAR).equals(tag) && !field.getTag().equals(tag)) {
-      return false;
-    }
-    if (ind1 != ANY_CHAR && field.getIndicator1() != ind1) {
-      return false;
-    }
-    return ind2 == ANY_CHAR || field.getIndicator2() == ind2;
-  }
-
   private void processEditAction(MarcMappingDetail mappingDetail) {
     MarcSubfield subfieldRule = mappingDetail.getField().getSubfields().getFirst();
     switch (subfieldRule.getSubaction()) {
@@ -495,6 +493,7 @@ public class MarcRecordModifier {
         processRemove(mappingDetail);
         break;
       default:
+        break;
     }
   }
 
@@ -526,6 +525,9 @@ public class MarcRecordModifier {
           break;
         case NEW_SUBFIELD:
           field.addSubfield(marcFactory.newSubfield(ruleSubfield.getSubfield().charAt(0), dataToInsert));
+          break;
+        default:
+          break;
       }
     }
   }
@@ -561,8 +563,9 @@ public class MarcRecordModifier {
       int endPosition = positions.getMaximum();
 
       marcRecordToChange.getControlFields().stream()
-        .filter(field -> field.getTag().equals(tag) && dataToReplace.equals(ANY_STRING) ||
-                         controlFieldContainsDataAtPositions(field, dataToReplace, positions))
+        .filter(field -> field.getTag().equals(tag)
+                         && (dataToReplace.equals(ANY_STRING)
+                         || controlFieldContainsDataAtPositions(field, dataToReplace, positions)))
         .forEach(fieldToEdit -> {
           StringBuilder newData =
             new StringBuilder(fieldToEdit.getData()).replace(startPosition, endPosition + 1, replacementData);
@@ -633,6 +636,16 @@ public class MarcRecordModifier {
         dataToReplace.equals(ANY_STRING) ? replacementData : sf.getData().replace(dataToReplace, replacementData)));
   }
 
+  private boolean fieldMatches(DataField field, String tag, char ind1, char ind2) {
+    if (!String.valueOf(ANY_CHAR).equals(tag) && !field.getTag().equals(tag)) {
+      return false;
+    }
+    if (ind1 != ANY_CHAR && field.getIndicator1() != ind1) {
+      return false;
+    }
+    return ind2 == ANY_CHAR || field.getIndicator2() == ind2;
+  }
+
   private boolean fieldMatches(DataField field, String tag, char ind1, char ind2, char subfieldCode) {
     if (!fieldMatches(field, tag, ind1, ind2)) {
       return false;
@@ -680,6 +693,7 @@ public class MarcRecordModifier {
           moveDataToExistingField(sourceFields, subfieldRule);
           break;
         default:
+          break;
       }
     }
   }
@@ -783,7 +797,8 @@ public class MarcRecordModifier {
           if (fieldToReplace.getData().equals(fieldReplacement.getData())) {
             fieldsProtected = true;
             LOGGER.info(
-              "replaceControlField:: Field {} was not added, because it is repeatable and contains identical data as an existing one",
+              "replaceControlField:: Field {} was not added, because it is repeatable and contains identical "
+                + "data as an existing one",
               fieldToReplace);
           }
         }
@@ -797,6 +812,10 @@ public class MarcRecordModifier {
 
   private boolean isNonRepeatableField(ControlField field) {
     return NON_REPEATABLE_CONTROL_FIELDS_TAGS.contains(field.getTag());
+  }
+
+  boolean isNonRepeatableField(DataField field) {
+    return isNonRepeatableDataField(field.getTag(), field.getIndicator1(), field.getIndicator2());
   }
 
   private void replaceDataField(DataField fieldReplacement, String fieldTag, char ind1, char ind2,
@@ -900,8 +919,10 @@ public class MarcRecordModifier {
     return applicableProtectionSettings.stream()
       .filter(
         setting ->
-          (isBlank(setting.getIndicator1()) && isBlank(setting.getIndicator2()) && isBlank(setting.getSubfield()))
-          && setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag()))
+          isBlank(setting.getIndicator1())
+            && isBlank(setting.getIndicator2())
+            && isBlank(setting.getSubfield())
+            && (setting.getField().equals(ANY_STRING) || setting.getField().equals(field.getTag())))
       .noneMatch(setting -> setting.getData().equals(ANY_STRING) || setting.getData().equals(field.getData()));
   }
 
@@ -922,15 +943,15 @@ public class MarcRecordModifier {
 
   private boolean matchesIndicator1(MarcFieldProtectionSetting setting, DataField field) {
     LOGGER.trace("matchesIndicator1:: field={} | setting: indicator1={}", field.getTag(), setting.getIndicator1());
-    return setting.getIndicator1().equals(ANY_STRING) ||
-           (isNotEmpty(setting.getIndicator1()) ? setting.getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE)
+    return setting.getIndicator1().equals(ANY_STRING)
+           || (isNotEmpty(setting.getIndicator1()) ? setting.getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE)
            == field.getIndicator1();
   }
 
   private boolean matchesIndicator2(MarcFieldProtectionSetting setting, DataField field) {
     LOGGER.trace("matchesIndicator2:: field={} | setting: indicator2={}", field.getTag(), setting.getIndicator2());
-    return setting.getIndicator2().equals(ANY_STRING) ||
-           (isNotEmpty(setting.getIndicator2()) ? setting.getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE)
+    return setting.getIndicator2().equals(ANY_STRING)
+           || (isNotEmpty(setting.getIndicator2()) ? setting.getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE)
            == field.getIndicator2();
   }
 

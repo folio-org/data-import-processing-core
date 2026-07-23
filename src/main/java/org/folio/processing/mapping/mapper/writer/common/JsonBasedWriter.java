@@ -233,8 +233,9 @@ public class JsonBasedWriter extends AbstractWriter {
 
   /**
    * The method does traversing by field path from top to bottom.
-   * Each iteration the method creates a ContainerNode for the next path if it does not exist in parent node (see #addContainerNode)
-   * If a path item is the last, then method sets value to the parent node (see #setValue)
+   * Each iteration the method creates a ContainerNode for the next path if it does not exist
+   * in parent node (see #addContainerNode). If a path item is the last, then method sets
+   * value to the parent node (see #setValue).
    *
    * @param fieldPath  field path
    * @param fieldValue value of the field, JsonNode is the parent node of ValueNode and ContainerNode
@@ -332,14 +333,17 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   /**
-   * This method found the lowest level from the fields`s path and removes data from this field from entityNode if specific flag (parameter) is true.
+   * This method found the lowest level from the fields`s path and removes data from this field
+   * from entityNode if specific flag (parameter) is true.
    * It is calculates nesting count and retrieves field from the target place in entityNode.
    * After that, it removes data from entityNode by lowest level path of the currentPath if flag is true.
+   *
    * <p>
    * If entityNode is empty, then this method won`t find via this logic, and just return current entityNode.
    *
    * @param currentPath - full path for processing.
-   *                    (Example: currentPath = "instance.history.entries". Will be removed "entries" data from the entityNode)
+   *                    (Example: currentPath = "instance.history.entries".
+   *                    Will be removed "entries" data from the entityNode)
    * @param remove-     flag if this data will be removed.
    * @return JsonNode result - found node. (For the non-deleting way)
    */
@@ -383,6 +387,20 @@ public class JsonBasedWriter extends AbstractWriter {
     }
   }
 
+  private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
+    if (foundNode != null && !foundNode.isEmpty()) {
+      ArrayNode arrayNode = (ArrayNode) foundNode;
+      int indexForDelete = 0;
+      for (int i = 0; i < arrayNode.size() + 1; i++) {
+        if (arrayNode.get(i - indexForDelete) != null && listValue.getValue()
+          .contains(arrayNode.get(i - indexForDelete).textValue())) {
+          arrayNode.remove(i - indexForDelete);
+          indexForDelete++;
+        }
+      }
+    }
+  }
+
   private boolean ifDeepEquals(JsonNode currentObject, JsonNode jsonNode) {
     if (currentObject.isObject()) {
       Iterator<String> stringIterator = currentObject.fieldNames();
@@ -397,19 +415,5 @@ public class JsonBasedWriter extends AbstractWriter {
       return true;
     }
     return false;
-  }
-
-  private void deleteIncomingFieldByPath(ListValue listValue, JsonNode foundNode) {
-    if (foundNode != null && !foundNode.isEmpty()) {
-      ArrayNode arrayNode = (ArrayNode) foundNode;
-      int indexForDelete = 0;
-      for (int i = 0; i < arrayNode.size() + 1; i++) {
-        if (arrayNode.get(i - indexForDelete) != null && listValue.getValue()
-          .contains(arrayNode.get(i - indexForDelete).textValue())) {
-          arrayNode.remove(i - indexForDelete);
-          indexForDelete++;
-        }
-      }
-    }
   }
 }

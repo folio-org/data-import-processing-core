@@ -102,6 +102,8 @@ public class Processor<T> {
   }
 
   /**
+   * Builds an object graph for the provided path.
+   *
    * @param object                   - the root object to start parsing the 'path' from
    * @param path                     - the target path - the field to place the value in
    * @param newComp                  - should a new object be created , if not, use the object passed into the
@@ -327,9 +329,6 @@ public class Processor<T> {
                                       RuleExecutionContext ruleExecutionContext)
     throws IllegalAccessException, InstantiationException, ScriptException {
 
-    //a single mapping entry can also map multiple subfields to a specific field in the instance
-    JsonArray mappingRuleEntry = subFieldMapping.getJsonArray("entity");
-
     //entity field indicates that the subfields within the entity definition should be
     //a single instance, anything outside the entity definition will be placed in another
     //instance of the same type, unless the target points to a different type.
@@ -349,6 +348,7 @@ public class Processor<T> {
 
     //if no "entity" is defined , then all rules contents of the field getting mapped to the same type
     //will be placed in a single instance of that type.
+    JsonArray mappingRuleEntry = subFieldMapping.getJsonArray("entity");
     if (mappingRuleEntry == null) {
       mappingRuleEntry = new JsonArray();
       mappingRuleEntry.add(subFieldMapping);
@@ -414,24 +414,17 @@ public class Processor<T> {
     return false;
   }
 
-  private void handleFields(JsonObject jObj,
+  private void handleFields(JsonObject jsonObject,
                             List<Object[]> arraysOfObjects,
                             Object[] rememberComplexObj,
                             RuleExecutionContext ruleExecutionContext)
     throws ScriptException, IllegalAccessException, InstantiationException {
 
-    //push into a set so that we can do a lookup for each subfield in the marc instead
-    //of looping over the array
-    Set<String> subFieldsSet = jObj.getJsonArray(SUBFIELD).stream()
-      .filter(o -> o instanceof String)
-      .map(o -> (String) o)
-      .collect(Collectors.toCollection(HashSet::new));
-
     //it can be a one to one mapping, or there could be rules to apply prior to the mapping
-    rules = jObj.getJsonArray(RULES);
+    rules = jsonObject.getJsonArray(RULES);
 
     // see ### Delimiters in README.md (section Processor.java)
-    delimiters = jObj.getJsonArray("subFieldDelimiter");
+    delimiters = jsonObject.getJsonArray("subFieldDelimiter");
 
     //this is a map of each subfield to the delimiter to delimit it with
     subField2Delimiter.clear();
@@ -441,8 +434,8 @@ public class Processor<T> {
     //with only one non repeatable subfield
     boolean applyPost = false;
 
-    if (jObj.getBoolean("applyRulesOnConcatenatedData") != null) {
-      applyPost = jObj.getBoolean("applyRulesOnConcatenatedData");
+    if (jsonObject.getBoolean("applyRulesOnConcatenatedData") != null) {
+      applyPost = jsonObject.getBoolean("applyRulesOnConcatenatedData");
     }
 
     //map a subfield to a stringbuilder which will hold its content
@@ -456,10 +449,10 @@ public class Processor<T> {
 
     handleDelimiters();
 
-    String[] embeddedFields = jObj.getString(TARGET).split("\\.");
+    String[] embeddedFields = jsonObject.getString(TARGET).split("\\.");
 
     if (!isMappingValid(entity, embeddedFields)) {
-      LOGGER.debug("handleFields:: bad mapping {}", jObj::encode);
+      LOGGER.debug("handleFields:: bad mapping {}", jsonObject::encode);
       return;
     }
 
@@ -467,11 +460,19 @@ public class Processor<T> {
     List<Subfield> subFields = ruleExecutionContext.getDataField().getSubfields();
 
     //check if we need to expand the subfields into additional subfields
-    JsonObject splitter = jObj.getJsonObject("subFieldSplit");
+    JsonObject splitter = jsonObject.getJsonObject("subFieldSplit");
     if (splitter != null) {
       expandSubfields(subFields, splitter);
     }
-    if (subFields.stream().noneMatch(sf -> (checkIfSubfieldShouldBeHandled(subFieldsSet, sf)))) {
+
+    //push into a set so that we can do a lookup for each subfield in the marc instead
+    //of looping over the array
+    Set<String> subFieldsSet = jsonObject.getJsonArray(SUBFIELD).stream()
+      .filter(o -> o instanceof String)
+      .map(o -> (String) o)
+      .collect(Collectors.toCollection(HashSet::new));
+
+    if (subFields.stream().noneMatch(sf -> checkIfSubfieldShouldBeHandled(subFieldsSet, sf))) {
       //skip further processing if there are no subfields to map
       LOGGER.debug("handleFields:: no subfields to map from {} to {}",
         subFields.stream().map(Subfield::getCode).toList(), subFieldsSet);
@@ -480,7 +481,8 @@ public class Processor<T> {
 
     for (int i = 0; i < subFields.size(); i++) {
       //check if there are no mapped elements present
-      if (checkIfSubfieldShouldBeHandled(subFieldsSet, subFields.get(i)) && canHandleSubField(subFields.get(i), jObj)) {
+      if (checkIfSubfieldShouldBeHandled(subFieldsSet, subFields.get(i))
+          && canHandleSubField(subFields.get(i), jsonObject)) {
         handleSubFields(ruleExecutionContext, subFields, i, subFieldsSet, arraysOfObjects, applyPost, embeddedFields);
       }
     }
@@ -496,9 +498,9 @@ public class Processor<T> {
         createNewComplexObj = false;
       }
 
-      if (StringUtils.isEmpty(completeData) && jObj.containsKey(ALTERNATIVE_MAPPING)) {
+      if (StringUtils.isEmpty(completeData) && jsonObject.containsKey(ALTERNATIVE_MAPPING)) {
         ignoredSubsequentSubfields.clear();
-        handleFields(jObj.getJsonObject(ALTERNATIVE_MAPPING), arraysOfObjects, rememberComplexObj,
+        handleFields(jsonObject.getJsonObject(ALTERNATIVE_MAPPING), arraysOfObjects, rememberComplexObj,
           ruleExecutionContext);
       }
     }
@@ -761,7 +763,7 @@ public class Processor<T> {
 
   /**
    * create the need part of the instance object based on the target and the string containing the
-   * content per subfield sets
+   * content per subfield sets.
    *
    * @param embeddedFields     - the target
    * @param rememberComplexObj - the current object within the instance object we are currently populating
@@ -784,7 +786,7 @@ public class Processor<T> {
 
   /**
    * buffers2concat - list of string buffers, each one representing the data belonging to a set of
-   * subfields concatenated together, so for example, 2 sets of subfields will mean two entries in the list
+   * subfields concatenated together, so for example, 2 sets of subfields will mean two entries in the list.
    *
    * @return the generated data string
    */
@@ -921,8 +923,8 @@ public class Processor<T> {
       coll.add(o);
       getMethod(object.getClass(), columnNametoCamelCaseWithset(pathSegment), type).invoke(object, coll);
       return o;
-    } else if ((complexPreviouslyCreated != null) &&
-               (complexPreviouslyCreated.getClass().isAssignableFrom(listTypeClass))) {
+    } else if (complexPreviouslyCreated != null
+               && complexPreviouslyCreated.getClass().isAssignableFrom(listTypeClass)) {
       return complexPreviouslyCreated;
     }
     return object;
@@ -930,7 +932,7 @@ public class Processor<T> {
 
   private static Collection<Object> setColl(Method method, Object object) throws InvocationTargetException,
     IllegalAccessException {
-    return ((Collection<Object>) method.invoke(object));
+    return (Collection<Object>) method.invoke(object);
   }
 
   private static String columnNametoCamelCaseWithset(String str) {
@@ -1014,8 +1016,8 @@ public class Processor<T> {
    * saft*Trunc for every saft* field with "i" and numeric subfields excluded
    */
   private JsonArray addExtraMappingsForAuthorities(final DataField dataField, final JsonArray regularMapping) {
-    boolean is5XXField = dataField.getTag().startsWith("5");
-    if (!is5XXField || regularMapping == null || regularMapping.isEmpty()) {
+    boolean is5xxField = dataField.getTag().startsWith("5");
+    if (!is5xxField || regularMapping == null || regularMapping.isEmpty()) {
       return regularMapping;
     }
     final JsonArray extendedMapping = new JsonArray();
@@ -1030,7 +1032,7 @@ public class Processor<T> {
 
   /**
    * Creates a new mapping list from the original one
-   * where subfields "i" and numeric subfields are excluded
+   * where subfields "i" and numeric subfields are excluded.
    */
   private List<LinkedHashMap<String, Object>> createTruncatedMappingList(
     final List<LinkedHashMap<String, Object>> originalMappingList) {
@@ -1141,7 +1143,7 @@ public class Processor<T> {
    * "applyRulesOnConcatenatedData": true
    * }
    * ]
-   * }
+   * }.
    */
   private JsonArray createRelationsMappingForTarget(String target,
                                                     List<LinkedHashMap<String, Object>> existingMappingList) {
@@ -1169,7 +1171,7 @@ public class Processor<T> {
   }
 
   private static Object getHeadingType(Object headingField) {
-    String headingRType = headingField.toString().replace(SAFT_FIELDS_PREFIX, "");
-    return Character.toLowerCase(headingRType.charAt(0)) + headingRType.substring(1);
+    String headingTypeSuffix = headingField.toString().replace(SAFT_FIELDS_PREFIX, "");
+    return Character.toLowerCase(headingTypeSuffix.charAt(0)) + headingTypeSuffix.substring(1);
   }
 }

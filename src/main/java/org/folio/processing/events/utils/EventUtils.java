@@ -4,7 +4,7 @@ import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.publisher.KafkaEventPublisher;
 
 /**
- * Utility class for event-related operations
+ * Utility class for event-related operations.
  */
 public final class EventUtils {
 

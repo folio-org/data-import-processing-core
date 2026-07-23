@@ -33,7 +33,7 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
     Instance instance =
       new Processor<Instance>().process(parsedRecord, mappingParameters, mappingRules, Instance.class);
     if (instance != null) {
-      instance = fixDuplicatedUUIDs(instance.withSource(MARC));
+      instance = fixDuplicatedUuids(instance.withSource(MARC));
       instance = fixDuplicatedLanguages(instance);
       instance = removeElectronicAccessEntriesWithNoUri(instance);
       instance = removePrecedingTitlesWithoutTitles(instance);
@@ -49,7 +49,7 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
     return MARC_FORMAT;
   }
 
-  private Instance fixDuplicatedUUIDs(Instance instance) {
+  private Instance fixDuplicatedUuids(Instance instance) {
     fixIdentifiers(instance);
     fixClassifications(instance);
     return instance;

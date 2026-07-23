@@ -6,7 +6,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 /**
  * Implementation of LoadQuery that provides functionality to build an sql WHERE-clause and cql query,
  * allows to change table name to adjust field reference,
- * applicable only for querying data stored in 'jsonb' column
+ * applicable only for querying data stored in 'jsonb' column.
  */
 public class DefaultJsonLoadQuery implements LoadQuery {
 

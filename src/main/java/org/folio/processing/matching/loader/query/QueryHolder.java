@@ -20,7 +20,7 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.Qualifier;
 
 /**
- * Helper class that allows to build sql and cql queries based on MatchCriterion and apply Qualifier
+ * Helper class that allows to build sql and cql queries based on MatchCriterion and apply Qualifier.
  */
 public class QueryHolder {
 
@@ -37,8 +37,8 @@ public class QueryHolder {
   public QueryHolder(Value value, MatchDetail.MatchCriterion matchCriterion) {
     this.value = value;
     if (value.getType() == Value.ValueType.DATE) {
-      this.sqlQuery = constructDateRangeSQLQuery((DateValue) value);
-      this.cqlQuery = constructDateRangeCQLQuery((DateValue) value);
+      this.sqlQuery = constructDateRangeSqlQuery((DateValue) value);
+      this.cqlQuery = constructDateRangeCqlQuery((DateValue) value);
     } else {
       MatchingCondition matchingCondition = MatchingCondition.valueOf(matchCriterion.name());
       this.sqlQuery = matchingCondition.constructSqlWhereClause(value);
@@ -77,12 +77,12 @@ public class QueryHolder {
   }
 
   public QueryHolder replaceSqlFieldReference(String fieldPath, boolean isJson) {
-    sqlQuery = isJson ? replaceJsonFieldNameForSQLQuery(fieldPath) : replaceNonJsonFieldNameForSqlQuery(fieldPath);
+    sqlQuery = isJson ? replaceJsonFieldNameForSqlQuery(fieldPath) : replaceNonJsonFieldNameForSqlQuery(fieldPath);
     return this;
   }
 
   public QueryHolder replaceCqlFieldReference(String fieldPath, boolean isJson) {
-    cqlQuery = isJson ? replaceJsonFieldNameForCQLQuery(fieldPath) : EMPTY;
+    cqlQuery = isJson ? replaceJsonFieldNameForCqlQuery(fieldPath) : EMPTY;
     return this;
   }
 
@@ -108,7 +108,7 @@ public class QueryHolder {
     return this;
   }
 
-  private String replaceJsonFieldNameForSQLQuery(String fieldPath) {
+  private String replaceJsonFieldNameForSqlQuery(String fieldPath) {
     String fieldReference;
     String arrayJoin = EMPTY;
     // TODO provide support for searching in nested arrays
@@ -168,48 +168,48 @@ public class QueryHolder {
     return fieldReference.toString();
   }
 
-  private String constructDateRangeSQLQuery(DateValue value) {
+  private String constructDateRangeSqlQuery(DateValue value) {
     return format("WHERE FIELD_NAME >= '%s' AND FIELD_NAME <= '%sT23:59:59.999'", value.getFromDate(),
       value.getToDate());
   }
 
-  private String constructDateRangeCQLQuery(DateValue value) {
+  private String constructDateRangeCqlQuery(DateValue value) {
     return format("FIELD_NAME >= \"%s\" AND FIELD_NAME <= \"%sT23:59:59.999\"", value.getFromDate(), value.getToDate());
   }
 
-  private String replaceJsonFieldNameForCQLQuery(String fieldPath) {
+  private String replaceJsonFieldNameForCqlQuery(String fieldPath) {
     if (fieldPath.contains(ARRAY_SIGN)) {
       if (fieldPath.endsWith(ARRAY_SIGN)) {
-        return constructCQLFilterByArrayStringValue(fieldPath);
+        return constructCqlFilterByArrayStringValue(fieldPath);
       } else {
-        return constructCQLFilterByFieldValueOfArrayElement(fieldPath);
+        return constructCqlFilterByFieldValueOfArrayElement(fieldPath);
       }
     }
     return cqlQuery.replace(FIELD_NAME, fieldPath);
   }
 
-  private String constructCQLFilterByArrayStringValue(String fieldPath) {
+  private String constructCqlFilterByArrayStringValue(String fieldPath) {
     return fieldPath.replace(ARRAY_SIGN, EMPTY) + "=\\\"" + escapeSpecialCharacters(value.getValue().toString())
            + "\\\"";
   }
 
-  private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath) {
+  private String constructCqlFilterByFieldValueOfArrayElement(String fieldPath) {
     if (value.getType() == STRING) {
-      return constructCQLFilterByFieldValueOfArrayElement(fieldPath, value.getValue().toString());
+      return constructCqlFilterByFieldValueOfArrayElement(fieldPath, value.getValue().toString());
     } else if (value.getType() == LIST) {
       ListValue listValue = (ListValue) value;
       List<String> conditions = listValue.getValue().stream()
-        .map(val -> constructCQLFilterByFieldValueOfArrayElement(fieldPath, val))
+        .map(val -> constructCqlFilterByFieldValueOfArrayElement(fieldPath, val))
         .collect(Collectors.toList());
       return join(conditions, " OR ");
     }
     return EMPTY;
   }
 
-  private String constructCQLFilterByFieldValueOfArrayElement(String fieldPath, String value) {
+  private String constructCqlFilterByFieldValueOfArrayElement(String fieldPath, String value) {
     return substringBefore(fieldPath, ARRAY_SIGN) + "=\"\\\""
-           + substringAfter(fieldPath, ARRAY_SIGN + ".") +
-           "\\\":\\\"" + escapeSpecialCharacters(value) + "\\\"\"";
+           + substringAfter(fieldPath, ARRAY_SIGN + ".")
+           + "\\\":\\\"" + escapeSpecialCharacters(value) + "\\\"\"";
   }
 
   private String escapeSpecialCharacters(String value) {

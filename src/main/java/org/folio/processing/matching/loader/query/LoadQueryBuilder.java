@@ -19,16 +19,18 @@ import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
 
 /**
- * Provides functionality to build LoadQuery based on match details and matching value
+ * Provides functionality to build LoadQuery based on match details and matching value.
  */
-public class LoadQueryBuilder {
+public final class LoadQueryBuilder {
 
   private static final Logger LOGGER = LogManager.getLogger(LoadQueryBuilder.class);
   private static final String JSON_PATH_SEPARATOR = ".";
   private static final String IDENTIFIER_TYPE_ID = "identifierTypeId";
   private static final String IDENTIFIER_TYPE_VALUE = "instance.identifiers[].value";
+
   /**
    * CQL query template to find an instance by a specific identifier.
+   *
    * <p>
    * This query leverages a relation modifier ({@code @}) to efficiently search within the 'identifiers' JSON array.
    * <ul>
@@ -40,6 +42,7 @@ public class LoadQueryBuilder {
    * This syntax allows PostgreSQL to use the GIN index on the field consistently, improving query performance.
    */
   private static final String IDENTIFIER_INDIVIDUAL_CQL_QUERY = "identifiers =/@identifierTypeId=%s \"%s\"";
+
   private LoadQueryBuilder() {
   }
 
@@ -47,7 +50,7 @@ public class LoadQueryBuilder {
    * Builds LoadQuery,
    * applicable only for STRING, LIST and DATE value types,
    * applicable only for VALUE_FROM_RECORD data type,
-   * currently supports building query only by single field (support for loading MARC records will be added later)
+   * currently supports building query only by single field (support for loading MARC records will be added later).
    *
    * @param value       value to match against
    * @param matchDetail match detail
@@ -98,13 +101,14 @@ public class LoadQueryBuilder {
   private static boolean checkIfIdentifierTypeExists(MatchDetail matchDetail, String fieldPath,
                                                      String additionalFieldPath) {
     return matchDetail.getIncomingRecordType() == EntityType.MARC_BIBLIOGRAPHIC
-           && matchDetail.getExistingRecordType() == EntityType.INSTANCE &&
-           matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES &&
-           fieldPath.equals(IDENTIFIER_TYPE_VALUE) && additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
+           && matchDetail.getExistingRecordType() == EntityType.INSTANCE
+           && matchDetail.getMatchCriterion() == MatchDetail.MatchCriterion.EXACTLY_MATCHES
+           && fieldPath.equals(IDENTIFIER_TYPE_VALUE)
+           && additionalFieldPath.equals(IDENTIFIER_TYPE_ID);
   }
 
   /**
-   * Builds CQL query for identifier matching with individual AND conditions for each value
+   * Builds CQL query for identifier matching with individual AND conditions for each value.
    *
    * @param value            the value to match against (can be STRING or LIST)
    * @param identifierTypeId the identifier type ID
@@ -126,7 +130,7 @@ public class LoadQueryBuilder {
   }
 
   /**
-   * Escapes special characters in CQL values to prevent parsing errors
+   * Escapes special characters in CQL values to prevent parsing errors.
    *
    * @param value the value to escape
    * @return escaped value safe for CQL queries

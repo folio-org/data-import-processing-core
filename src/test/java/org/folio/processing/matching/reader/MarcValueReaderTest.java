@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 
 class MarcValueReaderTest {
 
-  private final static String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
+  private static final String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
   private static String PARSED_CONTENT;
   private static Record MARC_RECORD;
 

@@ -213,9 +213,9 @@ class MarcRecordNormalizerTest {
     );
   }
 
-  private Record recordWith035(String subfieldAValue) {
+  private Record recordWith035(String subfieldValue) {
     var field = FACTORY.newDataField(TAG_035, ' ', ' ');
-    field.addSubfield(FACTORY.newSubfield('a', subfieldAValue));
+    field.addSubfield(FACTORY.newSubfield('a', subfieldValue));
     var marcRecord = FACTORY.newRecord();
     marcRecord.addVariableField(field);
     return marcRecord;

@@ -42,7 +42,7 @@ public interface Mapper {
                              MappingContext mappingContext);
 
   /**
-   * Initialization reader and writer
+   * Initialization reader and writer.
    *
    * @param reader         -     Reader to read values from given event payload
    * @param writer         -    Writer to write values to given event payload
@@ -57,7 +57,7 @@ public interface Mapper {
   }
 
   /**
-   * Check if MappingProfile is valid
+   * Check if MappingProfile is valid.
    *
    * @param profile - current Mapping Profile
    * @return true if MappingProfile is valid otherwise - false.
@@ -81,7 +81,9 @@ public interface Mapper {
 
     content.getJsonArray(FIELDS).forEach(e -> {
       JsonObject field = (JsonObject) e;
-      if (field.getValue(marcField) != null) { multipleEntityFields.add(new JsonObject(field.toString())); } else {
+      if (field.getValue(marcField) != null) {
+        multipleEntityFields.add(new JsonObject(field.toString()));
+      } else {
         nonMultipleFields.add(new JsonObject(field.toString()));
       }
     });

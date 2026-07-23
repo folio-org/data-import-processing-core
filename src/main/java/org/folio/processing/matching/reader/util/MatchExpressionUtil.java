@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.folio.rest.jaxrs.model.Qualifier;
 
 /**
- * Util class to process value according to MatchExpression
+ * Util class to process value according to MatchExpression.
  */
 public final class MatchExpressionUtil {
 
@@ -18,7 +18,7 @@ public final class MatchExpressionUtil {
   }
 
   /**
-   * Extracts specified comparison part of the value
+   * Extracts specified comparison part of the value.
    *
    * @param value     original value
    * @param qualifier qualifier specifying which comparison part should be extracted from the value
@@ -36,10 +36,10 @@ public final class MatchExpressionUtil {
   }
 
   /**
-   * Checks whether value is qualified to be compared in matching process
+   * Checks whether value is qualified to be compared in matching process.
    *
    * @param value     original value
-   * @param qualifier qualifier specifying conditions that value should satisfy in order to be used for matching purposes
+   * @param qualifier qualifier specifying conditions that value should satisfy to be used for matching purposes
    * @return true if value is qualified for matching
    */
   public static boolean isQualified(String value, Qualifier qualifier) {

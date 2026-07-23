@@ -21,7 +21,7 @@ import org.folio.processing.matching.reader.MatchValueReaderFactory;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
 
 /**
- * Matching Manager implementation, provides ability to perform matching
+ * Matching Manager implementation, provides ability to perform matching.
  */
 public final class MatchingManager {
   private static final Logger LOGGER = LogManager.getLogger(MatchingManager.class);

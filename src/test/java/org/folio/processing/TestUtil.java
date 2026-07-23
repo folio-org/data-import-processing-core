@@ -6,7 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Util class contains helper methods for unit testing needs
+ * Util class contains helper methods for unit testing needs.
  */
 public final class TestUtil {
 

@@ -7,12 +7,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
 import org.apache.commons.io.IOUtils;
 
 /**
  * ZIP archiver util for zip and unzip specific string using GZIPOutputStream and Base64-algorithm.
  */
+// Preserves the published utility type name for backward compatibility.
+@SuppressWarnings("checkstyle:AbbreviationAsWordInName")
 public final class ZIPArchiver {
 
   private ZIPArchiver() {

@@ -23,7 +23,7 @@ public interface Writer {
   void initialize(DataImportEventPayload eventPayload) throws IOException;
 
   /**
-   * Writes value to the underlying entity by the fieldPath
+   * Writes value to the underlying entity by the fieldPath.
    *
    * @param fieldPath path to the certain field of the entity
    * @param value     value
@@ -32,7 +32,7 @@ public interface Writer {
   void write(String fieldPath, Value value);
 
   /**
-   * Puts result of writing into event payload and returns event payload
+   * Puts result of writing into event payload and returns event payload.
    *
    * @param eventPayload event payload
    * @return event payload

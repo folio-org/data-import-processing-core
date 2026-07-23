@@ -14,7 +14,7 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MatchExpression;
 
 /**
- * Implementation of MatchValueReader for MARC records
+ * Implementation of MatchValueReader for MARC records.
  */
 public class MarcValueReaderImpl implements MatchValueReader {
 

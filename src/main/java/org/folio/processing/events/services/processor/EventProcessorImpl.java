@@ -52,7 +52,8 @@ public class EventProcessorImpl implements EventProcessor {
           });
       } else {
         LOG.info(
-          "process:: No suitable handler found for {} event type and current profile {} jobExecutionId: {} recordId: {}",
+          "process:: No suitable handler found for {} event type and current profile {} "
+            + "jobExecutionId: {} recordId: {}",
           eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType(),
           eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
         future.completeExceptionally(new EventHandlerNotFoundException(
@@ -74,7 +75,8 @@ public class EventProcessorImpl implements EventProcessor {
   private DataImportEventPayload preparePayloadForPostProcessing(DataImportEventPayload dataImportEventPayload,
                                                                  EventHandler eventHandler) {
     dataImportEventPayload.getContext().put(POST_PROCESSING_INDICATOR, Boolean.toString(true));
-    dataImportEventPayload.getContext().put(POST_PROCESSING_RESULT_EVENT_KEY, dataImportEventPayload.getEventType());
+    dataImportEventPayload.getContext()
+      .put(POST_PROCESSING_RESULT_EVENT_KEY, dataImportEventPayload.getEventType());
     dataImportEventPayload.setEventType(eventHandler.getPostProcessingInitializationEventType());
     return dataImportEventPayload;
   }
@@ -90,7 +92,8 @@ public class EventProcessorImpl implements EventProcessor {
         String profileType = eventPayload.getCurrentNode().getContentType().toString();
         String profileId = eventPayload.getCurrentNode().getProfileId();
         LOG.debug(
-          "logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' for {} ms jobExecutionId: {} recordId: {}",
+          "logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' "
+            + "for {} ms jobExecutionId: {} recordId: {}",
           eventType, profileType, profileId, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(),
           extractRecordId(eventPayload));
       }

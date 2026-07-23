@@ -2,7 +2,7 @@ package org.folio.processing.mapping.defaultmapper.processor;
 
 import io.vertx.core.json.JsonObject;
 
-public class ProcessorHelper {
+public final class ProcessorHelper {
 
   private ProcessorHelper() { }
 

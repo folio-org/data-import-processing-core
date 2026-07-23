@@ -15,7 +15,7 @@ import org.folio.processing.value.Value;
 
 /**
  * Allows to build sql and cql query structures according to the {@link MatchCriterion},
- * FIELD_NAME token is used to mark the place for field reference
+ * FIELD_NAME token is used to mark the place for field reference.
  */
 public enum MatchingCondition {
 
@@ -45,7 +45,7 @@ public enum MatchingCondition {
   }
 
   /**
-   * Builds sql WHERE-clause passing an actual value to the sqlCondition structure
+   * Builds sql WHERE-clause passing an actual value to the sqlCondition structure.
    *
    * @param value {@link Value} that should be applied in sql WHERE-clause,
    *              supports only STRING and LIST value types
@@ -57,7 +57,7 @@ public enum MatchingCondition {
   }
 
   /**
-   * Builds cql query passing an actual value to the cqlQuery structure
+   * Builds cql query passing an actual value to the cqlQuery structure.
    *
    * @param value {@link Value} that should be applied in cql query,
    *              currently supports only STRING and LIST value type

@@ -6,7 +6,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 /**
  * Implementation of LoadQuery that provides functionality to build an sql WHERE-clause,
  * allows to change table name to adjust field reference,
- * applicable only for relational db schemas
+ * applicable only for relational db schemas.
  */
 public class DefaultLoadQuery implements LoadQuery {
 

@@ -29,14 +29,20 @@ import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.junit.jupiter.api.Test;
 
 class ItemMapperTest {
-  private final String PARSED_CONTENT_WITH_MULTIPLE_FIELDS =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"}, {\"b\":\"123\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"}, {\"b\":\"1234\"}, {\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+  private final String parsedContentWithMultipleFields =
+    """
+    {"leader":"01314nam  22003851a 4500","fields":[{"001":"ybp7406411"},{"944":{"subfields":[{"s":"t\
+    estCode2"}],"ind1":" ","ind2":" "}}, {"945":{"subfields":[{"a":"E"}, {"b":"123"},{"s":"testCode"\
+    },{"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"a":"KU/CC/DI/A"}, {"b":"123\
+    4"}, {"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"h":"KU/CC/DI/A"}],"ind1"\
+    :" ","ind2":" "}}]}\
+    """;
 
   @Test
   void shouldCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
@@ -78,7 +84,7 @@ class ItemMapperTest {
   void shouldMapExistingItemFromContext() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     UUID itemId1 = UUID.randomUUID();
     UUID itemId2 = UUID.randomUUID();
@@ -127,13 +133,13 @@ class ItemMapperTest {
 
   @Test
   void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
     context.put(MULTIPLE_HOLDINGS_FIELD, "945");
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -212,7 +218,7 @@ class ItemMapperTest {
   void shouldNotCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));

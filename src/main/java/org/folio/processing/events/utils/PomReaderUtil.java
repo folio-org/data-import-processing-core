@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -56,7 +55,7 @@ public enum PomReaderUtil {
   }
 
   /**
-   * Read from pomFile if this is RMB itself; otherwise read JAR
+   * Read from pomFile if this is RMB itself; otherwise read JAR.
    *
    * @param pomFilename - target pom-file name
    */
@@ -78,7 +77,7 @@ public enum PomReaderUtil {
   }
 
   /**
-   * Read from pomFile if not null; otherwise read JAR
+   * Read from pomFile if not null; otherwise read JAR.
    *
    * @param pomFilename   POM filename; null for search in JAR
    * @param directoryName directory prefix for search of pom.xml in JAR

@@ -43,8 +43,8 @@ public final class EventManager {
   public static final String POST_PROCESSING_RESULT_EVENT_KEY = "POST_PROCESSING_RESULT_EVENT";
   public static final String OL_ACCUMULATIVE_RESULTS = "OL_ACCUMULATIVE_RESULTS";
   private static final Logger LOGGER = LogManager.getLogger(EventManager.class);
-  private static final EventProcessor eventProcessor = new EventProcessorImpl();
-  private static final List<EventPublisher> eventPublisher = new CopyOnWriteArrayList<>();
+  private static final EventProcessor EVENT_PROCESSOR = new EventProcessorImpl();
+  private static final List<EventPublisher> EVENT_PUBLISHERS = new CopyOnWriteArrayList<>();
 
   private EventManager() {
   }
@@ -65,7 +65,7 @@ public final class EventManager {
     CompletableFuture<DataImportEventPayload> future = new CompletableFuture<>();
     try {
       setCurrentNodeIfRoot(eventPayload, jobProfileSnapshot);
-      eventProcessor.process(eventPayload)
+      EVENT_PROCESSOR.process(eventPayload)
         .whenComplete((processPayload, processThrowable) ->
           publishEventIfNecessary(eventPayload, jobProfileSnapshot, processThrowable)
             .whenComplete((publishPayload, publishThrowable) -> {
@@ -86,18 +86,18 @@ public final class EventManager {
   }
 
   /**
-   * Performs registration for given event handler in processing list
+   * Performs registration for given event handler in processing list.
    *
    * @param eventHandler event handler
    * @return true handlers is registered
    */
   public static <T extends EventHandler> boolean registerEventHandler(T eventHandler) {
     LOGGER.trace("registerEventHandler:: Registering event handler: {}", eventHandler.getClass());
-    return eventProcessor.getEventHandlers().add(eventHandler);
+    return EVENT_PROCESSOR.getEventHandlers().add(eventHandler);
   }
 
   /**
-   * Performs registration for kafka event publisher in publishers list
+   * Performs registration for kafka event publisher in publishers list.
    *
    * @param kafkaConfig        - object with kafka initial params
    * @param vertx              - vertx instance
@@ -125,11 +125,11 @@ public final class EventManager {
    */
   public static void clearEventHandlers() {
     LOGGER.trace("clearEventHandlers:: Clearing event handlers");
-    eventProcessor.getEventHandlers().clear();
+    EVENT_PROCESSOR.getEventHandlers().clear();
   }
 
   static List<EventPublisher> getEventPublishers() {
-    return Collections.unmodifiableList(eventPublisher);
+    return Collections.unmodifiableList(EVENT_PUBLISHERS);
   }
 
   private static void setCurrentNodeIfRoot(DataImportEventPayload eventPayload,
@@ -149,12 +149,15 @@ public final class EventManager {
                                                                     Throwable processThrowable) {
     LOGGER.trace("publishEventIfNecessary:: Event type: {}, event payload: {}", eventPayload.getEventType(),
       eventPayload, processThrowable);
-    if (processThrowable instanceof EventHandlerNotFoundException ||
-        (Objects.nonNull(processThrowable) && processThrowable.getCause() instanceof DuplicateEventException)) {
+    if (processThrowable instanceof EventHandlerNotFoundException
+        || Objects.nonNull(processThrowable)
+        && processThrowable.getCause() instanceof DuplicateEventException) {
       return CompletableFuture.completedFuture(false);
     }
-    LOGGER.trace("publishEventIfNecessary:: eventPublisher = {}", eventPublisher.getFirst().getClass().getSimpleName());
-    return eventPublisher.getFirst().publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
+    LOGGER.trace(
+      "publishEventIfNecessary:: EVENT_PUBLISHERS = {}",
+      EVENT_PUBLISHERS.getFirst().getClass().getSimpleName());
+    return EVENT_PUBLISHERS.getFirst().publish(prepareEventPayload(eventPayload, jobProfileSnapshot, processThrowable))
       .thenApply(sentEvent -> true);
   }
 
@@ -262,7 +265,7 @@ public final class EventManager {
   }
 
   /**
-   * Helper method to cleanup existing publishers and register a new one
+   * Helper method to cleanup existing publishers and register a new one.
    *
    * @param publisher - event publisher to register
    */
@@ -270,7 +273,7 @@ public final class EventManager {
     LOGGER.trace("cleanupAndRegisterPublisher:: Cleaning up and registering publisher: {}",
       publisher.getClass().getName());
 
-    eventPublisher.forEach(p -> {
+    EVENT_PUBLISHERS.forEach(p -> {
       LOGGER.info("cleanupAndRegisterPublisher:: Closing existing publisher: {}", p.getClass().getName());
       if (p instanceof KafkaEventPublisher kafkaPublisher) {
         try {
@@ -281,8 +284,8 @@ public final class EventManager {
       }
     });
 
-    eventPublisher.clear();
-    eventPublisher.add(publisher);
+    EVENT_PUBLISHERS.clear();
+    EVENT_PUBLISHERS.add(publisher);
     LOGGER.info("cleanupAndRegisterPublisher:: Successfully registered publisher: {}",
       publisher.getClass().getName());
   }

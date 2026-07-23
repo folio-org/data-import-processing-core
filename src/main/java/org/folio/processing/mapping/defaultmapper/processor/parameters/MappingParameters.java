@@ -43,7 +43,7 @@ import org.folio.rest.jaxrs.model.SubjectSource;
 import org.folio.rest.jaxrs.model.SubjectType;
 
 /**
- * Class to store parameters needed for mapping functions
+ * Class to store parameters needed for mapping functions.
  */
 public class MappingParameters {
 

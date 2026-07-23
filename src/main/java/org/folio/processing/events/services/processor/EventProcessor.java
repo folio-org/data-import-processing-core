@@ -11,7 +11,7 @@ import org.folio.processing.events.services.handler.EventHandler;
 public interface EventProcessor {
 
   /**
-   * Performs event processing
+   * Performs event processing.
    *
    * @param eventPayload event payload
    * @return future with event payload after handling
@@ -19,6 +19,8 @@ public interface EventProcessor {
   CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload);
 
   /**
+   * Returns registered handlers.
+   *
    * @return list of handlers
    */
   List<EventHandler> getEventHandlers();

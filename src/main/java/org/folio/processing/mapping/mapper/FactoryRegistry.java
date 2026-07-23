@@ -20,7 +20,7 @@ import org.folio.processing.matching.reader.MatchValueReader;
 import org.folio.rest.jaxrs.model.EntityType;
 
 /**
- * Registry for reader factories and writer factories
+ * Registry for reader factories and writer factories.
  */
 public class FactoryRegistry {
   private static final List<ReaderFactory> READER_FACTORIES = new ArrayList<>();
@@ -29,7 +29,7 @@ public class FactoryRegistry {
   private static final List<MapperFactory> MAPPER_FACTORIES = new ArrayList<>();
 
   /**
-   * Creates reader by given entity type using reader factory
+   * Creates reader by given entity type using reader factory.
    *
    * @param entityType type of the entities which ReaderFactory produces
    * @return Reader
@@ -47,7 +47,7 @@ public class FactoryRegistry {
   }
 
   /**
-   * Creates writer by given entities type using writer factory
+   * Creates writer by given entities type using writer factory.
    *
    * @param entityType type of the entity which WriterFactory produces
    * @return Reader
@@ -65,7 +65,7 @@ public class FactoryRegistry {
   }
 
   /**
-   * Creates matcher by given entities type using matcher factory
+   * Creates matcher by given entities type using matcher factory.
    *
    * @param entityType type of the entity which MatcherFactory produces
    * @return Reader
@@ -84,12 +84,12 @@ public class FactoryRegistry {
   }
 
   /**
-   * Created specific mapper by given
+   * Creates a mapper for the given payload.
    *
-   * @param dataImportEventPayload
-   * @param reader
-   * @param writer
-   * @return
+   * @param dataImportEventPayload payload to inspect
+   * @param reader reader to use
+   * @param writer writer to use
+   * @return mapper for the payload
    */
   public Mapper createMapper(DataImportEventPayload dataImportEventPayload, Reader reader, Writer writer) {
     Optional<MapperFactory> optionalMapperFactory = MAPPER_FACTORIES.stream()
@@ -104,7 +104,7 @@ public class FactoryRegistry {
   }
 
   /**
-   * Returns list of registered reader factories
+   * Returns list of registered reader factories.
    *
    * @return list of reader factories
    */
@@ -113,7 +113,7 @@ public class FactoryRegistry {
   }
 
   /**
-   * Returns list of registered writer factories
+   * Returns list of registered writer factories.
    *
    * @return list of writer factories
    */
@@ -122,7 +122,7 @@ public class FactoryRegistry {
   }
 
   /**
-   * Returns list of registered matcher factories
+   * Returns list of registered matcher factories.
    *
    * @return list of matcher factories
    */
@@ -131,7 +131,7 @@ public class FactoryRegistry {
   }
 
   /**
-   * Returns list of registered mapper factories
+   * Returns list of registered mapper factories.
    *
    * @return list of mapper factories
    */

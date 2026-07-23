@@ -15,6 +15,7 @@ public enum CallNumberTypesEnum {
 
   private final char indicator;
   private final String name;
+
   CallNumberTypesEnum(char indicator, String name) {
     this.indicator = indicator;
     this.name = name;

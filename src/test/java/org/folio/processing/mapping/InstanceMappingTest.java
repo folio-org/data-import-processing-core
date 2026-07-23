@@ -94,7 +94,8 @@ class InstanceMappingTest {
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING =
     "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples.mrc";
   private static final String BIB_WITH_FIELDS_FOR_ALTERNATIVE_MAPPING_WITH_PUNCTUATIONS =
-    "src/test/resources/org/folio/processing/mapping/instance/fields_for_alternative_mapping_samples_with_punctuations.mrc";
+    "src/test/resources/org/folio/processing/mapping/instance/"
+      + "fields_for_alternative_mapping_samples_with_punctuations.mrc";
   private static final String CLASSIFICATIONS_TEST =
     "src/test/resources/org/folio/processing/mapping/instance/classificationsTest.mrc";
   private static final String INSTANCES_CLASSIFICATIONS_PATH =
@@ -361,7 +362,8 @@ class InstanceMappingTest {
         instance.getNotes().get(3).getNote());
       assertFalse(instance.getNotes().get(3).getStaffOnly());
       assertEquals(
-        "Correspondence relating to the collection may be found in Cornell University Libraries. John M. Echols Collection. Records, #13\\6\\1973",
+        "Correspondence relating to the collection may be found in Cornell University Libraries. "
+          + "John M. Echols Collection. Records, #13\\6\\1973",
         instance.getNotes().get(4).getNote());
       assertFalse(instance.getNotes().get(4).getStaffOnly());
       assertEquals("The note should be marked as stuffOnly", instance.getNotes().get(5).getNote());
@@ -436,25 +438,21 @@ class InstanceMappingTest {
       Instance instance = mapper.mapRecord(marc, new MappingParameters(), mappingRules);
       array.add(JsonObject.mapFrom(instance));
       instance.getSucceedingTitles()
-        .forEach(succeedingTitle ->
-          {
-            assertNotNull(succeedingTitle.getTitle());
-            succeedingTitle.getIdentifiers().forEach(id -> {
-              assertNotNull(id.getIdentifierTypeId());
-              assertNotNull(id.getValue());
-            });
-          }
-        );
+        .forEach(succeedingTitle -> {
+          assertNotNull(succeedingTitle.getTitle());
+          succeedingTitle.getIdentifiers().forEach(id -> {
+            assertNotNull(id.getIdentifierTypeId());
+            assertNotNull(id.getValue());
+          });
+        });
       instance.getPrecedingTitles()
-        .forEach(precedingTitle ->
-          {
-            assertNotNull(precedingTitle.getTitle());
-            precedingTitle.getIdentifiers().forEach(id -> {
-              assertNotNull(id.getIdentifierTypeId());
-              assertNotNull(id.getValue());
-            });
-          }
-        );
+        .forEach(precedingTitle -> {
+          assertNotNull(precedingTitle.getTitle());
+          precedingTitle.getIdentifiers().forEach(id -> {
+            assertNotNull(id.getIdentifierTypeId());
+            assertNotNull(id.getValue());
+          });
+        });
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
       assertTrue(violations.isEmpty());
@@ -528,14 +526,6 @@ class InstanceMappingTest {
     List<InstanceFormat> instanceFormats =
       List.of(new ObjectMapper().readValue(rawInstanceFormatTypes, InstanceFormat[].class));
 
-    String expectedFirstFormatId = "2e48e713-17f3-4c13-a9f8-23845bb210a4";
-
-    List<String> expectedMultipleFormatIds = List.of(
-      "2e48e713-17f3-4c13-a9f8-23845bb210a4",
-      "e8b311a6-3b21-43f2-a269-dd9310cb2d0e",
-      "2b94c631-fca9-4892-a730-03ee529ffe27"
-    );
-
     ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
     List<Instance> mappedInstances = new ArrayList<>();
     while (reader.hasNext()) {
@@ -553,26 +543,32 @@ class InstanceMappingTest {
     }
     assertFalse(mappedInstances.isEmpty());
     assertEquals(5, mappedInstances.size());
+    String expectedFirstFormatId = "2e48e713-17f3-4c13-a9f8-23845bb210a4";
 
     mappedInstances.forEach(mappedInstance -> {
       assertNotNull(mappedInstance.getInstanceFormatIds());
       assertEquals(expectedFirstFormatId, mappedInstance.getInstanceFormatIds().getFirst());
     });
 
+    List<String> expectedMultipleFormatIds = List.of(
+      "2e48e713-17f3-4c13-a9f8-23845bb210a4",
+      "e8b311a6-3b21-43f2-a269-dd9310cb2d0e",
+      "2b94c631-fca9-4892-a730-03ee529ffe27"
+    );
     assertEquals(expectedMultipleFormatIds, mappedInstances.get(4).getInstanceFormatIds());
   }
 
   @Test
-  void testMarcToInstanceWithRepeatableISBN() throws IOException {
-    final String ISBN_IDENTIFIER_ID = "8261054f-be78-422d-bd51-4ed9f33c3422";
-    final String INVALID_ISBN_IDENTIFIER_ID = "fcca2643-406a-482a-b760-7a7f8aec640e";
+  void testMarcToInstanceWithRepeatableIsbn() throws IOException {
+    final String isbnIdentifierId = "8261054f-be78-422d-bd51-4ed9f33c3422";
+    final String invalidIsbnIdentifierId = "fcca2643-406a-482a-b760-7a7f8aec640e";
     final List<Map.Entry<String, String>> expectedResults = List.of(
-      Map.entry("9780471622673 (acid-free paper)", ISBN_IDENTIFIER_ID),
-      Map.entry("0471725331 (electronic bk.)", ISBN_IDENTIFIER_ID),
-      Map.entry("9780471725336 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID),
-      Map.entry("0471725323 (electronic bk.)", INVALID_ISBN_IDENTIFIER_ID),
-      Map.entry("9780471725329 (electronic bk.)", ISBN_IDENTIFIER_ID),
-      Map.entry("0471622672 (acid-free paper)", INVALID_ISBN_IDENTIFIER_ID));
+      Map.entry("9780471622673 (acid-free paper)", isbnIdentifierId),
+      Map.entry("0471725331 (electronic bk.)", isbnIdentifierId),
+      Map.entry("9780471725336 (electronic bk.)", invalidIsbnIdentifierId),
+      Map.entry("0471725323 (electronic bk.)", invalidIsbnIdentifierId),
+      Map.entry("9780471725329 (electronic bk.)", isbnIdentifierId),
+      Map.entry("0471622672 (acid-free paper)", invalidIsbnIdentifierId));
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
       TestUtil.readFileFromPath(BIB_WITH_REPEATED_020_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
@@ -610,68 +606,7 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithRepeatableSubjects() throws IOException {
-    final String FIRST_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
-    final String SECOND_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
-    final String THIRD_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
-    final String FOURTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d43";
-    final String FIFTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d44";
-    final String SIXTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d45";
-    final String SEVENTH_LIBRARY_SOURCE_ID = "e894d0dc-621d-4b1d-98f6-6f7120eb0d46";
-
-    final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
-    final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
-    final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
-    final String FOURTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
-    final String FIFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
-    final String SIXTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
-    final String SEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
-    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
-    final String NINTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
-
-    final String TENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b9";
-    final String ELEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff510";
-    final String TWELFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff512";
-    final String THIRTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff513";
-    final String FOURTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff514";
-    final String FIFTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff515";
-    final String SIXTEENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff516";
-
-    final List<Subject> expectedResults = List.of(
-      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(FIRST_LIBRARY_SOURCE_ID)
-        .withTypeId(FIRST_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 600.2 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID)
-        .withTypeId(FIRST_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 610 subject").withSourceId(THIRD_LIBRARY_SOURCE_ID)
-        .withTypeId(SECOND_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 611 subject").withSourceId(FOURTH_LIBRARY_SOURCE_ID)
-        .withTypeId(THIRD_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 630 subject").withSourceId(FIFTH_LIBRARY_SOURCE_ID)
-        .withTypeId(FOURTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 647 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID)
-        .withTypeId(FIFTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 648 subject").withSourceId(SIXTH_LIBRARY_SOURCE_ID)
-        .withTypeId(SIXTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 650 subject").withSourceId(SEVENTH_LIBRARY_SOURCE_ID)
-        .withTypeId(SEVENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 651 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(EIGHTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 653 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(TENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 654 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(ELEVENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 655 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(NINTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 656 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(TWELFTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 657 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(THIRTEENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 658 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(FOURTEENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 662 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(FIFTEENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 688 subject").withSourceId(SECOND_LIBRARY_SOURCE_ID)
-        .withTypeId(SIXTEENTH_SUBJECT_TYPE_ID)
-    );
+    final List<Subject> expectedResults = getExpectedRepeatableSubjects();
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
       TestUtil.readFileFromPath(BIB_WITH_REPEATED_600_SUBFIELDS).getBytes(StandardCharsets.UTF_8)));
@@ -852,26 +787,26 @@ class InstanceMappingTest {
 
   @Test
   void testMarcToInstanceWithRepeatableSubjectsMappedWithTypeButWithoutIndicators() throws IOException {
-    final String FIRST_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
-    final String SECOND_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
-    final String THIRD_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
-    final String FOURTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
-    final String FIFTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
-    final String SIXTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
-    final String SEVENTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
-    final String EIGHTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
-    final String NINTH_SUBJECT_TYPE_ID = "d6488f88-1e74-40ce-81b5-b19a928ff511";
+    final String firstSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
+    final String secondSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
+    final String thirdSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
+    final String fourthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
+    final String fifthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
+    final String sixthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
+    final String seventhSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
+    final String eighthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
+    final String ninthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff511";
 
     final List<Subject> expectedResults = List.of(
-      new Subject().withValue("Test 600.2 subject").withTypeId(FIRST_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 610 subject").withTypeId(SECOND_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 611 subject").withTypeId(THIRD_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 630 subject").withTypeId(FOURTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 647 subject").withTypeId(FIFTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 648 subject").withTypeId(SIXTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 650 subject").withTypeId(SEVENTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 651 subject").withTypeId(EIGHTH_SUBJECT_TYPE_ID),
-      new Subject().withValue("Test 655 subject").withTypeId(NINTH_SUBJECT_TYPE_ID)
+      new Subject().withValue("Test 600.2 subject").withTypeId(firstSubjectTypeId),
+      new Subject().withValue("Test 610 subject").withTypeId(secondSubjectTypeId),
+      new Subject().withValue("Test 611 subject").withTypeId(thirdSubjectTypeId),
+      new Subject().withValue("Test 630 subject").withTypeId(fourthSubjectTypeId),
+      new Subject().withValue("Test 647 subject").withTypeId(fifthSubjectTypeId),
+      new Subject().withValue("Test 648 subject").withTypeId(sixthSubjectTypeId),
+      new Subject().withValue("Test 650 subject").withTypeId(seventhSubjectTypeId),
+      new Subject().withValue("Test 651 subject").withTypeId(eighthSubjectTypeId),
+      new Subject().withValue("Test 655 subject").withTypeId(ninthSubjectTypeId)
     );
 
     MarcReader reader = new MarcStreamReader(new ByteArrayInputStream(
@@ -922,24 +857,6 @@ class InstanceMappingTest {
     List<SubjectSource> subjectSources = new ObjectMapper()
       .readValue(new File(DEFAULT_SUBJECT_SOURCES_PATH), new TypeReference<>() { });
 
-    String firstSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
-    String secondSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
-    String thirdSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
-    String fourthSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d45";
-    String fifthSourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d46";
-
-    Map<String, String> subjectValueToSourceId = Map.of(
-      "Subject heading 600", firstSourceId,
-      "Subject heading 610", secondSourceId,
-      "Subject heading 611", thirdSourceId,
-      "Subject heading 630", fourthSourceId,
-      "Subject heading 647", fifthSourceId,
-      "Subject heading 648", firstSourceId,
-      "Subject heading 650", secondSourceId,
-      "Subject heading 651", thirdSourceId,
-      "Subject heading 655", fourthSourceId
-    );
-
     assertTrue(reader.hasNext());
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     MarcJsonWriter writer = new MarcJsonWriter(os);
@@ -951,6 +868,17 @@ class InstanceMappingTest {
 
     assertNotNull(instance.getSubjects());
     assertEquals(9, instance.getSubjects().size());
+    Map<String, String> subjectValueToSourceId = Map.of(
+      "Subject heading 600", "e894d0dc-621d-4b1d-98f6-6f7120eb0d40",
+      "Subject heading 610", "e894d0dc-621d-4b1d-98f6-6f7120eb0d41",
+      "Subject heading 611", "e894d0dc-621d-4b1d-98f6-6f7120eb0d42",
+      "Subject heading 630", "e894d0dc-621d-4b1d-98f6-6f7120eb0d45",
+      "Subject heading 647", "e894d0dc-621d-4b1d-98f6-6f7120eb0d46",
+      "Subject heading 648", "e894d0dc-621d-4b1d-98f6-6f7120eb0d40",
+      "Subject heading 650", "e894d0dc-621d-4b1d-98f6-6f7120eb0d41",
+      "Subject heading 651", "e894d0dc-621d-4b1d-98f6-6f7120eb0d42",
+      "Subject heading 655", "e894d0dc-621d-4b1d-98f6-6f7120eb0d45"
+    );
     instance.getSubjects().forEach(subject -> {
       assertNotNull(subject.getValue());
       assertEquals(subjectValueToSourceId.get(subject.getValue()), subject.getSourceId());
@@ -1006,7 +934,8 @@ class InstanceMappingTest {
     assertNull(instance.getContributors().get(3).getContributorTypeText());
     assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
 
-    // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if all $e don't match
+    // 720 1\$aKURIHARA, N.$edata contact$ecreator should set data from first $e to the "contributorTypeText" if all $e
+    // don't match
     assertEquals("KURIHARA, N.", instance.getContributors().get(4).getName());
     assertNull(instance.getContributors().get(4).getContributorTypeId());
     assertEquals("data contact", instance.getContributors().get(4).getContributorTypeText());
@@ -1052,96 +981,22 @@ class InstanceMappingTest {
         mappingRules);
       assertNotNull(instance.getSource());
       assertEquals(15, instance.getContributors().size());
-
-      // 100 \1\$aChin, Staceyann,$d1972-$eAuthor$eNarrator$0http://id.loc.gov/authorities/names/n2008052404$1http://viaf.org/viaf/24074052 should match by $e subfield and set contributorTypeId
-      assertEquals("Chin, Staceyann, 1972-", instance.getContributors().getFirst().getName());
-      assertEquals("1", instance.getContributors().getFirst().getContributorTypeId());
-      assertNull(instance.getContributors().getFirst().getContributorTypeText());
-      assertEquals("1", instance.getContributors().getFirst().getContributorNameTypeId());
-
-      // 110 1\$aOklahoma.$bDept. of Highways.$4cou should match by $e subfield and set contributorTypeId
-      assertEquals("Oklahoma. Dept. of Highways", instance.getContributors().get(1).getName());
-      assertEquals("1", instance.getContributors().get(1).getContributorTypeId());
-      assertNull(instance.getContributors().get(1).getContributorTypeText());
-      assertEquals("2", instance.getContributors().get(1).getContributorNameTypeId());
-
-      // 111  2\$aInternational Conference on Business History$4aut
-      assertEquals("International Conference on Business History", instance.getContributors().get(2).getName());
-      assertEquals("1", instance.getContributors().get(2).getContributorTypeId());
-      assertNull(instance.getContributors().get(2).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(2).getContributorNameTypeId());
-
-      // 700 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
-      assertEquals("Boguslawski, Pawel", instance.getContributors().get(3).getName());
-      assertEquals("1", instance.getContributors().get(3).getContributorTypeId());
-      assertNull(instance.getContributors().get(3).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
-
-      // 700  \\$aCHUJO, T.$eauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
-      assertEquals("CHUJO, T.", instance.getContributors().get(4).getName());
-      assertEquals("2", instance.getContributors().get(4).getContributorTypeId());
-      assertNull(instance.getContributors().get(4).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
-
-      // 700 \\$aAbdul Rahman, Alias$eeditor$4edt$4prf should match and set contributorTypeId by $e if all $4 don't match
-      assertEquals("Abdul Rahman, Alias", instance.getContributors().get(5).getName());
-      assertEquals("2", instance.getContributors().get(5).getContributorTypeId());
-      assertNull(instance.getContributors().get(5).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(5).getContributorNameTypeId());
-
-      // 700 \\$aGold, Christopher$eeditor$eauthor should match by $e case insensitively and set contributorTypeId
-      assertEquals("Gold, Christopher", instance.getContributors().get(6).getName());
-      assertEquals("2", instance.getContributors().get(6).getContributorTypeId());
-      assertNull(instance.getContributors().get(6).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(6).getContributorNameTypeId());
-
-      // 700 1\$aKURIHARA, N.$edata contact$jcreator should set data from first $e to the "contributorTypeText" if all $e don't match
-      assertEquals("KURIHARA, N.", instance.getContributors().get(7).getName());
-      assertNull(instance.getContributors().get(7).getContributorTypeId());
-      assertEquals("data contact", instance.getContributors().get(7).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(7).getContributorNameTypeId());
-
-      // 700 2\$aLondon Symphony Orchestra.$eoth$4aut should set "getContributorNameTypeId" as Corporate name if ind1 == 2
-      assertEquals("London Symphony Orchestra", instance.getContributors().get(8).getName());
-      assertEquals("1", instance.getContributors().get(8).getContributorTypeId());
-      assertNull(instance.getContributors().get(8).getContributorTypeText());
-      assertEquals("1", instance.getContributors().get(8).getContributorNameTypeId());
-
-      // 711 \\$aBoguslawski, Pawel$4aut$4edt should match by first $4 subfield and set contributorTypeId
-      assertEquals("Boguslawski, Pawel", instance.getContributors().get(9).getName());
-      assertEquals("1", instance.getContributors().get(9).getContributorTypeId());
-      assertNull(instance.getContributors().get(9).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(9).getContributorNameTypeId());
-
-      // 711  \\$aCHUJO, T.$jauthor$4edt$4edi should set contributorTypeId by any $4 if it matches
-      assertEquals("CHUJO, T.", instance.getContributors().get(10).getName());
-      assertEquals("2", instance.getContributors().get(10).getContributorTypeId());
-      assertNull(instance.getContributors().get(10).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(10).getContributorNameTypeId());
-
-      // 711 \\$aAbdul Rahman, Alias$jeditor$4edt$4prf should match and set contributorTypeId by $e if all $4 don't match
-      assertEquals("Abdul Rahman, Alias", instance.getContributors().get(11).getName());
-      assertEquals("2", instance.getContributors().get(11).getContributorTypeId());
-      assertNull(instance.getContributors().get(11).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(11).getContributorNameTypeId());
-
-      // 711 \\$aGold, Christopher$jeditor$jauthor should match by $e case insensitively and set contributorTypeId
-      assertEquals("Gold, Christopher", instance.getContributors().get(12).getName());
-      assertEquals("2", instance.getContributors().get(12).getContributorTypeId());
-      assertNull(instance.getContributors().get(12).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(12).getContributorNameTypeId());
-
-      // 711 1\$aKURIHARA, N.$edata contact$jcreator should set data from first $e to the "contributorTypeText" if all $e don't match
-      assertEquals("KURIHARA, N.", instance.getContributors().get(13).getName());
-      assertNull(instance.getContributors().get(13).getContributorTypeId());
-      assertEquals("data contact", instance.getContributors().get(13).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(13).getContributorNameTypeId());
-
-      // 711 2\$aLondon Symphony Orchestra.$joth$4aut should set "getContributorNameTypeId" as Corporate name if ind1 == 2
-      assertEquals("London Symphony Orchestra", instance.getContributors().get(14).getName());
-      assertEquals("1", instance.getContributors().get(14).getContributorTypeId());
-      assertNull(instance.getContributors().get(14).getContributorTypeText());
-      assertEquals("3", instance.getContributors().get(14).getContributorNameTypeId());
+      assertContributor(instance.getContributors().getFirst(), "Chin, Staceyann, 1972-", "1", null, "1");
+      assertContributor(instance.getContributors().get(1), "Oklahoma. Dept. of Highways", "1", null, "2");
+      assertContributor(instance.getContributors().get(2), "International Conference on Business History",
+        "1", null, "3");
+      assertContributor(instance.getContributors().get(3), "Boguslawski, Pawel", "1", null, "1");
+      assertContributor(instance.getContributors().get(4), "CHUJO, T.", "2", null, "1");
+      assertContributor(instance.getContributors().get(5), "Abdul Rahman, Alias", "2", null, "1");
+      assertContributor(instance.getContributors().get(6), "Gold, Christopher", "2", null, "1");
+      assertContributor(instance.getContributors().get(7), "KURIHARA, N.", null, "data contact", "1");
+      assertContributor(instance.getContributors().get(8), "London Symphony Orchestra", "1", null, "1");
+      assertContributor(instance.getContributors().get(9), "Boguslawski, Pawel", "1", null, "3");
+      assertContributor(instance.getContributors().get(10), "CHUJO, T.", "2", null, "3");
+      assertContributor(instance.getContributors().get(11), "Abdul Rahman, Alias", "2", null, "3");
+      assertContributor(instance.getContributors().get(12), "Gold, Christopher", "2", null, "3");
+      assertContributor(instance.getContributors().get(13), "KURIHARA, N.", null, "data contact", "3");
+      assertContributor(instance.getContributors().get(14), "London Symphony Orchestra", "1", null, "3");
 
       Validator validator = factory.getValidator();
       Set<ConstraintViolation<Instance>> violations = validator.validate(instance);
@@ -1192,55 +1047,64 @@ class InstanceMappingTest {
       assertNull(instance.getContributors().getFirst().getContributorTypeText());
       assertEquals("1", instance.getContributors().getFirst().getContributorNameTypeId());
 
-      // 110 2\$aBuena Vista Corporate (Firm),$efilm distributor. should remove comma at the end of the name, match by first $e subfield and set contributorTypeId to 5
+      // 110 2\$aBuena Vista Corporate (Firm),$efilm distributor. should remove comma at the end of the name, match by
+      // first $e subfield and set contributorTypeId to 5
       assertEquals("Buena Vista Corporate (Firm)", instance.getContributors().get(1).getName());
       assertEquals("5", instance.getContributors().get(1).getContributorTypeId());
       assertNull(instance.getContributors().get(1).getContributorTypeText());
       assertEquals("2", instance.getContributors().get(1).getContributorNameTypeId());
 
-      // 111 2\$aSuperheroes,$jassociated name;$jdepicted. should remove comma at the end of the name, match by first $j subfield and set contributorTypeId to 6
+      // 111 2\$aSuperheroes,$jassociated name;$jdepicted. should remove comma at the end of the name, match by first
+      // $j subfield and set contributorTypeId to 6
       assertEquals("Superheroes", instance.getContributors().get(2).getName());
       assertEquals("6", instance.getContributors().get(2).getContributorTypeId());
       assertNull(instance.getContributors().get(2).getContributorTypeText());
       assertEquals("3", instance.getContributors().get(2).getContributorNameTypeId());
 
-      // 700 1\$aBrown, Sterling K.,$eactress;$einterviewer. should remove comma at the end of the name, match by second $e subfield and set contributorTypeId to 8
+      // 700 1\$aBrown, Sterling K.,$eactress;$einterviewer. should remove comma at the end of the name, match by
+      // second $e subfield and set contributorTypeId to 8
       assertEquals("Brown, Sterling K.", instance.getContributors().get(3).getName());
       assertEquals("8", instance.getContributors().get(3).getContributorTypeId());
       assertNull(instance.getContributors().get(3).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(3).getContributorNameTypeId());
 
-      // 700 1\$aBrown, Sterling K,.$eactress;$einterviewer. should remove comma at the end of the name, match by second $e subfield and set contributorTypeId to 8
+      // 700 1\$aBrown, Sterling K,.$eactress;$einterviewer. should remove comma at the end of the name, match by
+      // second $e subfield and set contributorTypeId to 8
       assertEquals("Brown, Sterling K.", instance.getContributors().get(4).getName());
       assertEquals("8", instance.getContributors().get(4).getContributorTypeId());
       assertNull(instance.getContributors().get(4).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(4).getContributorNameTypeId());
 
-      // 700 1\$aBrown, Sterling K-$$einterviewer. should NOT remove the hyphen at the end of the name, match by second $e subfield and set contributorTypeId to 8
+      // 700 1\$aBrown, Sterling K-$$einterviewer. should NOT remove the hyphen at the end of the name, match by second
+      // $e subfield and set contributorTypeId to 8
       assertEquals("Brown, Sterling K-", instance.getContributors().get(5).getName());
       assertEquals("8", instance.getContributors().get(5).getContributorTypeId());
       assertNull(instance.getContributors().get(5).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(5).getContributorNameTypeId());
 
-      // 700 1\$aMorrison, Rachel$c(Cinematographer),$edirector of photorgaphy. should remove comma at the end of the name(subfield a+c), not match by $e subfield and set it as contributorTypeText to 8
+      // 700 1\$aMorrison, Rachel$c(Cinematographer),$edirector of photorgaphy. should remove comma at the end of the
+      // name(subfield a+c), not match by $e subfield and set it as contributorTypeText to 8
       assertEquals("Morrison, Rachel (Cinematographer)", instance.getContributors().get(6).getName());
       assertNull(instance.getContributors().get(6).getContributorTypeId());
       assertEquals("director of photorgaphy.", instance.getContributors().get(6).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(6).getContributorNameTypeId());
 
-      // 700 1\$aMorrison, Rachel$c(Cinematographer),$eeAuthor of introduction, etc. should remove comma at the end of the name(subfield a+c), match by $e subfield and set contributorTypeId to 9
+      // 700 1\$aMorrison, Rachel$c(Cinematographer),$eeAuthor of introduction, etc. should remove comma at the end of
+      // the name(subfield a+c), match by $e subfield and set contributorTypeId to 9
       assertEquals("Morrison, Rachel (Cinematographer)", instance.getContributors().get(7).getName());
       assertEquals("9", instance.getContributors().get(7).getContributorTypeId());
       assertNull(instance.getContributors().get(7).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(7).getContributorNameTypeId());
 
-      // 700 1\$aMorrison, Rachel$c(Cinematographer),$eeAuthor of introduction, etc should remove comma at the end of the name(subfield a+c), match by $e subfield and set contributorTypeId to 9
+      // 700 1\$aMorrison, Rachel$c(Cinematographer),$eeAuthor of introduction, etc should remove comma at the end of
+      // the name(subfield a+c), match by $e subfield and set contributorTypeId to 9
       assertEquals("Morrison, Rachel (Cinematographer)", instance.getContributors().get(8).getName());
       assertEquals("9", instance.getContributors().get(8).getContributorTypeId());
       assertNull(instance.getContributors().get(8).getContributorTypeText());
       assertEquals("1", instance.getContributors().get(8).getContributorNameTypeId());
 
-      // 700 1\$aWright, Letitia,$d1993-$eauthor of introduction, etc.;$eactor. should remove comma at the end of the name(subfield a+c), match by $e author of introduction, etc. subfield and set contributorTypeId to 9
+      // 700 1\$aWright, Letitia,$d1993-$eauthor of introduction, etc.;$eactor. should remove comma at the end of the
+      // name(subfield a+c), match by $e author of introduction, etc. subfield and set contributorTypeId to 9
       assertEquals("Wright, Letitia, 1993-", instance.getContributors().get(9).getName());
       assertEquals("9", instance.getContributors().get(9).getContributorTypeId());
       assertNull(instance.getContributors().get(9).getContributorTypeText());
@@ -1286,5 +1150,78 @@ class InstanceMappingTest {
       assertTrue(identifiers.stream().map(Identifier::getValue)
         .anyMatch(actualValue -> actualValue.equals(expected010SubfieldZ)));
     }
+  }
+
+  private static void assertContributor(org.folio.Contributor contributor, String expectedName,
+                                        String expectedContributorTypeId, String expectedContributorTypeText,
+                                        String expectedContributorNameTypeId) {
+    assertEquals(expectedName, contributor.getName());
+    assertEquals(expectedContributorTypeId, contributor.getContributorTypeId());
+    assertEquals(expectedContributorTypeText, contributor.getContributorTypeText());
+    assertEquals(expectedContributorNameTypeId, contributor.getContributorNameTypeId());
+  }
+
+  private static List<Subject> getExpectedRepeatableSubjects() {
+    final String firstLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d40";
+    final String secondLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d41";
+    final String thirdLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d42";
+    final String fourthLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d43";
+    final String fifthLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d44";
+    final String sixthLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d45";
+    final String seventhLibrarySourceId = "e894d0dc-621d-4b1d-98f6-6f7120eb0d46";
+
+    final String firstSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b1";
+    final String secondSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b2";
+    final String thirdSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b3";
+    final String fourthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b4";
+    final String fifthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b5";
+    final String sixthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b6";
+    final String seventhSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b7";
+    final String eighthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b8";
+    final String ninthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff511";
+    final String tenthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff5b9";
+    final String eleventhSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff510";
+    final String twelfthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff512";
+    final String thirteenthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff513";
+    final String fourteenthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff514";
+    final String fifteenthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff515";
+    final String sixteenthSubjectTypeId = "d6488f88-1e74-40ce-81b5-b19a928ff516";
+
+    return List.of(
+      new Subject().withValue("Testing 600 subject Testing 600b subject").withSourceId(firstLibrarySourceId)
+        .withTypeId(firstSubjectTypeId),
+      new Subject().withValue("Test 600.2 subject").withSourceId(fifthLibrarySourceId)
+        .withTypeId(firstSubjectTypeId),
+      new Subject().withValue("Test 610 subject").withSourceId(thirdLibrarySourceId)
+        .withTypeId(secondSubjectTypeId),
+      new Subject().withValue("Test 611 subject").withSourceId(fourthLibrarySourceId)
+        .withTypeId(thirdSubjectTypeId),
+      new Subject().withValue("Test 630 subject").withSourceId(fifthLibrarySourceId)
+        .withTypeId(fourthSubjectTypeId),
+      new Subject().withValue("Test 647 subject").withSourceId(sixthLibrarySourceId)
+        .withTypeId(fifthSubjectTypeId),
+      new Subject().withValue("Test 648 subject").withSourceId(sixthLibrarySourceId)
+        .withTypeId(sixthSubjectTypeId),
+      new Subject().withValue("Test 650 subject").withSourceId(seventhLibrarySourceId)
+        .withTypeId(seventhSubjectTypeId),
+      new Subject().withValue("Test 651 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(eighthSubjectTypeId),
+      new Subject().withValue("Test 653 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(tenthSubjectTypeId),
+      new Subject().withValue("Test 654 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(eleventhSubjectTypeId),
+      new Subject().withValue("Test 655 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(ninthSubjectTypeId),
+      new Subject().withValue("Test 656 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(twelfthSubjectTypeId),
+      new Subject().withValue("Test 657 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(thirteenthSubjectTypeId),
+      new Subject().withValue("Test 658 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(fourteenthSubjectTypeId),
+      new Subject().withValue("Test 662 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(fifteenthSubjectTypeId),
+      new Subject().withValue("Test 688 subject").withSourceId(secondLibrarySourceId)
+        .withTypeId(sixteenthSubjectTypeId)
+    );
   }
 }

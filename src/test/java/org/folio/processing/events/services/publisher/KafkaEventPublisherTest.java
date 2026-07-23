@@ -40,7 +40,7 @@ class KafkaEventPublisherTest {
   private static final String OKAPI_URL = "http://localhost";
   private static final String TENANT_ID = "diku";
   private static final String TOKEN = "stub-token";
-  private static final Properties consumerConfig = new Properties();
+  private static final Properties CONSUMER_CONFIG = new Properties();
   private static KafkaConfig kafkaConfig;
   private final Vertx vertx = Vertx.vertx();
 
@@ -54,10 +54,10 @@ class KafkaEventPublisherTest {
       .build();
     kafkaConfig.getConsumerProps().forEach((key, value) -> {
       if (value != null) {
-        consumerConfig.put(key, value);
+        CONSUMER_CONFIG.put(key, value);
       }
     });
-    consumerConfig.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
+    CONSUMER_CONFIG.put(ConsumerConfig.GROUP_ID_CONFIG, "test");
   }
 
   @AfterAll
@@ -79,15 +79,15 @@ class KafkaEventPublisherTest {
         .withOkapiUrl(OKAPI_URL)
         .withTenant(tenant)
         .withToken(TOKEN)
-        .withContext(new HashMap<>() {{
-          put(RECORD_ID_HEADER, expectedRecordId);
-          put(CHUNK_ID_HEADER, expectedChunkId);
-          put(PERMISSIONS_HEADER, expectedPermissionsHeader);
-          put(USER_ID_HEADER, expectedUserId);
-          put(REQUEST_ID_HEADER, expectedRequestId);
-        }});
+        .withContext(contextOf(
+          RECORD_ID_HEADER, expectedRecordId,
+          CHUNK_ID_HEADER, expectedChunkId,
+          PERMISSIONS_HEADER, expectedPermissionsHeader,
+          USER_ID_HEADER, expectedUserId,
+          REQUEST_ID_HEADER, expectedRequestId));
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+      assertFalse(future.isCompletedExceptionally());
 
       String topicToObserve =
         KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
@@ -99,8 +99,6 @@ class KafkaEventPublisherTest {
       assertEquals(expectedRecordId, actualPayload.getContext().get(RECORD_ID_HEADER));
       assertEquals(expectedChunkId, actualPayload.getContext().get(CHUNK_ID_HEADER));
       assertEquals(expectedRequestId, actualPayload.getContext().get(REQUEST_ID_HEADER));
-
-      assertFalse(future.isCompletedExceptionally());
     }
   }
 
@@ -113,21 +111,19 @@ class KafkaEventPublisherTest {
         .withOkapiUrl(OKAPI_URL)
         .withTenant(tenant)
         .withToken(null)
-        .withContext(new HashMap<>() {{
-          put("recordId", UUID.randomUUID().toString());
-          put("chunkId", UUID.randomUUID().toString());
-          put("userId", UUID.randomUUID().toString());
-        }});
+        .withContext(contextOf(
+          "recordId", UUID.randomUUID().toString(),
+          "chunkId", UUID.randomUUID().toString(),
+          "userId", UUID.randomUUID().toString()));
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
+      assertFalse(future.isCompletedExceptionally());
 
       String topicToObserve =
         KafkaTopicNameHelper.formatTopicName(KAFKA_ENV, getDefaultNameSpace(), tenant, DI_COMPLETED.value());
       DataImportEventPayload actualPayload =
         Json.decodeValue(getEventPayload(topicToObserve), DataImportEventPayload.class);
       assertEquals(eventPayload, actualPayload);
-
-      assertFalse(future.isCompletedExceptionally());
     }
   }
 
@@ -148,9 +144,7 @@ class KafkaEventPublisherTest {
         .withToken(TOKEN)
         .withOkapiUrl(OKAPI_URL)
         .withTenant(null)
-        .withContext(new HashMap<>() {{
-          put("recordId", UUID.randomUUID().toString());
-        }});
+        .withContext(contextOf("recordId", UUID.randomUUID().toString()));
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
       assertTrue(future.isCompletedExceptionally());
@@ -166,9 +160,7 @@ class KafkaEventPublisherTest {
         .withOkapiUrl(OKAPI_URL)
         .withTenant(TENANT_ID)
         .withToken(TOKEN)
-        .withContext(new HashMap<>() {{
-          put("chunkId", UUID.randomUUID().toString());
-        }});
+        .withContext(contextOf("chunkId", UUID.randomUUID().toString()));
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
       assertFalse(future.isCompletedExceptionally());
@@ -184,9 +176,7 @@ class KafkaEventPublisherTest {
         .withOkapiUrl(OKAPI_URL)
         .withTenant(TENANT_ID)
         .withToken(TOKEN)
-        .withContext(new HashMap<>() {{
-          put("recordId", UUID.randomUUID().toString());
-        }});
+        .withContext(contextOf("recordId", UUID.randomUUID().toString()));
 
       CompletableFuture<Event> future = eventPublisher.publish(eventPayload);
       assertFalse(future.isCompletedExceptionally());
@@ -195,7 +185,7 @@ class KafkaEventPublisherTest {
   }
 
   private String getEventPayload(String topicToObserve) {
-    try (var kafkaConsumer = new KafkaConsumer<String, String>(consumerConfig)) {
+    try (var kafkaConsumer = new KafkaConsumer<String, String>(CONSUMER_CONFIG)) {
       kafkaConsumer.subscribe(List.of(topicToObserve));
       var records = kafkaConsumer.poll(Duration.ofSeconds(30));
       if (records.isEmpty()) {
@@ -204,5 +194,13 @@ class KafkaEventPublisherTest {
       Event obtainedEvent = Json.decodeValue(records.iterator().next().value(), Event.class);
       return obtainedEvent.getEventPayload();
     }
+  }
+
+  private static HashMap<String, String> contextOf(String... entries) {
+    HashMap<String, String> context = new HashMap<>();
+    for (int i = 0; i < entries.length; i += 2) {
+      context.put(entries[i], entries[i + 1]);
+    }
+    return context;
   }
 }

@@ -7,7 +7,7 @@ import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.rest.jaxrs.model.EntityType;
 
 /**
- * Factory to create reader of marc authority records
+ * Factory to create reader of marc authority records.
  */
 public class MarcAuthorityReaderFactory implements ReaderFactory {
   @Override

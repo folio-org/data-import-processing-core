@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.AuthorityExtended;
 
-public class LoaderHelper {
+public final class LoaderHelper {
 
   private static final Logger LOGGER = LogManager.getLogger(LoaderHelper.class);
   private static final Map<Field, Class<?>> LIST_TYPE_CLASS_CACHE = new ConcurrentHashMap<>();
@@ -49,7 +49,7 @@ public class LoaderHelper {
   }
 
   public static boolean isPrimitiveOrPrimitiveWrapperOrString(Class<?> type) {
-    return (type.isPrimitive() && type != void.class) || type == Double.class || type == Float.class
+    return type.isPrimitive() && type != void.class || type == Double.class || type == Float.class
            || type == Long.class || type == Integer.class || type == Short.class
            || type == Character.class || type == Byte.class || type == Boolean.class
            || type == String.class;

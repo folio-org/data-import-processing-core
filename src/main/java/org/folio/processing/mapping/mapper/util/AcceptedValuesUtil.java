@@ -17,9 +17,9 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 import org.folio.rest.jaxrs.model.StatisticalCodeType;
 
 /**
- * Retrieves accepted values from MappingParameters
+ * Retrieves accepted values from MappingParameters.
  */
-public class AcceptedValuesUtil {
+public final class AcceptedValuesUtil {
   private static final String VALUE_PROPERTY = "value";
   private static final String STATISTICAL_CODE_TEMPLATE = "%s: %s - %s";
 
@@ -57,7 +57,8 @@ public class AcceptedValuesUtil {
   private static final String FUND_ID = "fundId";
   private static final String EXPENSE_CLASS_ID = "expenseClassId";
 
-  private static final Map<String, Function<MappingParameters, List<?>>> ruleNameToMappingParameter = Map.ofEntries(
+  private static final Map<String, Function<MappingParameters, List<?>>> RULE_NAME_TO_MAPPING_PARAMETER =
+    Map.ofEntries(
     entry(HOLDINGS_PERMANENT_LOCATION_ID, MappingParameters::getLocations),
     entry(HOLDINGS_TEMPORARY_LOCATION_ID, MappingParameters::getLocations),
     entry(STATUS_ID, MappingParameters::getInstanceStatuses),
@@ -97,11 +98,11 @@ public class AcceptedValuesUtil {
   public static Map<String, String> getAcceptedValues(String ruleName, MappingParameters mappingParameters) {
     HashMap<String, String> acceptedValues = new HashMap<>();
 
-    if (ruleName == null || !ruleNameToMappingParameter.containsKey(ruleName)) {
+    if (ruleName == null || !RULE_NAME_TO_MAPPING_PARAMETER.containsKey(ruleName)) {
       return acceptedValues;
     }
 
-    List<?> mappingParameter = ruleNameToMappingParameter.get(ruleName).apply(mappingParameters);
+    List<?> mappingParameter = RULE_NAME_TO_MAPPING_PARAMETER.get(ruleName).apply(mappingParameters);
 
     mappingParameter.forEach(parameter -> {
       JsonObject jsonObject =

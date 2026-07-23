@@ -10,7 +10,7 @@ import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext
 /**
  * Run a splitter on a string or run a function.
  */
-public class NormalizationFunctionRunner {
+public final class NormalizationFunctionRunner {
   private static final Logger LOGGER = LogManager.getLogger(NormalizationFunctionRunner.class);
   private static final String SPLIT_FUNCTION_SPLIT_EVERY = "split_every";
 

@@ -67,7 +67,8 @@ public class EdifactRecordReader implements Reader {
     Pattern.compile("[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]");
   private static final Pattern MULTI_SEGMENTS_EXPRESSION_PATTERN =
     Pattern.compile(
-      "[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\](\\s(\"[^\"]*\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
+      "[A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]"
+        + "(\\s(\"[^\"]*\"\\s)?([A-Z]{3}((\\+|<)\\w*)(\\2*\\w*)*(\\?\\w+)?\\[[1-9](-[1-9])?\\]))+");
   private static final Pattern EXTERNAL_DATA_EXPRESSION_PATTERN = Pattern.compile("\\{[\\w]+\\}");
   private static final String ELSE_DELIMITER = "; else ";
   private static final String RANGE_DELIMITER = "-";
@@ -82,7 +83,8 @@ public class EdifactRecordReader implements Reader {
     "Failed to retrieve segments data - parsed record does not contain EDIFACT data";
   private static final String INVALID_MAPPING_EXPRESSION_MSG = "The specified mapping expression '%s' is invalid";
   private static final String INVALID_DATA_RANGE_MSG =
-    "The specified components data range is invalid: from '%s' to '%s'. From index must be less than or equal to the end index.";
+    "The specified components data range is invalid: from '%s' to '%s'. "
+      + "From index must be less than or equal to the end index.";
   private static final String INCOMING_DATE_FORMAT = "yyyyMMdd";
   private static final DateTimeFormatter ZONE_DATE_TIME_FORMATTER =
     DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -151,8 +153,8 @@ public class EdifactRecordReader implements Reader {
         return;
       }
     }
-    throw new IllegalArgumentException(
-      "Can not initialize EdifactRecordReader, event payload has no EDIFACT parsed content");
+    throw new IllegalArgumentException("Can not initialize EdifactRecordReader, "
+      + "event payload has no EDIFACT parsed content");
   }
 
   @Override
@@ -161,6 +163,19 @@ public class EdifactRecordReader implements Reader {
       return readInvoiceLinesRepeatableFieldValue(mappingRule);
     }
     return read(mappingRule, invoiceSegments);
+  }
+
+  private Value read(MappingRule mappingRule, List<Segment> segments) {
+    if (mappingRule.getBooleanFieldAction() != null) {
+      return BooleanValue.of(mappingRule.getBooleanFieldAction());
+    } else if (mappingRule.getSubfields().isEmpty()) {
+      return readSingleFieldValue(mappingRule, segments);
+    } else if (isListValueMappingRule(mappingRule)) {
+      return readListValue(mappingRule);
+    } else if (!mappingRule.getSubfields().isEmpty()) {
+      return readRepeatableFieldValue(mappingRule, segments);
+    }
+    return MissingValue.getInstance();
   }
 
   private List<Segment> getInvoiceSegments(EdifactParsedContent edifactParsedContent) {
@@ -203,19 +218,6 @@ public class EdifactRecordReader implements Reader {
       }
     }
     return invoiceLinesSegments;
-  }
-
-  private Value read(MappingRule mappingRule, List<Segment> segments) {
-    if (mappingRule.getBooleanFieldAction() != null) {
-      return BooleanValue.of(mappingRule.getBooleanFieldAction());
-    } else if (mappingRule.getSubfields().isEmpty()) {
-      return readSingleFieldValue(mappingRule, segments);
-    } else if (isListValueMappingRule(mappingRule)) {
-      return readListValue(mappingRule);
-    } else if (!mappingRule.getSubfields().isEmpty()) {
-      return readRepeatableFieldValue(mappingRule, segments);
-    }
-    return MissingValue.getInstance();
   }
 
   private RepeatableFieldValue readInvoiceLinesRepeatableFieldValue(MappingRule mappingRule) {

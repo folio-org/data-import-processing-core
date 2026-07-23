@@ -7,7 +7,7 @@ import org.folio.rest.jaxrs.model.Qualifier.QualifierType;
 
 /**
  * Allows to build additional sql or cql filter according to the {@link QualifierType},
- * FIELD_NAME token is used to mark the place for field reference
+ * FIELD_NAME token is used to mark the place for field reference.
  */
 public enum QualifierFilter {
 
@@ -24,7 +24,7 @@ public enum QualifierFilter {
   }
 
   /**
-   * Builds sql filter passing an actual {@link Qualifier} value to the sql filter structure
+   * Builds sql filter passing an actual {@link Qualifier} value to the sql filter structure.
    *
    * @param qualifierValue value that should be applied in sql filter
    * @return additional sql filter
@@ -34,7 +34,7 @@ public enum QualifierFilter {
   }
 
   /**
-   * Builds cql filter passing an actual {@link Qualifier} value to the cql filter structure
+   * Builds cql filter passing an actual {@link Qualifier} value to the cql filter structure.
    *
    * @param qualifierValue value that should be applied in sql filter
    * @return additional cql filter

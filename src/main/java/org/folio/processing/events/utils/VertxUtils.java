@@ -5,7 +5,7 @@ import io.vertx.core.Vertx;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class VertxUtils {
+public final class VertxUtils {
   private static final Logger log = LogManager.getLogger(VertxUtils.class);
 
   private VertxUtils() {

@@ -39,7 +39,7 @@ public final class MarcValueReaderUtil {
   }
 
   /**
-   * Read value from MARC-file
+   * Read value from MARC-file.
    *
    * @param marcRecord      - marcRecord as String
    * @param matchExpression - expression which contains fields.

@@ -58,43 +58,107 @@ import org.junit.jupiter.api.Test;
 
 class MarcRecordReaderUnitTest {
 
-  private final String RECORD =
-    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"3\": \"test\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, { \"245\":\"American Bar Association journal\" } ] }";
-  private final String RECORD_WITH_DATE_DATA =
-    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
-  private final String RECORD_WITH_MULTIPLE_856 =
-    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"856\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"u\": \"https://fod.infobase.com\" }, { \"z\": \"image\" } ] }}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"u\": \"https://cfvod.kaltura.com\" }, { \"z\": \"films collection\" }]} }]}";
-  private final String RECORD_WITH_MULTIPLE_876 =
-    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"876\": { \"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"n\": \"This is a binding note\" }, { \"t\": \"Binding\" } ] }}, {\"876\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"n\": \"This is an electronic bookplate note\" }, { \"t\": \"Electronic bookplate\" }]} }]}";
-  private final String RECORD_WITHOUT_SUBFIELD_856_U =
-    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"856\": {\"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [{\"z\": \"image\"}]}}]}";
-  private final String RECORD_WITH_049 =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"KU/CC/DI/M\"},{\"z\":\"Testing data\"}]}}]}";
-  private final String RECORD_WITH_049_AND_BRACKETS =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"(KU/CC/DI/M)\"},{\"z\":\"Testing data\"}]}}]}";
-  private final String RECORD_WITH_049_AND_INVALID_BRACKETS =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"K)U/CC(/D)I/M)\"},{\"z\":\"Testing data\"}]}}]}";
-  private final String RECORD_WITH_049_WITH_OLI_LOCATION =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli\"},{\"z\":\"Testing data\"}]}}]}";
-  private final String RECORD_WITH_049_WITH_OLI_ALS_LOCATION =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli,als\"},{\"z\":\"Testing data\"}]}}]}";
-  private final String RECORD_WITH_049_WITH_OL_LOCATION =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"ol\"},{\"z\":\"Testing data\"}]}}]}";
+  private final String record =
+    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"}, {"
+      + " \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"3\": \"test\" } ] } }, {"
+      + " \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, {"
+      + " \"042\": { \"ind1\": \" \", \"ind2\": \" \", \"subfields\": [ { \"a\": \"pcc\" } ] } }, {"
+      + " \"245\":\"American Bar Association journal\" } ] }";
+  private final String recordWithDateData =
+    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"902\": {\"ind1\": \" \", \"ind2\""
+      + ": \" \", \"subfields\": [{\"a\": \"27-05-2020\"}, {\"b\": \"5\\/27\\/2020\"}, {"
+      + "\"c\": \"27.05.2020\"}, {\"d\": \"2020-05-27\"}]}} ] }";
+  private final String recordWithMultiple856 =
+    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"856\": { "
+      + "\"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"u\": \"https://fod.infobase.com\" }, {"
+      + " \"z\": \"image\" } ] }}, {"
+      + "\"856\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"u\": \"https://cfvod.kaltura"
+      + ".com\" }, { \"z\": \"films collection\" }]} }]}";
+  private final String recordWithMultiple876 =
+    "{ \"leader\":\"01314nam  22003851a 4500\", \"fields\":[ {\"001\":\"009221\"},   {\"876\": { "
+      + "\"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [ { \"n\": \"This is a binding note\" }, {"
+      + " \"t\": \"Binding\" } ] }}, {"
+      + "\"876\": {\"ind1\": \"4\", \"ind2\": \"2\", \"subfields\": [{ \"n\": \"This is an electronic"
+      + " bookplate note\" }, { \"t\": \"Electronic bookplate\" }]} }]}";
+  private final String recordWithoutSubfield856U =
+    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {"
+      + "\"856\": {\"ind1\": \"4\", \"ind2\": \"0\", \"subfields\": [{\"z\": \"image\"}]}}]}";
+  private final String recordWith049 =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{"
+      + "\"z\":\"image\"}]}"
+      + "},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"KU/CC/DI/M\"},{"
+      + "\"z\":\"Testing data\"}]}}]}";
+  private final String recordWith049AndBrackets =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{"
+      + "\"z\":\"image\"}]}"
+      + "},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"(KU/CC/DI/M)\"},{"
+      + "\"z\":\"Testing data\"}]}}]}";
+  private final String recordWith049AndInvalidBrackets =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{"
+      + "\"z\":\"image\"}]}"
+      + "},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"K)U/CC(/D)I/M)\"},{"
+      + "\"z\":\"Testing data\"}]}}]}";
+  private final String recordWith049WithOliLocation =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{"
+      + "\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli\"},{"
+      + "\"z\":\"Testing data\"}]}}]}";
+  private final String recordWith049WithOliAlsLocation =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{"
+      + "\"z\":\"image\"}]}"
+      + "},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"oli,als\"},{"
+      + "\"z\":\"Testing data\"}]}}]}";
+  private final String recordWith049WithOlLocation =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"048\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"https://fod.infobase.com\"},{"
+      + "\"z\":\"image\"}]}},{\"049\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"ol\"},{"
+      + "\"z\":\"Testing data\"}]}}]}";
 
-  private final String RECORD_WITH_MULTIPLE_028_FIELDS =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"MCA2-4047\"},{\"b\":\"bMCA Records\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-156\"},{\"b\":\"Decca\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
+  private final String recordWithMultiple028Fields =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"028\":{\"ind1\":\"0\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"MCA2-4047\"},{"
+      + "\"b\":\"bMCA Records\"}]}"
+      + "},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-156\"},{"
+      + "\"b\":\"Decca\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}"
+      + "},{\"245\":\"American Bar Association journal\"}]}";
 
-  private final String RECORD_WITH_MULTIPLE_028_FIELDS_2 =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"MCA2-4047\"},{\"b\":\"bMCA Records\"},{\"c\":\"Test1\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"DXSB7-156\"},{\"b\":\"Decca\"},{\"c\":\"Test2\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-157\"},{\"b\":\"Decca2\"},{\"c\":\"Test3\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
+  private final String recordWithMultiple028Fields2 =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"028\":{\"ind1\":\"0\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"MCA2-4047\"},{"
+      + "\"b\":\"bMCA Records\"},{\"c\":\"Test1\"}]}"
+      + "},{\"028\":{\"ind1\":\"0\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"DXSB7-156\"},{"
+      + "\"b\":\"Decca\"},{\"c\":\"Test2\"}]}"
+      + "},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"DXSB7-157\"},{"
+      + "\"b\":\"Decca2\"},{\"c\":\"Test3\"}]}"
+      + "},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}"
+      + "},{\"245\":\"American Bar Association journal\"}]}";
 
-  private final String RECORD_WITH_THE_SAME_SUBFIELDS_IN_MULTIPLE_028_FIELDS =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aT90028\"},{\"b\":\"Verve\"}]}},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aV-4061\"},{\"b\":\"Verve\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}},{\"245\":\"American Bar Association journal\"}]}";
-  private final String RECORD_WITH_MULTIPLE_SUBFIELDS_IN_MULTIPLE_050_FIELD =
-    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"Z2013.5.W6\"}, {\"b\": \"K46 2018\"}, {\"a\": \"PR1286.W6\"}]}}, {\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"a2-val\"}, {\"b\": \"b2-val\"}, {\"a\": \"a2-val\"}]}}, {\"245\": \"American Bar Association journal\"}]}";
-  private final String RECORD_WITH_980_FIELD =
-    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"245\": \"American Bar Association journal\"}, {\"980\": {\"ind1\": \"0\", \"ind2\": \"2\", \"subfields\": [{\"a\": \"00001\"}, {\"b\": \"Vendor order number\"}]}}]}";
-  private final String RECORD_WITH_900_FIELD_DONORS_CODES =
-    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {\"900\": {\"ind1\": \"0\", \"ind2\": \"2\", \"subfields\": [{\"a\": \"CODE-1\"}, {\"b\": \"CODE-2\"}]}}]}";
+  private final String recordWithTheSameSubfieldsInMultiple028Fields =
+    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"009221\"},{"
+      + "\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aT90028\"},{\"b\":\"Verve\"}]}"
+      + "},{\"028\":{\"ind1\":\"0\",\"ind2\":\"0\",\"subfields\":[{\"a\":\"aV-4061\"},{"
+      + "\"b\":\"Verve\"}]}},{\"042\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"pcc\"}]}"
+      + "},{\"245\":\"American Bar Association journal\"}]}";
+  private final String recordWithMultipleSubfieldsInMultiple050Field =
+    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {"
+      + "\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"Z2013.5.W6\"}, {"
+      + "\"b\": \"K46 2018\"}, {\"a\": \"PR1286.W6\"}]}}, {"
+      + "\"050\": {\"ind1\": \"0\", \"ind2\": \"0\", \"subfields\": [{\"a\": \"a2-val\"}, {"
+      + "\"b\": \"b2-val\"}, {\"a\": \"a2-val\"}]}}, {\"245\": \"American Bar Association journal\"}]}"
+      + "";
+  private final String recordWith980Field =
+    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {"
+      + "\"245\": \"American Bar Association journal\"}, {"
+      + "\"980\": {\"ind1\": \"0\", \"ind2\": \"2\", \"subfields\": [{\"a\": \"00001\"}, {"
+      + "\"b\": \"Vendor order number\"}]}}]}";
+  private final String recordWith900FieldDonorsCodes =
+    "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"009221\"}, {"
+      + "\"900\": {\"ind1\": \"0\", \"ind2\": \"2\", \"subfields\": [{\"a\": \"CODE-1\"}, {"
+      + "\"b\": \"CODE-2\"}]}}]}";
 
   private final MappingContext mappingContext = new MappingContext();
 
@@ -104,7 +168,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -123,7 +187,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -141,7 +205,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -159,7 +223,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -177,7 +241,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -195,7 +259,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -213,7 +277,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -231,7 +295,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -249,7 +313,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -267,7 +331,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -286,7 +350,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -304,7 +368,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -321,7 +385,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     List<Location> locations = List.of(
@@ -347,7 +411,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -361,12 +425,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFields_FromRules() throws IOException {
+  void shouldRead_MarcFields_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -381,12 +445,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFields_numeric_FromRules() throws IOException {
+  void shouldRead_MarcFields_numeric_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -401,12 +465,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFieldsArray_FromRules() throws IOException {
+  void shouldRead_MarcFieldsArray_FromRules() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -423,12 +487,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFields_FromRulesWithConditions() throws IOException {
+  void shouldRead_MarcFields_FromRulesWithConditions() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -448,7 +512,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -465,12 +529,11 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
     List<MappingRule> listRules = new ArrayList<>();
-    List<MappingRule> listRules2 = new ArrayList<>();
     listRules.add(new MappingRule()
       .withName("name")
       .withPath("instance.name")
@@ -487,6 +550,7 @@ class MarcRecordReaderUnitTest {
       .withPath("instance.active")
       .withEnabled("true")
       .withBooleanFieldAction(MappingRule.BooleanFieldAction.ALL_FALSE));
+    List<MappingRule> listRules2 = new ArrayList<>();
     listRules2.add(new MappingRule()
       .withName("name")
       .withPath("instance.value")
@@ -528,7 +592,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithMultiple856))).encode());
     eventPayload.setContext(context);
     String uuid = "f5d0068e-6272-458e-8a81-b85e7b9a14aa";
     List<ElectronicAccessRelationship> electronicAccessRelationships = List.of(
@@ -590,7 +654,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_856))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithMultiple856))).encode());
     eventPayload.setContext(context);
     String uuid = "UUID";
     List<ElectronicAccessRelationship> electronicAccessRelationships = List.of(
@@ -652,7 +716,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_876))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithMultiple876))).encode());
     eventPayload.setContext(context);
     List<ItemNoteType> itemNoteTypes = List.of(
       new ItemNoteType().withId("UUID1").withName("Binding"),
@@ -713,7 +777,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITHOUT_SUBFIELD_856_U))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithoutSubfield856U))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -755,7 +819,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -779,7 +843,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -805,7 +869,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -820,11 +884,11 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldReadMARCFieldsFromRulesWithTodayExpression() throws IOException {
+  void shouldReadMarcFieldsFromRulesWithTodayExpression() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -841,11 +905,11 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldReadMARCFieldsFromRulesWithTodayExpressionWithoutTenantConfiguration() throws IOException {
+  void shouldReadMarcFieldsFromRulesWithTodayExpressionWithoutTenantConfiguration() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
 
     MappingContext mappingContext = new MappingContext()
@@ -866,12 +930,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldReadMARCFieldsFromRulesWithTodayExpressionAndTenantConfigurationWithDayDifferenceLessThan2days()
+  void shouldReadMarcFieldsFromRulesWithTodayExpressionAndTenantConfigurationWithDayDifferenceLessThan2days()
     throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
 
     MappingContext mappingContext = new MappingContext();
     mappingContext.setMappingParameters(new MappingParameters()
@@ -899,11 +963,11 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldNotReadMARCFieldsFromRulesWithTodayExpressionAndInvalidTimezone() throws IOException {
+  void shouldNotReadMarcFieldsFromRulesWithTodayExpressionAndInvalidTimezone() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
 
     MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
@@ -922,12 +986,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFieldsArrayAndFormatToISOFormat() throws IOException {
+  void shouldRead_MarcFieldsArrayAndFormatToIsoFormat() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_DATE_DATA))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithDateData))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -988,13 +1052,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFieldsArrayWithRepeatableFieldAction_FromRules() throws IOException {
+  void shouldRead_MarcFieldsArrayWithRepeatableFieldAction_FromRules() throws IOException {
     // given
-    List<String> expectedFields = Arrays.asList("UUID2", "UUID3");
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     List<NatureOfContentTerm> natureOfContentTerms = List.of(
       new NatureOfContentTerm().withId("UUID1").withName("website"),
@@ -1035,17 +1098,17 @@ class MarcRecordReaderUnitTest {
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
     assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
+    List<String> expectedFields = Arrays.asList("UUID2", "UUID3");
     assertEquals(expectedFields, value.getValue());
   }
 
   @Test
-  void shouldRead_MARCFieldsArrayWithRepeatableFieldWithMARCValue_FromRules() throws IOException {
+  void shouldRead_MarcFieldsArrayWithRepeatableFieldWithMarcValue_FromRules() throws IOException {
     // given
-    List<String> expectedFields = Arrays.asList("pcc", "literature report");
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -1081,6 +1144,7 @@ class MarcRecordReaderUnitTest {
     assertNotNull(value);
     assertEquals(ValueType.LIST, value.getType());
     assertEquals(EXTEND_EXISTING, ((ListValue) value).getRepeatableFieldAction());
+    List<String> expectedFields = Arrays.asList("pcc", "literature report");
     assertEquals(expectedFields, value.getValue());
   }
 
@@ -1089,7 +1153,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -1099,7 +1163,7 @@ class MarcRecordReaderUnitTest {
     assertNotNull(value);
 
     assertEquals(ValueType.STRING, value.getType());
-    assertTrue(((StringValue) (value)).shouldRemoveOnWrite());
+    assertTrue(((StringValue) value).shouldRemoveOnWrite());
   }
 
   @Test
@@ -1107,7 +1171,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049))).encode());
     eventPayload.setContext(context);
     String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
     List<Location> locations = List.of(
@@ -1135,7 +1199,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049))).encode());
     eventPayload.setContext(context);
     String expectedId = "fcd64ce1-6995-48f0-840e-89ffa2288371";
     List<Location> locations = List.of(
@@ -1163,7 +1227,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
@@ -1190,7 +1254,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
@@ -1217,7 +1281,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_BRACKETS))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049AndBrackets))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
@@ -1244,7 +1308,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049WithOliLocation))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Ils ali (Oli)").withCode("oli,ils"),
@@ -1272,7 +1336,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_ALS_LOCATION))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049WithOliAlsLocation))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
@@ -1300,7 +1364,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OLI_LOCATION))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049WithOliLocation))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
@@ -1328,7 +1392,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_WITH_OL_LOCATION))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049WithOlLocation))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("758258bc-ecc1-41b8-abca-f7b610822fff").withName("Oliss").withCode("oliss"),
@@ -1356,7 +1420,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_049_AND_INVALID_BRACKETS))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith049AndInvalidBrackets))).encode());
     eventPayload.setContext(context);
     List<Location> locations = List.of(
       new Location().withId("184aae84-a5bf-4c6a-85ba-4a7c73026cd5").withName("Online").withCode("KU/CC/DI/MI"),
@@ -1384,7 +1448,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     String addressId = UUID.randomUUID().toString();
     String address = String.format("{\"id\":\"%s\", \"name\":\"Test1\",\"address\":\"Test2\"}", addressId);
@@ -1411,7 +1475,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     List<AcquisitionsUnit> acqUnits = List.of(
       new AcquisitionsUnit().withId("0ebb1f7d-983f-3026-8a4c-5318e0ebc042").withName("online"),
@@ -1439,7 +1503,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(),
-      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      JsonObject.mapFrom(new Record().withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -1457,13 +1521,13 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldRead_MARCFieldAsMissingValueIfMappingRulesNeedsToBeValidByMappingParametersAndIsNotValid()
+  void shouldRead_MarcFieldAsMissingValueIfMappingRulesNeedsToBeValidByMappingParametersAndIsNotValid()
     throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
 
     String uuid = "UUID";
@@ -1482,16 +1546,10 @@ class MarcRecordReaderUnitTest {
       .withPath("order.poLine.physical.materialSupplier")
       .withEnabled("true")
       .withValue("\"RANDOM\"");
-    MappingRule accessProviderRule = new MappingRule()
-      .withName("accessProvider")
-      .withPath("order.poLine.eresource.accessProvider")
-      .withEnabled("true")
-      .withValue("\"RANDOM\"");
 
     // when
     Value valueVendor = reader.read(vendorRule);
     Value valueMaterialSupplier = reader.read(materialSupplierRule);
-    Value valueAccessProvider = reader.read(accessProviderRule);
 
     // then
     assertNotNull(valueVendor);
@@ -1500,17 +1558,23 @@ class MarcRecordReaderUnitTest {
     assertNotNull(valueMaterialSupplier);
     assertEquals(ValueType.MISSING, valueMaterialSupplier.getType());
 
+    MappingRule accessProviderRule = new MappingRule()
+      .withName("accessProvider")
+      .withPath("order.poLine.eresource.accessProvider")
+      .withEnabled("true")
+      .withValue("\"RANDOM\"");
+    Value valueAccessProvider = reader.read(accessProviderRule);
     assertNotNull(valueAccessProvider);
     assertEquals(ValueType.MISSING, valueAccessProvider.getType());
   }
 
   @Test
-  void shouldRead_MARCFieldIfMappingRulesNeedsToBeValidByMappingParametersAndIsValid() throws IOException {
+  void shouldRead_MarcFieldIfMappingRulesNeedsToBeValidByMappingParametersAndIsValid() throws IOException {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
 
     String uuid = "UUID";
@@ -1529,16 +1593,10 @@ class MarcRecordReaderUnitTest {
       .withPath("order.poLine.physical.materialSupplier")
       .withEnabled("true")
       .withValue("\"CODE\"");
-    MappingRule accessProviderRule = new MappingRule()
-      .withName("accessProvider")
-      .withPath("order.poLine.eresource.accessProvider")
-      .withEnabled("true")
-      .withValue("\"CODE\"");
 
     // when
     Value valueVendor = reader.read(vendorRule);
     Value valueMaterialSupplier = reader.read(materialSupplierRule);
-    Value valueAccessProvider = reader.read(accessProviderRule);
 
     // then
     assertNotNull(valueVendor);
@@ -1547,6 +1605,12 @@ class MarcRecordReaderUnitTest {
     assertNotNull(valueMaterialSupplier);
     assertEquals(uuid, valueMaterialSupplier.getValue());
 
+    MappingRule accessProviderRule = new MappingRule()
+      .withName("accessProvider")
+      .withPath("order.poLine.eresource.accessProvider")
+      .withEnabled("true")
+      .withValue("\"CODE\"");
+    Value valueAccessProvider = reader.read(accessProviderRule);
     assertNotNull(valueAccessProvider);
     assertEquals(uuid, valueAccessProvider.getValue());
   }
@@ -1557,7 +1621,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     String uuid = "UUID";
     List<Organization> organizations = List.of(new Organization().withId(uuid).withName("(CODE)").withCode(uuid));
@@ -1585,7 +1649,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
     String uuid = "1234";
     String code = "(CODE";
@@ -1615,7 +1679,7 @@ class MarcRecordReaderUnitTest {
 
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
 
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -1668,7 +1732,7 @@ class MarcRecordReaderUnitTest {
 
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(record))).encode());
     eventPayload.setContext(context);
 
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -1719,7 +1783,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_028_FIELDS))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithMultiple028Fields))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -1761,7 +1825,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_028_FIELDS_2))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithMultiple028Fields2))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -1804,7 +1868,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-        .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_THE_SAME_SUBFIELDS_IN_MULTIPLE_028_FIELDS)))
+        .withParsedRecord(new ParsedRecord().withContent(recordWithTheSameSubfieldsInMultiple028Fields)))
       .encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -1847,7 +1911,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_028_FIELDS))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWithMultiple028Fields))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -1887,12 +1951,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldReturnStringValueFromFirstSubfieldOnlyOnProcessingNonRepeatableFieldRuleWhenFieldHasMultipleSpecifiedSubfields()
+  void shouldReturnStringValueFromFirstSpecifiedSubfieldForNonRepeatableFieldRule()
     throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-        .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_MULTIPLE_SUBFIELDS_IN_MULTIPLE_050_FIELD)))
+        .withParsedRecord(new ParsedRecord().withContent(recordWithMultipleSubfieldsInMultiple050Field)))
       .encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -1913,25 +1977,6 @@ class MarcRecordReaderUnitTest {
 
   @Test
   void shouldMapElectronicAccessUrlAndLinkText() throws IOException {
-    MappingRule mappingRule = new MappingRule().withName("electronicAccess")
-      .withPath("holdings.electronicAccess[]")
-      .withValue("")
-      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
-      .withEnabled("true")
-      .withSubfields(new ArrayList<>(List.of(
-        new RepeatableSubfieldMapping().withPath("holdings.electronicAccess[]")
-          .withOrder(0)
-          .withFields(List.of(
-            new MappingRule().withName("uri")
-              .withPath("holdings.electronicAccess[].uri")
-              .withValue("856$u")
-              .withEnabled("true"),
-            new MappingRule().withName("linkText")
-              .withPath("holdings.electronicAccess[].linkText")
-              .withValue("856$y")
-              .withEnabled("true")
-          ))
-      )));
     List<String> urls = List.of("https://muse.jhu.edu/book/67428",
       "https://muse.jhu.edu/book/74528",
       "https://www.jstor.org/stable/10.2307/j.ctv26d9pv",
@@ -1942,7 +1987,6 @@ class MarcRecordReaderUnitTest {
     var urlIterator = urls.listIterator();
     var linkTextIterator = linkTexts.listIterator();
     while (urlIterator.hasNext() && linkTextIterator.hasNext()) {
-      JsonObject fieldWrapper = new JsonObject();
       JsonObject field = new JsonObject();
       field.put("ind1", "4");
       field.put("ind1", "0");
@@ -1951,6 +1995,7 @@ class MarcRecordReaderUnitTest {
       subfields.add(createSubField("y", linkTextIterator.next()));
       field.put("subfields", subfields);
 
+      JsonObject fieldWrapper = new JsonObject();
       fieldWrapper.put("856", field);
       parsedRecordContentFields.add(fieldWrapper);
     }
@@ -1977,6 +2022,25 @@ class MarcRecordReaderUnitTest {
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
 
+    MappingRule mappingRule = new MappingRule().withName("electronicAccess")
+      .withPath("holdings.electronicAccess[]")
+      .withValue("")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withEnabled("true")
+      .withSubfields(new ArrayList<>(List.of(
+        new RepeatableSubfieldMapping().withPath("holdings.electronicAccess[]")
+          .withOrder(0)
+          .withFields(List.of(
+            new MappingRule().withName("uri")
+              .withPath("holdings.electronicAccess[].uri")
+              .withValue("856$u")
+              .withEnabled("true"),
+            new MappingRule().withName("linkText")
+              .withPath("holdings.electronicAccess[].linkText")
+              .withValue("856$y")
+              .withEnabled("true")
+          ))
+      )));
     Value value = reader.read(mappingRule);
     var electronicResources = (ArrayList<HashMap>) value.getValue();
     urlIterator = urls.listIterator();
@@ -1994,7 +2058,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_980_FIELD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith980Field))).encode());
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
     reader.initialize(eventPayload, mappingContext);
@@ -2022,12 +2086,12 @@ class MarcRecordReaderUnitTest {
   }
 
   @Test
-  void shouldReturnListValueWithMultipleAdminNotesWhenArrayFieldMappingRuleContainsMultipleRepeatableSubfieldMappingEntries()
+  void shouldReturnListValueWithMultipleAdminNotesForMultipleRepeatableSubfieldMappings()
     throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), JsonObject.mapFrom(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_980_FIELD))).encode());
+      .withParsedRecord(new ParsedRecord().withContent(recordWith980Field))).encode());
 
     eventPayload.setContext(context);
     Reader reader = new MarcBibReaderFactory().createReader();
@@ -2070,7 +2134,7 @@ class MarcRecordReaderUnitTest {
   void shouldReturnListValueWithMultipleDonorsIdsIfMarcFieldMappingSpecified() throws IOException {
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
+      .withParsedRecord(new ParsedRecord().withContent(recordWith900FieldDonorsCodes))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload().withContext(context);
     String expectedId1 = "UUID1";
@@ -2123,7 +2187,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
+      .withParsedRecord(new ParsedRecord().withContent(recordWith900FieldDonorsCodes))));
     eventPayload.setContext(context);
     List<Organization> organizations =
       List.of(new Organization().withId("UUID3").withCode("CODE-3").withName("UUID3").withIsDonor(true));
@@ -2158,7 +2222,7 @@ class MarcRecordReaderUnitTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(new Record()
-      .withParsedRecord(new ParsedRecord().withContent(RECORD_WITH_900_FIELD_DONORS_CODES))));
+      .withParsedRecord(new ParsedRecord().withContent(recordWith900FieldDonorsCodes))));
     eventPayload.setContext(context);
     List<Organization> organizations =
       List.of(new Organization().withId("UUID1").withCode("GOBI").withName("GOBI Libraries").withIsDonor(true));

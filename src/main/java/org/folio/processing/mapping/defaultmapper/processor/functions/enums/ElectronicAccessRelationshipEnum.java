@@ -8,6 +8,7 @@ public enum ElectronicAccessRelationshipEnum {
 
   private final char indicator2value;
   private final String name;
+
   ElectronicAccessRelationshipEnum(char indicator2value, String name) {
     this.indicator2value = indicator2value;
     this.name = name;

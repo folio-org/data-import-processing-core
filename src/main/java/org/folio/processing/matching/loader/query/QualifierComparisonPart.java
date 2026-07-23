@@ -7,7 +7,7 @@ import org.folio.rest.jaxrs.model.Qualifier.ComparisonPart;
 
 /**
  * Allows to apply comparison part to sql and cql queries according to the {@link ComparisonPart},
- * FIELD_NAME token is used to mark the place for field reference
+ * FIELD_NAME token is used to mark the place for field reference.
  */
 public enum QualifierComparisonPart {
 
@@ -26,7 +26,7 @@ public enum QualifierComparisonPart {
   }
 
   /**
-   * Substitutes FIELD_NAME in sql query with expression that extracts only required comparison part
+   * Substitutes FIELD_NAME in sql query with expression that extracts only required comparison part.
    *
    * @param sqlQuery original sql query
    * @return sql query with comparison part applied to FIELD_NAME or empty string if incoming sql query is empty
@@ -36,7 +36,7 @@ public enum QualifierComparisonPart {
   }
 
   /**
-   * Substitutes FIELD_NAME in cql query with expression that extracts only required comparison part
+   * Substitutes FIELD_NAME in cql query with expression that extracts only required comparison part.
    *
    * @param cqlQuery original cql query
    * @return cql query with comparison part applied to FIELD_NAME or empty string if incoming cql query is empty

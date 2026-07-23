@@ -1,7 +1,7 @@
 package org.folio.processing.mapping.defaultmapper.processor.functions.enums;
 
 /**
- * Enum for "Mode of issuance" with values
+ * Enum for "Mode of issuance" with values.
  */
 public enum IssuanceModeEnum {
   SINGLE_UNIT("single unit", 'a', 'c', 'd', 'm'),

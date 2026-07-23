@@ -23,9 +23,10 @@ public final class ExtraFieldUtil {
   }
 
   /**
-   * Finds 'fieldReplacementBy3Digits'(or other fieldReplacement rule) field, with 'true' value. If exists, retrieves 'fieldReplacementRule', which
-   * contains 'sourceDigits' and 'targetField' field, which contains matching between first 3 (for example)
-   * digits (from specific subfield from rules) and target field for this value which should be processed. After that, change source field on 'targetField'.
+   * Finds the field replacement rule when the `fieldReplacementBy3Digits` flag is enabled.
+   * If present, it retrieves `fieldReplacementRule`, which contains `sourceDigits` and `targetField`
+   * values mapping the first 3 digits (for example) from a specific subfield to the target field
+   * that should be processed. After that, change source field on `targetField`.
    * If not matches, change just on first 3 digits value.
    * More info: https://issues.folio.org/browse/MODDICORE-114
    *

@@ -105,7 +105,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   /**
-   * Should call regular update subfield flow only for uncontrolled subfields
+   * Should call regular update subfield flow only for uncontrolled subfields.
    *
    */
   @Override
@@ -217,7 +217,8 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
    * Indicates that incoming and existing fields hold the same link.
    * If subfieldCode is '*' - no mapping rules exists - take $0 from incoming field
    * If subfieldCode is '0' - mapping rules exists that say that only $0 could be updated - take $0 from incoming field
-   * If subfieldCode is any other - mapping rules exists that say that subfield could be updated - take $0 from existing field, as it is not expected to be updated
+   * If subfieldCode is any other - mapping rules exists that say that subfield could be updated
+   * - take $0 from existing field, as it is not expected to be updated
    * If there are more than one $0 exist in incoming field - at least one should match with existing field and link,
    * all other will be removed during field update.
    *
@@ -252,7 +253,7 @@ public class MarcBibRecordModifier extends MarcRecordModifier {
   }
 
   /**
-   * Indicates that field is still linked after update
+   * Indicates that field is still linked after update.
    *
    */
   private boolean fieldLinked(DataField dataField) {

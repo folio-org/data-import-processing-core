@@ -2,7 +2,7 @@ package org.folio.processing.mapping.mapper.reader.matcher;
 
 /**
  * A comparison function, which determines whether the specified value
- * matches to accepted value retrieved from a {@link org.folio.MappingProfile}
+ * matches to accepted value retrieved from a {@link org.folio.MappingProfile}.
  */
 @FunctionalInterface
 public interface AcceptedValuesMatcher {

@@ -37,8 +37,13 @@ import org.mockito.Mockito;
 
 @ExtendWith(VertxExtension.class)
 class HoldingsItemMatcherTest {
-  private static final String parsedContentWithMultiple =
-    "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"945\":{\"subfields\":[{\"a\":\"E\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+  private final String parsedContentWithMultipleMarcFields =
+    """
+    {"leader":"01314nam  22003851a 4500","fields":[{"001":"ybp7406411"},{"945":{"subfields":[{"a":"E\
+    "},{"s":"testCode"},{"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"a":"KU/CC\
+    /DI/A"},{"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"h":"KU/CC/DI/A"}],"in\
+    d1":" ","ind2":" "}}]}\
+    """;
   private HoldingsItemMatcher matcher;
   private MatchValueLoader holdingsValueLoader;
   private MatchValueReader valueReader;
@@ -84,7 +89,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
     context.put("NOT_MATCHED_NUMBER", "3");
     context.put("MAPPING_PARAMS", "{}");
     context.put("MATCHING_PARAMETERS_RELATIONS", "{}");
@@ -123,7 +128,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
     context.put("NOT_MATCHED_NUMBER", "3");
     context.put("MAPPING_PARAMS", "{}");
     context.put("MATCHING_PARAMETERS_RELATIONS", "{}");
@@ -169,7 +174,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
     context.put("NOT_MATCHED_NUMBER", "3");
     context.put("MAPPING_PARAMS", "{}");
     context.put("MATCHING_PARAMETERS_RELATIONS", "{}");
@@ -206,7 +211,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
     context.put("NOT_MATCHED_NUMBER", "3");
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -247,7 +252,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
     context.put("NOT_MATCHED_NUMBER", "3");
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -287,7 +292,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
@@ -326,7 +331,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
@@ -372,7 +377,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
@@ -425,7 +430,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
     context.put(HOLDINGS.value(), "[]");
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -484,7 +489,7 @@ class HoldingsItemMatcherTest {
     matchProfileWrapper.setContentType(MATCH_PROFILE);
 
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultiple);
+    context.put(MARC_BIBLIOGRAPHIC.value(), parsedContentWithMultipleMarcFields);
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);

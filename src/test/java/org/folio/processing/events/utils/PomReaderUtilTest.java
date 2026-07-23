@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-
 import org.apache.maven.model.Dependency;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.jupiter.api.AfterEach;
@@ -67,7 +66,7 @@ class PomReaderUtilTest {
   }
 
   @Test
-  void BadFilename() {
+  void shouldFailForBadFilename() {
     PomReaderUtil pom = PomReaderUtil.INSTANCE;
 
     assertThrows(IllegalArgumentException.class, () -> pom.init("does_not_exist.xml"));

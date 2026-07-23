@@ -47,7 +47,7 @@ import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
 
 /**
- * Enumeration to store normalization functions
+ * Enumeration to store normalization functions.
  */
 public enum NormalizationFunction implements Function<RuleExecutionContext, String> {
 

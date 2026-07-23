@@ -31,6 +31,7 @@ import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("checkstyle:LineLength")
 class EdifactRecordReaderTest {
 
   private static final String EDIFACT_PARSED_CONTENT =
@@ -468,17 +469,42 @@ class EdifactRecordReaderTest {
       Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
-    HashMap<String, String> fundIdAcceptedValues = new HashMap<>(Map.of(
-      "6506b79b-7702-48b2-9774-a1c538fdd34e", "Gifts (GIFTS-ONE-TIME)",
-      "1b6d3338-186e-4e35-9e75-1b886b0da53e", "Grants (GRANT-SUBN)",
-      "65032151-39a5-4cef-8810-5350eb316300", "US History (USHIST)"));
-
     String rootPath = "invoice.invoiceLines[]";
     String adjustmentsPath = "invoice.invoiceLines[].adjustments[]";
     String fundDistributionsPath = "invoice.invoiceLines[].fundDistributions[]";
     String referenceNumbersPath = "invoice.invoiceLines[].referenceNumbers[]";
 
-    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+    MappingRule mappingRule = createInvoiceLineMappingRule(rootPath, adjustmentsPath, fundDistributionsPath,
+      referenceNumbersPath);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload, mappingContext);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+
+    List<Map<String, Value>> expectedInvoiceLines = createExpectedInvoiceLines(adjustmentsPath,
+      fundDistributionsPath, referenceNumbersPath);
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+  }
+
+  private static MappingRule createInvoiceLineMappingRule(String rootPath, String adjustmentsPath,
+                                                           String fundDistributionsPath,
+                                                           String referenceNumbersPath) {
+    HashMap<String, String> fundIdAcceptedValues = new HashMap<>(Map.of(
+      "6506b79b-7702-48b2-9774-a1c538fdd34e", "Gifts (GIFTS-ONE-TIME)",
+      "1b6d3338-186e-4e35-9e75-1b886b0da53e", "Grants (GRANT-SUBN)",
+      "65032151-39a5-4cef-8810-5350eb316300", "US History (USHIST)"));
+
+    return new MappingRule().withPath(rootPath)
       .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
       .withSubfields(List.of(new RepeatableSubfieldMapping()
         .withOrder(0)
@@ -527,19 +553,11 @@ class EdifactRecordReaderTest {
                 new MappingRule().withPath("invoice.invoiceLines[].fundDistributions[].distributionType")
                   .withValue("\"percentage\"")))))
         ))));
+  }
 
-    Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload, mappingContext);
-
-    // when
-    Value value = reader.read(mappingRule);
-
-    // then
-    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
-    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assertions.assertEquals(rootPath, actualValue.getRootPath());
-    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
-
+  private static List<Map<String, Value>> createExpectedInvoiceLines(String adjustmentsPath,
+                                                                      String fundDistributionsPath,
+                                                                      String referenceNumbersPath) {
     Map<String, Value> expectedAdjustment1 = Map.of(
       "invoice.invoiceLines[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
       "invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"),
@@ -570,7 +588,7 @@ class EdifactRecordReaderTest {
       "invoice.invoiceLines[].referenceNumbers[].refNumberType",
       StringValue.of("Vendor continuation reference number"));
 
-    List<Map<String, Value>> expectedInvoiceLines = List.of(
+    return List.of(
       Map.of("invoice.invoiceLines[].description",
         StringValue.of("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS"),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
@@ -594,9 +612,6 @@ class EdifactRecordReaderTest {
         RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
         referenceNumbersPath,
         RepeatableFieldValue.of(List.of(expectedReferenceNumber3), EXTEND_EXISTING, referenceNumbersPath)));
-
-    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
@@ -661,16 +676,16 @@ class EdifactRecordReaderTest {
   }
 
   @Test
-  void shouldReadInvoiceLineDescriptionFromPOLineExternalData() throws IOException {
+  void shouldReadInvoiceLineDescriptionFromPoLineExternalData() throws IOException {
     // given
-    String expectedPOLineTitle1 = "POLineTitle-1";
-    String expectedPOLineTitle3 = "POLineTitle-3";
-    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    String expectedPoLineTitle1 = "POLineTitle-1";
+    String expectedPoLineTitle3 = "POLineTitle-3";
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(),
       Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
-    context.put("POL_TITLE_0", expectedPOLineTitle1);
-    context.put("POL_TITLE_2", expectedPOLineTitle3);
+    context.put("POL_TITLE_0", expectedPoLineTitle1);
+    context.put("POL_TITLE_2", expectedPoLineTitle3);
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -701,11 +716,11 @@ class EdifactRecordReaderTest {
     Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
-      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle1),
+      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPoLineTitle1),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")),
       Map.of("invoice.invoiceLines[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -"),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")),
-      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle3),
+      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPoLineTitle3),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
@@ -755,9 +770,8 @@ class EdifactRecordReaderTest {
   }
 
   @Test
-  void shouldReadInvoiceLineFundDistributionFromPOLineExternalData() throws IOException {
+  void shouldReadInvoiceLineFundDistributionFromPoLineExternalData() throws IOException {
     // given
-    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(),
       Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
@@ -769,6 +783,7 @@ class EdifactRecordReaderTest {
 
     context.put("POL_FUND_DISTRIBUTIONS_0", fundDistributions1.encode());
     context.put("POL_FUND_DISTRIBUTIONS_2", fundDistributions3.encode());
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";

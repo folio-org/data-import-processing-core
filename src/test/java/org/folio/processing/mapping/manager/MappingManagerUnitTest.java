@@ -192,74 +192,17 @@ class MappingManagerUnitTest {
     String value,
     List<Integer> expectedResultIndexes
   ) {
-    List<StatisticalCode> statisticalCodes = List.of(
-      new StatisticalCode()
-        .withId("uuid1")
-        .withCode("abc")
-        .withName("abd")
-        .withStatisticalCodeTypeId("uuid1"),
-      new StatisticalCode()
-        .withId("uuid2")
-        .withCode("bbc")
-        .withName("bbd")
-        .withStatisticalCodeTypeId("uuid1"));
-
-    List<StatisticalCodeType> statisticalCodeTypes = List.of(
-      new StatisticalCodeType()
-        .withId("uuid1")
-        .withName("TEST (test code type)"));
-
-    MappingProfile mappingProfile = new MappingProfile()
-      .withId(UUID.randomUUID().toString())
-      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(entityType)
-      .withMappingDetails(new MappingDetail()
-        .withMappingFields(new ArrayList<>(List.of(
-          new MappingRule().withName("statisticalCodeIds")
-            .withPath("instance.statisticalCodeIds[]")
-            .withValue("")
-            .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
-            .withEnabled("true")
-            .withSubfields(new ArrayList<>(List.of(
-              new RepeatableSubfieldMapping().withPath("instance.statisticalCodeIds[]")
-                .withOrder(0)
-                .withFields(List.of(
-                  new MappingRule().withName("statisticalCodeId")
-                    .withPath("instance.statisticalCodeIds[]")
-                    .withValue(value == null ? "971" : value)
-                    .withEnabled("true")
-                ))
-            )))
-        ))));
+    MappingProfile mappingProfile = buildMappingProfile(entityType, value);
 
     ProfileSnapshotWrapper mappingProfileWrapper = new ProfileSnapshotWrapper();
     mappingProfileWrapper.setContent(mappingProfile);
     mappingProfileWrapper.setContentType(MAPPING_PROFILE);
 
-    List<JsonObject> parsedRecordContentFields = new ArrayList<>();
-    for (String statisticalCodeValue : statisticalCodeValues) {
-      JsonObject field = new JsonObject();
-      field.put("971", statisticalCodeValue);
-      parsedRecordContentFields.add(field);
-    }
-    JsonObject parsedRecordContent = new JsonObject();
-    parsedRecordContent.put("leader", "01314nam  22003851a 4500");
-    parsedRecordContent.put("fields", parsedRecordContentFields);
-    ParsedRecord parsedRecord = new ParsedRecord()
-      .withContent(parsedRecordContent.toString());
-
-    String givenMarcRecord = Json.encode(new Record()
-      .withParsedRecord(parsedRecord));
-    var entity = new JsonObject();
-    entity.put("instance", entityInstance);
-    String encodedEntity = entity.encode();
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
-    context.put(entityType.value(), encodedEntity);
-    eventPayload.setContext(context);
+    DataImportEventPayload eventPayload = buildEventPayload(entityType, statisticalCodeValues, entityInstance);
     eventPayload.setCurrentNode(mappingProfileWrapper);
 
+    List<StatisticalCode> statisticalCodes = buildStatisticalCodes();
+    List<StatisticalCodeType> statisticalCodeTypes = buildStatisticalCodeTypes();
     MappingContext mappingContext = new MappingContext().withMappingParameters(new MappingParameters()
       .withStatisticalCodes(statisticalCodes).withStatisticalCodeTypes(statisticalCodeTypes));
 
@@ -287,5 +230,70 @@ class MappingManagerUnitTest {
     for (int i = 0; i < expectedResultIndexes.size(); i++) {
       assertEquals(statisticalCodes.get(expectedResultIndexes.get(i)).getId(), statisticalCodeIds.get(i));
     }
+  }
+
+  private List<StatisticalCode> buildStatisticalCodes() {
+    return List.of(
+      new StatisticalCode()
+        .withId("uuid1")
+        .withCode("abc")
+        .withName("abd")
+        .withStatisticalCodeTypeId("uuid1"),
+      new StatisticalCode()
+        .withId("uuid2")
+        .withCode("bbc")
+        .withName("bbd")
+        .withStatisticalCodeTypeId("uuid1"));
+  }
+
+  private List<StatisticalCodeType> buildStatisticalCodeTypes() {
+    return List.of(new StatisticalCodeType().withId("uuid1").withName("TEST (test code type)"));
+  }
+
+  private MappingProfile buildMappingProfile(EntityType entityType, String value) {
+    MappingRule statisticalCodeIdRule = new MappingRule().withName("statisticalCodeId")
+      .withPath("instance.statisticalCodeIds[]")
+      .withValue(value == null ? "971" : value)
+      .withEnabled("true");
+    RepeatableSubfieldMapping subfieldMapping = new RepeatableSubfieldMapping()
+      .withPath("instance.statisticalCodeIds[]")
+      .withOrder(0)
+      .withFields(List.of(statisticalCodeIdRule));
+    MappingRule statisticalCodesRule = new MappingRule().withName("statisticalCodeIds")
+      .withPath("instance.statisticalCodeIds[]")
+      .withValue("")
+      .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
+      .withEnabled("true")
+      .withSubfields(new ArrayList<>(List.of(subfieldMapping)));
+    return new MappingProfile()
+      .withId(UUID.randomUUID().toString())
+      .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+      .withExistingRecordType(entityType)
+      .withMappingDetails(new MappingDetail().withMappingFields(new ArrayList<>(List.of(statisticalCodesRule))));
+  }
+
+  private DataImportEventPayload buildEventPayload(
+    EntityType entityType,
+    List<String> statisticalCodeValues,
+    Object entityInstance
+  ) {
+    List<JsonObject> parsedRecordContentFields = new ArrayList<>();
+    for (String statisticalCodeValue : statisticalCodeValues) {
+      JsonObject field = new JsonObject();
+      field.put("971", statisticalCodeValue);
+      parsedRecordContentFields.add(field);
+    }
+    JsonObject parsedRecordContent = new JsonObject()
+      .put("leader", "01314nam  22003851a 4500")
+      .put("fields", parsedRecordContentFields);
+    String givenMarcRecord = Json.encode(new Record()
+      .withParsedRecord(new ParsedRecord().withContent(parsedRecordContent.toString())));
+    String encodedEntity = new JsonObject().put("instance", entityInstance).encode();
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), givenMarcRecord);
+    context.put(entityType.value(), encodedEntity);
+    eventPayload.setContext(context);
+    return eventPayload;
   }
 }
