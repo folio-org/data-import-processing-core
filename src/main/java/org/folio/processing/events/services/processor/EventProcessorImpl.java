@@ -1,16 +1,5 @@
 package org.folio.processing.events.services.processor;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.folio.DataImportEventPayload;
-import org.folio.processing.events.services.handler.EventHandler;
-import org.folio.processing.exceptions.EventHandlerNotFoundException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-
 import static java.lang.String.format;
 import static org.folio.DataImportEventTypes.DI_SRS_MARC_AUTHORITY_RECORD_CREATED;
 import static org.folio.processing.events.EventManager.OL_ACCUMULATIVE_RESULTS;
@@ -18,11 +7,21 @@ import static org.folio.processing.events.EventManager.POST_PROCESSING_INDICATOR
 import static org.folio.processing.events.EventManager.POST_PROCESSING_RESULT_EVENT_KEY;
 import static org.folio.processing.events.utils.EventUtils.extractRecordId;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.DataImportEventPayload;
+import org.folio.processing.events.services.handler.EventHandler;
+import org.folio.processing.exceptions.EventHandlerNotFoundException;
+
 public class EventProcessorImpl implements EventProcessor {
 
   private static final Logger LOG = LogManager.getLogger(EventProcessorImpl.class);
 
-  private List<EventHandler> eventHandlers = new ArrayList<>();
+  private final List<EventHandler> eventHandlers = new ArrayList<>();
 
   @Override
   public CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload) {
@@ -38,7 +37,8 @@ public class EventProcessorImpl implements EventProcessor {
         String eventType = eventPayload.getEventType();
         long startTime = System.nanoTime();
         eventHandler.handle(eventPayload)
-          .thenApply(dataImportEventPayload -> eventHandler.isPostProcessingNeeded() ? preparePayloadForPostProcessing(dataImportEventPayload, eventHandler) : dataImportEventPayload)
+          .thenApply(dataImportEventPayload -> eventHandler.isPostProcessingNeeded() ? preparePayloadForPostProcessing(
+            dataImportEventPayload, eventHandler) : dataImportEventPayload)
           .thenApply(this::updatePayloadIfNeeded)
           .whenComplete((payload, throwable) -> {
             logEventProcessingTime(eventType, startTime, eventPayload);
@@ -51,10 +51,13 @@ public class EventProcessorImpl implements EventProcessor {
             }
           });
       } else {
-        LOG.info("process:: No suitable handler found for {} event type and current profile {} jobExecutionId: {} recordId: {}",
+        LOG.info(
+          "process:: No suitable handler found for {} event type and current profile {} "
+          + "jobExecutionId: {} recordId: {}",
           eventPayload.getEventType(), eventPayload.getCurrentNode().getContentType(),
           eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
-        future.completeExceptionally(new EventHandlerNotFoundException(format("No suitable handler found for %s event type", eventPayload.getEventType())));
+        future.completeExceptionally(new EventHandlerNotFoundException(
+          format("No suitable handler found for %s event type", eventPayload.getEventType())));
       }
     } catch (Exception e) {
       LOG.warn("process:: Failed to process event payload jobExecutionId: {} recordId: {}",
@@ -64,16 +67,18 @@ public class EventProcessorImpl implements EventProcessor {
     return future;
   }
 
-  private DataImportEventPayload preparePayloadForPostProcessing(DataImportEventPayload dataImportEventPayload, EventHandler eventHandler) {
-    dataImportEventPayload.getContext().put(POST_PROCESSING_INDICATOR, Boolean.toString(true));
-    dataImportEventPayload.getContext().put(POST_PROCESSING_RESULT_EVENT_KEY, dataImportEventPayload.getEventType());
-    dataImportEventPayload.setEventType(eventHandler.getPostProcessingInitializationEventType());
-    return dataImportEventPayload;
-  }
-
   @Override
   public List<EventHandler> getEventHandlers() {
     return eventHandlers;
+  }
+
+  private DataImportEventPayload preparePayloadForPostProcessing(DataImportEventPayload dataImportEventPayload,
+                                                                 EventHandler eventHandler) {
+    dataImportEventPayload.getContext().put(POST_PROCESSING_INDICATOR, Boolean.toString(true));
+    dataImportEventPayload.getContext()
+      .put(POST_PROCESSING_RESULT_EVENT_KEY, dataImportEventPayload.getEventType());
+    dataImportEventPayload.setEventType(eventHandler.getPostProcessingInitializationEventType());
+    return dataImportEventPayload;
   }
 
   private void logEventProcessingTime(String eventType, long startTime, DataImportEventPayload eventPayload) {
@@ -86,8 +91,10 @@ public class EventProcessorImpl implements EventProcessor {
       } else {
         String profileType = eventPayload.getCurrentNode().getContentType().toString();
         String profileId = eventPayload.getCurrentNode().getProfileId();
-        LOG.debug("logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' for {} ms jobExecutionId: {} recordId: {}",
-          eventType, profileType, profileId, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(), extractRecordId(eventPayload));
+        LOG.debug("logEventProcessingTime:: Event '{}' has been processed using {} with id '{}' "
+                  + "for {} ms jobExecutionId: {} recordId: {}",
+          eventType, profileType, profileId, (endTime - startTime) / 1000000L, eventPayload.getJobExecutionId(),
+          extractRecordId(eventPayload));
       }
     } catch (Exception e) {
       LOG.warn("logEventProcessingTime:: An Exception occurred, jobExecutionId: {} recordId: {}",

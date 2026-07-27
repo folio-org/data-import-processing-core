@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -30,12 +29,33 @@ public enum PomReaderUtil {
   private Properties props = null;
   private List<Dependency> dependencies = null;
 
-  private PomReaderUtil() {
+  PomReaderUtil() {
     init("pom.xml");
   }
 
+  public String constructModuleVersionAndVersion(String moduleName, String moduleVersion) {
+    String result = moduleName.replace("_", "-");
+    return result + "-" + moduleVersion;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public String getModuleName() {
+    return moduleName;
+  }
+
+  public Properties getProps() {
+    return props;
+  }
+
+  public List<Dependency> getDependencies() {
+    return dependencies;
+  }
+
   /**
-   * Read from pomFile if this is RMB itself; otherwise read JAR
+   * Read from pomFile if this is RMB itself; otherwise read JAR.
    *
    * @param pomFilename - target pom-file name
    */
@@ -44,7 +64,8 @@ public enum PomReaderUtil {
       String currentRunningJar =
         PomReaderUtil.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
       boolean readCurrent = currentRunningJar != null && (currentRunningJar.contains("domain-models-runtime")
-        || currentRunningJar.contains("domain-models-interface-extensions") || currentRunningJar.contains("target"));
+                                                          || currentRunningJar.contains(
+        "domain-models-interface-extensions") || currentRunningJar.contains("target"));
       if (readCurrent) {
         readIt(pomFilename, "META-INF/maven");
       } else {
@@ -56,7 +77,7 @@ public enum PomReaderUtil {
   }
 
   /**
-   * Read from pomFile if not null; otherwise read JAR
+   * Read from pomFile if not null; otherwise read JAR.
    *
    * @param pomFilename   POM filename; null for search in JAR
    * @param directoryName directory prefix for search of pom.xml in JAR
@@ -92,7 +113,6 @@ public enum PomReaderUtil {
 
     //the version is a placeholder to a value in the props section
     version = replacePlaceHolderWithValue(version);
-
   }
 
   private Model getModelFromJar(String directoryName) throws IOException, XmlPullParserException {
@@ -103,16 +123,18 @@ public enum PomReaderUtil {
       String dirname = directoryName + "/";
       String path = url.getPath();
       var jarPath = path.substring(5, path.indexOf('!'));
-      var jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name()));
-      Enumeration<JarEntry> entries = jar.entries();
-      while (entries.hasMoreElements()) {
-        JarEntry entry = entries.nextElement();
-        String name = entry.getName();
-        // first pom.xml should be the right one.
-        if (name.startsWith(dirname) && !dirname.equals(name) && name.endsWith("pom.xml")) {
-          InputStream pomFile = PomReaderUtil.class.getClassLoader().getResourceAsStream(name);
-          model = mavenReader.read(pomFile);
-          break;
+      try (var jar = new JarFile(URLDecoder.decode(jarPath, StandardCharsets.UTF_8))) {
+        Enumeration<JarEntry> entries = jar.entries();
+        while (entries.hasMoreElements()) {
+          JarEntry entry = entries.nextElement();
+          String name = entry.getName();
+          // first pom.xml should be the right one.
+          if (name.startsWith(dirname) && !dirname.equals(name) && name.endsWith("pom.xml")) {
+            try (InputStream pomFile = PomReaderUtil.class.getClassLoader().getResourceAsStream(name)) {
+              model = mavenReader.read(pomFile);
+            }
+            break;
+          }
         }
       }
     }
@@ -120,7 +142,7 @@ public enum PomReaderUtil {
   }
 
   private String replacePlaceHolderWithValue(String placeholder) {
-    var ret = new String[]{placeholder};
+    var ret = new String[] {placeholder};
     if (placeholder != null && placeholder.startsWith("${")) {
       props.forEach((k, v) -> {
         if (("${" + k + "}").equals(placeholder)) {
@@ -129,26 +151,5 @@ public enum PomReaderUtil {
       });
     }
     return ret[0];
-  }
-
-  public String constructModuleVersionAndVersion(String moduleName, String moduleVersion) {
-    String result = moduleName.replace("_", "-");
-    return result + "-" + moduleVersion;
-  }
-
-  public String getVersion() {
-    return version;
-  }
-
-  public String getModuleName() {
-    return moduleName;
-  }
-
-  public Properties getProps() {
-    return props;
-  }
-
-  public List<Dependency> getDependencies() {
-    return dependencies;
   }
 }

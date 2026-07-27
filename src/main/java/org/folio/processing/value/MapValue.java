@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MapValue implements Value<Map<String, String>> {
-  private Map<String, String> value;
+  private final Map<String, String> value;
 
   public MapValue() {
     this.value = new HashMap<>();

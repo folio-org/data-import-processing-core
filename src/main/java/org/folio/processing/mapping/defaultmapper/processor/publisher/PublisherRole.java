@@ -3,7 +3,7 @@ package org.folio.processing.mapping.defaultmapper.processor.publisher;
 import java.util.Arrays;
 
 /**
- * Publisher role
+ * Publisher role.
  */
 public enum PublisherRole {
 
@@ -20,14 +20,14 @@ public enum PublisherRole {
     this.caption = caption;
   }
 
-  public String getCaption() {
-    return caption;
-  }
-
   public static PublisherRole getByIndicator(int indicator) {
     return Arrays.stream(values())
       .filter(publisherRole -> publisherRole.indicator == indicator)
       .findFirst()
       .orElse(null);
+  }
+
+  public String getCaption() {
+    return caption;
   }
 }

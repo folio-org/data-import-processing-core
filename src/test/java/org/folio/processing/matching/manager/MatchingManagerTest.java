@@ -1,7 +1,19 @@
 package org.folio.processing.matching.manager;
 
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
 import org.folio.MatchProfile;
@@ -14,28 +26,16 @@ import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.processing.matching.reader.MatchValueReaderFactory;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
-import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
+class MatchingManagerTest {
 
-@RunWith(VertxUnitRunner.class)
-public class MatchingManagerTest {
-  private MatchValueLoader instanceValueLoader;
-
-  @Before
-  public void beforeTest() {
+  @BeforeEach
+  void beforeTest() {
     MatchValueReaderFactory.clearReaderFactory();
     MatchValueLoaderFactory.clearLoaderFactory();
-    instanceValueLoader = new MatchValueLoader() {
+    MatchValueLoader instanceValueLoader = new MatchValueLoader() {
       @Override
       public CompletableFuture<LoadResult> loadEntity(LoadQuery loadQuery, DataImportEventPayload eventPayload) {
         CompletableFuture<LoadResult> future = new CompletableFuture<>();
@@ -51,10 +51,11 @@ public class MatchingManagerTest {
         return existingRecordType == INSTANCE;
       }
     };
+    MatchValueLoaderFactory.register(instanceValueLoader);
   }
 
   @Test
-  public void shouldMatch_MarcBibliographicAndEdifact(TestContext testContext) {
+  void shouldMatch_MarcBibliographicAndEdifact() {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
@@ -80,13 +81,13 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNull(throwable);
-      testContext.assertTrue(matched);
+      assertNull(throwable);
+      assertTrue(matched);
     });
   }
 
   @Test
-  public void shouldCompleteExceptionally_ifNoEligibleReader(TestContext testContext) {
+  void shouldCompleteExceptionally_ifNoEligibleReader() {
     // given
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
 
@@ -105,13 +106,13 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNotNull(throwable);
-      testContext.assertTrue(throwable instanceof MatchingException);
+      assertNotNull(throwable);
+      assertInstanceOf(MatchingException.class, throwable);
     });
   }
 
   @Test
-  public void shouldCompleteExceptionally_ifNoEligibleLoader(TestContext testContext) {
+  void shouldCompleteExceptionally_ifNoEligibleLoader() {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
 
@@ -131,13 +132,13 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNotNull(throwable);
-      testContext.assertTrue(throwable instanceof MatchingException);
+      assertNotNull(throwable);
+      assertInstanceOf(MatchingException.class, throwable);
     });
   }
 
   @Test
-  public void shouldNotMatchIfWrongContentType(TestContext testContext) {
+  void shouldNotMatchIfWrongContentType() {
     // given
     MatchValueReaderFactory.register(new TestMatchValueReader());
     MatchValueLoaderFactory.register(new TestMatchValueLoader());
@@ -162,8 +163,8 @@ public class MatchingManagerTest {
     CompletableFuture<Boolean> result = MatchingManager.match(eventContext);
     // then
     result.whenComplete((matched, throwable) -> {
-      testContext.assertNull(throwable);
-      testContext.assertFalse(matched);
+      assertNull(throwable);
+      assertFalse(matched);
     });
   }
 }

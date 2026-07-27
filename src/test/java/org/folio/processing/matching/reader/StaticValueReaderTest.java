@@ -1,5 +1,12 @@
 package org.folio.processing.matching.reader;
 
+import static org.folio.processing.value.Value.ValueType.DATE;
+import static org.folio.processing.value.Value.ValueType.MISSING;
+import static org.folio.processing.value.Value.ValueType.STRING;
+import static org.folio.rest.jaxrs.model.EntityType.STATIC_VALUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -9,24 +16,14 @@ import org.folio.processing.value.DateValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import static org.folio.processing.value.Value.ValueType.DATE;
-import static org.folio.processing.value.Value.ValueType.MISSING;
-import static org.folio.processing.value.Value.ValueType.STRING;
-import static org.folio.rest.jaxrs.model.EntityType.STATIC_VALUE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-@RunWith(JUnit4.class)
-public class StaticValueReaderTest {
+class StaticValueReaderTest {
 
   private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd";
 
   @Test
-  public void shouldReadStringValue() {
+  void shouldReadStringValue() {
     // given
     String textValue = "KU/CC/DI/M";
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -47,7 +44,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfTextIsNull() {
+  void shouldReturnMissingValueIfTextIsNull() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()
@@ -66,7 +63,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReadNumberAsStringValue() {
+  void shouldReadNumberAsStringValue() {
     // given
     String numberValue = "42";
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -87,7 +84,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfNumberIsNull() {
+  void shouldReturnMissingValueIfNumberIsNull() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()
@@ -106,7 +103,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReadDateValue() {
+  void shouldReadDateValue() {
     // given
     Date dateValue = new Date();
     DataImportEventPayload eventPayload = new DataImportEventPayload();
@@ -129,7 +126,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfDateIsNull() {
+  void shouldReturnMissingValueIfDateIsNull() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()
@@ -148,7 +145,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReadDateRangeValue() throws ParseException {
+  void shouldReadDateRangeValue() throws ParseException {
     // given
     SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT_PATTERN);
     Date fromDate = df.parse("2020-04-01");
@@ -174,7 +171,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfFromDateIsNull() {
+  void shouldReturnMissingValueIfFromDateIsNull() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()
@@ -194,7 +191,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfToDateIsNull() {
+  void shouldReturnMissingValueIfToDateIsNull() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()
@@ -214,7 +211,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfWrongDataValueType() {
+  void shouldReturnMissingValueIfWrongDataValueType() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()
@@ -234,7 +231,7 @@ public class StaticValueReaderTest {
   }
 
   @Test
-  public void shouldReturnMissingValueIfNoStaticValueDetails() {
+  void shouldReturnMissingValueIfNoStaticValueDetails() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     MatchDetail matchDetail = new MatchDetail()

@@ -13,6 +13,5 @@ public class MatchingException extends RuntimeException {
   public MatchingException(String message, Throwable cause) {
     super(message, cause);
   }
-
 }
 

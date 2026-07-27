@@ -3,13 +3,13 @@ package org.folio.processing.matching.reader.util;
 import static org.folio.processing.matching.reader.util.MatchExpressionUtil.extractComparisonPart;
 import static org.folio.processing.matching.reader.util.MatchExpressionUtil.isQualified;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.folio.processing.exceptions.ReaderException;
 import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
@@ -17,9 +17,6 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Util for reading specific fields from MARC-file, based on MatchExpression.
@@ -41,8 +38,9 @@ public final class MarcValueReaderUtil {
   }
 
   /**
-   * Read value from MARC-file
-   * @param marcRecord - marcRecord as String
+   * Read value from MARC-file.
+   *
+   * @param marcRecord      - marcRecord as String
    * @param matchExpression - expression which contains fields.
    * @return - Value with result.
    */
@@ -58,12 +56,12 @@ public final class MarcValueReaderUtil {
       .flatMap(List::stream)
       .filter(value -> isQualified(value, matchExpression.getQualifier()))
       .map(value -> extractComparisonPart(value, matchExpression.getQualifier()))
-      .collect(Collectors.toList());
+      .toList();
 
     if (marcFieldValues.isEmpty()) {
       return MissingValue.getInstance();
     } else if (marcFieldValues.size() == 1) {
-      return StringValue.of(marcFieldValues.get(0));
+      return StringValue.of(marcFieldValues.getFirst());
     } else {
       return ListValue.of(marcFieldValues);
     }
@@ -77,13 +75,13 @@ public final class MarcValueReaderUtil {
 
   private static List<JsonNode> readMarcFieldValues(String marcRecord, Map<String, String> matchExpressionFields) {
     try {
-      org.folio.Record record = new ObjectMapper().readValue(marcRecord, org.folio.Record.class);
-      String parsedContent = record.getParsedRecord().getContent().toString();
+      org.folio.Record marc4jRecord = new ObjectMapper().readValue(marcRecord, org.folio.Record.class);
+      String parsedContent = marc4jRecord.getParsedRecord().getContent().toString();
       JsonNode fieldsNode = new ObjectMapper().readTree(parsedContent).at(MARC_FIELDS_POINTER);
       List<JsonNode> fields = fieldsNode.findValues(matchExpressionFields.get(FIELD_PROFILE_LABEL));
       return fields.stream()
         .filter(field -> field.isTextual() || isMatchingIdentifiers(field, matchExpressionFields))
-        .collect(Collectors.toList());
+        .toList();
     } catch (IOException e) {
       throw new ReaderException("Error reading MARC record", e);
     }
@@ -97,23 +95,23 @@ public final class MarcValueReaderUtil {
     return subfields.findValues(matchExpressionFields.get(SUBFIELD_PROFILE_LABEL)).stream()
       .filter(JsonNode::isTextual)
       .map(JsonNode::textValue)
-      .collect(Collectors.toList());
+      .toList();
   }
 
   private static boolean isMatchingIdentifiers(JsonNode field, Map<String, String> matchExpressionFields) {
-    boolean isFirstIndicatorMatched = isIndicatorMatched(field, matchExpressionFields, IND_1_PROFILE_LABEL, MARC_IND_1_FIELD_NAME);
-    boolean isSecondIndicatorMatched = isIndicatorMatched(field, matchExpressionFields, IND_2_PROFILE_LABEL, MARC_IND_2_FIELD_NAME);
+    boolean isFirstIndicatorMatched =
+      isIndicatorMatched(field, matchExpressionFields, IND_1_PROFILE_LABEL, MARC_IND_1_FIELD_NAME);
+    boolean isSecondIndicatorMatched =
+      isIndicatorMatched(field, matchExpressionFields, IND_2_PROFILE_LABEL, MARC_IND_2_FIELD_NAME);
     return isFirstIndicatorMatched && isSecondIndicatorMatched;
   }
 
   private static boolean isIndicatorMatched(JsonNode field, Map<String, String> matchExpressionFields,
                                             String indicatorProfile, String indicatorFieldName) {
-    boolean isIndicatorMatched = false;
-    if (matchExpressionFields.get(indicatorProfile).equals(ASTERISK_INDICATOR)) {
-      isIndicatorMatched = true;
-    }
+    boolean isIndicatorMatched = matchExpressionFields.get(indicatorProfile).equals(ASTERISK_INDICATOR);
     if (matchExpressionFields.get(indicatorProfile).trim().equals(org.apache.commons.lang3.StringUtils.EMPTY)) {
-      isIndicatorMatched = field.findValue(indicatorFieldName).textValue().equals(org.apache.commons.lang3.StringUtils.SPACE);
+      isIndicatorMatched =
+        field.findValue(indicatorFieldName).textValue().equals(org.apache.commons.lang3.StringUtils.SPACE);
     }
     if (field.findValue(indicatorFieldName).textValue().equals(matchExpressionFields.get(indicatorProfile))) {
       isIndicatorMatched = true;

@@ -1,34 +1,29 @@
 package org.folio.processing.mapping;
 
+import io.vertx.core.json.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
-
-import io.vertx.core.json.JsonObject;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.marc4j.MarcJsonReader;
-import org.marc4j.MarcJsonWriter;
-import org.marc4j.marc.Record;
-
-import org.folio.rest.jaxrs.model.CallNumberType;
-import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
-import org.folio.rest.jaxrs.model.HoldingsRecord;
-import org.folio.rest.jaxrs.model.HoldingsNoteType;
-import org.folio.rest.jaxrs.model.HoldingsType;
-import org.folio.rest.jaxrs.model.Location;
 import org.folio.processing.TestUtil;
 import org.folio.processing.mapping.defaultmapper.RecordMapper;
 import org.folio.processing.mapping.defaultmapper.RecordMapperBuilder;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.rest.jaxrs.model.CallNumberType;
+import org.folio.rest.jaxrs.model.ElectronicAccessRelationship;
+import org.folio.rest.jaxrs.model.HoldingsNoteType;
+import org.folio.rest.jaxrs.model.HoldingsRecord;
+import org.folio.rest.jaxrs.model.HoldingsType;
+import org.folio.rest.jaxrs.model.Location;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.marc4j.MarcJsonReader;
+import org.marc4j.MarcJsonWriter;
+import org.marc4j.marc.Record;
 
-@RunWith(JUnit4.class)
-public class HoldingsMappingTest {
+class HoldingsMappingTest {
 
   private static final String PARSED_HOLDINGS_PATH =
     "src/test/resources/org/folio/processing/mapping/holdings/parsedHoldingsRecord.json";
@@ -40,7 +35,7 @@ public class HoldingsMappingTest {
   private final RecordMapper<HoldingsRecord> mapper = RecordMapperBuilder.buildMapper("MARC_HOLDINGS");
 
   @Test
-  public void testMarcToHoldings() throws IOException {
+  void testMarcToHoldings() throws IOException {
     JsonObject expectedMappedHoldings = new JsonObject(TestUtil.readFileFromPath(MAPPED_HOLDINGS_PATH));
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
 
@@ -50,12 +45,12 @@ public class HoldingsMappingTest {
     for (String field : expectedFields) {
       Object expectedValue = expectedMappedHoldings.getValue(field);
       Object actualValue = actual.getValue(field);
-      Assert.assertEquals("Field '" + field + "' mismatch", expectedValue, actualValue);
+      Assertions.assertEquals(expectedValue, actualValue, "Field '" + field + "' mismatch");
     }
   }
 
   @Test
-  public void testMarcToHoldingsWhenHoldingsIdIsUnknown() throws IOException {
+  void testMarcToHoldingsWhenHoldingsIdIsUnknown() throws IOException {
     JsonObject expectedMappedHoldings = new JsonObject(TestUtil.readFileFromPath(MAPPED_HOLDINGS_PATH));
     expectedMappedHoldings.remove("holdingsTypeId");
     JsonObject mappingRules = new JsonObject(TestUtil.readFileFromPath(DEFAULT_MAPPING_RULES_PATH));
@@ -68,7 +63,7 @@ public class HoldingsMappingTest {
     for (String field : expectedFields) {
       Object expectedValue = expectedMappedHoldings.getValue(field);
       Object actualValue = actual.getValue(field);
-      Assert.assertEquals("Field '" + field + "' mismatch", expectedValue, actualValue);
+      Assertions.assertEquals(expectedValue, actualValue, "Field '" + field + "' mismatch");
     }
   }
 
@@ -101,7 +96,8 @@ public class HoldingsMappingTest {
       new HoldingsNoteType().withId("00000000-0000-0000-0000-000000000007").withName("Reproduction")
     ));
     mappingParameters.setCallNumberTypes(List.of(
-      new CallNumberType().withId("00000000-0000-0000-0000-000000000001").withName("Library of Congress classification"),
+      new CallNumberType().withId("00000000-0000-0000-0000-000000000001")
+        .withName("Library of Congress classification"),
       new CallNumberType().withId("00000000-0000-0000-0000-000000000002").withName("Dewey Decimal classification"),
       new CallNumberType().withId("00000000-0000-0000-0000-000000000003")
         .withName("National Library of Medicine classification"),
@@ -117,12 +113,12 @@ public class HoldingsMappingTest {
       new ElectronicAccessRelationship().withId("00000000-0000-0000-0000-000000000001").withName("resource"),
       new ElectronicAccessRelationship().withId("00000000-0000-0000-0000-000000000002").withName("version of resource"),
       new ElectronicAccessRelationship().withId("00000000-0000-0000-0000-000000000003").withName("related resource"),
-      new ElectronicAccessRelationship().withId("00000000-0000-0000-0000-000000000004").withName("no information provided")
+      new ElectronicAccessRelationship().withId("00000000-0000-0000-0000-000000000004")
+        .withName("no information provided")
     ));
     mappingParameters.setLocations(List.of(
       new Location().withId("00000000-0000-0000-0000-000000000001").withName("MUS").withCode("mus")
     ));
     return mappingParameters;
   }
-
 }

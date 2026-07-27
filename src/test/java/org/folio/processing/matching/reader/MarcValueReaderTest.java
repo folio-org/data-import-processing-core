@@ -1,26 +1,5 @@
 package org.folio.processing.matching.reader;
 
-import io.vertx.core.json.Json;
-import org.apache.commons.lang.StringUtils;
-import org.folio.DataImportEventPayload;
-import org.folio.MatchDetail;
-import org.folio.ParsedRecord;
-import org.folio.Record;
-import org.folio.processing.TestUtil;
-import org.folio.processing.value.ListValue;
-import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.Field;
-import org.folio.rest.jaxrs.model.MatchExpression;
-import org.folio.rest.jaxrs.model.Qualifier;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.MISSING;
 import static org.folio.processing.value.Value.ValueType.STRING;
@@ -32,30 +11,46 @@ import static org.folio.rest.jaxrs.model.Qualifier.ComparisonPart.NUMERICS_ONLY;
 import static org.folio.rest.jaxrs.model.Qualifier.QualifierType.BEGINS_WITH;
 import static org.folio.rest.jaxrs.model.Qualifier.QualifierType.CONTAINS;
 import static org.folio.rest.jaxrs.model.Qualifier.QualifierType.ENDS_WITH;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(JUnit4.class)
-public class MarcValueReaderTest {
+import io.vertx.core.json.Json;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import org.apache.commons.lang3.StringUtils;
+import org.folio.DataImportEventPayload;
+import org.folio.MatchDetail;
+import org.folio.ParsedRecord;
+import org.folio.Record;
+import org.folio.processing.TestUtil;
+import org.folio.processing.value.ListValue;
+import org.folio.processing.value.Value;
+import org.folio.rest.jaxrs.model.Field;
+import org.folio.rest.jaxrs.model.MatchExpression;
+import org.folio.rest.jaxrs.model.Qualifier;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-  private final static String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
-  private static String PARSED_CONTENT;
-  private static Record MARC_RECORD;
+class MarcValueReaderTest {
 
-  @BeforeClass
-  public static void setUp() throws IOException {
-    PARSED_CONTENT = TestUtil.readFileFromPath(MARC_RECORD_PATH);
-    MARC_RECORD = new Record().withParsedRecord(new ParsedRecord()
-        .withContent(PARSED_CONTENT));
+  private static final String MARC_RECORD_PATH = "src/test/resources/org/folio/processing/marcRecord.json";
+  private static Record marcRecord;
+
+  @BeforeAll
+  static void setUp() throws IOException {
+    var parsedContent = TestUtil.readFileFromPath(MARC_RECORD_PATH);
+    marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContent));
   }
 
   @Test
-  public void shouldRead_StringValue() {
+  void shouldRead_StringValue() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -76,11 +71,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithEmptyIndicators() {
+  void shouldRead_SubfieldValue_WithEmptyIndicators() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -101,11 +96,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithIndicators() {
+  void shouldRead_SubfieldValue_WithIndicators() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -126,11 +121,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithIndicatorAsterisk() {
+  void shouldRead_SubfieldValue_WithIndicatorAsterisk() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -151,11 +146,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithFirstIndicatorAsterisk() {
+  void shouldRead_SubfieldValue_WithFirstIndicatorAsterisk() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -176,11 +171,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithFirstEmptyIndicator() {
+  void shouldRead_SubfieldValue_WithFirstEmptyIndicator() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -201,11 +196,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithFirstSpaceIndicator() {
+  void shouldRead_SubfieldValue_WithFirstSpaceIndicator() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -226,11 +221,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithFirstEmptyIndicatorAndSecondAsterisk() {
+  void shouldRead_SubfieldValue_WithFirstEmptyIndicatorAndSecondAsterisk() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -251,11 +246,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldNotRead_SubfieldValue_WithTwoEmptyIndicators() {
+  void shouldNotRead_SubfieldValue_WithTwoEmptyIndicators() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -275,11 +270,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithTwoEmptyIndicators() {
+  void shouldRead_SubfieldValue_WithTwoEmptyIndicators() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -300,11 +295,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldRead_SubfieldValue_WithTwoAstersiskIndicators() {
+  void shouldRead_SubfieldValue_WithTwoAstersiskIndicators() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -325,11 +320,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfNoSuchField() {
+  void shouldReturn_MissingValue_IfNoSuchField() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -349,11 +344,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfNoSuchField_WithIndicators() {
+  void shouldReturn_MissingValue_IfNoSuchField_WithIndicators() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -373,11 +368,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfNoSuchSubfieldField() {
+  void shouldReturn_MissingValue_IfNoSuchSubfieldField() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -397,11 +392,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_ListValue_IfMultipleFields() {
+  void shouldReturn_ListValue_IfMultipleFields() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -425,11 +420,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfOtherDataValueType() {
+  void shouldReturn_MissingValue_IfOtherDataValueType() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -443,7 +438,7 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfEmptyRecord() {
+  void shouldReturn_MissingValue_IfEmptyRecord() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
@@ -467,11 +462,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfDoNotMatchIndicator_1() {
+  void shouldReturn_MissingValue_IfDoNotMatchIndicator_1() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -491,11 +486,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_MissingValue_IfDoNotMatchIndicator_2() {
+  void shouldReturn_MissingValue_IfDoNotMatchIndicator_2() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -515,11 +510,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_ListValue_IfMultipleSubFields() {
+  void shouldReturn_ListValue_IfMultipleSubFields() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -543,11 +538,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithBeginsWithQualifier() {
+  void shouldReturn_StringValue_IfMultipleSubFields_FilterWithBeginsWithQualifier() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -571,11 +566,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_IfMultipleSubFields_FilterWithEndsWithQualifier() {
+  void shouldReturn_StringValue_IfMultipleSubFields_FilterWithEndsWithQualifier() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -599,11 +594,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_ListValue_IfMultipleFields_FilterWithContainsQualifier() {
+  void shouldReturn_ListValue_IfMultipleFields_FilterWithContainsQualifier() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -630,11 +625,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_IfMultipleSubFields_WithComparisonPart() {
+  void shouldReturn_StringValue_IfMultipleSubFields_WithComparisonPart() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -659,11 +654,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_NumericOnly() {
+  void shouldReturn_StringValue_NumericOnly() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -686,11 +681,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_AlphaNumericOnly() {
+  void shouldReturn_StringValue_AlphaNumericOnly() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -713,11 +708,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_AlphaNumericsOnly() {
+  void shouldReturn_StringValue_AlphaNumericsOnly() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -740,11 +735,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_AlphaNumerics() {
+  void shouldReturn_StringValue_AlphaNumerics() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -767,11 +762,11 @@ public class MarcValueReaderTest {
   }
 
   @Test
-  public void shouldReturn_StringValue_Numerics() {
+  void shouldReturn_StringValue_Numerics() {
     // given
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(MARC_RECORD));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
     eventPayload.setContext(context);
     MatchDetail matchDetail = new MatchDetail()
       .withIncomingMatchExpression(new MatchExpression()
@@ -792,5 +787,4 @@ public class MarcValueReaderTest {
     assertEquals(STRING, result.getType());
     assertEquals("781234", result.getValue());
   }
-
 }

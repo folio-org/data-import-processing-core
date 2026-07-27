@@ -1,9 +1,20 @@
 package org.folio.processing.mapping.mapper;
 
+import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
+import static org.folio.rest.jaxrs.model.EntityType.ITEM;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import com.google.common.collect.Lists;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.ParsedRecord;
@@ -15,44 +26,36 @@ import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
 import org.folio.rest.jaxrs.model.MappingDetail;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
-import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
-import static org.folio.rest.jaxrs.model.EntityType.ITEM;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-@RunWith(JUnit4.class)
-public class ItemMapperTest {
-  private final String PARSED_CONTENT_WITH_MULTIPLE_FIELDS = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"944\":{\"subfields\":[{\"s\":\"testCode2\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"945\":{\"subfields\":[{\"a\":\"E\"}, {\"b\":\"123\"},{\"s\":\"testCode\"},{\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"a\":\"KU/CC/DI/A\"}, {\"b\":\"1234\"}, {\"h\":\"KU/CC/DI/M\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"945\":{\"subfields\":[{\"h\":\"KU/CC/DI/A\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+class ItemMapperTest {
+  private final String parsedContentWithMultipleFields =
+    """
+      {"leader":"01314nam  22003851a 4500","fields":[{"001":"ybp7406411"},{"944":{"subfields":[{"s":"t\
+      estCode2"}],"ind1":" ","ind2":" "}}, {"945":{"subfields":[{"a":"E"}, {"b":"123"},{"s":"testCode"\
+      },{"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"a":"KU/CC/DI/A"}, {"b":"123\
+      4"}, {"h":"KU/CC/DI/M"}],"ind1":" ","ind2":" "}},{"945":{"subfields":[{"h":"KU/CC/DI/A"}],"ind1"\
+      :" ","ind2":" "}}]}\
+      """;
 
   @Test
-  public void shouldCreateOneItem() throws IOException {
+  void shouldCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
       .withName("item")
       .withRecordType(ITEM)
       .withMappingFields(Lists.newArrayList(new MappingRule()
-          .withName("barcode")
-          .withEnabled("true")
-          .withPath("item.barcode")
-          .withValue("\"123\"")));
+        .withName("barcode")
+        .withEnabled("true")
+        .withPath("item.barcode")
+        .withValue("\"123\"")));
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
@@ -78,10 +81,10 @@ public class ItemMapperTest {
   }
 
   @Test
-  public void shouldMapExistingItemFromContext() throws IOException {
+  void shouldMapExistingItemFromContext() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     UUID itemId1 = UUID.randomUUID();
     UUID itemId2 = UUID.randomUUID();
@@ -90,7 +93,7 @@ public class ItemMapperTest {
       new JsonObject().put("item", new JsonObject().put("id", itemId2))));
 
     context.put(ITEM.value(), itemsAsJson.encode());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
@@ -129,24 +132,24 @@ public class ItemMapperTest {
   }
 
   @Test
-  public void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+  void shouldCreateMultipleItemPerHoldingsPermanentLocationFields() throws IOException {
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     context.put(MULTIPLE_HOLDINGS_FIELD, "945");
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
     eventPayload.setContext(context);
 
     MappingDetail mappingDetails = new MappingDetail()
       .withName("item")
       .withRecordType(ITEM)
       .withMappingFields(Lists.newArrayList(new MappingRule()
-        .withName("barcode")
-        .withEnabled("true")
-        .withPath("item.barcode")
-        .withValue("945$b"),
+          .withName("barcode")
+          .withEnabled("true")
+          .withPath("item.barcode")
+          .withValue("945$b"),
         new MappingRule()
           .withName("statisticalCodeIds")
           .withEnabled("true")
@@ -195,34 +198,37 @@ public class ItemMapperTest {
     assertEquals("1234", items.getJsonObject(1).getJsonObject("item").getString("barcode"));
     assertNull(items.getJsonObject(2).getJsonObject("item").getString("barcode"));
 
-    assertEquals("Testing", items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("testCode", items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
+    assertEquals("Testing",
+      items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
+    assertEquals("testCode",
+      items.getJsonObject(0).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("Testing", items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("testCode2", items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
+    assertEquals("Testing",
+      items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
+    assertEquals("testCode2",
+      items.getJsonObject(1).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
 
-    assertEquals("Testing", items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
-    assertEquals("testCode2", items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
+    assertEquals("Testing",
+      items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(0));
+    assertEquals("testCode2",
+      items.getJsonObject(2).getJsonObject("item").getJsonArray("statisticalCodeIds").getString(1));
   }
 
   @Test
-  public void shouldNotCreateOneItem() throws IOException {
+  void shouldNotCreateOneItem() throws IOException {
     DataImportEventPayload eventPayload = new DataImportEventPayload();
-    Record record = new Record().withParsedRecord(new ParsedRecord()
-      .withContent(PARSED_CONTENT_WITH_MULTIPLE_FIELDS));
+    Record marcRecord = new Record().withParsedRecord(new ParsedRecord()
+      .withContent(parsedContentWithMultipleFields));
     HashMap<String, String> context = new HashMap<>();
     context.put(ITEM.value(), new JsonArray().toString());
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
-
-    MappingDetail mappingDetails = null;
 
     MappingProfile profile = new MappingProfile()
       .withId(UUID.randomUUID().toString())
       .withName("Create testing Items")
       .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-      .withExistingRecordType(ITEM)
-      .withMappingDetails(mappingDetails);
+      .withExistingRecordType(ITEM);
 
     MappingContext mappingContext = new MappingContext();
 

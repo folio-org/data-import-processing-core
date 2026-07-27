@@ -15,21 +15,21 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 public interface Value<T> {
 
   /**
-   * Returns value
+   * Returns value.
    *
    * @return value
    */
   T getValue();
 
   /**
-   * Returns type of the underlying value
+   * Returns type of the underlying value.
    *
    * @return type of value
    */
   ValueType getType();
 
   /**
-   * Enumeration to describe type of generic value
+   * Enumeration to describe type of generic value.
    */
   enum ValueType {
     STRING,

@@ -1,23 +1,21 @@
 package org.folio.processing.matching.loader.query;
 
-import org.folio.processing.value.ListValue;
-import org.folio.processing.value.Value;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.folio.MatchDetail.MatchCriterion;
-
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.folio.processing.value.Value.ValueType.LIST;
 import static org.folio.processing.value.Value.ValueType.STRING;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import org.folio.MatchDetail.MatchCriterion;
+import org.folio.processing.value.ListValue;
+import org.folio.processing.value.Value;
+
 /**
  * Allows to build sql and cql query structures according to the {@link MatchCriterion},
- * FIELD_NAME token is used to mark the place for field reference
+ * FIELD_NAME token is used to mark the place for field reference.
  */
 public enum MatchingCondition {
 
@@ -38,8 +36,8 @@ public enum MatchingCondition {
     EMPTY),
   WHERE_CLAUSE_CONSTRUCTOR("\"%s\"", "\"%s\"");
 
-  private String sqlCondition;
-  private String cqlQuery;
+  private final String sqlCondition;
+  private final String cqlQuery;
 
   MatchingCondition(String sqlCondition, String cqlQuery) {
     this.sqlCondition = sqlCondition;
@@ -47,7 +45,7 @@ public enum MatchingCondition {
   }
 
   /**
-   * Builds sql WHERE-clause passing an actual value to the sqlCondition structure
+   * Builds sql WHERE-clause passing an actual value to the sqlCondition structure.
    *
    * @param value {@link Value} that should be applied in sql WHERE-clause,
    *              supports only STRING and LIST value types
@@ -59,12 +57,12 @@ public enum MatchingCondition {
   }
 
   /**
-   * Builds cql query passing an actual value to the cqlQuery structure
+   * Builds cql query passing an actual value to the cqlQuery structure.
    *
    * @param value {@link Value} that should be applied in cql query,
    *              currently supports only STRING and LIST value type
    * @return cql query or an empty string if no query structure is provided for {@link MatchCriterion}
-   * or query cannot be built for specified value type
+   *   or query cannot be built for specified value type
    */
   public String constructCqlQuery(Value value) {
     return constructConditionWithValue(value, cqlQuery);

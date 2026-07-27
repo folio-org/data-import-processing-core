@@ -1,5 +1,8 @@
 package org.folio.processing.matching.reader;
 
+import static java.util.Objects.nonNull;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
+
 import java.util.Date;
 import org.folio.DataImportEventPayload;
 import org.folio.MatchDetail;
@@ -11,9 +14,6 @@ import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MatchExpression;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
 
-import static java.util.Objects.nonNull;
-import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
-
 public class StaticValueReaderImpl implements MatchValueReader {
 
   @Override
@@ -21,13 +21,13 @@ public class StaticValueReaderImpl implements MatchValueReader {
     MatchExpression matchExpression = matchDetail.getIncomingMatchExpression();
     if (matchExpression.getDataValueType() == STATIC_VALUE && nonNull(matchExpression.getStaticValueDetails())) {
       StaticValueDetails staticValueDetails = matchExpression.getStaticValueDetails();
-      switch (staticValueDetails.getStaticValueType()) {
-        case TEXT: return obtainStringValue(staticValueDetails.getText());
-        case NUMBER: return obtainStringValue(staticValueDetails.getNumber());
-        case EXACT_DATE: return obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
-        case DATE_RANGE: return obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
-        default: return MissingValue.getInstance();
-      }
+      return switch (staticValueDetails.getStaticValueType()) {
+        case TEXT -> obtainStringValue(staticValueDetails.getText());
+        case NUMBER -> obtainStringValue(staticValueDetails.getNumber());
+        case EXACT_DATE -> obtainDateValue(staticValueDetails.getExactDate(), staticValueDetails.getExactDate());
+        case DATE_RANGE -> obtainDateValue(staticValueDetails.getFromDate(), staticValueDetails.getToDate());
+        default -> MissingValue.getInstance();
+      };
     }
     return MissingValue.getInstance();
   }

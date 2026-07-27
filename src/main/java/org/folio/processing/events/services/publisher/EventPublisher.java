@@ -1,12 +1,11 @@
 package org.folio.processing.events.services.publisher;
 
+import java.util.concurrent.CompletableFuture;
 import org.folio.DataImportEventPayload;
 import org.folio.rest.jaxrs.model.Event;
 
-import java.util.concurrent.CompletableFuture;
-
 /**
- * Event publisher
+ * Event publisher.
  */
 @FunctionalInterface
 public interface EventPublisher {

@@ -1,26 +1,27 @@
 package org.folio.processing.value;
 
-import org.folio.rest.jaxrs.model.MappingRule;
+import static org.folio.processing.value.Value.ValueType.REPEATABLE;
 
 import java.util.List;
 import java.util.Map;
-
-import static org.folio.processing.value.Value.ValueType.REPEATABLE;
+import org.folio.rest.jaxrs.model.MappingRule;
 
 public class RepeatableFieldValue implements Value<List<Map<String, Value>>> {
 
-  private List<Map<String, Value>> value;
-  private MappingRule.RepeatableFieldAction repeatableFieldAction;
-  private String rootPath;
+  private final List<Map<String, Value>> value;
+  private final MappingRule.RepeatableFieldAction repeatableFieldAction;
+  private final String rootPath;
   private boolean isAlreadyRemovedForExchange;
 
-  protected RepeatableFieldValue(List<Map<String, Value>> value, MappingRule.RepeatableFieldAction action, String rootPath) {
+  protected RepeatableFieldValue(List<Map<String, Value>> value, MappingRule.RepeatableFieldAction action,
+                                 String rootPath) {
     this.value = value;
     this.repeatableFieldAction = action;
     this.rootPath = rootPath;
   }
 
-  public static RepeatableFieldValue of(List<Map<String, Value>> value, MappingRule.RepeatableFieldAction action, String rootPath) {
+  public static RepeatableFieldValue of(List<Map<String, Value>> value, MappingRule.RepeatableFieldAction action,
+                                        String rootPath) {
     return new RepeatableFieldValue(value, action, rootPath);
   }
 
@@ -29,17 +30,17 @@ public class RepeatableFieldValue implements Value<List<Map<String, Value>>> {
     return value;
   }
 
+  @Override
+  public ValueType getType() {
+    return REPEATABLE;
+  }
+
   public MappingRule.RepeatableFieldAction getRepeatableFieldAction() {
     return repeatableFieldAction;
   }
 
   public String getRootPath() {
     return rootPath;
-  }
-
-  @Override
-  public ValueType getType() {
-    return REPEATABLE;
   }
 
   public boolean isAlreadyRemovedForExchange() {

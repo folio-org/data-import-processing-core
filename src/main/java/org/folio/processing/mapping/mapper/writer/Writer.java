@@ -1,10 +1,9 @@
 package org.folio.processing.mapping.mapper.writer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.value.Value;
-
-import java.io.IOException;
 
 /**
  * The root interface for Writers.
@@ -24,7 +23,7 @@ public interface Writer {
   void initialize(DataImportEventPayload eventPayload) throws IOException;
 
   /**
-   * Writes value to the underlying entity by the fieldPath
+   * Writes value to the underlying entity by the fieldPath.
    *
    * @param fieldPath path to the certain field of the entity
    * @param value     value
@@ -33,7 +32,7 @@ public interface Writer {
   void write(String fieldPath, Value value);
 
   /**
-   * Puts result of writing into event payload and returns event payload
+   * Puts result of writing into event payload and returns event payload.
    *
    * @param eventPayload event payload
    * @return event payload

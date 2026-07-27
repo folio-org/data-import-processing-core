@@ -1,6 +1,13 @@
 package org.folio.processing.mapping.defaultmapper;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.Classification;
 import org.folio.ElectronicAccess;
@@ -13,26 +20,20 @@ import org.folio.SucceedingTitle;
 import org.folio.processing.mapping.defaultmapper.processor.Processor;
 import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-
 public class MarcToInstanceMapper implements RecordMapper<Instance> {
 
-  private static final Pattern UUID_DUPLICATE_PATTERN = Pattern.compile("([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} ){2,}");
+  private static final Pattern UUID_DUPLICATE_PATTERN =
+    Pattern.compile("([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12} ){2,}");
   private static final String BLANK_STRING = " ";
   private static final String MARC = "MARC";
   private static final String MARC_FORMAT = "MARC_BIB";
 
   @Override
   public Instance mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules) {
-    Instance instance = new Processor<Instance>().process(parsedRecord, mappingParameters, mappingRules, Instance.class);
+    Instance instance =
+      new Processor<Instance>().process(parsedRecord, mappingParameters, mappingRules, Instance.class);
     if (instance != null) {
-      instance = fixDuplicatedUUIDs(instance.withSource(MARC));
+      instance = fixDuplicatedUuids(instance.withSource(MARC));
       instance = fixDuplicatedLanguages(instance);
       instance = removeElectronicAccessEntriesWithNoUri(instance);
       instance = removePrecedingTitlesWithoutTitles(instance);
@@ -48,7 +49,7 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
     return MARC_FORMAT;
   }
 
-  private Instance fixDuplicatedUUIDs(Instance instance) {
+  private Instance fixDuplicatedUuids(Instance instance) {
     fixIdentifiers(instance);
     fixClassifications(instance);
     return instance;
@@ -58,7 +59,7 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
     List<Identifier> splitIdentifiers = new ArrayList<>();
     instance.getIdentifiers().forEach(identifier -> {
       if (StringUtils.isNoneBlank(identifier.getIdentifierTypeId())
-        && UUID_DUPLICATE_PATTERN.matcher(identifier.getIdentifierTypeId() + BLANK_STRING).matches()) {
+          && UUID_DUPLICATE_PATTERN.matcher(identifier.getIdentifierTypeId() + BLANK_STRING).matches()) {
         String[] uuids = identifier.getIdentifierTypeId().split(BLANK_STRING);
         String[] values = identifier.getValue().split(BLANK_STRING);
         if (uuids.length > 1 && values.length > 1) {
@@ -69,8 +70,8 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
           Identifier newIdentifier = new Identifier().withIdentifierTypeId(uuids[i]);
           if (values.length > i) {
             newIdentifier.setValue(i == uuids.length - 1
-              ? String.join(BLANK_STRING, Arrays.copyOfRange(values, i, values.length))
-              : values[i]);
+                                   ? String.join(BLANK_STRING, Arrays.copyOfRange(values, i, values.length))
+                                   : values[i]);
             splitIdentifiers.add(newIdentifier);
           }
         }
@@ -83,7 +84,7 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
     List<Classification> splitClassification = new ArrayList<>();
     instance.getClassifications().forEach(classification -> {
       if (StringUtils.isNoneBlank(classification.getClassificationTypeId())
-        && UUID_DUPLICATE_PATTERN.matcher(classification.getClassificationTypeId() + BLANK_STRING).matches()) {
+          && UUID_DUPLICATE_PATTERN.matcher(classification.getClassificationTypeId() + BLANK_STRING).matches()) {
         String[] uuids = classification.getClassificationTypeId().split(BLANK_STRING);
         String[] values = classification.getClassificationNumber().split(BLANK_STRING);
         if (uuids.length > 1 && values.length > 1) {
@@ -94,8 +95,9 @@ public class MarcToInstanceMapper implements RecordMapper<Instance> {
           Classification newClassification = new Classification().withClassificationTypeId(uuids[i]);
           if (values.length > i) {
             newClassification.setClassificationNumber(i == uuids.length - 1
-              ? String.join(BLANK_STRING, Arrays.copyOfRange(values, i, values.length))
-              : values[i]);
+                                                      ? String.join(BLANK_STRING,
+              Arrays.copyOfRange(values, i, values.length))
+                                                      : values[i]);
             splitClassification.add(newClassification);
           }
         }

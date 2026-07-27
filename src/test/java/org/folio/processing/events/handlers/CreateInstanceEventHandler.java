@@ -1,13 +1,12 @@
 package org.folio.processing.events.handlers;
 
+import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
+
 import io.vertx.core.json.JsonObject;
+import java.util.concurrent.CompletableFuture;
 import org.folio.ActionProfile;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.events.services.handler.EventHandler;
-
-import java.util.concurrent.CompletableFuture;
-
-import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
 
 /**
  * Test event handler. Handles event context with event DI_INCOMING_MARC_BIB_RECORD_PARSED
@@ -24,7 +23,8 @@ public class CreateInstanceEventHandler implements EventHandler {
   @Override
   public boolean isEligible(DataImportEventPayload eventPayload) {
     if (ACTION_PROFILE == eventPayload.getCurrentNode().getContentType()) {
-      ActionProfile actionProfile = JsonObject.mapFrom(eventPayload.getCurrentNode().getContent()).mapTo(ActionProfile.class);
+      ActionProfile actionProfile =
+        JsonObject.mapFrom(eventPayload.getCurrentNode().getContent()).mapTo(ActionProfile.class);
       return actionProfile.getFolioRecord() == ActionProfile.FolioRecord.INSTANCE;
     }
     return false;

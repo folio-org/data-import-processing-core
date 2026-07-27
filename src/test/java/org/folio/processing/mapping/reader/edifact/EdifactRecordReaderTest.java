@@ -1,8 +1,18 @@
 package org.folio.processing.mapping.reader.edifact;
 
+import static java.util.Collections.singletonList;
+import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
+import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
+import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
+
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.folio.DataImportEventPayload;
 import org.folio.ParsedRecord;
 import org.folio.Record;
@@ -18,57 +28,56 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.folio.rest.jaxrs.model.RepeatableSubfieldMapping;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+@SuppressWarnings("checkstyle:LineLength")
+class EdifactRecordReaderTest {
 
-import static java.util.Collections.singletonList;
-import static org.folio.rest.jaxrs.model.EntityType.EDIFACT_INVOICE;
-import static org.folio.rest.jaxrs.model.MappingRule.BooleanFieldAction.ALL_TRUE;
-import static org.folio.rest.jaxrs.model.MappingRule.RepeatableFieldAction.EXTEND_EXISTING;
-
-public class EdifactRecordReaderTest {
-
-  private static final String EDIFACT_PARSED_CONTENT = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACADEMY OF MANAGEMENT ANNALS -   ON\"}, {\"data\": \"LINE FOR INSTITUTIONS\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006288237\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-737X\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-737X(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-737X(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI MATERIALS JOURNAL - ONLINE   -\"}, {\"data\": \"MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283902\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498295\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"3\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006289532\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-7361\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-7361(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-7361(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"GRADUATE PROGRAMS IN PHYSICS, ASTRO\"}, {\"data\": \"NOMY AND \"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"RELATED FIELDS.\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283901\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498296\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
-  private static final String INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162-1\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACADEMY OF MANAGEMENT ANNALS -   ON\"}, {\"data\": \"LINE FOR INSTITUTIONS\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006288237\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-737X\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-737X(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-737X(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI MATERIALS JOURNAL - ONLINE   -\"}, {\"data\": \"MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283902\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498295\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"3\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006289532\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-7361\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-7361(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-7361(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI STRUCTURAL JOURNAL -   ON\"}, {\"data\": \"LINE - MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283901\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498296\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
-  private static final String INVOICE_LINE_IMD_WITHOUT_TARGET_DATA_ELEMENT_CONTENT = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"LAW IN CONTEXT SERIES\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
-  private static final String INVOICE_LINE_MULTIPLE_IMD_SEGMENTS = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"085\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"01.Jan.2021 iss.1\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"086\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"31.Dec.2021 iss.24\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
-  private static final String INVOICE_WITH_ONE_LINE = "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"LAW IN CONTEXT SERIES\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
-  private static final String INVOICE_LINE_DESCRIPTION_WITHOUT_SEPARATOR_SYMBOL = "{\"segments\":[{\"tag\":\"UNA\",\"dataElements\":[{\"components\":[{\"data\":\" \"}]}]},{\"tag\":\"UNB\",\"dataElements\":[{\"components\":[{\"data\":\"UNOC\"},{\"data\":\"3\"}]},{\"components\":[{\"data\":\"HARRASSOWITZ\"},{\"data\":\"ZZ\"}]},{\"components\":[{\"data\":\"3463621\"},{\"data\":\"ZZ\"}]},{\"components\":[{\"data\":\"211206\"},{\"data\":\"1237\"}]},{\"components\":[{\"data\":\"294\"}]}]},{\"tag\":\"UNH\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"INVOIC\"},{\"data\":\"D\"},{\"data\":\"96A\"},{\"data\":\"UN\"},{\"data\":\"EAN008\"}]}]},{\"tag\":\"BGM\",\"dataElements\":[{\"components\":[{\"data\":\"380\"}]},{\"components\":[{\"data\":\"263056\"}]},{\"components\":[{\"data\":\"43\"}]}]},{\"tag\":\"DTM\",\"dataElements\":[{\"components\":[{\"data\":\"137\"},{\"data\":\"20210930\"},{\"data\":\"102\"}]}]},{\"tag\":\"NAD\",\"dataElements\":[{\"components\":[{\"data\":\"SU\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"OTTO HARRASSOWITZ\"},{\"data\":\"BOOKSELLERS & SUBSCRIPTION AGENTS\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"BLO\"}]},{\"components\":[{\"data\":\"KREUZBERGER RING 7C-D\"}]},{\"components\":[{\"data\":\"WIESBADEN\"}]},{\"components\":[{\"data\":\"GERMANY\"}]},{\"components\":[{\"data\":\"65174\"}]},{\"components\":[{\"data\":\"DE\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"API\"},{\"data\":\"HARRAS\"}]}]},{\"tag\":\"NAD\",\"dataElements\":[{\"components\":[{\"data\":\"BY\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"Books Receiving - 1059\"},{\"data\":\"MSU Libraries\"},{\"data\":\"Michigan State University\"}]},{\"components\":[{\"data\":\"366 W Circle Drive\"}]},{\"components\":[{\"data\":\"East Lansing, MI\"}]},{\"components\":[{\"data\":\"MI\"}]},{\"components\":[{\"data\":\"488241048\"}]},{\"components\":[{\"data\":\"US\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"API\"},{\"data\":\"0088041\"}]}]},{\"tag\":\"CUX\",\"dataElements\":[{\"components\":[{\"data\":\"2\"},{\"data\":\"USD\"},{\"data\":\"4\"}]}]},{\"tag\":\"ALC\",\"dataElements\":[{\"components\":[{\"data\":\"C\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"PAB\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"8\"},{\"data\":\"147.14\"}]}]},{\"tag\":\"LIN\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"9783825347406\"},{\"data\":\"EN\"}]}]},{\"tag\":\"PIA\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"har200391067\"},{\"data\":\"SA\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"010\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Genazino\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"050\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Die Angst vor der Penetranz des Wik\"},{\"data\":\"lichen\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"109\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Universitaetsverlag Winter\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"110\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Heidelberg\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"170\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"2020\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"220\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"paperback\"}]}]},{\"tag\":\"QTY\",\"dataElements\":[{\"components\":[{\"data\":\"47\"},{\"data\":\"1\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"203\"},{\"data\":\"11.78\"}]}]},{\"tag\":\"PRI\",\"dataElements\":[{\"components\":[{\"data\":\"AAB\"},{\"data\":\"11.78\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SNA\"},{\"data\":\"84390261\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SLI\"},{\"data\":\"har200391067\"}]}]},{\"tag\":\"LIN\",\"dataElements\":[{\"components\":[{\"data\":\"2\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"9783942901444\"},{\"data\":\"EN\"}]}]},{\"tag\":\"PIA\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"har210001354\"},{\"data\":\"SA\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"010\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Schwarz\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"050\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Werke, Briefe, Dokumente\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"080\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Band 1\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"100\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"1. Auflage\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"109\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Reinecke & Voss\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"110\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Leipzig\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"170\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"2021\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"220\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"hardbound\"}]}]},{\"tag\":\"QTY\",\"dataElements\":[{\"components\":[{\"data\":\"47\"},{\"data\":\"1\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"203\"},{\"data\":\"47.1\"}]}]},{\"tag\":\"PRI\",\"dataElements\":[{\"components\":[{\"data\":\"AAB\"},{\"data\":\"47.1\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SNA\"},{\"data\":\"84503090\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SLI\"},{\"data\":\"har210001354\"}]}]},{\"tag\":\"LIN\",\"dataElements\":[{\"components\":[{\"data\":\"3\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"9783412521202\"},{\"data\":\"EN\"}]}]},{\"tag\":\"PIA\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"har200478368\"},{\"data\":\"SA\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"010\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Thiessen\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"050\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Das Zeitalter der Ambiguitaet\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"109\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Boehlau Verlag\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"110\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Koeln\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"170\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"2021\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"220\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"hardbound\"}]}]},{\"tag\":\"QTY\",\"dataElements\":[{\"components\":[{\"data\":\"47\"},{\"data\":\"1\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"203\"},{\"data\":\"70.66\"}]}]},{\"tag\":\"PRI\",\"dataElements\":[{\"components\":[{\"data\":\"AAB\"},{\"data\":\"70.66\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SNA\"},{\"data\":\"84390301\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SLI\"},{\"data\":\"har200478368\"}]}]},{\"tag\":\"UNS\",\"dataElements\":[{\"components\":[{\"data\":\"S\"}]}]},{\"tag\":\"CNT\",\"dataElements\":[{\"components\":[{\"data\":\"1\"},{\"data\":\"3\"}]}]},{\"tag\":\"CNT\",\"dataElements\":[{\"components\":[{\"data\":\"2\"},{\"data\":\"3\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"9\"},{\"data\":\"1646.87\"},{\"data\":\"USD\"},{\"data\":\"4\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"79\"},{\"data\":\"1646.87\"},{\"data\":\"USD\"},{\"data\":\"4\"}]}]},{\"tag\":\"UNT\",\"dataElements\":[{\"components\":[{\"data\":\"57\"}]},{\"components\":[{\"data\":\"1\"}]}]},{\"tag\":\"UNZ\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"294\"}]}]}]}";
+  private static final String EDIFACT_PARSED_CONTENT =
+    "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACADEMY OF MANAGEMENT ANNALS -   ON\"}, {\"data\": \"LINE FOR INSTITUTIONS\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006288237\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-737X\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-737X(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-737X(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI MATERIALS JOURNAL - ONLINE   -\"}, {\"data\": \"MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283902\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498295\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"3\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006289532\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-7361\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-7361(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-7361(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"GRADUATE PROGRAMS IN PHYSICS, ASTRO\"}, {\"data\": \"NOMY AND \"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"RELATED FIELDS.\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283901\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498296\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
+  private static final String INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT =
+    "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162-1\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACADEMY OF MANAGEMENT ANNALS -   ON\"}, {\"data\": \"LINE FOR INSTITUTIONS\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006288237\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-737X\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-737X(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-737X(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI MATERIALS JOURNAL - ONLINE   -\"}, {\"data\": \"MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283902\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498295\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"3\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"006289532\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1944-7361\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1944-7361(20200301)117;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1944-7361(20210228)118;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"ACI STRUCTURAL JOURNAL -   ON\"}, {\"data\": \"LINE - MULTI USER\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200301\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20210228\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"726.5\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"714\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S283901\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"E9498296\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"12.5\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
+  private static final String INVOICE_LINE_IMD_WITHOUT_TARGET_DATA_ELEMENT_CONTENT =
+    "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"LAW IN CONTEXT SERIES\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
+  private static final String INVOICE_LINE_MULTIPLE_IMD_SEGMENTS =
+    "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"085\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"01.Jan.2021 iss.1\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"086\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"31.Dec.2021 iss.24\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
+  private static final String INVOICE_WITH_ONE_LINE =
+    "{\"segments\": [{\"tag\": \"UNA\", \"dataElements\": []}, {\"tag\": \"UNB\", \"dataElements\": [{\"components\": [{\"data\": \"UNOC\"}, {\"data\": \"3\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"92\"}]}, {\"components\": [{\"data\": \"KOH0002\"}, {\"data\": \"91\"}]}, {\"components\": [{\"data\": \"200610\"}, {\"data\": \"0105\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}, {\"tag\": \"UNH\", \"dataElements\": [{\"components\": [{\"data\": \"5162\"}]}, {\"components\": [{\"data\": \"INVOIC\"}, {\"data\": \"D\"}, {\"data\": \"96A\"}, {\"data\": \"UN\"}, {\"data\": \"EAN008\"}]}]}, {\"tag\": \"BGM\", \"dataElements\": [{\"components\": [{\"data\": \"380\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"JINV\"}]}, {\"components\": [{\"data\": \"0704159\"}]}, {\"components\": [{\"data\": \"43\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"137\"}, {\"data\": \"20191002\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"BY\"}]}, {\"components\": [{\"data\": \"BR1624506\"}, {\"data\": \"\"}, {\"data\": \"91\"}]}]}, {\"tag\": \"NAD\", \"dataElements\": [{\"components\": [{\"data\": \"SR\"}]}, {\"components\": [{\"data\": \"EBSCO\"}, {\"data\": \"\"}, {\"data\": \"92\"}]}]}, {\"tag\": \"CUX\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"LIN\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5\"}]}, {\"components\": [{\"data\": \"004362033\"}, {\"data\": \"SA\"}]}, {\"components\": [{\"data\": \"1941-6067\"}, {\"data\": \"IS\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5S\"}]}, {\"components\": [{\"data\": \"1941-6067(20200101)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"PIA\", \"dataElements\": [{\"components\": [{\"data\": \"5E\"}]}, {\"components\": [{\"data\": \"1941-6067(20201231)14;1-F\"}, {\"data\": \"SI\"}, {\"data\": \"\"}, {\"data\": \"28\"}]}]}, {\"tag\": \"IMD\", \"dataElements\": [{\"components\": [{\"data\": \"L\"}]}, {\"components\": [{\"data\": \"050\"}]}, {\"components\": [{\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"\"}, {\"data\": \"LAW IN CONTEXT SERIES\"}]}]}, {\"tag\": \"QTY\", \"dataElements\": [{\"components\": [{\"data\": \"47\"}, {\"data\": \"1\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"194\"}, {\"data\": \"20200101\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"DTM\", \"dataElements\": [{\"components\": [{\"data\": \"206\"}, {\"data\": \"20201231\"}, {\"data\": \"102\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"203\"}, {\"data\": \"208.59\"}, {\"data\": \"USD\"}, {\"data\": \"4\"}]}]}, {\"tag\": \"PRI\", \"dataElements\": [{\"components\": [{\"data\": \"AAB\"}, {\"data\": \"205\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"LI\"}, {\"data\": \"S255699\"}]}]}, {\"tag\": \"RFF\", \"dataElements\": [{\"components\": [{\"data\": \"SNA\"}, {\"data\": \"C6546362\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"LINE SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"3.59\"}]}]}, {\"tag\": \"UNS\", \"dataElements\": [{\"components\": [{\"data\": \"S\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"CNT\", \"dataElements\": [{\"components\": [{\"data\": \"2\"}, {\"data\": \"3\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"79\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"9\"}, {\"data\": \"18929.07\"}]}]}, {\"tag\": \"ALC\", \"dataElements\": [{\"components\": [{\"data\": \"C\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"\"}]}, {\"components\": [{\"data\": \"G74\"}, {\"data\": \"\"}, {\"data\": \"28\"}, {\"data\": \"TOTAL SERVICE CHARGE\"}]}]}, {\"tag\": \"MOA\", \"dataElements\": [{\"components\": [{\"data\": \"8\"}, {\"data\": \"325.59\"}]}]}, {\"tag\": \"UNT\", \"dataElements\": [{\"components\": [{\"data\": \"294\"}]}, {\"components\": [{\"data\": \"5162-1\"}]}]}, {\"tag\": \"UNZ\", \"dataElements\": [{\"components\": [{\"data\": \"1\"}]}, {\"components\": [{\"data\": \"5162\"}]}]}]}";
+  private static final String INVOICE_LINE_DESCRIPTION_WITHOUT_SEPARATOR_SYMBOL =
+    "{\"segments\":[{\"tag\":\"UNA\",\"dataElements\":[{\"components\":[{\"data\":\" \"}]}]},{\"tag\":\"UNB\",\"dataElements\":[{\"components\":[{\"data\":\"UNOC\"},{\"data\":\"3\"}]},{\"components\":[{\"data\":\"HARRASSOWITZ\"},{\"data\":\"ZZ\"}]},{\"components\":[{\"data\":\"3463621\"},{\"data\":\"ZZ\"}]},{\"components\":[{\"data\":\"211206\"},{\"data\":\"1237\"}]},{\"components\":[{\"data\":\"294\"}]}]},{\"tag\":\"UNH\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"INVOIC\"},{\"data\":\"D\"},{\"data\":\"96A\"},{\"data\":\"UN\"},{\"data\":\"EAN008\"}]}]},{\"tag\":\"BGM\",\"dataElements\":[{\"components\":[{\"data\":\"380\"}]},{\"components\":[{\"data\":\"263056\"}]},{\"components\":[{\"data\":\"43\"}]}]},{\"tag\":\"DTM\",\"dataElements\":[{\"components\":[{\"data\":\"137\"},{\"data\":\"20210930\"},{\"data\":\"102\"}]}]},{\"tag\":\"NAD\",\"dataElements\":[{\"components\":[{\"data\":\"SU\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"OTTO HARRASSOWITZ\"},{\"data\":\"BOOKSELLERS & SUBSCRIPTION AGENTS\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"BLO\"}]},{\"components\":[{\"data\":\"KREUZBERGER RING 7C-D\"}]},{\"components\":[{\"data\":\"WIESBADEN\"}]},{\"components\":[{\"data\":\"GERMANY\"}]},{\"components\":[{\"data\":\"65174\"}]},{\"components\":[{\"data\":\"DE\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"API\"},{\"data\":\"HARRAS\"}]}]},{\"tag\":\"NAD\",\"dataElements\":[{\"components\":[{\"data\":\"BY\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"Books Receiving - 1059\"},{\"data\":\"MSU Libraries\"},{\"data\":\"Michigan State University\"}]},{\"components\":[{\"data\":\"366 W Circle Drive\"}]},{\"components\":[{\"data\":\"East Lansing, MI\"}]},{\"components\":[{\"data\":\"MI\"}]},{\"components\":[{\"data\":\"488241048\"}]},{\"components\":[{\"data\":\"US\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"API\"},{\"data\":\"0088041\"}]}]},{\"tag\":\"CUX\",\"dataElements\":[{\"components\":[{\"data\":\"2\"},{\"data\":\"USD\"},{\"data\":\"4\"}]}]},{\"tag\":\"ALC\",\"dataElements\":[{\"components\":[{\"data\":\"C\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"PAB\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"8\"},{\"data\":\"147.14\"}]}]},{\"tag\":\"LIN\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"9783825347406\"},{\"data\":\"EN\"}]}]},{\"tag\":\"PIA\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"har200391067\"},{\"data\":\"SA\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"010\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Genazino\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"050\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Die Angst vor der Penetranz des Wik\"},{\"data\":\"lichen\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"109\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Universitaetsverlag Winter\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"110\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Heidelberg\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"170\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"2020\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"220\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"paperback\"}]}]},{\"tag\":\"QTY\",\"dataElements\":[{\"components\":[{\"data\":\"47\"},{\"data\":\"1\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"203\"},{\"data\":\"11.78\"}]}]},{\"tag\":\"PRI\",\"dataElements\":[{\"components\":[{\"data\":\"AAB\"},{\"data\":\"11.78\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SNA\"},{\"data\":\"84390261\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SLI\"},{\"data\":\"har200391067\"}]}]},{\"tag\":\"LIN\",\"dataElements\":[{\"components\":[{\"data\":\"2\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"9783942901444\"},{\"data\":\"EN\"}]}]},{\"tag\":\"PIA\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"har210001354\"},{\"data\":\"SA\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"010\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Schwarz\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"050\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Werke, Briefe, Dokumente\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"080\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Band 1\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"100\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"1. Auflage\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"109\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Reinecke & Voss\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"110\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Leipzig\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"170\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"2021\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"220\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"hardbound\"}]}]},{\"tag\":\"QTY\",\"dataElements\":[{\"components\":[{\"data\":\"47\"},{\"data\":\"1\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"203\"},{\"data\":\"47.1\"}]}]},{\"tag\":\"PRI\",\"dataElements\":[{\"components\":[{\"data\":\"AAB\"},{\"data\":\"47.1\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SNA\"},{\"data\":\"84503090\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SLI\"},{\"data\":\"har210001354\"}]}]},{\"tag\":\"LIN\",\"dataElements\":[{\"components\":[{\"data\":\"3\"}]},{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"9783412521202\"},{\"data\":\"EN\"}]}]},{\"tag\":\"PIA\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"har200478368\"},{\"data\":\"SA\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"010\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Thiessen\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"050\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Das Zeitalter der Ambiguitaet\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"109\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Boehlau Verlag\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"110\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"Koeln\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"170\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"2021\"}]}]},{\"tag\":\"IMD\",\"dataElements\":[{\"components\":[{\"data\":\"\"}]},{\"components\":[{\"data\":\"220\"}]},{\"components\":[{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"\"},{\"data\":\"hardbound\"}]}]},{\"tag\":\"QTY\",\"dataElements\":[{\"components\":[{\"data\":\"47\"},{\"data\":\"1\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"203\"},{\"data\":\"70.66\"}]}]},{\"tag\":\"PRI\",\"dataElements\":[{\"components\":[{\"data\":\"AAB\"},{\"data\":\"70.66\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SNA\"},{\"data\":\"84390301\"}]}]},{\"tag\":\"RFF\",\"dataElements\":[{\"components\":[{\"data\":\"SLI\"},{\"data\":\"har200478368\"}]}]},{\"tag\":\"UNS\",\"dataElements\":[{\"components\":[{\"data\":\"S\"}]}]},{\"tag\":\"CNT\",\"dataElements\":[{\"components\":[{\"data\":\"1\"},{\"data\":\"3\"}]}]},{\"tag\":\"CNT\",\"dataElements\":[{\"components\":[{\"data\":\"2\"},{\"data\":\"3\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"9\"},{\"data\":\"1646.87\"},{\"data\":\"USD\"},{\"data\":\"4\"}]}]},{\"tag\":\"MOA\",\"dataElements\":[{\"components\":[{\"data\":\"79\"},{\"data\":\"1646.87\"},{\"data\":\"USD\"},{\"data\":\"4\"}]}]},{\"tag\":\"UNT\",\"dataElements\":[{\"components\":[{\"data\":\"57\"}]},{\"components\":[{\"data\":\"1\"}]}]},{\"tag\":\"UNZ\",\"dataElements\":[{\"components\":[{\"data\":\"1\"}]},{\"components\":[{\"data\":\"294\"}]}]}]}";
 
   private final ReaderFactory readerFactory = new EdifactReaderFactory();
   private final MappingContext mappingContext = new MappingContext();
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenPayloadHasNoRecord() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenPayloadHasNoRecord() {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(new HashMap<>());
 
     Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload, mappingContext);
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.initialize(dataImportEventPayload, mappingContext));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenPayloadHasNoParsedRecordContentRecord() {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
     context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord())));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload, mappingContext);
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.initialize(dataImportEventPayload, mappingContext));
   }
 
   @Test
-  public void shouldReadStringConstantFromMappingRule() throws IOException {
+  void shouldReadStringConstantFromMappingRule() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
@@ -76,15 +85,16 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.status").withValue("\"Open\""));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("Open", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("Open", value.getValue());
   }
 
   @Test
-  public void shouldReturnStringValue() throws IOException {
+  void shouldReturnStringValue() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
@@ -92,15 +102,16 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.lockTotal").withValue("MOA+9[2]"));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("18929.07", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("18929.07", value.getValue());
   }
 
   @Test
-  public void shouldReadMappingRuleWithDataPositionsRange() throws IOException {
+  void shouldReadMappingRuleWithDataPositionsRange() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
@@ -108,15 +119,16 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[1-3]"));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("INVOICD96A", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("INVOICD96A", value.getValue());
   }
 
   @Test
-  public void shouldReturnMissingValueWhenMappingRuleHasNoMappingExpression() throws IOException {
+  void shouldReturnMissingValueWhenMappingRuleHasNoMappingExpression() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
@@ -124,27 +136,30 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.note").withValue(""));
 
-    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+    Assertions.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenMappingRuleHasInvalidPositionsRange() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenMappingRuleHasInvalidPositionsRange() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
     reader.initialize(dataImportEventPayload, mappingContext);
 
-    reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[2-1]"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.read(new MappingRule().withPath("invoice.note").withValue("UNH+5162+[2-1]")));
   }
 
   @Test
-  public void shouldFormatDateToIsoFormatWhenDateTimeSegmentIsSpecifiedInMappingRule() throws IOException {
+  void shouldFormatDateToIsoFormatWhenDateTimeSegmentIsSpecifiedInMappingRule() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
@@ -152,16 +167,17 @@ public class EdifactRecordReaderTest {
 
     Value value = reader.read(new MappingRule().withPath("invoice.invoiceDate").withValue("DTM+137[2]"));
 
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("2019-10-02T00:00:00.000+0000", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("2019-10-02T00:00:00.000+0000", value.getValue());
   }
 
   @Test
-  public void shouldReturnStringValueWhenMappingExpressionHasQualifier() throws IOException {
+  void shouldReturnStringValueWhenMappingExpressionHasQualifier() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_WITH_ONE_LINE))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_WITH_ONE_LINE))));
     dataImportEventPayload.setContext(context);
 
     // when
@@ -170,34 +186,37 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(new MappingRule().withPath("invoice.lockTotal").withValue("CUX+2?4[2]"));
 
     // then
-    Assert.assertEquals(Value.ValueType.STRING, value.getType());
-    Assert.assertEquals("USD", value.getValue());
+    Assertions.assertEquals(Value.ValueType.STRING, value.getType());
+    Assertions.assertEquals("USD", value.getValue());
   }
 
   @Test
-  public void shouldReadBooleanValueWhenMappingRuleHasBooleanFieldAction() throws IOException {
+  void shouldReadBooleanValueWhenMappingRuleHasBooleanFieldAction() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     // when
     Reader reader = readerFactory.createReader();
     reader.initialize(dataImportEventPayload, mappingContext);
-    Value value = reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap").withBooleanFieldAction(ALL_TRUE));
+    Value value =
+      reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap").withBooleanFieldAction(ALL_TRUE));
 
     // then
-    Assert.assertEquals(Value.ValueType.BOOLEAN, value.getType());
-    Assert.assertEquals(ALL_TRUE, value.getValue());
+    Assertions.assertEquals(Value.ValueType.BOOLEAN, value.getType());
+    Assertions.assertEquals(ALL_TRUE, value.getValue());
   }
 
   @Test
-  public void shouldReadAndReturnMissingValueIfMappingExpressionIsEmpty() throws IOException {
+  void shouldReadAndReturnMissingValueIfMappingExpressionIsEmpty() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     // when
@@ -206,15 +225,16 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(new MappingRule().withPath("invoice.chkSubscriptionOverlap"));
 
     // then
-    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+    Assertions.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
   @Test
-  public void shouldReturnListValueWhenMappingRuleHasArrayFieldPath() throws IOException {
+  void shouldReturnListValueWhenMappingRuleHasArrayFieldPath() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     HashMap<String, String> acqUnitsAcceptedValues = new HashMap<>(Map.of(
@@ -249,16 +269,18 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.LIST, value.getType());
-    Assert.assertEquals(Arrays.asList("b2c0e100-0485-43f2-b161-3c60aac9f68a", "b2c0e100-0485-43f2-b161-3c60aac9f128"), value.getValue());
+    Assertions.assertEquals(Value.ValueType.LIST, value.getType());
+    Assertions.assertEquals(
+      Arrays.asList("b2c0e100-0485-43f2-b161-3c60aac9f68a", "b2c0e100-0485-43f2-b161-3c60aac9f128"), value.getValue());
   }
 
   @Test
-  public void shouldReturnMissingValueWhenMappingRuleHasArrayFieldPathAndSubfieldRulesHaveNoValue() throws IOException {
+  void shouldReturnMissingValueWhenMappingRuleHasArrayFieldPathAndSubfieldRulesHaveNoValue() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     MappingRule mappingRule = new MappingRule().withPath("invoice.acqUnitIds[]")
@@ -286,15 +308,16 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.MISSING, value.getType());
+    Assertions.assertEquals(Value.ValueType.MISSING, value.getType());
   }
 
   @Test
-  public void shouldReturnRepeatableFieldValue() throws IOException {
+  void shouldReturnRepeatableFieldValue() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     HashMap<String, String> fundAcceptedValues = new HashMap<>(Map.of(
@@ -340,10 +363,10 @@ public class EdifactRecordReaderTest {
     Value actualValue = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
     RepeatableFieldValue repeatableFieldValue = (RepeatableFieldValue) actualValue;
-    Assert.assertEquals(rootPath, repeatableFieldValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, repeatableFieldValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedFundDistributionElement = Map.of(
       "invoice.adjustments[].fundDistributions[].fundId", StringValue.of("b2c0e100-0485-43f2-b161-3c60aac9f777"),
@@ -352,18 +375,21 @@ public class EdifactRecordReaderTest {
     Map<String, Value> expectedAdjustments = Map.of(
       "invoice.adjustments[].description", StringValue.of("description-1"),
       "invoice.adjustments[].exportToAccounting", BooleanValue.of(ALL_TRUE),
-      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
+      "invoice.adjustments[].fundDistributions[]",
+      RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
 
-    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    RepeatableFieldValue expectedValue =
+      RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadMappingRuleWithElseClause() throws IOException {
+  void shouldReadMappingRuleWithElseClause() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     String expressionWithElseClause = "MOA+86[2]; else MOA+9[2]";
@@ -401,10 +427,10 @@ public class EdifactRecordReaderTest {
     Value actualValue = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, actualValue.getType());
     RepeatableFieldValue repeatableFieldValue = (RepeatableFieldValue) actualValue;
-    Assert.assertEquals(rootPath, repeatableFieldValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, repeatableFieldValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, repeatableFieldValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedFundDistributionElement = Map.of(
       "invoice.adjustments[].fundDistributions[].value", StringValue.of("18929.07"),
@@ -412,43 +438,73 @@ public class EdifactRecordReaderTest {
 
     Map<String, Value> expectedAdjustments = Map.of(
       "invoice.adjustments[].description", StringValue.of("test adjustment"),
-      "invoice.adjustments[].fundDistributions[]", RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
+      "invoice.adjustments[].fundDistributions[]",
+      RepeatableFieldValue.of(List.of(expectedFundDistributionElement), EXTEND_EXISTING, fundDistributionsRootPath));
 
-    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    RepeatableFieldValue expectedValue =
+      RepeatableFieldValue.of(List.of(expectedAdjustments), EXTEND_EXISTING, rootPath);
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenMappingRuleHasInvalidMappingSyntax() throws IOException {
+  @Test
+  void shouldThrowExceptionWhenMappingRuleHasInvalidMappingSyntax() throws IOException {
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     Reader reader = readerFactory.createReader();
     reader.initialize(dataImportEventPayload, mappingContext);
-    reader.read(new MappingRule().withPath("invoice.status").withValue("bla expression"));
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> reader.read(new MappingRule().withPath("invoice.status").withValue("bla expression")));
   }
 
   @Test
-  public void shouldReturnRepeatableFieldValueForInvoiceLineMappingRule() throws IOException {
+  void shouldReturnRepeatableFieldValueForInvoiceLineMappingRule() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
     dataImportEventPayload.setContext(context);
-
-    HashMap<String, String> fundIdAcceptedValues = new HashMap<>(Map.of(
-      "6506b79b-7702-48b2-9774-a1c538fdd34e", "Gifts (GIFTS-ONE-TIME)",
-      "1b6d3338-186e-4e35-9e75-1b886b0da53e", "Grants (GRANT-SUBN)",
-      "65032151-39a5-4cef-8810-5350eb316300", "US History (USHIST)"));
 
     String rootPath = "invoice.invoiceLines[]";
     String adjustmentsPath = "invoice.invoiceLines[].adjustments[]";
     String fundDistributionsPath = "invoice.invoiceLines[].fundDistributions[]";
     String referenceNumbersPath = "invoice.invoiceLines[].referenceNumbers[]";
 
-    MappingRule mappingRule = new MappingRule().withPath(rootPath)
+    MappingRule mappingRule = createInvoiceLineMappingRule(rootPath, adjustmentsPath, fundDistributionsPath,
+      referenceNumbersPath);
+
+    Reader reader = readerFactory.createReader();
+    reader.initialize(dataImportEventPayload, mappingContext);
+
+    // when
+    Value value = reader.read(mappingRule);
+
+    // then
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+
+    List<Map<String, Value>> expectedInvoiceLines = createExpectedInvoiceLines(adjustmentsPath,
+      fundDistributionsPath, referenceNumbersPath);
+
+    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+  }
+
+  private static MappingRule createInvoiceLineMappingRule(String rootPath, String adjustmentsPath,
+                                                           String fundDistributionsPath,
+                                                           String referenceNumbersPath) {
+    HashMap<String, String> fundIdAcceptedValues = new HashMap<>(Map.of(
+      "6506b79b-7702-48b2-9774-a1c538fdd34e", "Gifts (GIFTS-ONE-TIME)",
+      "1b6d3338-186e-4e35-9e75-1b886b0da53e", "Grants (GRANT-SUBN)",
+      "65032151-39a5-4cef-8810-5350eb316300", "US History (USHIST)"));
+
+    return new MappingRule().withPath(rootPath)
       .withRepeatableFieldAction(MappingRule.RepeatableFieldAction.EXTEND_EXISTING)
       .withSubfields(List.of(new RepeatableSubfieldMapping()
         .withOrder(0)
@@ -497,19 +553,11 @@ public class EdifactRecordReaderTest {
                 new MappingRule().withPath("invoice.invoiceLines[].fundDistributions[].distributionType")
                   .withValue("\"percentage\"")))))
         ))));
+  }
 
-    Reader reader = readerFactory.createReader();
-    reader.initialize(dataImportEventPayload, mappingContext);
-
-    // when
-    Value value = reader.read(mappingRule);
-
-    // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
-    RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
-
+  private static List<Map<String, Value>> createExpectedInvoiceLines(String adjustmentsPath,
+                                                                      String fundDistributionsPath,
+                                                                      String referenceNumbersPath) {
     Map<String, Value> expectedAdjustment1 = Map.of(
       "invoice.invoiceLines[].adjustments[].description", StringValue.of("LINE SERVICE CHARGE"),
       "invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"),
@@ -529,41 +577,50 @@ public class EdifactRecordReaderTest {
 
     Map<String, Value> expectedReferenceNumber1 = Map.of(
       "invoice.invoiceLines[].referenceNumbers[].refNumber", StringValue.of("C6546362"),
-      "invoice.invoiceLines[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
+      "invoice.invoiceLines[].referenceNumbers[].refNumberType",
+      StringValue.of("Vendor continuation reference number"));
     Map<String, Value> expectedReferenceNumber2 = Map.of(
       "invoice.invoiceLines[].referenceNumbers[].refNumber", StringValue.of("E9498295"),
-      "invoice.invoiceLines[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
+      "invoice.invoiceLines[].referenceNumbers[].refNumberType",
+      StringValue.of("Vendor continuation reference number"));
     Map<String, Value> expectedReferenceNumber3 = Map.of(
       "invoice.invoiceLines[].referenceNumbers[].refNumber", StringValue.of("E9498296"),
-      "invoice.invoiceLines[].referenceNumbers[].refNumberType", StringValue.of("Vendor continuation reference number"));
+      "invoice.invoiceLines[].referenceNumbers[].refNumberType",
+      StringValue.of("Vendor continuation reference number"));
 
-    List<Map<String, Value>> expectedInvoiceLines = List.of(
-      Map.of("invoice.invoiceLines[].description", StringValue.of("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS"),
+    return List.of(
+      Map.of("invoice.invoiceLines[].description",
+        StringValue.of("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS"),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment1), EXTEND_EXISTING, adjustmentsPath),
-        fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
-        referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber1), EXTEND_EXISTING, referenceNumbersPath)),
+        fundDistributionsPath,
+        RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
+        referenceNumbersPath,
+        RepeatableFieldValue.of(List.of(expectedReferenceNumber1), EXTEND_EXISTING, referenceNumbersPath)),
       Map.of("invoice.invoiceLines[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -MULTI USER"),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment2), EXTEND_EXISTING, adjustmentsPath),
-        fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
-        referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber2), EXTEND_EXISTING, referenceNumbersPath)),
-      Map.of("invoice.invoiceLines[].description", StringValue.of("GRADUATE PROGRAMS IN PHYSICS, ASTRONOMY AND RELATED FIELDS."),
+        fundDistributionsPath,
+        RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
+        referenceNumbersPath,
+        RepeatableFieldValue.of(List.of(expectedReferenceNumber2), EXTEND_EXISTING, referenceNumbersPath)),
+      Map.of("invoice.invoiceLines[].description",
+        StringValue.of("GRADUATE PROGRAMS IN PHYSICS, ASTRONOMY AND RELATED FIELDS."),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath),
-        fundDistributionsPath, RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
-        referenceNumbersPath, RepeatableFieldValue.of(List.of(expectedReferenceNumber3), EXTEND_EXISTING, referenceNumbersPath)));
-
-    RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+        fundDistributionsPath,
+        RepeatableFieldValue.of(List.of(fundDistribution), EXTEND_EXISTING, fundDistributionsPath),
+        referenceNumbersPath,
+        RepeatableFieldValue.of(List.of(expectedReferenceNumber3), EXTEND_EXISTING, referenceNumbersPath)));
   }
 
   @Test
-  public void shouldSetMissingValueToInvoiceLineAdjustmentsWhenRecordHasNoAdjustmentsData() throws IOException {
+  void shouldSetMissingValueToInvoiceLineAdjustmentsWhenRecordHasNoAdjustmentsData() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(), Json.encode(
+      new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -596,13 +653,15 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
-    Map<String, Value> expectedAdjustment1 = Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"));
-    Map<String, Value> expectedAdjustment3 = Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("12.5"));
+    Map<String, Value> expectedAdjustment1 =
+      Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("3.59"));
+    Map<String, Value> expectedAdjustment3 =
+      Map.of("invoice.invoiceLines[].adjustments[].value", StringValue.of("12.5"));
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
@@ -613,19 +672,20 @@ public class EdifactRecordReaderTest {
         adjustmentsPath, RepeatableFieldValue.of(List.of(expectedAdjustment3), EXTEND_EXISTING, adjustmentsPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadInvoiceLineDescriptionFromPOLineExternalData() throws IOException {
+  void shouldReadInvoiceLineDescriptionFromPoLineExternalData() throws IOException {
     // given
-    String expectedPOLineTitle1 = "POLineTitle-1";
-    String expectedPOLineTitle3 = "POLineTitle-3";
-    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
+    String expectedPoLineTitle1 = "POLineTitle-1";
+    String expectedPoLineTitle3 = "POLineTitle-3";
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
-    context.put("POL_TITLE_0", expectedPOLineTitle1);
-    context.put("POL_TITLE_2", expectedPOLineTitle3);
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put("POL_TITLE_0", expectedPoLineTitle1);
+    context.put("POL_TITLE_2", expectedPoLineTitle3);
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -650,29 +710,30 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
-      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle1),
+      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPoLineTitle1),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")),
       Map.of("invoice.invoiceLines[].description", StringValue.of("ACI MATERIALS JOURNAL - ONLINE   -"),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")),
-      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPOLineTitle3),
+      Map.of("invoice.invoiceLines[].description", StringValue.of(expectedPoLineTitle3),
         "invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadInvoiceLineDescriptionWhenFieldWithoutSeparatorSymbol() throws IOException {
+  void shouldReadInvoiceLineDescriptionWhenFieldWithoutSeparatorSymbol() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_DESCRIPTION_WITHOUT_SEPARATOR_SYMBOL))));
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(
+      new ParsedRecord().withContent(INVOICE_LINE_DESCRIPTION_WITHOUT_SEPARATOR_SYMBOL))));
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -694,10 +755,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].description", StringValue.of("Die Angst vor der Penetranz des Wiklichen")),
@@ -705,15 +766,15 @@ public class EdifactRecordReaderTest {
       Map.of("invoice.invoiceLines[].description", StringValue.of("Das Zeitalter der Ambiguitaet")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadInvoiceLineFundDistributionFromPOLineExternalData() throws IOException {
+  void shouldReadInvoiceLineFundDistributionFromPoLineExternalData() throws IOException {
     // given
-    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT))));
 
     JsonArray fundDistributions1 = new JsonArray()
       .add(new JsonObject().put("code", "USHIST").put("fundId", "1d1574f1-9196-4a57-8d1f-3b2e4309eb81"));
@@ -722,6 +783,7 @@ public class EdifactRecordReaderTest {
 
     context.put("POL_FUND_DISTRIBUTIONS_0", fundDistributions1.encode());
     context.put("POL_FUND_DISTRIBUTIONS_2", fundDistributions3.encode());
+    DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -749,10 +811,10 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
-    Assert.assertEquals(rootPath, actualValue.getRootPath());
-    Assert.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
+    Assertions.assertEquals(rootPath, actualValue.getRootPath());
+    Assertions.assertEquals(EXTEND_EXISTING, actualValue.getRepeatableFieldAction());
 
     Map<String, Value> expectedFundDistributions1 = Map.of(
       "invoice.invoiceLines[].fundDistributions[].fundId", StringValue.of("1d1574f1-9196-4a57-8d1f-3b2e4309eb81"),
@@ -763,22 +825,25 @@ public class EdifactRecordReaderTest {
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
-        fundDistributionsPath, RepeatableFieldValue.of(List.of(expectedFundDistributions1), EXTEND_EXISTING, fundDistributionsPath)),
+        fundDistributionsPath,
+        RepeatableFieldValue.of(List.of(expectedFundDistributions1), EXTEND_EXISTING, fundDistributionsPath)),
       Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
         fundDistributionsPath, MissingValue.getInstance()),
       Map.of("invoice.invoiceLines[].invoiceLineStatus", StringValue.of("Open"),
-        fundDistributionsPath, RepeatableFieldValue.of(List.of(expectedFundDistributions3), EXTEND_EXISTING, fundDistributionsPath)));
+        fundDistributionsPath,
+        RepeatableFieldValue.of(List.of(expectedFundDistributions3), EXTEND_EXISTING, fundDistributionsPath)));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReturnValueWhenTargetSegmentDataElementDoesNotExist() throws IOException {
+  void shouldReturnValueWhenTargetSegmentDataElementDoesNotExist() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_IMD_WITHOUT_TARGET_DATA_ELEMENT_CONTENT))));
+    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(
+      new ParsedRecord().withContent(INVOICE_LINE_IMD_WITHOUT_TARGET_DATA_ELEMENT_CONTENT))));
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -799,22 +864,23 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].description", StringValue.of("LAW IN CONTEXT SERIES")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadMappingRuleWhenMultipleSegmentsAreSpecified() throws IOException {
+  void shouldReadMappingRuleWhenMultipleSegmentsAreSpecified() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_MULTIPLE_IMD_SEGMENTS))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_MULTIPLE_IMD_SEGMENTS))));
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -835,22 +901,23 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].comment", StringValue.of("01.Jan.2021 iss.1--31.Dec.2021 iss.24")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReadMappingRuleWhenMultipleSegmentsAreSpecifiedWithSpaceAsSeparator() throws IOException {
+  void shouldReadMappingRuleWhenMultipleSegmentsAreSpecifiedWithSpaceAsSeparator() throws IOException {
     // given
     DataImportEventPayload dataImportEventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EDIFACT_INVOICE.value(), Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_MULTIPLE_IMD_SEGMENTS))));
+    context.put(EDIFACT_INVOICE.value(),
+      Json.encode(new Record().withParsedRecord(new ParsedRecord().withContent(INVOICE_LINE_MULTIPLE_IMD_SEGMENTS))));
     dataImportEventPayload.setContext(context);
 
     String rootPath = "invoice.invoiceLines[]";
@@ -871,88 +938,95 @@ public class EdifactRecordReaderTest {
     Value value = reader.read(mappingRule);
 
     // then
-    Assert.assertEquals(Value.ValueType.REPEATABLE, value.getType());
+    Assertions.assertEquals(Value.ValueType.REPEATABLE, value.getType());
     RepeatableFieldValue actualValue = (RepeatableFieldValue) value;
 
     List<Map<String, Value>> expectedInvoiceLines = List.of(
       Map.of("invoice.invoiceLines[].comment", StringValue.of("01.Jan.2021 iss.1 31.Dec.2021 iss.24")));
 
     RepeatableFieldValue expectedValue = RepeatableFieldValue.of(expectedInvoiceLines, EXTEND_EXISTING, rootPath);
-    Assert.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
+    Assertions.assertEquals(JsonObject.mapFrom(expectedValue), JsonObject.mapFrom(actualValue));
   }
 
   @Test
-  public void shouldReturnCorrespondingValueForAllInvoiceLines() {
+  void shouldReturnCorrespondingValueForAllInvoiceLines() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
-    Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+LI[2]");
+    Map<Integer, String> actualSegmentsValues =
+      EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+LI[2]");
 
-    Assert.assertEquals(3, actualSegmentsValues.size());
-    Assert.assertEquals("S255699", actualSegmentsValues.get(1));
-    Assert.assertEquals("S283902", actualSegmentsValues.get(2));
-    Assert.assertEquals("S283901", actualSegmentsValues.get(3));
+    Assertions.assertEquals(3, actualSegmentsValues.size());
+    Assertions.assertEquals("S255699", actualSegmentsValues.get(1));
+    Assertions.assertEquals("S283902", actualSegmentsValues.get(2));
+    Assertions.assertEquals("S283901", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnValuesForExistingInvoiceLinesSegments() {
+  void shouldReturnValuesForExistingInvoiceLinesSegments() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(INVOICE_LINE2_WITHOUT_ADJUSTMENTS_CONTENT);
 
-    Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "MOA+8[2]");
+    Map<Integer, String> actualSegmentsValues =
+      EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "MOA+8[2]");
 
-    Assert.assertEquals(2, actualSegmentsValues.size());
-    Assert.assertEquals("3.59", actualSegmentsValues.get(1));
-    Assert.assertEquals("12.5", actualSegmentsValues.get(3));
+    Assertions.assertEquals(2, actualSegmentsValues.size());
+    Assertions.assertEquals("3.59", actualSegmentsValues.get(1));
+    Assertions.assertEquals("12.5", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnValuesWhenMappingExpressionHasQualifier() {
+  void shouldReturnValuesWhenMappingExpressionHasQualifier() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
-    Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "MOA+203?4[2]");
+    Map<Integer, String> actualSegmentsValues =
+      EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "MOA+203?4[2]");
 
-    Assert.assertEquals(3, actualSegmentsValues.size());
-    Assert.assertEquals("208.59", actualSegmentsValues.get(1));
-    Assert.assertEquals("726.5", actualSegmentsValues.get(2));
-    Assert.assertEquals("726.5", actualSegmentsValues.get(3));
+    Assertions.assertEquals(3, actualSegmentsValues.size());
+    Assertions.assertEquals("208.59", actualSegmentsValues.get(1));
+    Assertions.assertEquals("726.5", actualSegmentsValues.get(2));
+    Assertions.assertEquals("726.5", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnValuesByDataPositionsRange() {
+  void shouldReturnValuesByDataPositionsRange() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
-    Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[4-5]");
+    Map<Integer, String> actualSegmentsValues =
+      EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[4-5]");
 
-    Assert.assertEquals(3, actualSegmentsValues.size());
-    Assert.assertEquals("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS", actualSegmentsValues.get(1));
-    Assert.assertEquals("ACI MATERIALS JOURNAL - ONLINE   -MULTI USER", actualSegmentsValues.get(2));
-    Assert.assertEquals("GRADUATE PROGRAMS IN PHYSICS, ASTRONOMY AND RELATED FIELDS.", actualSegmentsValues.get(3));
+    Assertions.assertEquals(3, actualSegmentsValues.size());
+    Assertions.assertEquals("ACADEMY OF MANAGEMENT ANNALS -   ONLINE FOR INSTITUTIONS", actualSegmentsValues.get(1));
+    Assertions.assertEquals("ACI MATERIALS JOURNAL - ONLINE   -MULTI USER", actualSegmentsValues.get(2));
+    Assertions.assertEquals("GRADUATE PROGRAMS IN PHYSICS, ASTRONOMY AND RELATED FIELDS.", actualSegmentsValues.get(3));
   }
 
   @Test
-  public void shouldReturnEmptyMapWhenInvoiceLinesHaveNoSpecifiedSegment() {
+  void shouldReturnEmptyMapWhenInvoiceLinesHaveNoSpecifiedSegment() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
 
-    Map<Integer, String> actualSegmentsValues = EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+F+050+[4]");
+    Map<Integer, String> actualSegmentsValues =
+      EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+F+050+[4]");
 
-    Assert.assertTrue(actualSegmentsValues.isEmpty());
+    Assertions.assertTrue(actualSegmentsValues.isEmpty());
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenParsedRecordHasNoParsedContent() {
+  @Test
+  void shouldThrowExceptionWhenParsedRecordHasNoParsedContent() {
     ParsedRecord parsedRecord = new ParsedRecord();
-    EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+SNA[2]");
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "RFF+SNA[2]"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenMappingExpressionHasInvalidPositionsRange() {
+  @Test
+  void shouldThrowExceptionWhenMappingExpressionHasInvalidPositionsRange() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
-    EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[5-4]");
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050+[5-4]"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenInvalidMappingExpressionIsSpecified() {
+  @Test
+  void shouldThrowExceptionWhenInvalidMappingExpressionIsSpecified() {
     ParsedRecord parsedRecord = new ParsedRecord().withContent(EDIFACT_PARSED_CONTENT);
-    EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050");
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> EdifactRecordReader.getInvoiceLinesSegmentsValues(parsedRecord, "IMD+L+050"));
   }
-
 }

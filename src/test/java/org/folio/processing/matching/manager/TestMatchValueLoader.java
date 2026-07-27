@@ -1,14 +1,13 @@
 package org.folio.processing.matching.manager;
 
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+
+import java.util.concurrent.CompletableFuture;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.matching.loader.LoadResult;
 import org.folio.processing.matching.loader.MatchValueLoader;
 import org.folio.processing.matching.loader.query.LoadQuery;
 import org.folio.rest.jaxrs.model.EntityType;
-
-import java.util.concurrent.CompletableFuture;
-
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
 
 public class TestMatchValueLoader implements MatchValueLoader {
   @Override

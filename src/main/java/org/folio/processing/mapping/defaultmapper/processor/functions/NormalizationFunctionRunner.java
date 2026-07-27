@@ -1,17 +1,16 @@
 package org.folio.processing.mapping.defaultmapper.processor.functions;
 
 import com.google.common.base.Splitter;
-import org.apache.commons.lang.StringUtils;
-import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
+import java.util.Iterator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Iterator;
+import org.folio.processing.mapping.defaultmapper.processor.RuleExecutionContext;
 
 /**
  * Run a splitter on a string or run a function.
  */
-public class NormalizationFunctionRunner {
+public final class NormalizationFunctionRunner {
   private static final Logger LOGGER = LogManager.getLogger(NormalizationFunctionRunner.class);
   private static final String SPLIT_FUNCTION_SPLIT_EVERY = "split_every";
 
@@ -40,7 +39,7 @@ public class NormalizationFunctionRunner {
   public static String runFunction(String functionName, RuleExecutionContext ruleExecutionContext) {
     try {
       String result = NormalizationFunction.valueOf(functionName.trim().toUpperCase()).apply(ruleExecutionContext);
-      if(result != null && result.equals(StringUtils.EMPTY)){
+      if (result != null && result.equals(StringUtils.EMPTY)) {
         LOGGER.debug("runFunction:: Result of {} function is empty", functionName);
       }
       return result;

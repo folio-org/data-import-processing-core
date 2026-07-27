@@ -5,6 +5,12 @@ import io.vertx.core.json.Json;
 import io.vertx.kafka.client.producer.KafkaHeader;
 import io.vertx.kafka.client.producer.KafkaProducer;
 import io.vertx.kafka.client.producer.KafkaProducerRecord;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,27 +23,18 @@ import org.folio.processing.events.utils.PomReaderUtil;
 import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.EventMetadata;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_REQUEST_ID_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TENANT_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_TOKEN_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.OKAPI_URL_HEADER;
-import static org.folio.rest.util.OkapiConnectionParams.USER_ID_HEADER;
-
 public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
-  private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
   public static final String RECORD_ID_HEADER = "recordId";
   public static final String CHUNK_ID_HEADER = "chunkId";
-  static final String PERMISSIONS_HEADER = "X-Okapi-Permissions";
-  private static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
-
-  private static final AtomicLong indexer = new AtomicLong();
+  public static final String JOB_EXECUTION_ID_HEADER = "jobExecutionId";
+  public static final String USER_ID_HEADER = "userId";
+  public static final String TOKEN_HEADER = "X-Okapi-Token";
+  public static final String URL_HEADER = "X-Okapi-Url";
+  public static final String TENANT_HEADER = "X-Okapi-Tenant";
+  public static final String REQUEST_ID_HEADER = "X-Okapi-Request-Id";
+  public static final String PERMISSIONS_HEADER = "X-Okapi-Permissions";
+  private static final Logger LOGGER = LogManager.getLogger(KafkaEventPublisher.class);
+  private static final AtomicLong INDEXER = new AtomicLong();
 
   private final KafkaConfig kafkaConfig;
   private final Integer maxDistributionNum;
@@ -71,23 +68,28 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
         .withEventMetadata(new EventMetadata()
           .withTenantId(eventPayload.getTenant())
           .withEventTTL(1)
-          .withPublishedBy(PomReaderUtil.INSTANCE.constructModuleVersionAndVersion(PomReaderUtil.INSTANCE.getModuleName(), PomReaderUtil.INSTANCE.getVersion())));
+          .withPublishedBy(
+            PomReaderUtil.INSTANCE.constructModuleVersionAndVersion(PomReaderUtil.INSTANCE.getModuleName(),
+              PomReaderUtil.INSTANCE.getVersion())));
 
-      String topicName = KafkaTopicNameHelper.formatTopicName(kafkaConfig.getEnvId(), KafkaTopicNameHelper.getDefaultNameSpace(),
-        eventPayload.getTenant(), eventType);
+      String topicName =
+        KafkaTopicNameHelper.formatTopicName(kafkaConfig.getEnvId(), KafkaTopicNameHelper.getDefaultNameSpace(),
+          eventPayload.getTenant(), eventType);
 
-      var record = buildRecord(eventPayload, event, topicName);
-      record.addHeaders(getHeaders(eventPayload, recordId, chunkId, jobExecutionId));
+      var producerRecord = buildRecord(eventPayload, event, topicName);
+      producerRecord.addHeaders(getHeaders(eventPayload, recordId, chunkId, jobExecutionId));
 
-      producer.send(record)
+      producer.send(producerRecord)
         .<Void>mapEmpty()
         .onSuccess(ar -> {
-          LOGGER.info("publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' with chunkId: '{}' was sent to the topic '{}' ",
+          LOGGER.info("publish:: Event with type: '{}' by jobExecutionId: '{}' and recordId: '{}' "
+                      + "with chunkId: '{}' was sent to the topic '{}' ",
             eventType, jobExecutionId, recordId, chunkId, topicName);
           future.complete(event);
         })
         .onFailure(error -> {
-          LOGGER.warn("publish:: {} send error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' and with chunkId: '{}' ",
+          LOGGER.warn("publish:: {} send error for event: '{}' by jobExecutionId: '{}' with recordId: '{}' "
+                      + "and with chunkId: '{}' ",
             eventType + "_Producer", eventType, jobExecutionId, recordId, chunkId, error);
           future.completeExceptionally(error);
         });
@@ -98,8 +100,14 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     return future;
   }
 
-  private KafkaProducerRecord<String, String> buildRecord(DataImportEventPayload eventPayload, Event event, String topicName) {
-    String key = String.valueOf(indexer.incrementAndGet() % maxDistributionNum);
+  @Override
+  public void close() {
+    producer.flush().eventually(producer::close);
+  }
+
+  private KafkaProducerRecord<String, String> buildRecord(DataImportEventPayload eventPayload, Event event,
+                                                          String topicName) {
+    String key = String.valueOf(INDEXER.incrementAndGet() % maxDistributionNum);
     return new KafkaProducerRecordBuilder<String, Object>(eventPayload.getTenant())
       .key(key)
       .value(event)
@@ -107,21 +115,22 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
       .build();
   }
 
-  private List<KafkaHeader> getHeaders(DataImportEventPayload eventPayload, String recordId, String chunkId, String jobExecutionId) {
+  private List<KafkaHeader> getHeaders(DataImportEventPayload eventPayload, String recordId, String chunkId,
+                                       String jobExecutionId) {
     List<KafkaHeader> headers = new ArrayList<>();
     Optional.ofNullable(eventPayload.getToken())
-      .ifPresent(token -> headers.add(KafkaHeader.header(OKAPI_TOKEN_HEADER, token)));
+      .ifPresent(token -> headers.add(KafkaHeader.header(TOKEN_HEADER, token)));
     Optional.ofNullable(eventPayload.getContext().get(PERMISSIONS_HEADER))
       .ifPresent(permissions -> headers.add(KafkaHeader.header(PERMISSIONS_HEADER, permissions)));
     Optional.ofNullable(eventPayload.getContext())
       .map(it -> it.get(USER_ID_HEADER))
       .ifPresent(userId -> headers.add(KafkaHeader.header(USER_ID_HEADER, userId)));
     Optional.ofNullable(eventPayload.getContext())
-      .map(it -> it.get(OKAPI_REQUEST_ID_HEADER))
-      .ifPresent(requestId -> headers.add(KafkaHeader.header(OKAPI_REQUEST_ID_HEADER, requestId)));
+      .map(it -> it.get(REQUEST_ID_HEADER))
+      .ifPresent(requestId -> headers.add(KafkaHeader.header(REQUEST_ID_HEADER, requestId)));
 
-    headers.add(KafkaHeader.header(OKAPI_URL_HEADER, eventPayload.getOkapiUrl()));
-    headers.add(KafkaHeader.header(OKAPI_TENANT_HEADER, eventPayload.getTenant()));
+    headers.add(KafkaHeader.header(URL_HEADER, eventPayload.getOkapiUrl()));
+    headers.add(KafkaHeader.header(TENANT_HEADER, eventPayload.getTenant()));
     checkAndAddHeaders(recordId, chunkId, jobExecutionId, headers);
     return headers;
   }
@@ -142,10 +151,5 @@ public class KafkaEventPublisher implements EventPublisher, AutoCloseable {
     } else {
       headers.add(KafkaHeader.header(JOB_EXECUTION_ID_HEADER, jobExecutionId));
     }
-  }
-
-  @Override
-  public void close() throws Exception {
-    producer.flush().eventually(() -> producer.close());
   }
 }

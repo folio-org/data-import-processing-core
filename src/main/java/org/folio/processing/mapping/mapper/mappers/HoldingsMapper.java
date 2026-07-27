@@ -1,8 +1,18 @@
 package org.folio.processing.mapping.mapper.mappers;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
+import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.EXPRESSIONS_DIVIDER;
+import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
+
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -15,25 +25,14 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import static org.folio.processing.events.utils.EventUtils.extractRecordId;
-import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.EXPRESSIONS_DIVIDER;
-import static org.folio.processing.mapping.mapper.reader.record.marc.MarcRecordReader.MARC_PATTERN;
-
 public class HoldingsMapper implements Mapper {
+  public static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
   private static final Logger LOGGER = LogManager.getLogger(HoldingsMapper.class);
   private static final String PERMANENT_LOCATION_ID = "permanentLocationId";
   private static final String HOLDINGS = "HOLDINGS";
   private static final String HOLDINGS_IDENTIFIERS = "HOLDINGS_IDENTIFIERS";
-  public static final String MULTIPLE_HOLDINGS_FIELD = "MULTIPLE_HOLDINGS_FIELD";
-  private Reader reader;
-  private Writer writer;
+  private final Reader reader;
+  private final Writer writer;
 
   public HoldingsMapper(Reader reader, Writer writer) {
     this.reader = reader;
@@ -41,7 +40,8 @@ public class HoldingsMapper implements Mapper {
   }
 
   @Override
-  public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload, MappingContext mappingContext) {
+  public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload,
+                                    MappingContext mappingContext) {
     try {
       initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
       if (ifProfileIsInvalid(profile)) {
@@ -56,25 +56,31 @@ public class HoldingsMapper implements Mapper {
   }
 
   private DataImportEventPayload executeMultipleHoldingsLogic(DataImportEventPayload eventPayload,
-                                                              MappingProfile profile, MappingContext mappingContext) throws IOException {
+                                                              MappingProfile profile, MappingContext mappingContext)
+    throws IOException {
     List<MappingRule> mappingRules = profile.getMappingDetails().getMappingFields();
     JsonArray holdings = new JsonArray();
-    Optional<MappingRule> permanentLocationMappingRule = mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
+    Optional<MappingRule> permanentLocationMappingRule =
+      mappingRules.stream().filter(rule -> rule.getName().equals(PERMANENT_LOCATION_ID)).findFirst();
 
-    if (isJsonArray(eventPayload.getContext().get(HOLDINGS)) && !new JsonArray(eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
+    if (isJsonArray(eventPayload.getContext().get(HOLDINGS)) && !new JsonArray(
+      eventPayload.getContext().get(HOLDINGS)).isEmpty()) {
       mapMultipleHoldingsIfHoldingsEntityExistsInContext(eventPayload, mappingContext, mappingRules, holdings);
       eventPayload.getContext().put(HOLDINGS, Json.encode(holdings));
     } else {
-      if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(permanentLocationMappingRule.get().getValue())) {
+      if (permanentLocationMappingRule.isEmpty() || !isStaredWithMarcField(
+        permanentLocationMappingRule.get().getValue())) {
         adjustContextToContainEntitiesAsJsonObject(eventPayload, EntityType.HOLDINGS);
         writer.initialize(eventPayload);
         holdings.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, HOLDINGS));
       } else {
         String expressionPart = permanentLocationMappingRule.get().getValue().split(EXPRESSIONS_DIVIDER)[0];
         String marcField = retrieveMarcFieldName(expressionPart)
-          .orElseThrow(() -> new MappingException(String.format("Invalid value for mapping rule: %s", PERMANENT_LOCATION_ID)));
+          .orElseThrow(
+            () -> new MappingException(String.format("Invalid value for mapping rule: %s", PERMANENT_LOCATION_ID)));
         eventPayload.getContext().put(MULTIPLE_HOLDINGS_FIELD, marcField);
-        holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS, marcField);
+        holdings = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, HOLDINGS,
+          marcField);
       }
       eventPayload.getContext().put(HOLDINGS, Json.encode(distinctHoldingsByPermanentLocation(holdings)));
     }
@@ -82,9 +88,12 @@ public class HoldingsMapper implements Mapper {
     return eventPayload;
   }
 
-  private void mapMultipleHoldingsIfHoldingsEntityExistsInContext(DataImportEventPayload eventPayload, MappingContext mappingContext, List<MappingRule> mappingRules, JsonArray holdings) throws IOException {
+  private void mapMultipleHoldingsIfHoldingsEntityExistsInContext(DataImportEventPayload eventPayload,
+                                                                  MappingContext mappingContext,
+                                                                  List<MappingRule> mappingRules, JsonArray holdings)
+    throws IOException {
     JsonArray holdingsList = new JsonArray(eventPayload.getContext().get(HOLDINGS));
-    for (int i=0; i < holdingsList.size(); i++) {
+    for (int i = 0; i < holdingsList.size(); i++) {
       JsonObject currentHolding = holdingsList.getJsonObject(i);
       eventPayload.getContext().put(HOLDINGS, currentHolding.encode());
       reader.initialize(eventPayload, mappingContext);
@@ -99,7 +108,8 @@ public class HoldingsMapper implements Mapper {
       JsonObject holdingsAsJson = getHoldingsAsJson(holdings.getJsonObject(i));
       String holdingPermanentLocation = holdingsAsJson.getString(PERMANENT_LOCATION_ID);
 
-      if (distinctHoldings.stream().noneMatch(hol -> Objects.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
+      if (distinctHoldings.stream().noneMatch(
+        hol -> Objects.equals(getHoldingsAsJson(hol).getString(PERMANENT_LOCATION_ID), holdingPermanentLocation))) {
         distinctHoldings.add(holdings.getJsonObject(i));
       }
     }

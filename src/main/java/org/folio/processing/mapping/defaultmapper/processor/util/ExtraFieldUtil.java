@@ -1,15 +1,13 @@
 package org.folio.processing.mapping.defaultmapper.processor.util;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Util for processing fields with specific logic.
@@ -26,9 +24,10 @@ public final class ExtraFieldUtil {
   }
 
   /**
-   * Finds 'fieldReplacementBy3Digits'(or other fieldReplacement rule) field, with 'true' value. If exists, retrieves 'fieldReplacementRule', which
-   * contains 'sourceDigits' and 'targetField' field, which contains matching between first 3 (for example)
-   * digits (from specific subfield from rules) and target field for this value which should be processed. After that, change source field on 'targetField'.
+   * Finds the field replacement rule when the `fieldReplacementBy3Digits` flag is enabled.
+   * If present, it retrieves `fieldReplacementRule`, which contains `sourceDigits` and `targetField`
+   * values mapping the first 3 digits (for example) from a specific subfield to the target field
+   * that should be processed. After that, change source field on `targetField`.
    * If not matches, change just on first 3 digits value.
    * More info: https://issues.folio.org/browse/MODDICORE-114
    *
@@ -59,13 +58,11 @@ public final class ExtraFieldUtil {
       .stream()
       .map(sf -> field.getSubfield(String.valueOf(sf).charAt(0)))
       .filter(Objects::nonNull)
-      .map(sf -> sf.getData())
+      .map(Subfield::getData)
       .filter(Objects::nonNull)
       .filter(data -> data.length() >= 3)
       .map(data -> data.substring(0, 3))
-      .forEach(data -> {
-        field.setTag(replacementRules.getOrDefault(data, data));
-      });
+      .forEach(data -> field.setTag(replacementRules.getOrDefault(data, data)));
   }
 
   private static Map<String, String> retrieveReplacementRules(JsonArray fieldReplacementRules) {

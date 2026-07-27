@@ -1,13 +1,13 @@
 package org.folio.processing.matching.loader.query;
 
+import static java.lang.String.format;
+
 import org.folio.rest.jaxrs.model.Qualifier;
 import org.folio.rest.jaxrs.model.Qualifier.QualifierType;
 
-import static java.lang.String.format;
-
 /**
  * Allows to build additional sql or cql filter according to the {@link QualifierType},
- * FIELD_NAME token is used to mark the place for field reference
+ * FIELD_NAME token is used to mark the place for field reference.
  */
 public enum QualifierFilter {
 
@@ -15,8 +15,8 @@ public enum QualifierFilter {
   ENDS_WITH(" AND LIKE '%%%s'", " AND FIELD_NAME = '*%s'"),
   BEGINS_WITH(" AND LIKE '%s%%'", " AND FIELD_NAME = '%s*'");
 
-  private String sqlFilter;
-  private String cqlFilter;
+  private final String sqlFilter;
+  private final String cqlFilter;
 
   QualifierFilter(String sqlFilter, String cqlFilter) {
     this.sqlFilter = sqlFilter;
@@ -24,7 +24,7 @@ public enum QualifierFilter {
   }
 
   /**
-   * Builds sql filter passing an actual {@link Qualifier} value to the sql filter structure
+   * Builds sql filter passing an actual {@link Qualifier} value to the sql filter structure.
    *
    * @param qualifierValue value that should be applied in sql filter
    * @return additional sql filter
@@ -34,7 +34,7 @@ public enum QualifierFilter {
   }
 
   /**
-   * Builds cql filter passing an actual {@link Qualifier} value to the cql filter structure
+   * Builds cql filter passing an actual {@link Qualifier} value to the cql filter structure.
    *
    * @param qualifierValue value that should be applied in sql filter
    * @return additional cql filter
@@ -42,5 +42,4 @@ public enum QualifierFilter {
   public String getCqlFilter(String qualifierValue) {
     return format(cqlFilter, qualifierValue);
   }
-
 }

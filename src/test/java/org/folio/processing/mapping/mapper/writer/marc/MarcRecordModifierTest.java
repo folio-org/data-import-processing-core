@@ -1,32 +1,5 @@
 package org.folio.processing.mapping.mapper.writer.marc;
 
-import io.vertx.core.json.Json;
-
-import org.folio.DataImportEventPayload;
-import org.folio.MappingProfile;
-import org.folio.ParsedRecord;
-import org.folio.Record;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
-import org.folio.rest.jaxrs.model.Data;
-import org.folio.rest.jaxrs.model.MappingDetail;
-import org.folio.rest.jaxrs.model.MarcField;
-import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
-import org.folio.rest.jaxrs.model.MarcMappingDetail;
-import org.folio.rest.jaxrs.model.MarcSubfield;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.marc4j.marc.impl.DataFieldImpl;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
 import static io.vertx.core.json.jackson.DatabindCodec.mapper;
 import static java.lang.String.format;
 import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
@@ -41,31 +14,56 @@ import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.INSERT;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REMOVE;
 import static org.folio.rest.jaxrs.model.MarcSubfield.Subaction.REPLACE;
 
-@RunWith(JUnit4.class)
-public class MarcRecordModifierTest {
+import io.vertx.core.json.Json;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import org.folio.DataImportEventPayload;
+import org.folio.MappingProfile;
+import org.folio.ParsedRecord;
+import org.folio.Record;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.rest.jaxrs.model.Data;
+import org.folio.rest.jaxrs.model.MappingDetail;
+import org.folio.rest.jaxrs.model.MarcField;
+import org.folio.rest.jaxrs.model.MarcFieldProtectionSetting;
+import org.folio.rest.jaxrs.model.MarcMappingDetail;
+import org.folio.rest.jaxrs.model.MarcSubfield;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.marc4j.marc.impl.DataFieldImpl;
+
+class MarcRecordModifierTest {
 
   protected static final String MATCHED_MARC_BIB_KEY = "MATCHED_MARC_BIBLIOGRAPHIC";
   protected MarcRecordModifier marcRecordModifier = new MarcRecordModifier();
 
-  @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowExceptionWhenHasNoMarcRecord() throws IOException {
-    DataImportEventPayload eventPayload = new DataImportEventPayload();
-    eventPayload.setContext(new HashMap<>());
-    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail().withMarcMappingOption(MODIFY));
-    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+  @Test
+  void shouldThrowExceptionWhenHasNoMarcRecord() {
+    var eventPayload = new DataImportEventPayload().withContext(new HashMap<>());
+    var mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail().withMarcMappingOption(MODIFY));
+    var mappingParameters = new MappingParameters();
+    Assertions.assertThrows(IllegalArgumentException.class,
+      () -> marcRecordModifier.initialize(eventPayload, mappingParameters, mappingProfile, MARC_BIBLIOGRAPHIC));
   }
 
   @Test
-  public void shouldAddSortableDataFieldInNumericalOrder() throws IOException {
+  void shouldAddSortableDataFieldInNumericalOrder() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00119nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"025\":{\"subfields\":[{\"a\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{"
+      + "\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -75,35 +73,42 @@ public class MarcRecordModifierTest {
         .withField("025")
         .withIndicator1(null)
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withData(new Data().withText("green")))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00119nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"025\":{\"subfields\":[{"
+      + "\"a\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"035\":{\"subfields\":[{\"b\":\"book\"}],"
+      + "\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldAddNotSortableDataFieldAfterFieldsWithSameFirstDigit() throws IOException {
+  void shouldAddNotSortableDataFieldAfterFieldsWithSameFirstDigit() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"538\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"650\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00096nam  22000611a 4500\",\"fields\":[{\"538\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"index\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"650\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"538\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"650\":{\"subfields\":[{\"b\":\"book\"}]"
+      + ",\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -113,35 +118,41 @@ public class MarcRecordModifierTest {
         .withField("500")
         .withIndicator1(" ")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withData(new Data().withText("index")))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00096nam  22000611a 4500\",\"fields\":[{\"538\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"index\"}"
+      + "],\"ind1\":\" \",\"ind2\":\" \"}},{\"650\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\","
+      + "\"ind2\":\"0\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldAddControlFieldInNumericalOrder() throws IOException {
+  void shouldAddControlFieldInNumericalOrder() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"005\":\"20191122134835.0\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00096nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"003\":\"OCoLC\"},{\"005\":\"20191122134835.0\"}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{"
+      + "\"005\":\"20191122134835.0\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -149,34 +160,38 @@ public class MarcRecordModifierTest {
       .withAction(MarcMappingDetail.Action.ADD)
       .withField(new MarcField()
         .withField("003")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withData(new Data().withText("OCoLC")))));
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00096nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"003\":\"OCoLC\"}"
+      + ",{\"005\":\"20191122134835.0\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldDeleteControlFieldByTag() throws IOException {
+  void shouldDeleteControlFieldByTag() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"vz|cza\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{"
+      + "\"007\":\"vz|cza\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -187,29 +202,33 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldDeleteFieldsWithAnyIndicatorsByTag() throws IOException {
+  void shouldDeleteFieldsWithAnyIndicatorsByTag() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\": \"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\": \"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\": \" \",\"ind2\":\" \"}},{\"020\":{"
+      + "\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -219,33 +238,37 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("*"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("*"))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldDeleteOnlyFieldsByTagAndSpecifiedIndicators() throws IOException {
+  void shouldDeleteOnlyFieldsByTagAndSpecifiedIndicators() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00076nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{"
+      + "\"b\":\"book\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -255,33 +278,38 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2("0")
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("*"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("*"))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00076nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldDeleteOnlySpecifiedSubfieldFromFieldByTag() throws IOException {
+  void shouldDeleteOnlySpecifiedSubfieldFromFieldByTag() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"a\":\"book\"},{\"b\":\"red\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00068nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"red\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"},{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"book\"},{\"b\":\"red\"}],\"ind1\":\"0\",\"ind2\":\"0\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -291,33 +319,39 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("a"))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00068nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"b\":\"red\"}],\"ind1\":\"0\","
+      + "\"ind2\":\"0\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldDeleteEntireFieldWhenItContainsOnlySpecifiedSubfield() throws IOException {
+  void shouldDeleteEntireFieldWhenItContainsOnlySpecifiedSubfield() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"a\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00048nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"},{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -327,40 +361,44 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1(null)
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("a"))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00048nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveDataToSpecifiedSubfieldOfNewFieldAndDeleteSourceField() throws IOException {
+  void shouldMoveDataToSpecifiedSubfieldOfNewFieldAndDeleteSourceField() throws IOException {
     // given
-    String parsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"020\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00082nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"991\":{\"subfields\":[{\"c\":\"(electronic bk.)\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String parsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"020\": {"
+      + "\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
       .withField("991")
       .withIndicator1("1")
       .withIndicator2("1")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("c")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("c")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -369,36 +407,41 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1(" ")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00082nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"991\":{"
+      + "\"subfields\":[{\"c\":\"(electronic bk.)\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveAllSubfieldsDataToNewFieldWithSourceIndicatorsAndDeleteSourceFieldWhenWildcardSubfield() throws IOException {
+  void shouldMoveAllSubfieldsDataToNewFieldWithSourceIndicatorsAndDeleteSourceFieldWhenWildcardSubfield()
+    throws IOException {
     // given
-    String parsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"020\": {\"subfields\": [{\"a\": \"electronic bk\"}, {\"b\": \"256\"}, {\"c\": \"128\"}], \"ind1\": \"7\",\"ind2\": \" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00066nam  22000371a 4500\",\"fields\":[{\"991\":{\"subfields\":[{\"a\":\"electronic bk\"},{\"b\":\"256\"},{\"c\":\"128\"}],\"ind1\":\"7\",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"020\": {\"subfields\": [{\"a\": "
+      + "\"electronic bk\"}, {\"b\": \"256\"}, {\"c\": \"128\"}], \"ind1\": \"7\",\"ind2\": \" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
@@ -413,43 +456,47 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("7")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("*")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00066nam  22000371a 4500\",\"fields\":[{\"991\":{\"subfields\":[{"
+      + "\"a\":\"electronic bk\"},{\"b\":\"256\"},{\"c\":\"128\"}],\"ind1\":\"7\",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveDataToSpecifiedSubfieldOfNewFieldAndDeleteOnlyMovedSubfield() throws IOException {
+  void shouldMoveDataToSpecifiedSubfieldOfNewFieldAndDeleteOnlyMovedSubfield() throws IOException {
     // given
-    String parsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\":[{\"020\":{\"subfields\":[{\"a\":\"(electronic bk.)\"},{\"b\": \"green\"}],\"ind1\": \"7\", \"ind2\": \"7\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00081nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],\"ind1\":\"7\",\"ind2\":\"7\"}},{\"991\":{\"subfields\":[{\"z\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"(electronic bk.)\"},{\"b\": \"green\"}],\"ind1\": \"7\", \"ind2\": \"7\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
       .withField("991")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("z")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("z")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -458,41 +505,47 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2("7")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00081nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],"
+      + "\"ind1\":\"7\",\"ind2\":\"7\"}},{\"991\":{\"subfields\":[{\"z\":\"(electronic bk.)\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldNotMoveDataToNewFieldWhenSourceFieldWithSpecifiedSubfieldDoesNotExist() throws IOException {
+  void shouldNotMoveDataToNewFieldWhenSourceFieldWithSpecifiedSubfieldDoesNotExist() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00059nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\"7\",\"ind2\":\"7\"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"00059nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"(electronic bk.)\"}],\"ind1\":\"7\",\"ind2\":\"7\"}}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
       .withField("993")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("w")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("w")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -501,43 +554,45 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2("7")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("b")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
+    Assertions.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveDataToNewSortableFieldInNumericalOrder() throws IOException {
+  void shouldMoveDataToNewSortableFieldInNumericalOrder() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\": \"7\",\"ind2\": \"7\"}},{\"022\":{\"subfields\":[{\"a\":\"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],\"ind1\":\"7\",\"ind2\":\"7\"}},{\"021\":{\"subfields\":[{\"z\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"022\":{\"subfields\":[{\"a\":\"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\": \"7\",\"ind2\": \"7\"}},{\"022\":{"
+      + "\"subfields\":[{\"a\":\"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField newFieldRule = new MarcField()
       .withField("021")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("z")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("z")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -546,43 +601,50 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2("7")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(CREATE_NEW_FIELD)
           .withData(new Data().withMarcField(newFieldRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],"
+      + "\"ind1\":\"7\",\"ind2\":\"7\"}},{\"021\":{\"subfields\":[{\"z\":\"electronic\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"022\":{\"subfields\":[{\"a\":\"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveDataToExistingFieldsAndDeleteSourceField() throws IOException {
+  void shouldMoveDataToExistingFieldsAndDeleteSourceField() throws IOException {
     // given
-    String parsedContent = "{\"leader\": \"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": \"two\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00090nam  22000491a 4500\",\"fields\":[{\"993\":{\"subfields\":[{\"x\":\"one\"},{\"w\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\":\"two\"},{\"w\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": \"two\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
       .withField("993")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("w")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("w")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -591,43 +653,50 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00090nam  22000491a 4500\",\"fields\":[{\"993\":{\"subfields\":[{\"x\":\"one\"},{"
+      + "\"w\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\":\"two\"},{"
+      + "\"w\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveDataToExistingFieldsAndDeleteOnlyMovedSubfield() throws IOException {
+  void shouldMoveDataToExistingFieldsAndDeleteOnlyMovedSubfield() throws IOException {
     // given
-    String parsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": \"two\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00112nam  22000611a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"},{\"w\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\":\"two\"},{\"w\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{"
+      + "\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": "
+      + "\"two\"}],\"ind1\": \" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
       .withField("993")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("w")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("w")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -636,43 +705,52 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00112nam  22000611a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"},{\"w\":\"electronic\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\":\"two\"},{\"w\":\"electronic\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldMoveDataFromMultipleSrcFieldsToExistingFieldsAndDeleteOnlyMovedSubfields() throws IOException {
+  void shouldMoveDataFromMultipleSrcFieldsToExistingFieldsAndDeleteOnlyMovedSubfields() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"a\":\"book\"},{\"f\": \"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"993\":{\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": \"two\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00144nam  22000731a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"f\":\"red\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"},{\"w\":\"electronic\"},{\"w\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\":\"two\"},{\"w\":\"electronic\"},{\"w\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"},{\"b\": \"green\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"book\"},{\"f\": \"red\"}],\"ind1\":\" \",\"ind2\":\" \"}}, {\"993\":{"
+      + "\"subfields\":[{\"x\":\"one\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\": "
+      + "\"two\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
       .withField("993")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("w")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("w")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -681,42 +759,51 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00144nam  22000731a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"b\":\"green\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"020\":{\"subfields\":[{\"f\":\"red\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"x\":\"one\"},{\"w\":\"electronic\"},{\"w\":\"book\"}"
+      + "],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"y\":\"two\"},{\"w\":\"electronic\"}"
+      + ",{\"w\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldNotMoveDataWhenSpecifiedDestinationFieldDoesNotExist() throws IOException {
+  void shouldNotMoveDataWhenSpecifiedDestinationFieldDoesNotExist() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"a\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"a\":\"book\"}]"
+      + ",\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
       .withField("993")
       .withIndicator1("0")
       .withIndicator2("0")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("w")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("w")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -725,41 +812,44 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
+    Assertions.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldNotMoveDataToExistingFieldWhenSourceFieldWithSpecifiedSubfieldDoesNotExist() throws IOException {
+  void shouldNotMoveDataToExistingFieldWhenSourceFieldWithSpecifiedSubfieldDoesNotExist() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"a\":\"book\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"993\":{\"subfields\":[{\"a\":\"book\"}]"
+      + ",\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcField existingFieldsRule = new MarcField()
       .withField("993")
       .withIndicator1(" ")
       .withIndicator2(" ")
-      .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("w")));
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("w")));
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -768,36 +858,37 @@ public class MarcRecordModifierTest {
         .withField("020")
         .withIndicator1("*")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("b")
           .withSubaction(ADD_TO_EXISTING_FIELD)
           .withData(new Data().withMarcField(existingFieldsRule)))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
+    Assertions.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldInsertDataBeforeExistingToFieldWithSpecifiedIndicatorsAndSubfield() throws IOException {
+  void shouldInsertDataBeforeExistingToFieldWithSpecifiedIndicatorsAndSubfield() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00084nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -807,7 +898,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1(null)
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("u")
           .withSubaction(INSERT)
           .withPosition(BEFORE_STRING)
@@ -815,29 +906,34 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00084nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldInsertDataAfterExistingToSpecifiedSubfieldOfMultipleFieldsWithAnyIndicators() throws IOException {
+  void shouldInsertDataAfterExistingToSpecifiedSubfieldOfMultipleFieldsWithAnyIndicators() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"905\":{\"subfields\":[{\"a\":\"music\"}],\"ind1\":\"a\",\"ind2\":\"a\"}},{\"905\":{\"subfields\":[{\"a\":\"art\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00114nam  22000491a 4500\",\"fields\":[{\"905\":{\"subfields\":[{\"a\":\"music; updated 28 April 2020\"}],\"ind1\":\"a\",\"ind2\":\"a\"}},{\"905\":{\"subfields\":[{\"a\":\"art; updated 28 April 2020\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"905\":{\"subfields\":[{\"a\":\"music\"}],"
+      + "\"ind1\":\"a\",\"ind2\":\"a\"}},{\"905\":{\"subfields\":[{\"a\":\"art\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -847,7 +943,7 @@ public class MarcRecordModifierTest {
         .withField("905")
         .withIndicator1("*")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("a")
           .withSubaction(INSERT)
           .withPosition(AFTER_STRING)
@@ -855,29 +951,34 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00114nam  22000491a 4500\",\"fields\":[{\"905\":{\"subfields\":[{\"a\":\"music; "
+      + "updated 28 April 2020\"}],\"ind1\":\"a\",\"ind2\":\"a\"}},{\"905\":{\"subfields\":[{\"a\":\"art; "
+      + "updated 28 April 2020\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldInsertDataToNewSubfieldOfFieldWithSpecifiedIndicators() throws IOException {
+  void shouldInsertDataToNewSubfieldOfFieldWithSpecifiedIndicators() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"z\":\"electronic\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00080nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"z\":\"electronic\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"z\":\"electronic\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -887,7 +988,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1("4")
         .withIndicator2("1")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("z")
           .withSubaction(INSERT)
           .withPosition(NEW_SUBFIELD)
@@ -895,29 +996,33 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00080nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"z\":\"electronic\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldInsertDataBeforeExistingToFieldRegardlessIndicatorsAndSubfield() throws IOException {
+  void shouldInsertDataBeforeExistingToFieldRegardlessIndicatorsAndSubfield() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00084nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"u\":\"example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -927,7 +1032,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1("*")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("*")
           .withSubaction(INSERT)
           .withPosition(BEFORE_STRING)
@@ -935,29 +1040,33 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00084nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldReplaceDataIntoFieldWithAnyIndicatorsAndSubfields() throws IOException {
+  void shouldReplaceDataIntoFieldWithAnyIndicatorsAndSubfields() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"http://libproxy.smith.edu\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00069nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"https://libproxy.smith.edu\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    String parsedContent =
+      "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"a\":\"http://libproxy.smith.edu\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -967,7 +1076,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1("*")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("*")
           .withSubaction(REPLACE)
           .withData(new Data()
@@ -976,29 +1085,33 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00069nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"a\":\"https://libproxy.smith.edu\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldReplaceAllDataIntoSubfieldOfFieldByWildcardData() throws IOException {
+  void shouldReplaceAllDataIntoSubfieldOfFieldByWildcardData() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"c\":\"Church\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00051nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"c\":\"McCarthy\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String parsedContent =
+      "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"c\":\"Church\"}]"
+      + ",\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1008,7 +1121,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1(null)
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("c")
           .withSubaction(REPLACE)
           .withData(new Data()
@@ -1017,29 +1130,33 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00051nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"c\":\"McCarthy\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldReplaceDataInControlFieldBySinglePosition() throws IOException {
+  void shouldReplaceDataInControlFieldBySinglePosition() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 0 eng d\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119p2013    vtu     ob    001 0 eng d\"}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
+      + "0 eng d\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1047,7 +1164,7 @@ public class MarcRecordModifierTest {
       .withAction(MarcMappingDetail.Action.EDIT)
       .withField(new MarcField()
         .withField("008/06")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubaction(REPLACE)
           .withData(new Data()
             .withFind("s")
@@ -1055,28 +1172,32 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119p2013    vtu     ob    001 "
+      + "0 eng d\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldReplaceDataInControlFieldByPositionsRange() throws IOException {
+  void shouldReplaceDataInControlFieldByPositionsRange() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2019    vtu     ob    001 0 eng d\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2020    vtu     ob    001 0 eng d\"}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2019    vtu     ob    001 "
+      + "0 eng d\"}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1084,7 +1205,7 @@ public class MarcRecordModifierTest {
       .withAction(MarcMappingDetail.Action.EDIT)
       .withField(new MarcField()
         .withField("008/07-10")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubaction(REPLACE)
           .withData(new Data()
             .withFind("2019")
@@ -1092,29 +1213,33 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2020    vtu     ob    001 "
+      + "0 eng d\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldReplaceDataInLeaderFieldBySinglePosition() throws IOException {
+  void shouldReplaceDataInLeaderFieldBySinglePosition() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 0 eng d\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00079cam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 0 eng d\"}]}";
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
+      + "0 eng d\"}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1122,7 +1247,7 @@ public class MarcRecordModifierTest {
       .withAction(MarcMappingDetail.Action.EDIT)
       .withField(new MarcField()
         .withField("LDR/05")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubaction(REPLACE)
           .withData(new Data()
             .withFind("n")
@@ -1130,27 +1255,32 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00079cam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
+      + "0 eng d\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldNotReplaceDataInLeaderFieldWhenSpecifiedNotMappablePositions() throws IOException {
+  void shouldNotReplaceDataInLeaderFieldWhenSpecifiedNotMappablePositions() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 0 eng d\"}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"00079nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s2013    vtu     ob    001 "
+      + "0 eng d\"}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1158,7 +1288,7 @@ public class MarcRecordModifierTest {
       .withAction(MarcMappingDetail.Action.EDIT)
       .withField(new MarcField()
         .withField("LDR/01-04")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubaction(REPLACE)
           .withData(new Data()
             .withFind("00079")
@@ -1166,29 +1296,30 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
+    Assertions.assertEquals(parsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldRemoveSpecifiedTextInFieldSubfield() throws IOException {
+  void shouldRemoveSpecifiedTextInFieldSubfield() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"via CatWeb\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00050nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"via Web\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    String parsedContent =
+      "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"via "
+      + "CatWeb\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
 
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1198,7 +1329,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1("4")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("*")
           .withSubaction(REMOVE)
           .withData(new Data()
@@ -1206,28 +1337,32 @@ public class MarcRecordModifierTest {
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
 
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00050nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"a\":\"via Web\"}"
+      + "],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldRemoveSpecifiedTextInControlFieldByPositionsRange() throws IOException {
+  void shouldRemoveSpecifiedTextInControlFieldByPositionsRange() throws IOException {
     // given
-    String parsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2019    vtu     ob    001 0 eng d\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00075nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s    vtu     ob    001 0 eng d\"}]}";
-    Record record = new Record().withParsedRecord(new ParsedRecord()
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"008\":\"121119s2019    vtu     ob    001 "
+      + "0 eng d\"}]}";
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(parsedContent));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(record));
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
     eventPayload.setContext(context);
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
@@ -1235,30 +1370,37 @@ public class MarcRecordModifierTest {
       .withAction(MarcMappingDetail.Action.EDIT)
       .withField(new MarcField()
         .withField("008/07-10")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubaction(REMOVE)
           .withData(new Data()
             .withText("2019")))));
 
     MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
       .withMarcMappingOption(MODIFY)
-      .withMarcMappingDetails(Arrays.asList(mappingDetail)));
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
     //when
     marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
-    marcRecordModifier.modifyRecord(Arrays.asList(mappingDetail));
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
     marcRecordModifier.getResult(eventPayload);
     //then
     String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    String expectedParsedContent =
+      "{\"leader\":\"00075nam  22000371a 4500\",\"fields\":[{\"008\":\"121119s    vtu     ob    001 0 "
+      + "eng d\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   @Test
-  public void shouldReplaceSpecifiedControlField() throws IOException {
+  void shouldReplaceSpecifiedControlField() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"005\":\"5121024\"}]}";
-    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"005\":\"123123\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00097nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"005\":\"5121024\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{"
+      + "\"005\":\"5121024\"}]}";
+    String existingParsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {"
+      + "\"005\":\"123123\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}}]}";
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -1269,15 +1411,25 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00097nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{"
+      + "\"005\":\"5121024\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldReplaceOnlySpecifiedSubfield() throws IOException {
+  void shouldReplaceOnlySpecifiedSubfield() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}}, {\"856\": {\"subfields\": [{\"u\": \"example.com\"},{\"z\":\"to access, click the link\"}], \"ind1\": \"4\", \"ind2\": \" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00167nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\" \"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\" "
+      + "\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {"
+      + "\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}}, {\"856\": {"
+      + "\"subfields\": [{\"u\": \"example.com\"},{\"z\":\"to access, click the link\"}], \"ind1\": \"4\","
+      + " \"ind2\": \" \"}}]}";
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -1285,7 +1437,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1("4")
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("u"))));
 
     MappingProfile mappingProfile = new MappingProfile()
@@ -1293,15 +1445,26 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00167nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{"
+      + "\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"},{\"z\":\"to access, click "
+      + "the link\"}],\"ind1\":\"4\",\"ind2\":\" \"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldReplaceEntireExistingFieldWhenWildcardSubfield() throws IOException {
+  void shouldReplaceEntireExistingFieldWhenWildcardSubfield() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00140nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}}]}";
+    String existingParsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"}, {\"256\": {"
+      + "\"subfields\": [{\"a\": \"(electronic bk.)\"}], \"ind1\": \" \", \"ind2\": \" \"}},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}}]}";
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -1309,7 +1472,7 @@ public class MarcRecordModifierTest {
         .withField("856")
         .withIndicator1("*")
         .withIndicator2("0")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("*"))));
 
     MappingProfile mappingProfile = new MappingProfile()
@@ -1317,16 +1480,287 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00140nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"256\":{"
+      + "\"subfields\":[{\"a\":\"(electronic bk.)\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldRemoveAndAddNewValuesToAllNotProtectedFields() throws IOException {
+  void shouldRemoveAndAddNewValuesToAllNotProtectedFields() throws IOException {
     // given
-    String expectedParsedContent = "{\"leader\":\"00963cam a2200157Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"fields\":[{\"001\":\"in00000000009\"},{\"008\":\"180424s1914    enkaf         000 0 eng d\"},{\"330\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 330\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600 - 2\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600 - 3\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"f3ff7ef8-18b5-48e2-9e4a-5f78ba0c8164\"},{\"i\":\"baa69d84-b3ee-49a7-8946-8f4257cb698a\"}]}}],\"leader\":\"03447cam a2200481Ii 4500\"}";
-    String incomingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String existingParsedContent =
+      "{\"fields\":[{\"001\":\"in00000000009\"},{\"008\":\"180424s1914    enkaf         000 0 eng d\"},{"
+      + "\"330\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 330\"}]}},{"
+      + "\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles "
+      + "Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing "
+      + "505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings "
+      + "substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies "
+      + "were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{"
+      + "\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and "
+      + "selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, "
+      + "The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" "
+      + "\\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a "
+      + "book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 600\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 600 - 2\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 600 - 3\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{"
+      + "\"s\":\"f3ff7ef8-18b5-48e2-9e4a-5f78ba0c8164\"},{\"i\":\"baa69d84-b3ee-49a7-8946-8f4257cb698a\"}]"
+      + "}}],\"leader\":\"03447cam a2200481Ii 4500\"}";
+    String incomingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
 
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withRecordType(MARC_BIBLIOGRAPHIC));
+
+    String expectedParsedContent =
+      "{\"leader\":\"00963cam a2200157Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28"
+      + "dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldNotDeduplicateIfIncomingRecordHaveMultipleExactValues() throws IOException {
+    // given
+    String existingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String incomingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh "
+      + "users\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{"
+      + "\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}]}},{\"999\":{"
+      + "\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withRecordType(MARC_BIBLIOGRAPHIC));
+
+    String expectedParsedContent =
+      "{\"leader\":\"01101cam a2200181Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{"
+      + "\"z\":\"Available to Lehigh users\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{"
+      + "\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldDeduplicateIfExistingAndIncomingRecordsHasExactValue() throws IOException {
+    // given
+    String existingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh "
+      + "users\"}]}}, {\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{"
+      + "\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]"
+      + "}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String incomingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh "
+      + "users\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{"
+      + "\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]"
+      + "}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withRecordType(MARC_BIBLIOGRAPHIC));
+
+    String expectedParsedContent =
+      "{\"leader\":\"01032cam a2200169Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{"
+      + "\"z\":\"Available to Lehigh users\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]"
+      + ",\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldNotDeduplicateIfExistingAndIncomingRecordsHasTheSameValuesAndIncomingHasTheSameAdditionalOne()
+    throws IOException {
+    // given
+    String expectedParsedContent =
+      "{\"leader\":\"01025cam a2200181Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],"
+      + "\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],"
+      + "\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28"
+      + "dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String existingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String incomingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail()
         .withMarcMappingOption(UPDATE)
@@ -1336,25 +1770,70 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldNotDeduplicateIfIncomingRecordHaveMultipleExactValues() throws IOException {
+  void shouldNotDeduplicateIfExistingAndIncomingRecordsHasTheSameValuesAndIncomingHasTheSameAdditionalTwo()
+    throws IOException {
     // given
-    String expectedParsedContent = "{\"leader\":\"01101cam a2200181Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    String incomingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-      MappingProfile mappingProfile = new MappingProfile()
-      .withMappingDetails(new MappingDetail()
-        .withMarcMappingOption(UPDATE)
-        .withRecordType(MARC_BIBLIOGRAPHIC));
-
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
-  }
-
-  @Test
-  public void shouldDeduplicateIfExistingAndIncomingRecordsHasExactValue() throws IOException {
-    // given
-    String expectedParsedContent = "{\"leader\":\"01032cam a2200169Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}]}}, {\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    String incomingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"u\":\"http://www.herpconbio.org\"},{\"z\":\"Available to Lehigh users\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String expectedParsedContent =
+      "{\"leader\":\"01056cam a2200193Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],"
+      + "\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],"
+      + "\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],"
+      + "\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28"
+      + "dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String existingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String incomingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail()
         .withMarcMappingOption(UPDATE)
@@ -1364,53 +1843,85 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldNotDeduplicateIfExistingAndIncomingRecordsHasTheSameValuesAndIncomingHasTheSameAdditionalOne() throws IOException {
+  void shouldNotDeduplicateIfExistingAndIncomingRecordsHasDifferentValues() throws IOException {
     // given
-    String expectedParsedContent = "{\"leader\":\"01025cam a2200181Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    String incomingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String existingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\","
+      + "\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
+    String incomingParsedContent =
+      "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{"
+      + "\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large "
+      + "handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. "
+      + "...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm "
+      + "of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition "
+      + "are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,"
+      + "\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\","
+      + "\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"nottest\"}]}},{\"999\":{"
+      + "\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{"
+      + "\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail()
         .withMarcMappingOption(UPDATE)
         .withRecordType(MARC_BIBLIOGRAPHIC));
 
+    String expectedParsedContent =
+      "{\"leader\":\"01028cam a2200181Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],"
+      + "\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"nottest\"}"
+      + "],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef"
+      + "28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldNotDeduplicateIfExistingAndIncomingRecordsHasTheSameValuesAndIncomingHasTheSameAdditionalTwo() throws IOException {
+  void shouldAddIncomingFieldToExistingRecordWhenNoCorrespondingExistingField() throws IOException {
     // given
-    String expectedParsedContent = "{\"leader\":\"01056cam a2200193Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    String incomingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    MappingProfile mappingProfile = new MappingProfile()
-      .withMappingDetails(new MappingDetail()
-        .withMarcMappingOption(UPDATE)
-        .withRecordType(MARC_BIBLIOGRAPHIC));
-
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
-  }
-
-  @Test
-  public void shouldNotDeduplicateIfExistingAndIncomingRecordsHasDifferentValues() throws IOException {
-    // given
-    String expectedParsedContent = "{\"leader\":\"01028cam a2200181Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"856\":{\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"nottest\"}],\"ind1\":\"4\",\"ind2\":\"0\"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    String incomingParsedContent = "{\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"test\"}]}},{\"856\":{\"ind1\":\"4\",\"ind2\":\"0\",\"subfields\":[{\"f\":\"Resource\"},{\"u\":\"nottest\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}],\"leader\":\"03464cam a2200493Ii 4500\"}";
-    MappingProfile mappingProfile = new MappingProfile()
-      .withMappingDetails(new MappingDetail()
-        .withMarcMappingOption(UPDATE)
-        .withRecordType(MARC_BIBLIOGRAPHIC));
-
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
-  }
-
-  @Test
-  public void shouldAddIncomingFieldToExistingRecordWhenNoCorrespondingExistingField() throws IOException {
-    // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00130nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{"
+      + "\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent =
+      "{\"leader\": \"01314nam  22003851a 4500\", \"fields\": [{\"001\": \"ybp7406411\"},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\","
+      + "\"ind2\":\"0\"}}]}";
 
     MarcMappingDetail mappingDetail = new MarcMappingDetail()
       .withOrder(0)
@@ -1418,7 +1929,7 @@ public class MarcRecordModifierTest {
         .withField("590")
         .withIndicator1(" ")
         .withIndicator2(" ")
-        .withSubfields(Arrays.asList(new MarcSubfield()
+        .withSubfields(Collections.singletonList(new MarcSubfield()
           .withSubfield("*"))));
 
     MappingProfile mappingProfile = new MappingProfile()
@@ -1426,46 +1937,118 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00130nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"590\":{"
+      + "\"subfields\":[{\"a\":\"excelsior\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{"
+      + "\"u\":\"example.com\"},{\"z\":\"to access, click the link\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldReplaceExistingFieldsWithAllIncomingFieldsWhenNoMarcMappingDetails() throws IOException {
+  void shouldReplaceExistingFieldsWithAllIncomingFieldsWhenNoMarcMappingDetails() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp1234567\"},{\"650\":{\"subfields\":[{\"a\":\"motion\"},{\"b\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{\"subfields\":[{\"u\":\"example.org\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{"
+      + "\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp1234567\"},{\"650\":{"
+      + "\"subfields\":[{\"a\":\"motion\"},{\"b\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{"
+      + "\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"856\":{"
+      + "\"subfields\":[{\"u\":\"example.org\"}],\"ind1\":\"4\",\"ind2\":\"0\"}}]}";
 
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{"
+      + "\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldRemoveAndAddNewValuesToAllNotProtectedFieldsAndUpdateLeader() throws IOException {
+  void shouldRemoveAndAddNewValuesToAllNotProtectedFieldsAndUpdateLeader() throws IOException {
     // given
-    String expectedParsedContent = "{\"leader\":\"00963cas a2200157Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"leader\":\"03447cam a2200481Ii 4500\",\"fields\":[{\"001\":\"in00000000009\"},{\"008\":\"180424s1914    enkaf         000 0 eng d\"},{\"330\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 330\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600 - 2\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600 - 3\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"f3ff7ef8-18b5-48e2-9e4a-5f78ba0c8164\"},{\"i\":\"baa69d84-b3ee-49a7-8946-8f4257cb698a\"}]}}]}";
-    String incomingParsedContent = "{\"leader\":\"03464cas a2200493Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"03447cam a2200481Ii 4500\",\"fields\":[{\"001\":\"in00000000009\"},{"
+      + "\"008\":\"180424s1914    enkaf         000 0 eng d\"},{\"330\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing value for 330\"}]}},{\"400\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}]}},{\"505\":{"
+      + "\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]}},{\"500\":{"
+      + "\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute The foot in "
+      + "place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, "
+      + "in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from "
+      + "the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, "
+      + "and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. "
+      + "Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page "
+      + "verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for "
+      + "600\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600 "
+      + "- 2\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 600 "
+      + "- 3\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"f3ff7ef8-18b5-48e2-9e4"
+      + "a-5f78ba0c8164\"},{\"i\":\"baa69d84-b3ee-49a7-8946-8f4257cb698a\"}]}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"03464cas a2200493Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400\"}]}},{\"400\":{"
+      + "\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}]}},{\"400\":{"
+      + "\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}]}},{\"500\":{"
+      + "\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Also published by Charles Scribner's "
+      + "Sons.\"}]}},{\"505\":{\"ind1\":\"0\",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing 505 field\"}]"
+      + "}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Later printings substitute "
+      + "The foot in place of Decivilized.\"}]}},{\"500\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{"
+      + "\"a\":\"\\\"Of this edition on large handmade paper two hundred and fifty copies were printed, "
+      + "in May 1914, of which this is no. ...\\\"--Title page verso\"}]}},{\"500\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from "
+      + "the volumes entitled The rhythm of life, The colour of life, The spirit of place, The children, "
+      + "and Ceres' runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. "
+      + "Johnson,\\\" and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page "
+      + "verso\"}]}},{\"600\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Testing value for "
+      + "600\"}]}},{\"999\":{\"ind1\":\"f\",\"ind2\":\"f\",\"subfields\":[{\"s\":\"083837e5-009f-42b3-940"
+      + "a-beef28dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}]}}]}";
 
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail()
         .withMarcMappingOption(UPDATE)
         .withRecordType(MARC_BIBLIOGRAPHIC));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00963cas a2200157Ii 4500\",\"fields\":[{\"001\":\"on1032262463\"},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 2\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"400\":{"
+      + "\"subfields\":[{\"a\":\"Testing value for 400 - 3\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Also published by Charles Scribner's Sons.\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}},{\"505\":{\"subfields\":[{\"a\":\"Testing 505 field\"}],\"ind1\":\"0\","
+      + "\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Later printings substitute The foot in place "
+      + "of Decivilized.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"\\\"Of "
+      + "this edition on large handmade paper two hundred and fifty copies were printed, in May 1914, of "
+      + "which this is no. ...\\\"--Title page verso\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"\\\"Most of these essays are collected and selected from the volumes "
+      + "entitled The rhythm of life, The colour of life, The spirit of place, The children, and Ceres' "
+      + "runaway. In addition are \\\"The seventeenth century,\\\" \\\"Prue,\\\" \\\"Mrs. Johnson,\\\" "
+      + "and \\\"Madame Roland,\\\" here for the first time put into a book.\\\"--Title page verso\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"600\":{\"subfields\":[{\"a\":\"Testing value for 600\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"083837e5-009f-42b3-940a-beef28"
+      + "dc90e9\"},{\"i\":\"59efa5f1-1b1d-456c-bd65-c6783c9c5fc4\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
   }
 
   @Test
-  public void shouldNotReplaceProtectedExistingField() throws IOException {
+  void shouldNotReplaceProtectedExistingField() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     MappingParameters mappingParameters = new MappingParameters()
-      .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
+      .withMarcFieldProtectionSettings(Collections.singletonList(new MarcFieldProtectionSetting()
         .withField("010")
         .withIndicator1(" ")
         .withIndicator2("*")
@@ -1478,7 +2061,7 @@ public class MarcRecordModifierTest {
         .withField("010")
         .withIndicator1(" ")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("a"))));
 
     MarcMappingDetail mappingRule2 = new MarcMappingDetail()
       .withOrder(0)
@@ -1486,22 +2069,38 @@ public class MarcRecordModifierTest {
         .withField("700")
         .withIndicator1(null)
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("a"))));
 
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail()
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Arrays.asList(mappingRule1, mappingRule2)));
 
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+    String expectedParsedContent =
+      "{\"leader\":\"00098nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"pictures\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters,
+      mappingProfile);
   }
 
   @Test
-  public void shouldProtectDataFieldIfTheyAreDuplicated() throws IOException {
+  void shouldProtectDataFieldIfTheyAreDuplicated() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic!!!\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00223nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"First 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"Second 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"901\":{\"subfields\":[{\"a\":\"First 901 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" "
+      + "\",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic!!!\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
@@ -1528,16 +2127,34 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(new ArrayList<>()));
 
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+    String expectedParsedContent =
+      "{\"leader\":\"00223nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{"
+      + "\"a\":\"First 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{"
+      + "\"a\":\"Second 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"901\":{\"subfields\":[{"
+      + "\"a\":\"First 901 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters,
+      mappingProfile);
   }
 
-
   @Test
-  public void shouldProtectDataFieldIfTheyAreDuplicatedAndNotAllFieldsAreProtected() throws IOException {
+  void shouldProtectDataFieldIfTheyAreDuplicatedAndNotAllFieldsAreProtected() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic!!!\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00223nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"First 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{\"a\":\"Second 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"901\":{\"subfields\":[{\"a\":\"First 901 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \",\"ind2\":\" "
+      + "\",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \",\"ind2\":\" \","
+      + "\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic!!!\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"ind1\":\" "
+      + "\",\"ind2\":\" \",\"subfields\":[{\"a\":\"First 900 tag.\"}]}},{\"900\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"Second 900 tag.\"}]}},{\"901\":{\"ind1\":\" \","
+      + "\"ind2\":\" \",\"subfields\":[{\"a\":\"First 901 tag.\"}]}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(Arrays.asList(new MarcFieldProtectionSetting()
@@ -1558,17 +2175,28 @@ public class MarcRecordModifierTest {
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(new ArrayList<>()));
 
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+    String expectedParsedContent =
+      "{\"leader\":\"00223nam  22000971a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{"
+      + "\"a\":\"First 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"900\":{\"subfields\":[{"
+      + "\"a\":\"Second 900 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"901\":{\"subfields\":[{"
+      + "\"a\":\"First 901 tag.\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"999\":{\"subfields\":[{"
+      + "\"s\":\"860d4528-3144-485a-bc63-841f22b12501\"}],\"ind1\":\"f\",\"ind2\":\"f\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters,
+      mappingProfile);
   }
 
-
-
   @Test
-  public void shouldReplaceOverriddenProtectedExistingField() throws IOException {
+  void shouldReplaceOverriddenProtectedExistingField() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{"
+      + "\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{"
+      + "\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Kernighan\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1581,7 +2209,7 @@ public class MarcRecordModifierTest {
       .withOverride(true);
 
     MappingParameters mappingParameters = new MappingParameters()
-      .withMarcFieldProtectionSettings(Arrays.asList(marcFieldProtectionSetting));
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting));
 
     MarcMappingDetail mappingRule1 = new MarcMappingDetail()
       .withOrder(0)
@@ -1589,7 +2217,7 @@ public class MarcRecordModifierTest {
         .withField("650")
         .withIndicator1(" ")
         .withIndicator2("*")
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("a"))));
 
     MarcMappingDetail mappingRule2 = new MarcMappingDetail()
       .withOrder(0)
@@ -1597,23 +2225,35 @@ public class MarcRecordModifierTest {
         .withField("700")
         .withIndicator1(null)
         .withIndicator2(null)
-        .withSubfields(Arrays.asList(new MarcSubfield().withSubfield("a"))));
+        .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("a"))));
 
     MappingProfile mappingProfile = new MappingProfile()
-      .withMarcFieldProtectionSettings(Arrays.asList(marcFieldProtectionSetting))
+      .withMarcFieldProtectionSettings(Collections.singletonList(marcFieldProtectionSetting))
       .withMappingDetails(new MappingDetail()
         .withMarcMappingOption(UPDATE)
         .withMarcMappingDetails(Arrays.asList(mappingRule1, mappingRule2)));
 
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+    String expectedParsedContent =
+      "{\"leader\":\"00095nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{"
+      + "\"subfields\":[{\"a\":\"video\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"700\":{\"subfields\":[{"
+      + "\"a\":\"Ritchie\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters,
+      mappingProfile);
   }
 
   @Test
-  public void shouldNotApplyProtectionAndReplaceControlField008WhenProtectionHasConfigurationRelatedToNonControlField() throws IOException {
+  void shouldNotApplyProtectionAndReplaceControlField008WhenProtectionHasConfigurationRelatedToNonControlField()
+    throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"008\":\"sd 13245\"}]}";
-    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd abcde\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00067nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd 13245\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"008\":\"sd "
+      + "13245\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd abcde\"}"
+      + "]}";
+    String expectedParsedContent =
+      "{\"leader\":\"00067nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd 13245\"}"
+      + "]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1643,23 +2283,28 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldReplaceNonRepeatableControlFieldsWhenExistingFieldsIsNotProtected() throws IOException {
+  void shouldReplaceNonRepeatableControlFieldsWhenExistingFieldsIsNotProtected() throws IOException {
     // given
     // 008 is a non-repeatable control field
-    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"008\":\"sd 13245\"}]}";
-    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd abcde\"}]}";
-    String expectedParsedContent = incomingParsedContent;
+    String incomingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"008\":\"sd "
+      + "13245\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"008\":\"sd abcde\"}"
+      + "]}";
 
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent);
+    testMarcUpdating(incomingParsedContent, existingParsedContent, incomingParsedContent);
   }
 
   @Test
-  public void shouldAppendRepeatableControlFieldsToSameExistingWhenExistingFieldsAreNotProtected() throws IOException {
+  void shouldAppendRepeatableControlFieldsToSameExistingWhenExistingFieldsAreNotProtected() throws IOException {
     // given
     // 007 is a repeatable control field
-    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
-    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{"
+      + "\"007\":\"xyz\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1674,16 +2319,20 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{"
+      + "\"007\":\"xyz\"}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldAddRepeatableControlFieldsWhenHaveNoSuchExistingFields() throws IOException {
+  void shouldDiscardIncomingRepeatableControlFieldWhenExistingFieldContainsSameData() throws IOException {
     // given
-    // 007 is a repeatable control field
-    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
-    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{"
+      + "\"007\":\"123\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1698,38 +2347,20 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00062nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldDiscardIncomingRepeatableControlFieldWhenExistingFieldContainsSameData() throws IOException {
+  void shouldAddRepeatableControlFieldWhenExistingFieldsProtected() throws IOException {
     // given
-    String incomingParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"}]}";
-    String existingParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"123\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00062nam  22000491a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"}]}";
-
-    MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
-      .withId(UUID.randomUUID().toString())
-      .withField("001")
-      .withSubfield("")
-      .withIndicator1("")
-      .withIndicator2("")
-      .withData("*")
-      .withSource(MarcFieldProtectionSetting.Source.SYSTEM)
-      .withOverride(true);
-
-    MappingParameters mappingParameters = new MappingParameters()
-      .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
-
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
-  }
-
-  @Test
-  public void shouldAddRepeatableControlFieldWhenExistingFieldsProtected() throws IOException {
-    // given
-    String incomingParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{\"007\":\"xyz\"}]}";
-    String existingParsedContent = "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"123\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00094nam  22000731a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{\"007\":\"123\"},{\"007\":\"xyz\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"abc\"},{"
+      + "\"007\":\"xyz\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00078nam  22000611a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{"
+      + "\"007\":\"123\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1754,15 +2385,20 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting, marcFieldProtectionSetting2));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00094nam  22000731a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"007\":\"abc\"},{"
+      + "\"007\":\"123\"},{\"007\":\"xyz\"}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRemoveNotUpdatedFieldToAllRepeatableControlFieldAndChangeLeader() throws IOException {
+  void shouldRemoveNotUpdatedFieldToAllRepeatableControlFieldAndChangeLeader() throws IOException {
     // 006, 007 are repeatable control fields
-    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
-    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"006\":\"abc\"},{\"007\":\"xyz\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"006\":\"abc\"},{"
+      + "\"007\":\"xyz\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1777,15 +2413,22 @@ public class MarcRecordModifierTest {
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(List.of(marcFieldProtectionSetting));
 
+    String expectedParsedContent =
+      "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
     testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRemoveExistingNonRepeatableFieldsWhenTheyAreNotProtectedAndNoIncomingFieldsWithSameTag() throws IOException {
+  void shouldRemoveExistingNonRepeatableFieldsWhenTheyAreNotProtectedAndNoIncomingFieldsWithSameTag()
+    throws IOException {
     // 002, 245 are non-repeatable fields
-    String incomingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
-    String existingParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"002\":\"abc\"},{\"245\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"},{\"002\":\"abc\"},{"
+      + "\"245\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String expectedParsedContent =
+      "{\"leader\":\"00046nam  22000371a 4500\",\"fields\":[{\"001\":\"in00001\"}]}";
 
     MarcFieldProtectionSetting marcFieldProtectionSetting = new MarcFieldProtectionSetting()
       .withId(UUID.randomUUID().toString())
@@ -1804,41 +2447,63 @@ public class MarcRecordModifierTest {
   }
 
   @Test
-  public void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsNotProtectedAndIncomingFieldIsDuplicate() {
+  void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsNotProtectedAndIncomingFieldIsDuplicate() {
     // 001 and 010 are non-repeatable fields
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"ind1\":\"8\",\"ind2\":\"6\",\"subfields\":[{\"a\":\"test\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"ind1\":\"8\",\"ind2\":\"6\",\"subfields\":[{\"a\":\"test\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
 
+    String expectedParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   @Test
-  public void shouldReplaceExistingNonRepeatableFieldWithIncomingWhenExistingIsNotProtectedAndIncomingFieldIsNotSame() {
+  void shouldReplaceExistingNonRepeatableFieldWithIncomingWhenExistingIsNotProtectedAndIncomingFieldIsNotSame() {
     // 010 is non-repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
+    String expectedParsedContent =
+      "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   @Test
-  public void shouldDeleteExistingNonRepeatableFieldWhenItIsNotProtectedAndHasNoIncomingFieldWithSameTag() {
+  void shouldDeleteExistingNonRepeatableFieldWhenItIsNotProtectedAndHasNoIncomingFieldWithSameTag() {
     // 010 is non-repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"ind1\":\"1\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"test\"}]}},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00076nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"ind1\":\"1\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"test\"}]}},{\"020\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
+    String expectedParsedContent =
+      "{\"leader\":\"00076nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   @Test
-  public void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsDuplicate() {
+  void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsDuplicate() {
     // 010 is non-repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"NcD\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00069nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"NcD\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -1852,15 +2517,25 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00069nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldKeepOrderOfProtectedFieldsDuringUpdate() {
+  void shouldKeepOrderOfProtectedFieldsDuringUpdate() {
     // 010 is non-repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test1\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00135nam  22000851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test1\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test2\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{"
+      + "\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test2\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{"
+      + "\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test1\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -1874,15 +2549,24 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00135nam  22000851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"500\":{"
+      + "\"subfields\":[{\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"500\":{\"subfields\":[{"
+      + "\"a\":\"Test\"}],\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test1\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"541\":{\"subfields\":[{\"a\":\"Test2\"}],\"ind1\":\" \","
+      + "\"ind2\":\" \"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
+  void shouldRetainExistingNonRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
     // 010 is non-repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -1896,15 +2580,22 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingNonRepeatableFieldWhenExistingIsProtectedAndHasNoIncomingFieldWithSameTag() {
+  void shouldRetainExistingNonRepeatableFieldWhenExistingIsProtectedAndHasNoIncomingFieldWithSameTag() {
     // 010 is non-repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"245\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"245\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00096nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"245\":{\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"245\":{"
+      + "\"subfields\":[{\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"245\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -1918,45 +2609,68 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00096nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"010\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"245\":{\"subfields\":[{"
+      + "\"a\":\"electronic\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableFieldAndDiscardIncomingWhenExistingIsNotProtectedAndIncomingFieldIsDuplicate() {
+  void shouldRetainExistingRepeatableFieldAndDiscardIncomingWhenExistingIsNotProtectedAndIncomingFieldIsDuplicate() {
     // 020 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"ind1\":\"8\",\"ind2\":\"6\",\"subfields\":[{\"a\":\"test\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"ind1\":\"8\",\"ind2\":\"6\",\"subfields\":[{\"a\":\"test\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
 
+    String expectedParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"020\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   @Test
-  public void shouldDeleteExistingRepeatableFieldWhenItIsNotProtectedAndHasNoIncomingFieldWithSameTag() {
+  void shouldDeleteExistingRepeatableFieldWhenItIsNotProtectedAndHasNoIncomingFieldWithSameTag() {
     // 950 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"ind1\":\"1\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"test\"}]}}]}";
-    String expectedParsedContent = "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"ind1\":\"1\",\"ind2\":\"2\",\"subfields\":[{\"a\":\"test\"}]}}]}";
 
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   @Test
-  public void shouldReplaceExistingRepeatableFieldWithIncomingWhenExistingIsNotProtectedAndIncomingFieldIsNotSame() {
+  void shouldReplaceExistingRepeatableFieldWithIncomingWhenExistingIsNotProtectedAndIncomingFieldIsNotSame() {
     // 950 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"ind1\":\"1\",\"ind2\":\"1\",\"subfields\":[{\"a\":\"new data\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
+    String expectedParsedContent =
+      "{\"leader\":\"00074nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters());
   }
 
   @Test
-  public void shouldRetainExistingRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsDuplicate() {
+  void shouldRetainExistingRepeatableFieldAndDiscardIncomingWhenExistingIsProtectedAndIncomingFieldIsDuplicate() {
     // 050 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"050\":{\"ind1\":\"8\",\"ind2\":\"6\",\"subfields\":[{\"a\":\"test\"}]}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"050\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"050\":{\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"050\":{"
+      + "\"ind1\":\"8\",\"ind2\":\"6\",\"subfields\":[{\"a\":\"test\"}]}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"050\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -1969,15 +2683,21 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00070nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"050\":{"
+      + "\"subfields\":[{\"a\":\"test\"}],\"ind1\":\"8\",\"ind2\":\"6\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
+  void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
     // 950 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00094nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"subfields\":[{\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -1989,15 +2709,21 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00094nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"950\":{\"subfields\":[{"
+      + "\"a\":\"new data\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableControlFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
+  void shouldRetainExistingRepeatableControlFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSame() {
     // 007 is repeatable control field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"new data\"}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"NcD\"}]}";
-    String expectedParsedContent = "{\"leader\":\"00086nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"NcD\"},{\"007\":\"new data\"}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"new "
+      + "data\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"NcD\"}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -2009,16 +2735,22 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00086nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"NcD\"},{"
+      + "\"007\":\"new data\"}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsNotSameAndMatchesProtectionSettings() {
+  void shouldRetainProtectedRepeatableFieldAndAddDifferentIncomingMatch() {
     // 035 is repeatable field
     // incoming 035 field also matches protection settings
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{\"subfields\":[{\"a\":\"new data\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{\"subfields\":[{\"a\":\"123\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00112nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{\"subfields\":[{\"a\":\"123\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"035\":{\"subfields\":[{\"a\":\"new data\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{"
+      + "\"subfields\":[{\"a\":\"new data\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{"
+      + "\"subfields\":[{\"a\":\"123\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -2030,14 +2762,24 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00112nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"035\":{"
+      + "\"subfields\":[{\"a\":\"123\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}},{\"035\":{"
+      + "\"subfields\":[{\"a\":\"new data\"},{\"b\":\"MiAaHDL\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndSomeIncomingFieldIsSameWithMatchesMultipleSubfieldProtectionSettings() {
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00200nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+  void shouldRetainProtectedRepeatableFieldAndAddIncomingOnMultipleSubfieldMatch() {
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{"
+      + "\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{"
+      + "\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{"
+      + "\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -2049,14 +2791,27 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00200nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{"
+      + "\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{"
+      + "\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{"
+      + "\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableDataFieldAndAddIncomingWhenExistingIsProtectedAndIncomingFieldIsSameWithMatchesSubfieldProtectionSettings() {
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
-    String existingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
-    String expectedParsedContent = "{\"leader\":\"00200nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+  void shouldRetainProtectedRepeatableFieldAndAddIncomingOnSubfieldMatch() {
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{"
+      + "\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{"
+      + "\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{"
+      + "\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -2068,15 +2823,24 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
+    String expectedParsedContent =
+      "{\"leader\":\"00200nam  22000731a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"655\":{"
+      + "\"subfields\":[{\"a\":\"Catalogs0.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst014\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{\"a\":\"Catalogs1.\"},{\"2\":\"fast\"},{"
+      + "\"0\":\"(OCoLC)fst015\"}],\"ind1\":\" \",\"ind2\":\"7\"}},{\"655\":{\"subfields\":[{"
+      + "\"a\":\"Periodicals.\"},{\"2\":\"fast\"},{\"0\":\"(OCoLC)fst01411641\"}],\"ind1\":\" \","
+      + "\"ind2\":\"7\"}}]}";
     testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldRetainExistingRepeatableFieldWhenExistingIsProtectedAndHasNoIncomingFieldWithSameTag() {
+  void shouldRetainExistingRepeatableFieldWhenExistingIsProtectedAndHasNoIncomingFieldWithSameTag() {
     // 950 is repeatable field
-    String incomingParsedContent = "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
-    String existingParsedContent = "{\"leader\":\"00069nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
-    String expectedParsedContent = existingParsedContent;
+    String incomingParsedContent =
+      "{\"leader\":\"00129nam  22000611a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00069nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"950\":{"
+      + "\"subfields\":[{\"a\":\"NcD\"}],\"ind1\":\"1\",\"ind2\":\"1\"}}]}";
 
     List<MarcFieldProtectionSetting> protectionSettings = List.of(
       new MarcFieldProtectionSetting()
@@ -2088,20 +2852,20 @@ public class MarcRecordModifierTest {
 
     MappingParameters mappingParameters = new MappingParameters()
       .withMarcFieldProtectionSettings(protectionSettings);
-    testUpdateRecord(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters);
+    testUpdateRecord(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters);
   }
 
   @Test
-  public void shouldReturnTrueWhenFieldTagAnyOf1xxFields() {
+  void shouldReturnTrueWhenFieldTagAnyOf1xxFields() {
     for (int i = 100; i < 200; i++) {
       boolean isNonRepeatable = marcRecordModifier.isNonRepeatableField(new DataFieldImpl(String.valueOf(i), ' ', ' '));
-      Assert.assertTrue(format("%s field is not non-repeatable field", i), isNonRepeatable);
+      Assertions.assertTrue(isNonRepeatable, format("%s field is not non-repeatable field", i));
     }
   }
 
   @Test
-  public void shouldReturnTrueWhenFieldHas999TagAndIndicatorsFF() {
-    Assert.assertTrue(marcRecordModifier.isNonRepeatableField(new DataFieldImpl("999", 'f', 'f')));
+  void shouldReturnTrueWhenFieldHas999TagAndIndicatorsFf() {
+    Assertions.assertTrue(marcRecordModifier.isNonRepeatableField(new DataFieldImpl("999", 'f', 'f')));
   }
 
   private void testMarcUpdating(String incomingParsedContent,
@@ -2113,27 +2877,26 @@ public class MarcRecordModifierTest {
   private void testMarcUpdating(String incomingParsedContent,
                                 String existingParsedContent,
                                 String expectedParsedContent,
-                                MappingParameters mappingParameters) throws IOException
-  {
+                                MappingParameters mappingParameters) throws IOException {
     MappingProfile mappingProfile = new MappingProfile()
       .withMappingDetails(new MappingDetail().withMarcMappingOption(UPDATE));
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters, mappingProfile);
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingParameters,
+      mappingProfile);
   }
 
   private void testMarcUpdating(String incomingParsedContent,
                                 String existingParsedContent,
                                 String expectedParsedContent,
-                                MappingProfile mappingProfile) throws IOException
-  {
-    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters(), mappingProfile);
+                                MappingProfile mappingProfile) throws IOException {
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, new MappingParameters(),
+      mappingProfile);
   }
 
   private void testMarcUpdating(String incomingParsedContent,
-                                   String existingParsedContent,
-                                   String expectedParsedContent,
-                                   MappingParameters mappingParameters,
-                                   MappingProfile mappingProfile) throws IOException
-  {
+                                String existingParsedContent,
+                                String expectedParsedContent,
+                                MappingParameters mappingParameters,
+                                MappingProfile mappingProfile) throws IOException {
     Record incomingRecord = new Record().withParsedRecord(new ParsedRecord()
       .withContent(incomingParsedContent));
     Record existingRecord = new Record().withParsedRecord(new ParsedRecord()
@@ -2152,7 +2915,7 @@ public class MarcRecordModifierTest {
     //then
     String recordJson = eventPayload.getContext().get(MATCHED_MARC_BIB_KEY);
     Record actualRecord = mapper().readValue(recordJson, Record.class);
-    Assert.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
   private void testUpdateRecord(String incomingParsedContent, String existingParsedContent,
@@ -2160,8 +2923,9 @@ public class MarcRecordModifierTest {
     Record incomingRecord = new Record().withParsedRecord(new ParsedRecord().withContent(incomingParsedContent));
     Record existingRecord = new Record().withParsedRecord(new ParsedRecord().withContent(existingParsedContent));
 
-    String actualParsedContent = marcRecordModifier.updateRecord(incomingRecord, existingRecord, mappingParameters.getMarcFieldProtectionSettings());
+    String actualParsedContent = marcRecordModifier.updateRecord(incomingRecord, existingRecord,
+      mappingParameters.getMarcFieldProtectionSettings());
 
-    Assert.assertEquals(expectedParsedContent, actualParsedContent);
+    Assertions.assertEquals(expectedParsedContent, actualParsedContent);
   }
 }

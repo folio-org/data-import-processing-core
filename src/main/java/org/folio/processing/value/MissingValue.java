@@ -3,7 +3,7 @@ package org.folio.processing.value;
 public final class MissingValue implements Value<Object> {
   private static final MissingValue INSTANCE = new MissingValue();
 
-  protected MissingValue() {
+  private MissingValue() {
   }
 
   public static MissingValue getInstance() {

@@ -11,15 +11,15 @@ public class MarkToAuthorityExtendedMapper extends MarcToAuthorityMapper {
   private static final String MARC_FORMAT = "MARC_AUTHORITY_EXTENDED";
 
   @Override
-  public String getMapperFormat() {
-    return MARC_FORMAT;
-  }
-
-  @Override
   public Authority mapRecord(JsonObject parsedRecord, MappingParameters mappingParameters, JsonObject mappingRules) {
     var authority = new Processor<AuthorityExtended>().process(parsedRecord, mappingParameters, mappingRules,
       AuthorityExtended.class);
     linkSourceFile(parsedRecord, mappingParameters, authority);
     return authority;
+  }
+
+  @Override
+  public String getMapperFormat() {
+    return MARC_FORMAT;
   }
 }

@@ -1,26 +1,25 @@
 package org.folio.processing.mapping.mapper.util;
 
-import io.vertx.core.json.JsonObject;
-import org.folio.Organization;
-import org.folio.rest.jaxrs.model.StatisticalCodeType;
-import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import static java.util.Map.entry;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.CODE_PROPERTY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.ID_PROPERTY;
+import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAME_PROPERTY;
 
+import io.vertx.core.json.JsonObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-
-import static java.util.Map.entry;
-import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.CODE_PROPERTY;
-import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.ID_PROPERTY;
-import static org.folio.processing.matching.reader.util.MatchIdProcessorUtil.NAME_PROPERTY;
+import org.folio.Organization;
+import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingParameters;
+import org.folio.rest.jaxrs.model.StatisticalCodeType;
 
 /**
- * Retrieves accepted values from MappingParameters
+ * Retrieves accepted values from MappingParameters.
  */
-public class AcceptedValuesUtil {
+public final class AcceptedValuesUtil {
   private static final String VALUE_PROPERTY = "value";
   private static final String STATISTICAL_CODE_TEMPLATE = "%s: %s - %s";
 
@@ -58,54 +57,56 @@ public class AcceptedValuesUtil {
   private static final String FUND_ID = "fundId";
   private static final String EXPENSE_CLASS_ID = "expenseClassId";
 
-  private static final Map<String, Function<MappingParameters, List<?>>> ruleNameToMappingParameter = Map.ofEntries(
-    entry(HOLDINGS_PERMANENT_LOCATION_ID, MappingParameters::getLocations),
-    entry(HOLDINGS_TEMPORARY_LOCATION_ID, MappingParameters::getLocations),
-    entry(STATUS_ID, MappingParameters::getInstanceStatuses),
-    entry(NATURE_OF_CONTENT_TERM_ID, MappingParameters::getNatureOfContentTerms),
-    entry(INSTANCE_RELATIONSHIP_TYPE_ID, MappingParameters::getInstanceRelationshipTypes),
-    entry(HOLDINGS_TYPE_ID, MappingParameters::getHoldingsTypes),
-    entry(CALL_NUMBER_TYPE_ID, MappingParameters::getCallNumberTypes),
-    entry(ILL_POLICY_ID, MappingParameters::getIllPolicies),
-    entry(STATISTICAL_CODE_ID, AcceptedValuesUtil::getStatisticalCode),
-    entry(NOTE_TYPE, MappingParameters::getHoldingsNoteTypes),
-    entry(RELATIONSHIP_ID, MappingParameters::getElectronicAccessRelationships),
-    entry(MATERIAL_TYPE_ID, MappingParameters::getMaterialTypes),
-    entry(ITEM_CALL_NUMBER_TYPE_ID, MappingParameters::getCallNumberTypes),
-    entry(ITEM_DAMAGED_STATUS_ID, MappingParameters::getItemDamageStatuses),
-    entry(ITEM_NOTE_TYPE_ID, MappingParameters::getItemNoteTypes),
-    entry(PERMANENT_LOAN_TYPE_ID, MappingParameters::getLoanTypes),
-    entry(TEMPORARY_LOAN_TYPE_ID, MappingParameters::getLoanTypes),
-    entry(ITEM_PERMANENT_LOCATION_ID, MappingParameters::getLocations),
-    entry(ITEM_TEMPORARY_LOCATION_ID, MappingParameters::getLocations),
-    entry(CONTRIBUTOR_NAME_TYPE_ID, MappingParameters::getContributorNameTypes),
-    entry(ORDER_LOCATION, MappingParameters::getLocations),
-    entry(ORDER_MATERIAL_TYPE, MappingParameters::getMaterialTypes),
-    entry(VENDOR, MappingParameters::getOrganizations),
-    entry(MATERIAL_SUPPLIER, MappingParameters::getOrganizations),
-    entry(ACCESS_PROVIDER, MappingParameters::getOrganizations),
-    entry(DONOR_ORGANIZATION_IDS, AcceptedValuesUtil::getDonorOrganizationsFromMappingParameters),
-    entry(ACQUISITION_UNIT_IDS, MappingParameters::getAcquisitionsUnits),
-    entry(BILL_TO, MappingParameters::getTenantConfigurationAddresses),
-    entry(SHIP_TO, MappingParameters::getTenantConfigurationAddresses),
-    entry(PRODUCT_ID_TYPE, MappingParameters::getIdentifierTypes),
-    entry(ACQUISITION_METHOD, MappingParameters::getAcquisitionMethods),
-    entry(FUND_ID, MappingParameters::getFunds),
-    entry(EXPENSE_CLASS_ID, MappingParameters::getExpenseClasses));
+  private static final Map<String, Function<MappingParameters, List<?>>> RULE_NAME_TO_MAPPING_PARAMETER =
+    Map.ofEntries(
+      entry(HOLDINGS_PERMANENT_LOCATION_ID, MappingParameters::getLocations),
+      entry(HOLDINGS_TEMPORARY_LOCATION_ID, MappingParameters::getLocations),
+      entry(STATUS_ID, MappingParameters::getInstanceStatuses),
+      entry(NATURE_OF_CONTENT_TERM_ID, MappingParameters::getNatureOfContentTerms),
+      entry(INSTANCE_RELATIONSHIP_TYPE_ID, MappingParameters::getInstanceRelationshipTypes),
+      entry(HOLDINGS_TYPE_ID, MappingParameters::getHoldingsTypes),
+      entry(CALL_NUMBER_TYPE_ID, MappingParameters::getCallNumberTypes),
+      entry(ILL_POLICY_ID, MappingParameters::getIllPolicies),
+      entry(STATISTICAL_CODE_ID, AcceptedValuesUtil::getStatisticalCode),
+      entry(NOTE_TYPE, MappingParameters::getHoldingsNoteTypes),
+      entry(RELATIONSHIP_ID, MappingParameters::getElectronicAccessRelationships),
+      entry(MATERIAL_TYPE_ID, MappingParameters::getMaterialTypes),
+      entry(ITEM_CALL_NUMBER_TYPE_ID, MappingParameters::getCallNumberTypes),
+      entry(ITEM_DAMAGED_STATUS_ID, MappingParameters::getItemDamageStatuses),
+      entry(ITEM_NOTE_TYPE_ID, MappingParameters::getItemNoteTypes),
+      entry(PERMANENT_LOAN_TYPE_ID, MappingParameters::getLoanTypes),
+      entry(TEMPORARY_LOAN_TYPE_ID, MappingParameters::getLoanTypes),
+      entry(ITEM_PERMANENT_LOCATION_ID, MappingParameters::getLocations),
+      entry(ITEM_TEMPORARY_LOCATION_ID, MappingParameters::getLocations),
+      entry(CONTRIBUTOR_NAME_TYPE_ID, MappingParameters::getContributorNameTypes),
+      entry(ORDER_LOCATION, MappingParameters::getLocations),
+      entry(ORDER_MATERIAL_TYPE, MappingParameters::getMaterialTypes),
+      entry(VENDOR, MappingParameters::getOrganizations),
+      entry(MATERIAL_SUPPLIER, MappingParameters::getOrganizations),
+      entry(ACCESS_PROVIDER, MappingParameters::getOrganizations),
+      entry(DONOR_ORGANIZATION_IDS, AcceptedValuesUtil::getDonorOrganizationsFromMappingParameters),
+      entry(ACQUISITION_UNIT_IDS, MappingParameters::getAcquisitionsUnits),
+      entry(BILL_TO, MappingParameters::getTenantConfigurationAddresses),
+      entry(SHIP_TO, MappingParameters::getTenantConfigurationAddresses),
+      entry(PRODUCT_ID_TYPE, MappingParameters::getIdentifierTypes),
+      entry(ACQUISITION_METHOD, MappingParameters::getAcquisitionMethods),
+      entry(FUND_ID, MappingParameters::getFunds),
+      entry(EXPENSE_CLASS_ID, MappingParameters::getExpenseClasses));
 
-  private AcceptedValuesUtil() {}
+  private AcceptedValuesUtil() { }
 
   public static Map<String, String> getAcceptedValues(String ruleName, MappingParameters mappingParameters) {
     HashMap<String, String> acceptedValues = new HashMap<>();
 
-    if (ruleName == null || !ruleNameToMappingParameter.containsKey(ruleName)) {
+    if (ruleName == null || !RULE_NAME_TO_MAPPING_PARAMETER.containsKey(ruleName)) {
       return acceptedValues;
     }
 
-    List<?> mappingParameter = ruleNameToMappingParameter.get(ruleName).apply(mappingParameters);
+    List<?> mappingParameter = RULE_NAME_TO_MAPPING_PARAMETER.get(ruleName).apply(mappingParameters);
 
     mappingParameter.forEach(parameter -> {
-      JsonObject jsonObject = parameter instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(parameter);
+      JsonObject jsonObject =
+        parameter instanceof String string ? new JsonObject(string) : JsonObject.mapFrom(parameter);
 
       String idField = jsonObject.getString(ID_PROPERTY);
       String nameField = jsonObject.getString(NAME_PROPERTY);
@@ -134,7 +135,7 @@ public class AcceptedValuesUtil {
 
   private static List<Organization> getDonorOrganizationsFromMappingParameters(MappingParameters mappingParameters) {
     return mappingParameters.getOrganizations().stream()
-            .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor())).toList();
+      .filter(organization -> Boolean.TRUE.equals(organization.getIsDonor())).toList();
   }
 
   private static List<JsonObject> getStatisticalCode(MappingParameters mappingParameters) {
@@ -144,8 +145,9 @@ public class AcceptedValuesUtil {
           .getStatisticalCodeTypes().stream()
           .filter(codeType -> codeType.getId().equals(statCode.getStatisticalCodeTypeId())).findAny();
         if (statCodeType.isPresent()) {
-          String formattedStatCode = String.format(STATISTICAL_CODE_TEMPLATE, statCodeType.get().getName(), statCode.getCode(),
-            statCode.getName());
+          String formattedStatCode =
+            String.format(STATISTICAL_CODE_TEMPLATE, statCodeType.get().getName(), statCode.getCode(),
+              statCode.getName());
 
           return new JsonObject().put(ID_PROPERTY, statCode.getId()).put(VALUE_PROPERTY, formattedStatCode);
         }

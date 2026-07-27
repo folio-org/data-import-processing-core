@@ -121,7 +121,9 @@
     "publicationFrequency": [],
     "publicationRange": [],
     "electronicAccess": [],
-    "dates":{"date1":"2023"},
+    "dates": {
+      "date1": "2023"
+    },
     "instanceTypeId": "fe19bae4-da28-472b-be90-d442e2428ead",
     "instanceFormatIds": [],
     "physicalDescriptions": [],
@@ -136,9 +138,9 @@
       }
     ],
     "administrativeNotes": [],
-    "staffSuppress":false,
-    "discoverySuppress":false,
-    "deleted":false,
+    "staffSuppress": false,
+    "discoverySuppress": false,
+    "deleted": false,
     "statisticalCodeIds": [],
     "natureOfContentTermIds": [],
     "precedingTitles": [],

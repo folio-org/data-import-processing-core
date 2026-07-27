@@ -1,11 +1,10 @@
 package org.folio.processing.events.handlers;
 
-import org.folio.DataImportEventPayload;
-import org.folio.processing.events.services.handler.EventHandler;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_AUTHORITY;
 
 import java.util.concurrent.CompletableFuture;
-
-import static org.folio.rest.jaxrs.model.EntityType.MARC_AUTHORITY;
+import org.folio.DataImportEventPayload;
+import org.folio.processing.events.services.handler.EventHandler;
 
 /**
  * Test event handler. Handles event payload with event DI_SRS_MARC_AUTHORITY_RECORD_CREATED

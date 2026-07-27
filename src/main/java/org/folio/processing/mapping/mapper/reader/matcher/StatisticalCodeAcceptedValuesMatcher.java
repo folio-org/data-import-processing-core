@@ -10,7 +10,7 @@ public class StatisticalCodeAcceptedValuesMatcher implements AcceptedValuesMatch
   @Override
   public boolean matches(String acceptedValue, String valueToCompare) {
     return matchesByCode(acceptedValue, valueToCompare)
-      || matchesByName(acceptedValue, valueToCompare);
+           || matchesByName(acceptedValue, valueToCompare);
   }
 
   private boolean matchesByCode(String acceptedValue, String valueToCompare) {
@@ -22,5 +22,4 @@ public class StatisticalCodeAcceptedValuesMatcher implements AcceptedValuesMatch
     String statisticalCodeName = StringUtils.substringAfter(acceptedValue, NAME_SEPARATOR);
     return valueToCompare.equals(statisticalCodeName);
   }
-
 }

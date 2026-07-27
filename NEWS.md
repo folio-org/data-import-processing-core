@@ -1,3 +1,39 @@
+## v6.0.0 XXXX-XX-XX
+### Breaking changes
+* Remove REST-based event publishing support (`RestEventPublisher`, `OkapiConnectionParams`, `RestUtil`); events are now published to Kafka only
+
+### Features
+* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+### Bug fixes
+* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+
+### Tech Dept
+* Migrate tests from JUnit 4 to JUnit 6
+* Add checkstyle verification
+
+### Dependencies
+* Bump `io.vertx:vertx-stack-depchain` from `5.0.12` to `5.1.5`
+* Bump `org.junit:junit-bom` from `5.12.2` to `6.1.2`
+* Bump `org.folio:mod-inventory-storage-dto` from `30.0.0` to `30.0.3`
+* Bump `org.glassfish.jersey.core:jersey-common` from `2.46` to `4.0.2`
+* Bump `org.slf4j:slf4j-api` from `2.0.17` to `2.0.18`
+* Bump `org.apache.maven:maven-model` from `3.9.9` to `3.9.16`
+* Bump `commons-io:commons-io` from `2.19.0` to `2.22.0`
+* Bump `com.google.guava:guava` from `33.4.8-jre` to `33.6.0-jre`
+* Bump `org.graalvm.js:js` from `24.2.1` to `25.1.3`
+* Bump `org.graalvm.js:js-scriptengine` from `24.2.1` to `25.1.3`
+* Bump `org.mockito:mockito-core` from `5.17.0` to `5.23.0`
+* Bump `org.codehaus.mojo:exec-maven-plugin` from `3.5.0` to `3.6.3`
+* Bump `org.codehaus.mojo:properties-maven-plugin` from `1.2.1` to `1.3.0`
+* Bump `org.jsonschema2pojo:jsonschema2pojo-maven-plugin` from `0.5.1` to `1.3.3`
+* Bump `org.apache.maven.plugins:maven-enforcer-plugin` from `3.5.0` to `3.6.3`
+* Bump `org.apache.maven.plugins:maven-compiler-plugin` from `3.14.0` to `3.15.0`
+* Bump `org.apache.maven.plugins:maven-shade-plugin` from `3.6.0` to `3.6.2`
+* Bump `org.apache.maven.plugins:maven-release-plugin` from `3.1.1` to `3.3.1`
+* Bump `org.apache.maven.plugins:maven-surefire-plugin` from `3.5.3` to `3.5.6`
+* Bump `org.apache.maven.plugins:maven-source-plugin` from `3.3.1` to `3.4.0`
+* Bump `org.apache.maven.plugins:maven-javadoc-plugin` from `3.11.2` to `3.12.0`
+
 ## 2026-04-14 v5.0.0
 * [MODSOURCE-919](https://folio-org.atlassian.net/browse/MODSOURCE-919) Fill in permissions header during event sending to Kafka
 * [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier

@@ -188,7 +188,9 @@
         "g",
         "q"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "applyRulesOnConcatenatedData": true,
       "rules": []
     },
@@ -212,7 +214,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "applyRulesOnConcatenatedData": true,
       "rules": []
     }
@@ -229,7 +233,9 @@
         "g",
         "n"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -252,7 +258,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -268,7 +276,9 @@
         "q",
         "g"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -291,7 +301,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -471,7 +483,9 @@
         "g",
         "q"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -495,7 +509,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -511,7 +527,9 @@
         "g",
         "n"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -535,7 +553,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -551,7 +571,9 @@
         "q",
         "g"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -575,7 +597,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -766,7 +790,9 @@
         "g",
         "q"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -790,7 +816,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -806,7 +834,9 @@
         "g",
         "n"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -830,7 +860,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],
@@ -846,7 +878,9 @@
         "q",
         "g"
       ],
-      "exclusiveSubfield": ["t"],
+      "exclusiveSubfield": [
+        "t"
+      ],
       "rules": []
     },
     {
@@ -870,7 +904,9 @@
         "s",
         "t"
       ],
-      "requiredSubfield": ["t"],
+      "requiredSubfield": [
+        "t"
+      ],
       "rules": []
     }
   ],

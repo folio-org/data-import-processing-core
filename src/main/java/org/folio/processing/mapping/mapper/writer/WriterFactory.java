@@ -3,7 +3,7 @@ package org.folio.processing.mapping.mapper.writer;
 import org.folio.rest.jaxrs.model.EntityType;
 
 /**
- * Factory to produce readers
+ * Factory to produce readers.
  *
  * @see Writer
  * @see EntityType
@@ -11,14 +11,14 @@ import org.folio.rest.jaxrs.model.EntityType;
 public interface WriterFactory {
 
   /**
-   * Creates a writer
+   * Creates a writer.
    *
    * @return writer
    */
   Writer createWriter();
 
   /**
-   * Checks if factory can produce entity of given type
+   * Checks if factory can produce entity of given type.
    *
    * @param entityType type of entity
    * @return true if given type of entity is eligible

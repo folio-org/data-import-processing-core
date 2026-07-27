@@ -1,6 +1,10 @@
 package org.folio.processing.mapping;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
+import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
+
 import io.vertx.core.json.JsonObject;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -15,11 +19,6 @@ import org.folio.processing.mapping.mapper.reader.ReaderFactory;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-
-import java.util.Map;
-
-import static org.folio.processing.events.utils.EventUtils.extractRecordId;
-import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
 
 /**
  * MappingManager is the entry point to work with mapping.
@@ -55,8 +54,8 @@ public final class MappingManager {
       ProfileSnapshotWrapper mappingProfileWrapper = eventPayload.getCurrentNode();
 
       MappingProfile mappingProfile;
-      if (mappingProfileWrapper.getContent() instanceof Map) {
-        mappingProfile = new JsonObject((Map) mappingProfileWrapper.getContent()).mapTo(MappingProfile.class);
+      if (mappingProfileWrapper.getContent() instanceof Map map) {
+        mappingProfile = new JsonObject(map).mapTo(MappingProfile.class);
       } else {
         mappingProfile = (MappingProfile) mappingProfileWrapper.getContent();
       }
@@ -74,7 +73,7 @@ public final class MappingManager {
   }
 
   /**
-   * Registers reader factory
+   * Registers reader factory.
    *
    * @param factory reader factory
    * @return true if registry changed as a result of the call
@@ -84,7 +83,7 @@ public final class MappingManager {
   }
 
   /**
-   * Registers writer factory
+   * Registers writer factory.
    *
    * @param factory writer factory
    * @return true if registry changed as a result of the call
@@ -98,14 +97,14 @@ public final class MappingManager {
   }
 
   /**
-   * Clears the registry of reader factories
+   * Clears the registry of reader factories.
    */
   public static void clearReaderFactories() {
     FACTORY_REGISTRY.getReaderFactories().clear();
   }
 
   /**
-   * Clears the registry of writer factories
+   * Clears the registry of writer factories.
    */
   public static void clearWriterFactories() {
     FACTORY_REGISTRY.getWriterFactories().clear();

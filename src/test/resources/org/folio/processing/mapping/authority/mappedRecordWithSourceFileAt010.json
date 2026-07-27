@@ -1,23 +1,39 @@
 {
   "id": "b90cb1bc-601f-45d7-b99e-b11efd281dcd",
-  "sftPersonalName": [ ],
-  "saftPersonalName": [ ],
+  "sftPersonalName": [],
+  "saftPersonalName": [],
   "personalNameTitle": "Eimermacher, Karl CtY MBTI CtY MBTI NIC CStRLIN NIC",
-  "sftPersonalNameTitle": [ "v. 25 cm." ],
-  "saftPersonalNameTitle": [ "Editor:   C. W. Dugmore." ],
+  "sftPersonalNameTitle": [
+    "v. 25 cm."
+  ],
+  "saftPersonalNameTitle": [
+    "Editor:   C. W. Dugmore."
+  ],
   "sftCorporateName": [],
-  "saftCorporateName": [ ],
+  "saftCorporateName": [],
   "corporateNameTitle": "BR140 .J6",
-  "sftCorporateNameTitle": [ "Quarterly, 1970-" ],
-  "saftCorporateNameTitle": [ "Church history" ],
-  "sftMeetingName": [ ],
-  "saftMeetingName": [ ],
+  "sftCorporateNameTitle": [
+    "Quarterly, 1970-"
+  ],
+  "saftCorporateNameTitle": [
+    "Church history"
+  ],
+  "sftMeetingName": [],
+  "saftMeetingName": [],
   "meetingNameTitle": "270.05",
-  "sftMeetingNameTitle": [ "Semiannual, 1950-69" ],
-  "saftMeetingNameTitle": [ "Church history" ],
+  "sftMeetingNameTitle": [
+    "Semiannual, 1950-69"
+  ],
+  "saftMeetingNameTitle": [
+    "Church history"
+  ],
   "uniformTitle": "The Journal of ecclesiastical history",
-  "sftUniformTitle": [ "v. 1-   Apr. 1950-" ],
-  "saftUniformTitle": [ "Periodicals" ],
+  "sftUniformTitle": [
+    "v. 1-   Apr. 1950-"
+  ],
+  "saftUniformTitle": [
+    "Periodicals"
+  ],
   "sftNamedEvent": [],
   "saftNamedEvent": [],
   "sftChronTerm": [],
@@ -33,15 +49,27 @@
   "sftGeneralSubdivision": [],
   "saftGeneralSubdivision": [],
   "topicalTerm": "The Journal of ecclesiastical history.",
-  "sftTopicalTerm": [ "note$a note$5" ],
-  "saftTopicalTerm": [ "Dugmore, C. W." ],
+  "sftTopicalTerm": [
+    "note$a note$5"
+  ],
+  "saftTopicalTerm": [
+    "Dugmore, C. W."
+  ],
   "subjectHeadings": "a",
   "geographicName": "London,",
-  "sftGeographicName": [ "note$a note$5" ],
-  "saftGeographicName": [ "callNumber2" ],
+  "sftGeographicName": [
+    "note$a note$5"
+  ],
+  "saftGeographicName": [
+    "callNumber2"
+  ],
   "genreTerm": "32 East 57th St., New York, 10022",
-  "sftGenreTerm": [ "note$a note$i note$x note$z note$5" ],
-  "saftGenreTerm": [ "linkText publicNote" ],
+  "sftGenreTerm": [
+    "note$a note$i note$x note$z note$5"
+  ],
+  "saftGenreTerm": [
+    "linkText publicNote"
+  ],
   "identifiers": [
     {
       "value": "1000649",
@@ -60,7 +88,7 @@
       "identifierTypeId": "fe19bae4-da28-472b-be90-d442e2428ead"
     }
   ],
-  "notes": [ ],
+  "notes": [],
   "sourceFileId": "e2efd148-8c17-41c2-9a4b-3d490db9b158",
   "naturalId": "no58020553"
 }

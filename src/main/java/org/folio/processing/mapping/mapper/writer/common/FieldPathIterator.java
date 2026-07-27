@@ -1,17 +1,16 @@
 package org.folio.processing.mapping.mapper.writer.common;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- *  Iterator for traversing by field path holding additional metadata for each path item
+ * Iterator for traversing by field path holding additional metadata for each path item.
  */
 class FieldPathIterator {
   private static final String DELIMITER_REGEX = "\\.";
-  private Iterator<PathItem> delegate;
+  private final Iterator<PathItem> delegate;
 
   FieldPathIterator(String path) {
     if (StringUtils.isEmpty(path)) {
@@ -45,14 +44,14 @@ class FieldPathIterator {
   }
 
   /**
-   * Class to hold meta information for a single item of the fieldPath
+   * Class to hold meta information for a single item of the fieldPath.
    */
-  class PathItem {
+  static class PathItem {
     private static final String ARRAY_SIGN = "[]";
-    private String name;
-    private boolean isArray;
+    private final String name;
+    private final boolean isArray;
 
-    public PathItem(String path) {
+    PathItem(String path) {
       this.isArray = path.endsWith(ARRAY_SIGN);
       this.name = this.isArray ? path.replace(ARRAY_SIGN, StringUtils.EMPTY) : path;
     }

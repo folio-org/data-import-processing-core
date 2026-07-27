@@ -1,8 +1,15 @@
 package org.folio.processing.mapping.mapper.mappers;
 
+import static org.folio.processing.events.utils.EventUtils.extractRecordId;
+import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
+import static org.folio.rest.jaxrs.model.EntityType.ITEM;
+
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.DataImportEventPayload;
@@ -13,14 +20,6 @@ import org.folio.processing.mapping.mapper.MappingContext;
 import org.folio.processing.mapping.mapper.reader.Reader;
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.rest.jaxrs.model.MappingRule;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
-import static org.folio.processing.events.utils.EventUtils.extractRecordId;
-import static org.folio.processing.mapping.mapper.mappers.HoldingsMapper.MULTIPLE_HOLDINGS_FIELD;
-import static org.folio.rest.jaxrs.model.EntityType.ITEM;
 
 public class ItemMapper implements Mapper {
   private static final Logger LOGGER = LogManager.getLogger(ItemMapper.class);
@@ -33,7 +32,8 @@ public class ItemMapper implements Mapper {
   }
 
   @Override
-  public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload, MappingContext mappingContext) {
+  public DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload,
+                                    MappingContext mappingContext) {
     try {
       initializeReaderAndWriter(eventPayload, reader, writer, mappingContext);
       if (ifProfileIsInvalid(profile)) {
@@ -61,7 +61,8 @@ public class ItemMapper implements Mapper {
         writer.initialize(eventPayload);
         items.add(mapSingleEntity(eventPayload, reader, writer, mappingRules, ITEM.value()));
       } else {
-        items = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, ITEM.value(), marcField);
+        items = mapMultipleEntitiesByMarcField(eventPayload, mappingContext, reader, writer, mappingRules, ITEM.value(),
+          marcField);
         payloadContext.remove(MULTIPLE_HOLDINGS_FIELD);
       }
     }
@@ -69,7 +70,11 @@ public class ItemMapper implements Mapper {
     return eventPayload;
   }
 
-  private void mapMultipleItemIfItemEntityExistsInContext(DataImportEventPayload eventPayload, MappingContext mappingContext, HashMap<String, String> payloadContext, List<MappingRule> mappingRules, JsonArray items) throws IOException {
+  private void mapMultipleItemIfItemEntityExistsInContext(DataImportEventPayload eventPayload,
+                                                          MappingContext mappingContext,
+                                                          HashMap<String, String> payloadContext,
+                                                          List<MappingRule> mappingRules, JsonArray items)
+    throws IOException {
     JsonArray itemList = new JsonArray(eventPayload.getContext().get(ITEM.value()));
     for (int i = 0; i < itemList.size(); i++) {
       JsonObject currentItem = itemList.getJsonObject(i);

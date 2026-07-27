@@ -8,7 +8,7 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 
 /**
- * Abstract class for writers
+ * Abstract class for writers.
  */
 public abstract class AbstractWriter implements Writer {
 

@@ -4,6 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import org.folio.DataImportEventPayload;
 import org.folio.MappingProfile;
 import org.folio.processing.mapping.mapper.reader.Reader;
@@ -11,11 +15,6 @@ import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * The central component for reading data from source and writing data to target.
@@ -39,10 +38,11 @@ public interface Mapper {
    * @param mappingContext - current Context
    * @return - DataImportEventPayload with mapped entities inside
    */
-  DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload, MappingContext mappingContext);
+  DataImportEventPayload map(MappingProfile profile, DataImportEventPayload eventPayload,
+                             MappingContext mappingContext);
 
   /**
-   * Initialization reader and writer
+   * Initialization reader and writer.
    *
    * @param reader         -     Reader to read values from given event payload
    * @param writer         -    Writer to write values to given event payload
@@ -50,23 +50,27 @@ public interface Mapper {
    * @param mappingContext - current Context
    * @throws IOException if a low-level I/O problem occurs (JSON serialization)
    */
-  default void initializeReaderAndWriter(DataImportEventPayload eventPayload, Reader reader, Writer writer, MappingContext mappingContext) throws IOException {
+  default void initializeReaderAndWriter(DataImportEventPayload eventPayload, Reader reader, Writer writer,
+                                         MappingContext mappingContext) throws IOException {
     reader.initialize(eventPayload, mappingContext);
     writer.initialize(eventPayload);
   }
 
   /**
-   * Check if MappingProfile is valid
+   * Check if MappingProfile is valid.
    *
    * @param profile - current Mapping Profile
    * @return true if MappingProfile is valid otherwise - false.
    */
   default boolean ifProfileIsInvalid(MappingProfile profile) {
-    return profile.getMappingDetails() == null || profile.getMappingDetails().getMappingFields() == null || profile.getMappingDetails().getMappingFields().isEmpty();
+    return profile.getMappingDetails() == null || profile.getMappingDetails().getMappingFields() == null
+           || profile.getMappingDetails().getMappingFields().isEmpty();
   }
 
-  default JsonArray mapMultipleEntitiesByMarcField(DataImportEventPayload eventPayload, MappingContext mappingContext, Reader reader, Writer writer,
-                                                   List<MappingRule> mappingRules, String entityType, String marcField) throws IOException {
+  default JsonArray mapMultipleEntitiesByMarcField(DataImportEventPayload eventPayload, MappingContext mappingContext,
+                                                   Reader reader, Writer writer,
+                                                   List<MappingRule> mappingRules, String entityType, String marcField)
+    throws IOException {
     HashMap<String, String> payloadContext = eventPayload.getContext();
     JsonArray entities = new JsonArray();
 
@@ -77,8 +81,11 @@ public interface Mapper {
 
     content.getJsonArray(FIELDS).forEach(e -> {
       JsonObject field = (JsonObject) e;
-      if (field.getValue(marcField) != null) multipleEntityFields.add(new JsonObject(field.toString()));
-      else nonMultipleFields.add(new JsonObject(field.toString()));
+      if (field.getValue(marcField) != null) {
+        multipleEntityFields.add(new JsonObject(field.toString()));
+      } else {
+        nonMultipleFields.add(new JsonObject(field.toString()));
+      }
     });
 
     if (multipleEntityFields.isEmpty()) {
@@ -121,7 +128,7 @@ public interface Mapper {
   default void adjustContextToContainEntitiesAsJsonObject(DataImportEventPayload eventPayload, EntityType entityType) {
     if (isJsonArray(eventPayload.getContext().get(entityType.value()))) {
       JsonArray entities = new JsonArray(eventPayload.getContext().get(entityType.value()));
-      if (entities.size() > 0) {
+      if (!entities.isEmpty()) {
         eventPayload.getContext().put(entityType.value(), entities.getJsonObject(0).encode());
       } else {
         eventPayload.getContext().put(entityType.value(), EMPTY_JSON);

@@ -1,5 +1,25 @@
 package org.folio.processing.matching.loader;
 
+import static java.lang.String.format;
+import static org.folio.MatchDetail.MatchCriterion.EXACTLY_MATCHES;
+import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_BEGINS_WITH_INCOMING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXISTING_VALUE;
+import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
+import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.MatchDetail;
 import org.folio.processing.matching.loader.query.DefaultLoadQuery;
@@ -10,39 +30,19 @@ import org.folio.processing.value.ListValue;
 import org.folio.processing.value.MissingValue;
 import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
-import org.folio.rest.jaxrs.model.Field;
-import org.folio.rest.jaxrs.model.Qualifier;
 import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.Field;
 import org.folio.rest.jaxrs.model.MatchExpression;
+import org.folio.rest.jaxrs.model.Qualifier;
 import org.folio.rest.jaxrs.model.StaticValueDetails;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-
-import static java.lang.String.format;
-import static org.folio.MatchDetail.MatchCriterion.EXACTLY_MATCHES;
-import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_BEGINS_WITH_INCOMING_VALUE;
-import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_CONTAINS_INCOMING_VALUE;
-import static org.folio.MatchDetail.MatchCriterion.EXISTING_VALUE_ENDS_WITH_INCOMING_VALUE;
-import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_CONTAINS_EXISTING_VALUE;
-import static org.folio.MatchDetail.MatchCriterion.INCOMING_VALUE_ENDS_WITH_EXISTING_VALUE;
-import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.STATIC_VALUE;
-import static org.folio.rest.jaxrs.model.MatchExpression.DataValueType.VALUE_FROM_RECORD;
-import static org.junit.Assert.*;
-
-@RunWith(JUnit4.class)
-public class LoadQueryBuilderTest {
+class LoadQueryBuilderTest {
 
   private static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd";
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValue() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -57,15 +57,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' = '%s'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' = '%s'", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber == \"%s\"", value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("poNumber == \"%s\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingStringValue() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -84,12 +84,12 @@ public class LoadQueryBuilderTest {
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = "identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp7406411\"";
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = "identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp7406411\"";
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValue() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValue() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "ybp74064123"));
     MatchDetail matchDetail = new MatchDetail()
@@ -108,12 +108,14 @@ public class LoadQueryBuilderTest {
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = "identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp7406411\" OR identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp74064123\"";
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      "identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp7406411\" "
+        + "OR identifiers =/@identifierTypeId=439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef \"ybp74064123\"";
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueContains_IncomingStringValue() {
+  void shouldBuildQuery_ExistingValueContains_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -128,15 +130,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%%%s%%'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%%%s%%'", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber == \"*%s*\"", value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("poNumber == \"*%s*\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValue_ContainsExistingValue() {
+  void shouldBuildQuery_IncomingStringValue_ContainsExistingValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -151,15 +153,16 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber', '%%')", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber', '%%')", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber any \"%s\"", value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("poNumber any \"%s\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueEndsWith_IncomingStringValue() {
+  void shouldBuildQuery_ExistingValueEndsWith_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -174,15 +177,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%%%s'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%%%s'", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber == \"*%s\"", value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("poNumber == \"*%s\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -197,15 +200,16 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber')", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber')", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = "";
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = "";
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -220,15 +224,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%s%%'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%s%%'", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber == \"%s*\"", value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("poNumber == \"%s*\"", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -243,16 +247,17 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE (purchase_order.jsonb ->> 'poNumber' LIKE '%s%%' OR purchase_order.jsonb ->> 'poNumber' LIKE '%s%%')",
+    String expectedSqlQuery = format(
+      "WHERE (purchase_order.jsonb ->> 'poNumber' LIKE '%s%%' OR purchase_order.jsonb ->> 'poNumber' LIKE '%s%%')",
       value.getValue().get(0), value.getValue().get(1));
-    assertEquals(expectedSQLQuery, result.getSql());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = "(poNumber == \"ybp7406411*\" OR poNumber == \"NhCcYBP*\")";
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = "(poNumber == \"ybp7406411*\" OR poNumber == \"NhCcYBP*\")";
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueContains_IncomingStringValue_JsonArrayPath() {
+  void shouldBuildQuery_ExistingValueContains_IncomingStringValue_JsonArrayPath() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -267,12 +272,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements_text(instance.jsonb -> 'subjects') fields(field) WHERE field LIKE '%%%s%%'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format(
+      "CROSS JOIN LATERAL jsonb_array_elements_text(instance.jsonb -> 'subjects') "
+        + "fields(field) WHERE field LIKE '%%%s%%'",
+      value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_JsonArrayPath() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_JsonArrayPath() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -287,13 +295,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) " +
-      "WHERE '%s' LIKE CONCAT('%%', field ->> 'value')", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) "
+               +
+             "WHERE '%s' LIKE CONCAT('%%', field ->> 'value')", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -308,14 +318,16 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) " +
-        "WHERE (field ->> 'value' LIKE '%s%%' OR field ->> 'value' LIKE '%s%%')",
-      value.getValue().get(0), value.getValue().get(1));
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) "
+               +
+             "WHERE (field ->> 'value' LIKE '%s%%' OR field ->> 'value' LIKE '%s%%')",
+        value.getValue().get(0), value.getValue().get(1));
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath_WithQualifier() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_JsonArrayPath_WithQualifier() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -333,14 +345,16 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) " +
-        "WHERE (field ->> 'value' LIKE '%s%%' OR field ->> 'value' LIKE '%s%%') AND LIKE '978%%'",
-      value.getValue().get(0), value.getValue().get(1));
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) "
+               +
+             "WHERE (field ->> 'value' LIKE '%s%%' OR field ->> 'value' LIKE '%s%%') AND LIKE '978%%'",
+        value.getValue().get(0), value.getValue().get(1));
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue_JsonArrayPath() {
+  void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue_JsonArrayPath() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -356,17 +370,20 @@ public class LoadQueryBuilderTest {
     assertNotNull(result);
     assertNotNull(result.getSql());
     assertNotNull(result.getCql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) " +
-        "WHERE (field ->> 'value' = '%s' OR field ->> 'value' = '%s')",
-      value.getValue().get(0), value.getValue().get(1));
-    String expectedCQLQuery = format("identifiers=\"\\\"value\\\":\\\"%s\\\"\" OR identifiers=\"\\\"value\\\":\\\"%s\\\"\"",
-      value.getValue().get(0), value.getValue().get(1));
-    assertEquals(expectedSQLQuery, result.getSql());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedSqlQuery =
+      format("CROSS JOIN LATERAL jsonb_array_elements(instance.jsonb -> 'identifiers') fields(field) "
+               +
+             "WHERE (field ->> 'value' = '%s' OR field ->> 'value' = '%s')",
+        value.getValue().get(0), value.getValue().get(1));
+    String expectedCqlQuery =
+      format("identifiers=\"\\\"value\\\":\\\"%s\\\"\" OR identifiers=\"\\\"value\\\":\\\"%s\\\"\"",
+        value.getValue().get(0), value.getValue().get(1));
+    assertEquals(expectedSqlQuery, result.getSql());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue() {
+  void shouldBuildQuery_ExactlyMatchesWith_IncomingListValue() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -382,16 +399,17 @@ public class LoadQueryBuilderTest {
     assertNotNull(result);
     assertNotNull(result.getSql());
     assertNotNull(result.getCql());
-    String expectedSQLQuery = format("WHERE (instance.jsonb ->> 'value' = '%s' OR instance.jsonb ->> 'value' = '%s')",
+    String expectedSqlQuery =
+      format("WHERE (instance.jsonb ->> 'value' = '%s' OR instance.jsonb ->> 'value' = '%s')",
+        value.getValue().get(0), value.getValue().get(1));
+    String expectedCqlQuery = format("(value == \"%s\" OR value == \"%s\")",
       value.getValue().get(0), value.getValue().get(1));
-    String expectedCQLQuery = format("(value == \"%s\" OR value == \"%s\")",
-      value.getValue().get(0), value.getValue().get(1));
-    assertEquals(expectedSQLQuery, result.getSql());
-    assertEquals(expectedCQLQuery, result.getCql());
+    assertEquals(expectedSqlQuery, result.getSql());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue_WithQualifier() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingStringValue_WithQualifier() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -409,15 +427,16 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%s%%' AND LIKE '%%978'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("WHERE purchase_order.jsonb ->> 'poNumber' LIKE '%s%%' AND LIKE '%%978'", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("poNumber == \"%s*\" AND poNumber = '*978'", value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("poNumber == \"%s*\" AND poNumber = '*978'", value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifier() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifier() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -435,12 +454,13 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber') AND LIKE '%%978%%'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("WHERE '%s' LIKE CONCAT('%%', purchase_order.jsonb ->> 'poNumber') AND LIKE '%%978%%'", value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifierComparisonPart() {
+  void shouldBuildQuery_IncomingStringValueEndsWith_ExistingValue_WithQualifierComparisonPart() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     MatchDetail matchDetail = new MatchDetail()
@@ -459,12 +479,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE '%s' LIKE CONCAT('%%', REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:digit:]]','','g')) AND LIKE '%%978%%'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format(
+      "WHERE '%s' LIKE CONCAT('%%', REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:digit:]]',"
+        + "'','g')) AND LIKE '%%978%%'",
+      value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_WithQualifierComparisonPart() {
+  void shouldBuildQuery_ExistingValueBeginsWith_IncomingListValue_WithQualifierComparisonPart() {
     // given
     ListValue value = ListValue.of(Arrays.asList("ybp7406411", "NhCcYBP"));
     MatchDetail matchDetail = new MatchDetail()
@@ -481,14 +504,15 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("WHERE (REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:alnum:]]','','g') LIKE '%s%%' "
-        + "OR REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:alnum:]]','','g') LIKE '%s%%')",
-      value.getValue().get(0), value.getValue().get(1));
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery =
+      format("WHERE (REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:alnum:]]','','g') LIKE '%s%%' "
+             + "OR REGEXP_REPLACE(purchase_order.jsonb ->> 'poNumber', '[^[:alnum:]]','','g') LIKE '%s%%')",
+        value.getValue().get(0), value.getValue().get(1));
+    assertEquals(expectedSqlQuery, result.getSql());
   }
 
   @Test
-  public void shouldReturnNullIfPassedNullValue() {
+  void shouldReturnNullIfPassedNullValue() {
     // given
     Value<?> value = null;
     MatchDetail matchDetail = new MatchDetail()
@@ -505,7 +529,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfPassedMissingValue() {
+  void shouldReturnNullIfPassedMissingValue() {
     // given
     Value<?> value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
@@ -522,7 +546,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldReturnNullIfMatchingByExistingStaticValue() {
+  void shouldReturnNullIfMatchingByExistingStaticValue() {
     // given
     Value<?> value = MissingValue.getInstance();
     MatchDetail matchDetail = new MatchDetail()
@@ -538,7 +562,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void dummyTestForDefaultLoadQuery() {
+  void dummyTestForDefaultLoadQuery() {
     // given
     String tableName = "instance";
     String whereClause = "WHERE TABLE_NAME.hrid = 'ybp7406411'";
@@ -556,7 +580,7 @@ public class LoadQueryBuilderTest {
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingDateValue() throws ParseException {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingDateValue() throws ParseException {
     // given
     SimpleDateFormat df = new SimpleDateFormat(DATE_FORMAT_PATTERN);
     Date fromDate = df.parse("2020-04-01");
@@ -574,16 +598,20 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSqlQuery = format("WHERE purchase_order.jsonb ->> 'createdDate' >= '%s' AND purchase_order.jsonb ->> 'createdDate' <= '%sT23:59:59.999'",
+    String expectedSqlQuery = format(
+      "WHERE purchase_order.jsonb ->> 'createdDate' >= '%s' "
+        + "AND purchase_order.jsonb ->> 'createdDate' <= '%sT23:59:59.999'",
       value.getFromDate(), value.getToDate());
     assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCQLQuery = format("createdDate >= \"%s\" AND createdDate <= \"%sT23:59:59.999\"", value.getFromDate(), value.getToDate());
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("createdDate >= \"%s\" AND createdDate <= \"%sT23:59:59.999\"",
+        value.getFromDate(), value.getToDate());
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayElement() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayElement() {
     // given
     StringValue value = StringValue.of("boo");
     MatchDetail matchDetail = new MatchDetail()
@@ -598,15 +626,18 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements_text(holdings.jsonb -> 'electronicAccess') fields(field) WHERE field = '%s'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format(
+      "CROSS JOIN LATERAL jsonb_array_elements_text(holdings.jsonb -> 'electronicAccess') "
+        + "fields(field) WHERE field = '%s'",
+      value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
     String expectedCqlQuery = format("electronicAccess=\\\"%s\\\"", value.getValue());
     assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayPath() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueJsonArrayPath() {
     // given
     StringValue value = StringValue.of("https://www.emeraldinsight.com/loi/jepp");
     MatchDetail matchDetail = new MatchDetail()
@@ -621,17 +652,21 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(holdings.jsonb -> 'electronicAccess') fields(field) WHERE field ->> 'uri' = '%s'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format(
+      "CROSS JOIN LATERAL jsonb_array_elements(holdings.jsonb -> 'electronicAccess') "
+        + "fields(field) WHERE field ->> 'uri' = '%s'",
+      value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
     String expectedCqlQuery = format("electronicAccess=\"\\\"uri\\\":\\\"%s\\\"\"", value.getValue());
     assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueWithSpecialCharactersJsonArrayPath() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_IncomingStringValueWithSpecialCharactersJsonArrayPath() {
     // given
-    StringValue value = StringValue.of("http://proxy2.missouristate.edu/login?url=https://fod.infobase.com/PortalPlaylists.aspx?wID=97835%26xtid=207292");
+    StringValue value = StringValue.of(
+      "http://proxy2.missouristate.edu/login?url=https://fod.infobase.com/PortalPlaylists.aspx?wID=97835%26xtid=207292");
     MatchDetail matchDetail = new MatchDetail()
       .withMatchCriterion(EXACTLY_MATCHES)
       .withExistingMatchExpression(new MatchExpression()
@@ -644,15 +679,19 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertNotNull(result.getSql());
-    String expectedSQLQuery = format("CROSS JOIN LATERAL jsonb_array_elements(holdings.jsonb -> 'electronicAccess') fields(field) WHERE field ->> 'uri' = '%s'", value.getValue());
-    assertEquals(expectedSQLQuery, result.getSql());
+    String expectedSqlQuery = format(
+      "CROSS JOIN LATERAL jsonb_array_elements(holdings.jsonb -> 'electronicAccess') "
+        + "fields(field) WHERE field ->> 'uri' = '%s'",
+      value.getValue());
+    assertEquals(expectedSqlQuery, result.getSql());
     assertNotNull(result.getCql());
-    String expectedCqlQuery = "electronicAccess=\"\\\"uri\\\":\\\"http://proxy2.missouristate.edu/login\\?url=https://fod.infobase.com/PortalPlaylists.aspx\\?wID=97835%26xtid=207292\\\"\"";
+    String expectedCqlQuery =
+      "electronicAccess=\"\\\"uri\\\":\\\"http://proxy2.missouristate.edu/login\\?url=https://fod.infobase.com/PortalPlaylists.aspx\\?wID=97835%26xtid=207292\\\"\"";
     assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValueWithNewCQLQuery() {
+  void shouldBuildQueryWhere_ExistingValueExactlyMatches_MultipleIncomingListValueWithNewCqlQuery() {
     // given
     StringValue value = StringValue.of("ybp7406411");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -686,18 +725,19 @@ public class LoadQueryBuilderTest {
     assertNotNull(wrongResult);
     assertNotNull(result.getSql());
     assertNotNull(wrongResult.getSql());
-    String expectedSQLQuery = StringUtils.EMPTY;
-    assertEquals(expectedSQLQuery, result.getSql());
-    assertNotEquals(expectedSQLQuery, wrongResult.getSql());
+    String expectedSqlQuery = StringUtils.EMPTY;
+    assertEquals(expectedSqlQuery, result.getSql());
+    assertNotEquals(expectedSqlQuery, wrongResult.getSql());
     assertNotNull(result.getCql());
     assertNotNull(wrongResult.getCql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"%s\"",identifierTypeFieldValue, value.getValue());
-    assertEquals(expectedCQLQuery, result.getCql());
-    assertNotEquals(expectedCQLQuery, wrongResult.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"%s\"", identifierTypeFieldValue, value.getValue());
+    assertEquals(expectedCqlQuery, result.getCql());
+    assertNotEquals(expectedCqlQuery, wrongResult.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithParenthesesInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithParenthesesInValue() {
     // given
     StringValue value = StringValue.of("(OCoLC)1024095011");
     String identifierTypeFieldValue = "7e591197-f335-4afb-bc6d-a6d76ca3bace";
@@ -716,12 +756,13 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)1024095011\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)1024095011\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithQuotesInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithQuotesInValue() {
     // given
     StringValue value = StringValue.of("test\"quote\"value");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -740,12 +781,13 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"test\\\"quote\\\"value\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"test\\\"quote\\\"value\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithBackslashesInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithBackslashesInValue() {
     // given
     StringValue value = StringValue.of("path\\to\\resource");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -764,12 +806,13 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"path\\\\to\\\\resource\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"path\\\\to\\\\resource\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithWildcardsInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithWildcardsInValue() {
     // given
     StringValue value = StringValue.of("test*value?");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -788,12 +831,13 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"test\\*value\\?\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"test\\*value\\?\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithMultipleSpecialCharacters() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithMultipleSpecialCharacters() {
     // given
     StringValue value = StringValue.of("(test*)\\query?");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -812,12 +856,13 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(test\\*\\)\\\\query\\?\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"\\(test\\*\\)\\\\query\\?\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_ListWithSpecialCharacters() {
+  void shouldBuildQueryWhere_IdentifierMatching_ListWithSpecialCharacters() {
     // given
     ListValue value = ListValue.of(Arrays.asList("(OCoLC)123", "test*value", "path\\file"));
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -836,12 +881,16 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)123\" OR identifiers =/@identifierTypeId=%s \"test\\*value\" OR identifiers =/@identifierTypeId=%s \"path\\\\file\"", identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format(
+      "identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)123\" "
+        + "OR identifiers =/@identifierTypeId=%s \"test\\*value\" "
+        + "OR identifiers =/@identifierTypeId=%s \"path\\\\file\"",
+      identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_WithApostropheInValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_WithApostropheInValue() {
     // given
     StringValue value = StringValue.of("O'Reilly's Book");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -861,12 +910,13 @@ public class LoadQueryBuilderTest {
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
     // Apostrophes don't need escaping in CQL
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"O'Reilly's Book\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"O'Reilly's Book\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_EmptyValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_EmptyValue() {
     // given
     StringValue value = StringValue.of("");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -885,12 +935,12 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format("identifiers =/@identifierTypeId=%s \"\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_PreEscapedValue() {
+  void shouldBuildQueryWhere_IdentifierMatching_PreEscapedValue() {
     // given
     StringValue value = StringValue.of("already\\\\escaped");
     String identifierTypeFieldValue = "439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef";
@@ -910,12 +960,13 @@ public class LoadQueryBuilderTest {
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
     // Should double-escape the already escaped backslashes
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"already\\\\\\\\escaped\"", identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery =
+      format("identifiers =/@identifierTypeId=%s \"already\\\\\\\\escaped\"", identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
 
   @Test
-  public void shouldBuildQueryWhere_IdentifierMatching_RealWorldExampleFromProblem() {
+  void shouldBuildQueryWhere_IdentifierMatching_RealWorldExampleFromProblem() {
     // Test the exact values from problem.md
     ListValue value = ListValue.of(Arrays.asList(
       "(CStRLIN)NYCX1604275S",
@@ -939,8 +990,12 @@ public class LoadQueryBuilderTest {
     //then
     assertNotNull(result);
     assertEquals(StringUtils.EMPTY, result.getSql());
-    String expectedCQLQuery = format("identifiers =/@identifierTypeId=%s \"\\(CStRLIN\\)NYCX1604275S\" OR identifiers =/@identifierTypeId=%s \"\\(NIC\\)notisABP6388\" OR identifiers =/@identifierTypeId=%s \"366832\" OR identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)1604275\"", identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
-    assertEquals(expectedCQLQuery, result.getCql());
+    String expectedCqlQuery = format(
+      "identifiers =/@identifierTypeId=%s \"\\(CStRLIN\\)NYCX1604275S\" "
+        + "OR identifiers =/@identifierTypeId=%s \"\\(NIC\\)notisABP6388\" "
+        + "OR identifiers =/@identifierTypeId=%s \"366832\" "
+        + "OR identifiers =/@identifierTypeId=%s \"\\(OCoLC\\)1604275\"",
+      identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue, identifierTypeFieldValue);
+    assertEquals(expectedCqlQuery, result.getCql());
   }
-
 }

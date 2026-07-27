@@ -1,10 +1,9 @@
 package org.folio.processing.events.services.processor;
 
-import org.folio.DataImportEventPayload;
-import org.folio.processing.events.services.handler.EventHandler;
-
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import org.folio.DataImportEventPayload;
+import org.folio.processing.events.services.handler.EventHandler;
 
 /**
  * The central interface for event processors.
@@ -12,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 public interface EventProcessor {
 
   /**
-   * Performs event processing
+   * Performs event processing.
    *
    * @param eventPayload event payload
    * @return future with event payload after handling
@@ -20,6 +19,8 @@ public interface EventProcessor {
   CompletableFuture<DataImportEventPayload> process(DataImportEventPayload eventPayload);
 
   /**
+   * Returns registered handlers.
+   *
    * @return list of handlers
    */
   List<EventHandler> getEventHandlers();

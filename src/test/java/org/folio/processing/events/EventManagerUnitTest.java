@@ -1,10 +1,36 @@
 package org.folio.processing.events;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
+import static org.folio.ActionProfile.Action.CREATE;
+import static org.folio.ActionProfile.Action.UPDATE;
+import static org.folio.DataImportEventTypes.DI_COMPLETED;
+import static org.folio.DataImportEventTypes.DI_INCOMING_MARC_BIB_RECORD_PARSED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
+import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
+import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
+import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
+import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
+import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
+import static org.folio.rest.jaxrs.model.ReactToType.MATCH;
+import static org.folio.rest.jaxrs.model.ReactToType.NON_MATCH;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.folio.ActionProfile;
@@ -20,53 +46,35 @@ import org.folio.processing.events.handlers.FailExceptionallyHandler;
 import org.folio.processing.events.handlers.InstancePostProcessingEventHandler;
 import org.folio.processing.events.handlers.UpdateInstanceEventHandler;
 import org.folio.processing.events.services.handler.EventHandler;
+import org.folio.processing.events.services.publisher.EventPublisher;
+import org.folio.rest.jaxrs.model.EntityType;
+import org.folio.rest.jaxrs.model.Event;
 import org.folio.rest.jaxrs.model.ProfileSnapshotWrapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.folio.rest.jaxrs.model.ReactToType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import static org.folio.ActionProfile.Action.CREATE;
-import static org.folio.ActionProfile.Action.UPDATE;
-import static org.folio.DataImportEventTypes.DI_COMPLETED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_CREATED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_NOT_MATCHED;
-import static org.folio.DataImportEventTypes.DI_INVENTORY_INSTANCE_UPDATED;
-import static org.folio.DataImportEventTypes.DI_INCOMING_MARC_BIB_RECORD_PARSED;
-import static org.folio.rest.jaxrs.model.EntityType.HOLDINGS;
-import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
-import static org.folio.rest.jaxrs.model.EntityType.MARC_BIBLIOGRAPHIC;
-import static org.folio.rest.jaxrs.model.ProfileType.ACTION_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileType.JOB_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileType.MAPPING_PROFILE;
-import static org.folio.rest.jaxrs.model.ProfileType.MATCH_PROFILE;
-import static org.folio.rest.jaxrs.model.ReactToType.MATCH;
-import static org.folio.rest.jaxrs.model.ReactToType.NON_MATCH;
-import static org.mockito.ArgumentMatchers.any;
-
-@RunWith(VertxUnitRunner.class)
-public class EventManagerUnitTest extends AbstractRestTest {
+@ExtendWith(VertxExtension.class)
+class EventManagerUnitTest {
   private static final Logger LOGGER = LogManager.getLogger(EventManagerUnitTest.class);
-  private final String PUBLISH_SERVICE_URL = "/pubsub/publish";
 
-  @Before
-  public void beforeTest() {
+  private static final String TOKEN = "token";
+  private static final String TENANT_ID = "diku";
+  private static final String CONNECTION_URL = "http://localhost:9000";
+
+  @BeforeEach
+  void beforeTest() {
     EventManager.clearEventHandlers();
-    EventManager.registerRestEventPublisher();
-    WireMock.stubFor(WireMock.post(PUBLISH_SERVICE_URL).willReturn(WireMock.noContent()));
+    var eventPublisher = mock(EventPublisher.class);
+    EventManager.registerCustomKafkaEventPublisher(eventPublisher);
+    when(eventPublisher.publish(any())).thenReturn(CompletableFuture.completedFuture(new Event()));
   }
 
   @Test
-  public void shouldHandleEvent(TestContext testContext) {
+  void shouldHandleEvent(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleEvent");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
@@ -92,34 +100,36 @@ public class EventManagerUnitTest extends AbstractRestTest {
                 new ProfileSnapshotWrapper()
                   .withId(UUID.randomUUID().toString())
                   .withContentType(ACTION_PROFILE)
-                  .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))))))));
+                  .withContent(
+                    JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))))))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot)
       .whenComplete((nextEventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(1, nextEventContext.getEventsChain().size());
-      testContext.assertEquals(
-        nextEventContext.getEventsChain(),
-        Collections.singletonList("DI_INCOMING_MARC_BIB_RECORD_PARSED")
-      );
-      testContext.assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
-      async.complete();
-    });
+        testContext.verify(() -> {
+          // then
+          assertNull(throwable);
+          assertEquals(1, nextEventContext.getEventsChain().size());
+          assertEquals(
+            nextEventContext.getEventsChain(),
+            Collections.singletonList("DI_INCOMING_MARC_BIB_RECORD_PARSED")
+          );
+          assertEquals("DI_INVENTORY_INSTANCE_CREATED", nextEventContext.getEventType());
+        });
+        testContext.completeNow();
+      });
   }
 
   @Test
-  public void shouldHandleLastEvent(TestContext testContext) {
+  void shouldHandleLastEvent(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleLastEvent");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
@@ -135,31 +145,32 @@ public class EventManagerUnitTest extends AbstractRestTest {
         .withContentType(ACTION_PROFILE)
         .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))));
 
-        DataImportEventPayload eventPayload = new DataImportEventPayload()
+    DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(2, nextEventContext.getEventsChain().size());
-      testContext.assertEquals(
-        nextEventContext.getEventsChain(),
-        Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
-      );
-      testContext.assertEquals("DI_COMPLETED", nextEventContext.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(2, nextEventContext.getEventsChain().size());
+        assertEquals(
+          nextEventContext.getEventsChain(),
+          Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
+        );
+        assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldIgnoreEventIfNoHandlersDefined(TestContext testContext) {
+  void shouldIgnoreEventIfNoHandlersDefined(VertxTestContext testContext) {
     LOGGER.info("test:: shouldIgnoreEventIfNoHandlersDefined");
-    Async async = testContext.async();
     // given
     ProfileSnapshotWrapper profileSnapshot = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -172,25 +183,26 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(profileSnapshot.getChildSnapshotWrappers().getFirst());
 
     // when
     EventManager.handleEvent(eventPayload, profileSnapshot).whenComplete((nextEventContext, throwable) -> {
-      // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(0, eventPayload.getEventsChain().size());
-      testContext.assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(0, eventPayload.getEventsChain().size());
+        assertEquals("DI_HOLDINGS_RECORD_CREATED", eventPayload.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAsErrorEventIfHandlerCompletedExceptionally(TestContext testContext) {
+  void shouldHandleAsErrorEventIfHandlerCompletedExceptionally(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAsErrorEventIfHandlerCompletedExceptionally");
-    Async async = testContext.async();
     // given
     EventManager.registerEventHandler(new FailExceptionallyHandler());
 
@@ -205,24 +217,25 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(1, eventPayload.getEventsChain().size());
-      testContext.assertEquals("DI_ERROR", eventPayload.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(1, eventPayload.getEventsChain().size());
+        assertEquals("DI_ERROR", eventPayload.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleFirstEventInJobProfile(TestContext testContext) {
+  void shouldHandleFirstEventInJobProfile(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleFirstEventInJobProfile");
-    Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
@@ -241,32 +254,33 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_INCOMING_MARC_BIB_RECORD_PARSED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((eventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(2, eventContext.getEventsChain().size());
-      testContext.assertEquals(2, eventContext.getCurrentNodePath().size());
-      testContext.assertEquals(
-        eventContext.getCurrentNodePath(),
-        Arrays.asList(jobProfileId, actionProfileId)
-      );
-      testContext.assertEquals(
-        eventContext.getEventsChain(),
-        Arrays.asList("DI_INCOMING_MARC_BIB_RECORD_PARSED", "DI_INVENTORY_INSTANCE_CREATED")
-      );
-      testContext.assertEquals("DI_COMPLETED", eventContext.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(2, eventContext.getEventsChain().size());
+        assertEquals(2, eventContext.getCurrentNodePath().size());
+        assertEquals(
+          eventContext.getCurrentNodePath(),
+          Arrays.asList(jobProfileId, actionProfileId)
+        );
+        assertEquals(
+          eventContext.getEventsChain(),
+          Arrays.asList("DI_INCOMING_MARC_BIB_RECORD_PARSED", "DI_INVENTORY_INSTANCE_CREATED")
+        );
+        assertEquals("DI_COMPLETED", eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAndSetToCurrentNodeAction2Wrapper(TestContext testContext) {
+  void shouldHandleAndSetToCurrentNodeAction2Wrapper(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction2Wrapper");
-    Async async = testContext.async();
     // given
     CreateInstanceEventHandler createInstanceHandler = Mockito.spy(new CreateInstanceEventHandler());
     Mockito.doAnswer(invocationOnMock -> {
@@ -313,38 +327,40 @@ public class EventManagerUnitTest extends AbstractRestTest {
         new ProfileSnapshotWrapper()
           .withId(UUID.randomUUID().toString())
           .withContentType(MATCH_PROFILE)
-          .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)))
+          .withContent(JsonObject.mapFrom(
+            new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)))
           .withChildSnapshotWrappers(Arrays.asList(action1Wrapper, action2Wrapper))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INVENTORY_INSTANCE_NOT_MATCHED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(action1Wrapper);
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(action2Wrapper.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(1, eventContext.getEventsChain().size());
-      testContext.assertEquals(
-        Collections.singletonList(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()),
-        eventContext.getEventsChain()
-      );
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_CREATED.value(), eventContext.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(action2Wrapper.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(1, eventContext.getEventsChain().size());
+        assertEquals(
+          Collections.singletonList(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()),
+          eventContext.getEventsChain()
+        );
+        assertEquals(DI_INVENTORY_INSTANCE_CREATED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAndSetToCurrentNodeAction1Wrapper(TestContext testContext) {
+  void shouldHandleAndSetToCurrentNodeAction1Wrapper(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeAction1Wrapper");
-    Async async = testContext.async();
     // given
-    EventHandler matchInstanceHandler = Mockito.mock(EventHandler.class);
+    EventHandler matchInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
       return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_NOT_MATCHED.value()));
@@ -370,7 +386,8 @@ public class EventManagerUnitTest extends AbstractRestTest {
     ProfileSnapshotWrapper matchWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)));
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withIncomingRecordType(INSTANCE).withExistingRecordType(MARC_BIBLIOGRAPHIC)));
 
     ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -382,169 +399,97 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(matchWrapper);
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(action1Wrapper.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(DI_INVENTORY_INSTANCE_NOT_MATCHED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleEventInCascadingProfilesAndSwitchNode(TestContext testContext) {
+  void shouldHandleEventInCascadingProfilesAndSwitchNode(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleEventInCascadingProfilesAndSwitchNode");
-    Async async = testContext.async();
     // given
-    EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
+    EventHandler updateInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
 
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
       payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
       return CompletableFuture.completedFuture(payload.withEventType(DI_INVENTORY_INSTANCE_UPDATED.value()));
-
     }).when(updateInstanceHandler).handle(any(DataImportEventPayload.class));
     Mockito.when(updateInstanceHandler.isEligible(any(DataImportEventPayload.class))).thenReturn(true);
 
     EventManager.registerEventHandler(updateInstanceHandler);
 
-    // update instance
-    ProfileSnapshotWrapper instanceUpdateMappingWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(0)
-      .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile()
-        .withName("instanceUpdateMappingWrapper")
-        .withIncomingRecordType(MARC_BIBLIOGRAPHIC)
-        .withExistingRecordType(INSTANCE)));
+    ProfileSnapshotWrapper instanceUpdateMappingWrapper =
+      mappingWrapper("instanceUpdateMappingWrapper", 0, INSTANCE);
+    ProfileSnapshotWrapper instanceUpdateActionWrapper = actionWrapper(
+      "instanceUpdateActionWrapper", MATCH, 0, ActionProfile.FolioRecord.INSTANCE, UPDATE,
+      instanceUpdateMappingWrapper);
+    ProfileSnapshotWrapper instanceUpdateActionWrapper2 = actionWrapper(
+      "instanceUpdateActionWrapper2", MATCH, 0, ActionProfile.FolioRecord.INSTANCE, UPDATE,
+      instanceUpdateMappingWrapper);
+    ProfileSnapshotWrapper instanceCreateActionWrapper = actionWrapper(
+      "instanceCreateActionWrapper", NON_MATCH, 0, ActionProfile.FolioRecord.INSTANCE, CREATE,
+      mappingWrapper("instanceCreateMappingWrapper", 0, INSTANCE));
+    ProfileSnapshotWrapper instanceChildMatchWrapper = matchWrapper(
+      "instanceChildMatchWrapper", NON_MATCH, 0, HOLDINGS,
+      instanceUpdateActionWrapper2, instanceCreateActionWrapper);
+    ProfileSnapshotWrapper instanceParentMatchWrapper = matchWrapper(
+      "instanceParentMatchWrapper", null, 0, INSTANCE,
+      instanceChildMatchWrapper, instanceUpdateActionWrapper);
 
-    ProfileSnapshotWrapper instanceUpdateActionWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withReactTo(MATCH)
-      .withOrder(0)
-      .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(UPDATE)))
-      .withChildSnapshotWrappers(Collections.singletonList(instanceUpdateMappingWrapper));
+    ProfileSnapshotWrapper holdingsUpdateActionWrapper = actionWrapper(
+      "holdingsUpdateActionWrapper", MATCH, 0, ActionProfile.FolioRecord.HOLDINGS, UPDATE,
+      mappingWrapper("holdingsUpdateMappingWrapper", 0, HOLDINGS));
+    ProfileSnapshotWrapper holdingsCreateActionWrapper = actionWrapper(
+      "holdingsCreateActionWrapper", NON_MATCH, 0, ActionProfile.FolioRecord.HOLDINGS, CREATE,
+      mappingWrapper("holdingsCreateMappingWrapper", 0, HOLDINGS));
+    ProfileSnapshotWrapper holdingsChildMatchWrapper = matchWrapper(
+      "holdingsChildMatchWrapper", NON_MATCH, 1, HOLDINGS,
+      holdingsUpdateActionWrapper, holdingsCreateActionWrapper);
+    ProfileSnapshotWrapper holdingsParentMatchWrapper = matchWrapper(
+      "holdingsParentMatchWrapper", null, 1, HOLDINGS,
+      holdingsChildMatchWrapper, holdingsUpdateActionWrapper);
 
-    ProfileSnapshotWrapper instanceUpdateActionWrapper2 = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withReactTo(MATCH)
-      .withOrder(0)
-      .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceUpdateActionWrapper2").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(UPDATE)))
-      .withChildSnapshotWrappers(Collections.singletonList(instanceUpdateMappingWrapper));
-
-    // create instance
-    ProfileSnapshotWrapper instanceCreateMappingWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(0)
-      .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withName("instanceCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
-
-    ProfileSnapshotWrapper instanceCreateActionWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withReactTo(NON_MATCH)
-      .withOrder(0)
-      .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("instanceCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.INSTANCE).withAction(CREATE)))
-      .withChildSnapshotWrappers(Collections.singletonList(instanceCreateMappingWrapper));
-
-    ProfileSnapshotWrapper instanceChildMatchWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(0)
-      .withContentType(MATCH_PROFILE)
-      .withReactTo(NON_MATCH)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("instanceChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
-      .withChildSnapshotWrappers(List.of(instanceUpdateActionWrapper2, instanceCreateActionWrapper));
-
-    ProfileSnapshotWrapper instanceParentMatchWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(0)
-      .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("instanceParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)))
-      .withChildSnapshotWrappers(List.of(instanceChildMatchWrapper, instanceUpdateActionWrapper));
-
-    // update holdings
-    ProfileSnapshotWrapper holdingsUpdateMappingWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(0)
-      .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withName("holdingsUpdateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
-
-    ProfileSnapshotWrapper holdingsUpdateActionWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withReactTo(MATCH)
-      .withOrder(0)
-      .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("holdingsUpdateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS).withAction(UPDATE)))
-      .withChildSnapshotWrappers(Collections.singletonList(holdingsUpdateMappingWrapper));
-
-    // create holdings
-    ProfileSnapshotWrapper holdingsCreateMappingWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(0)
-      .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withName("holdingsCreateMappingWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
-
-    ProfileSnapshotWrapper holdingsCreateActionWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withReactTo(NON_MATCH)
-      .withOrder(0)
-      .withContentType(ACTION_PROFILE)
-      .withContent(JsonObject.mapFrom(new ActionProfile().withName("holdingsCreateActionWrapper").withFolioRecord(ActionProfile.FolioRecord.HOLDINGS).withAction(CREATE)))
-      .withChildSnapshotWrappers(Collections.singletonList(holdingsCreateMappingWrapper));
-
-    ProfileSnapshotWrapper holdingsChildMatchWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(1)
-      .withContentType(MATCH_PROFILE)
-      .withReactTo(NON_MATCH)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("holdingsChildMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
-      .withChildSnapshotWrappers(List.of(holdingsUpdateActionWrapper, holdingsCreateActionWrapper));
-
-    ProfileSnapshotWrapper holdingsParentMatchWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withOrder(1)
-      .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withName("holdingsParentMatchWrapper").withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)))
-      .withChildSnapshotWrappers(List.of(holdingsChildMatchWrapper, holdingsUpdateActionWrapper));
-
-    ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
-      .withId(UUID.randomUUID().toString())
-      .withContentType(JOB_PROFILE)
-      .withContent(JsonObject.mapFrom(new JobProfile().withName("jobProfileWrapper")))
-      .withChildSnapshotWrappers(List.of(instanceParentMatchWrapper, holdingsParentMatchWrapper));
+    ProfileSnapshotWrapper jobProfileWrapper =
+      jobProfileWrapper(instanceParentMatchWrapper, holdingsParentMatchWrapper);
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INVENTORY_INSTANCE_UPDATED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(instanceUpdateActionWrapper2);
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
-      // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(holdingsParentMatchWrapper.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleAndSetToCurrentNodeMatchWrapper2(TestContext testContext) {
+  void shouldHandleAndSetToCurrentNodeMatchWrapper2(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleAndSetToCurrentNodeMatchWrapper2");
-    Async async = testContext.async();
     // given
-    EventHandler updateInstanceHandler = Mockito.mock(EventHandler.class);
+    EventHandler updateInstanceHandler = mock(EventHandler.class);
     Mockito.doAnswer(invocationOnMock -> {
       DataImportEventPayload payload = invocationOnMock.getArgument(0);
       payload.setCurrentNode(payload.getCurrentNode().getChildSnapshotWrappers().getFirst());
@@ -558,7 +503,8 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MAPPING_PROFILE)
-      .withContent(JsonObject.mapFrom(new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+      .withContent(JsonObject.mapFrom(
+        new MappingProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
 
     ProfileSnapshotWrapper actionWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -572,13 +518,15 @@ public class EventManagerUnitTest extends AbstractRestTest {
       .withId(UUID.randomUUID().toString())
       .withOrder(0)
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(INSTANCE)));
 
     ProfileSnapshotWrapper matchWrapper2 = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
       .withOrder(1)
       .withContentType(MATCH_PROFILE)
-      .withContent(JsonObject.mapFrom(new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withIncomingRecordType(MARC_BIBLIOGRAPHIC).withExistingRecordType(HOLDINGS)));
 
     ProfileSnapshotWrapper jobProfileWrapper = new ProfileSnapshotWrapper()
       .withId(UUID.randomUUID().toString())
@@ -590,25 +538,26 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>())
       .withCurrentNode(actionWrapper);
 
     // when
     EventManager.handleEvent(eventPayload, jobProfileWrapper).whenComplete((eventContext, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
-      testContext.assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(matchWrapper2.getId(), eventContext.getCurrentNode().getId());
+        assertEquals(DI_INVENTORY_INSTANCE_UPDATED.value(), eventContext.getEventType());
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldHandleEventAndPreparePayloadForPostProcessing(TestContext testContext) {
+  void shouldHandleEventAndPreparePayloadForPostProcessing(VertxTestContext testContext) {
     LOGGER.info("test:: shouldHandleEventAndPreparePayloadForPostProcessing");
-    Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
@@ -622,42 +571,45 @@ public class EventManagerUnitTest extends AbstractRestTest {
         new ProfileSnapshotWrapper()
           .withId(actionProfileId)
           .withContentType(ACTION_PROFILE)
-          .withContent(JsonObject.mapFrom(new ActionProfile().withAction(UPDATE).withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))));
+          .withContent(JsonObject.mapFrom(
+            new ActionProfile().withAction(UPDATE).withFolioRecord(ActionProfile.FolioRecord.INSTANCE)))));
 
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(DI_INCOMING_MARC_BIB_RECORD_PARSED.value())
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(new HashMap<>());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((payload, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      HashMap<String, String> context = payload.getContext();
-      testContext.assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
-      testContext.assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT, context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        HashMap<String, String> context = payload.getContext();
+        assertEquals(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, payload.getEventType());
+        assertEquals(UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT,
+          context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
 
-      testContext.assertEquals(1, payload.getEventsChain().size());
-      testContext.assertEquals(1, payload.getCurrentNodePath().size());
-      testContext.assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
-      testContext.assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
-      async.complete();
+        assertEquals(1, payload.getEventsChain().size());
+        assertEquals(1, payload.getCurrentNodePath().size());
+        assertEquals(payload.getCurrentNodePath(), Collections.singletonList(jobProfileId));
+        assertEquals(payload.getEventsChain(), Collections.singletonList(DI_INCOMING_MARC_BIB_RECORD_PARSED.value()));
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing(TestContext testContext) {
+  void shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing(VertxTestContext testContext) {
     LOGGER.info("test:: shouldPerformEventPostProcessingAndPreparePayloadAfterPostProcessing");
-    Async async = testContext.async();
     // given
     String jobProfileId = UUID.randomUUID().toString();
     String actionProfileId = UUID.randomUUID().toString();
     EventManager.registerEventHandler(new InstancePostProcessingEventHandler());
 
-
     HashMap<String, String> payloadContext = new HashMap<>();
-    payloadContext.put(EventManager.POST_PROCESSING_RESULT_EVENT_KEY, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT);
+    payloadContext.put(EventManager.POST_PROCESSING_RESULT_EVENT_KEY,
+      UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT);
 
     ProfileSnapshotWrapper jobProfileSnapshot = new ProfileSnapshotWrapper()
       .withId(jobProfileId)
@@ -672,30 +624,32 @@ public class EventManagerUnitTest extends AbstractRestTest {
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT)
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
       .withContext(payloadContext);
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((payload, throwable) -> {
-    // then
-      testContext.assertNull(throwable);
-      HashMap<String, String> context = payload.getContext();
-      testContext.assertEquals(DI_COMPLETED.value(), payload.getEventType());
-      testContext.assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        HashMap<String, String> context = payload.getContext();
+        assertEquals(DI_COMPLETED.value(), payload.getEventType());
+        assertNull(context.get(EventManager.POST_PROCESSING_RESULT_EVENT_KEY));
 
-      testContext.assertEquals(2, payload.getEventsChain().size());
-      testContext.assertEquals(2, payload.getCurrentNodePath().size());
-      testContext.assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
-      testContext.assertEquals(payload.getEventsChain(),
-        Arrays.asList(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT, UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT));
-      async.complete();
+        assertEquals(2, payload.getEventsChain().size());
+        assertEquals(2, payload.getCurrentNodePath().size());
+        assertEquals(payload.getCurrentNodePath(), Arrays.asList(jobProfileId, actionProfileId));
+        assertEquals(payload.getEventsChain(),
+          Arrays.asList(UpdateInstanceEventHandler.POST_PROC_INIT_EVENT,
+            UpdateInstanceEventHandler.POST_PROC_RESULT_EVENT));
+      });
+      testContext.completeNow();
     });
   }
 
   @Test
-  public void shouldClearExtraOLKeyFromPayload(TestContext testContext) {
-    LOGGER.info("test:: shouldClearExtraOLKeyFromPayload");
-    Async async = testContext.async();
+  void shouldClearExtraOlKeyFromPayload(VertxTestContext testContext) {
+    LOGGER.info("test:: shouldClearExtraOlKeyFromPayload");
     // given
     EventManager.registerEventHandler(new CreateInstanceEventHandler());
     EventManager.registerEventHandler(new CreateHoldingsRecordEventHandler());
@@ -711,27 +665,82 @@ public class EventManagerUnitTest extends AbstractRestTest {
         .withContentType(ACTION_PROFILE)
         .withContent(JsonObject.mapFrom(new ActionProfile().withFolioRecord(ActionProfile.FolioRecord.ITEM)))));
 
-    HashMap<String, String> extraOLKey = new HashMap<>();
-    extraOLKey.put("OL_ACCUMULATIVE_RESULTS", "test data");
+    HashMap<String, String> extraOlKey = new HashMap<>();
+    extraOlKey.put("OL_ACCUMULATIVE_RESULTS", "test data");
     DataImportEventPayload eventPayload = new DataImportEventPayload()
       .withEventType("DI_HOLDINGS_RECORD_CREATED")
       .withTenant(TENANT_ID)
-      .withOkapiUrl(OKAPI_URL)
+      .withOkapiUrl(CONNECTION_URL)
       .withToken(TOKEN)
-      .withContext(extraOLKey)
+      .withContext(extraOlKey)
       .withCurrentNode(jobProfileSnapshot.getChildSnapshotWrappers().getFirst());
     // when
     EventManager.handleEvent(eventPayload, jobProfileSnapshot).whenComplete((nextEventContext, throwable) -> {
-      // then
-      testContext.assertNull(throwable);
-      testContext.assertEquals(2, nextEventContext.getEventsChain().size());
-      testContext.assertEquals(
-        nextEventContext.getEventsChain(),
-        Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
-      );
-      testContext.assertEquals("DI_COMPLETED", nextEventContext.getEventType());
-      testContext.assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
-      async.complete();
+      testContext.verify(() -> {
+        // then
+        assertNull(throwable);
+        assertEquals(2, nextEventContext.getEventsChain().size());
+        assertEquals(
+          nextEventContext.getEventsChain(),
+          Arrays.asList("DI_HOLDINGS_RECORD_CREATED", "DI_ITEM_RECORD_CREATED")
+        );
+        assertEquals("DI_COMPLETED", nextEventContext.getEventType());
+        assertNull(nextEventContext.getContext().get("OL_ACCUMULATIVE_RESULTS"));
+      });
+      testContext.completeNow();
     });
+  }
+
+  private ProfileSnapshotWrapper mappingWrapper(String name, int order, EntityType existingRecordType) {
+    return new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(order)
+      .withContentType(MAPPING_PROFILE)
+      .withContent(JsonObject.mapFrom(
+        new MappingProfile().withName(name).withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(existingRecordType)));
+  }
+
+  private ProfileSnapshotWrapper actionWrapper(String name,
+                                               ReactToType reactTo,
+                                               int order,
+                                               ActionProfile.FolioRecord folioRecord,
+                                               ActionProfile.Action action,
+                                               ProfileSnapshotWrapper childWrapper) {
+    return new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withReactTo(reactTo)
+      .withOrder(order)
+      .withContentType(ACTION_PROFILE)
+      .withContent(JsonObject.mapFrom(
+        new ActionProfile().withName(name).withFolioRecord(folioRecord).withAction(action)))
+      .withChildSnapshotWrappers(Collections.singletonList(childWrapper));
+  }
+
+  private ProfileSnapshotWrapper matchWrapper(String name,
+                                              ReactToType reactTo,
+                                              int order,
+                                              EntityType existingRecordType,
+                                              ProfileSnapshotWrapper... childWrappers) {
+    ProfileSnapshotWrapper wrapper = new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withOrder(order)
+      .withContentType(MATCH_PROFILE)
+      .withContent(JsonObject.mapFrom(
+        new MatchProfile().withName(name).withIncomingRecordType(MARC_BIBLIOGRAPHIC)
+          .withExistingRecordType(existingRecordType)))
+      .withChildSnapshotWrappers(List.of(childWrappers));
+    if (reactTo != null) {
+      wrapper.withReactTo(reactTo);
+    }
+    return wrapper;
+  }
+
+  private ProfileSnapshotWrapper jobProfileWrapper(ProfileSnapshotWrapper... childWrappers) {
+    return new ProfileSnapshotWrapper()
+      .withId(UUID.randomUUID().toString())
+      .withContentType(JOB_PROFILE)
+      .withContent(JsonObject.mapFrom(new JobProfile().withName("jobProfileWrapper")))
+      .withChildSnapshotWrappers(List.of(childWrappers));
   }
 }

@@ -5,7 +5,7 @@ import org.folio.processing.mapping.defaultmapper.processor.parameters.MappingPa
 import org.marc4j.marc.DataField;
 
 /**
- * Class serves as context to store parameters for rule execution
+ * Class serves as context to store parameters for rule execution.
  */
 public class RuleExecutionContext {
 
@@ -13,7 +13,6 @@ public class RuleExecutionContext {
   private String subFieldValue;
   private MappingParameters mappingParameters;
   private JsonObject ruleParameter;
-
 
   public DataField getDataField() {
     return dataField;

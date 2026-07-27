@@ -1,10 +1,10 @@
 package org.folio.processing.mapping.manager;
 
+import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
+
 import org.folio.processing.mapping.mapper.writer.Writer;
 import org.folio.processing.mapping.mapper.writer.WriterFactory;
 import org.folio.rest.jaxrs.model.EntityType;
-
-import static org.folio.rest.jaxrs.model.EntityType.INSTANCE;
 
 public class TestInstanceWriterFactory implements WriterFactory {
 
