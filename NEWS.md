@@ -5,7 +5,7 @@
 ### Features
 * Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
 ### Bug fixes
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* DELETE_INCOMING repeatable field action not removing duplicate scalar values from string arrays ([MODDICORE-507](https://folio-org.atlassian.net/browse/MODDICORE-507))
 
 ### Tech Dept
 * Migrate tests from JUnit 4 to JUnit 6
