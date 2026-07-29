@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.folio.DataImportEventPayload;
 import org.folio.processing.mapping.mapper.writer.common.JsonBasedWriter;
@@ -29,6 +30,9 @@ import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
@@ -134,6 +138,35 @@ class JsonBasedWriterUnitTest {
       "id":"UUID1","names":["2"]}]}}\
       """,
       resultInstance);
+  }
+
+  @Test
+  void shouldWrite_RepeatableDeleteIncomingValuesInStringArray() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(),
+      """
+        {
+          "instance": {
+            "administrativeNotes": ["Test1", "Test2", "Test1", "Test1", "Test3"]
+          }
+        }
+      """);
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+
+    List<Map<String, Value>> values = List.of(Map.of("instance.administrativeNotes[]", ListValue.of(List.of("Test1"))));
+
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(values, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "administrativeNotes");
+    WRITER.write("instance.administrativeNotes[]", field);
+
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"administrativeNotes\":[\"Test2\",\"Test3\"]}}", resultInstance);
   }
 
   @Test
@@ -468,11 +501,8 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    assertThrows(IllegalArgumentException.class, () -> {
-      WRITER.write("", StringValue.of("The Journal of ecclesiastical history."));
-      WRITER.getResult(eventContext);
-    });
-    // then expect IllegalStateException
+    var stringValue = StringValue.of("The Journal of ecclesiastical history.");
+    assertThrows(IllegalArgumentException.class, () -> WRITER.write("", stringValue));
   }
 
   @Test
@@ -484,11 +514,8 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    assertThrows(IllegalStateException.class, () -> {
-      WRITER.write("contributors[].name", StringValue.of("Ernst"));
-      WRITER.getResult(eventContext);
-    });
-    // then expect IllegalStateException
+    var stringValue = StringValue.of("Ernst");
+    assertThrows(IllegalStateException.class, () -> WRITER.write("contributors[].name", stringValue));
   }
 
   @Test
@@ -500,11 +527,8 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    assertThrows(IllegalStateException.class, () -> {
-      WRITER.write("indexTitle", ListValue.of(List.of("The Journal of ecclesiastical history.")));
-      WRITER.getResult(eventContext);
-    });
-    // then expect IllegalStateException
+    var listValue = ListValue.of(List.of("The Journal of ecclesiastical history."));
+    assertThrows(IllegalStateException.class, () -> WRITER.write("indexTitle", listValue));
   }
 
   @Test
@@ -516,26 +540,24 @@ class JsonBasedWriterUnitTest {
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
-    assertThrows(IllegalStateException.class, () -> {
-      WRITER.write("languages[]", StringValue.of("eng"));
-      WRITER.getResult(eventContext);
-    });
-    // then expect IllegalStateException
+    var stringValue = StringValue.of("eng");
+    assertThrows(IllegalStateException.class, () -> WRITER.write("languages[]", stringValue));
   }
 
-  @Test
-  void shouldWrite_ListExtendValues() throws IOException {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("listExtendValuesParameters")
+  void shouldWrite_ListExtendValues(String testName, String initialInstance, String expectedInstance)
+    throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();
     HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\"]}}");
+    context.put(EntityType.INSTANCE.value(), initialInstance);
     eventContext.setContext(context);
     // when
     WRITER.initialize(eventContext);
     WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
     WRITER.getResult(eventContext);
     // then
-    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}}";
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
   }
@@ -611,41 +633,6 @@ class JsonBasedWriterUnitTest {
     // then
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals("{\"instance\":{}}", resultInstance);
-  }
-
-  @Test
-  void shouldWrite_ListExtendValuesIfEntityIsEmpty() throws IOException {
-    // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{}");
-    eventContext.setContext(context);
-    // when
-    WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
-    WRITER.getResult(eventContext);
-    // then
-    String expectedInstance = "{\"instance\":{\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
-    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
-    assertEquals(expectedInstance, resultInstance);
-  }
-
-  @Test
-  void shouldWrite_ListExtendValuesIfContextIsWithAnotherField() throws IOException {
-    // given
-    DataImportEventPayload eventContext = new DataImportEventPayload();
-    HashMap<String, String> context = new HashMap<>();
-    context.put(EntityType.INSTANCE.value(), "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"]}}");
-    eventContext.setContext(context);
-    // when
-    WRITER.initialize(eventContext);
-    WRITER.write("instance.natureOfContentTermIds[]", ListValue.of(asList("UUID3", "UUID4"), EXTEND_EXISTING));
-    WRITER.getResult(eventContext);
-    // then
-    String expectedInstance =
-      "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"],\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}";
-    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
-    assertEquals(expectedInstance, resultInstance);
   }
 
   @Test
@@ -880,5 +867,19 @@ class JsonBasedWriterUnitTest {
       """;
     String resultOrder = eventContext.getContext().get(EntityType.ORDER.value());
     assertEquals(expectedOrder, resultOrder);
+  }
+
+  private static Stream<Arguments> listExtendValuesParameters() {
+    return Stream.of(
+      Arguments.of("existing field values are extended",
+        "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\"]}}",
+        "{\"instance\":{\"natureOfContentTermIds\":[\"UUID1\",\"UUID2\",\"UUID3\",\"UUID4\"]}}"),
+      Arguments.of("field is created if entity is empty",
+        "{}",
+        "{\"instance\":{\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}"),
+      Arguments.of("field is added alongside another existing field",
+        "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"]}}",
+        "{\"instance\":{\"invalidField\":[\"UUID1\",\"UUID2\"],\"natureOfContentTermIds\":[\"UUID3\",\"UUID4\"]}}")
+    );
   }
 }

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -369,17 +370,13 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   private void deleteIncomingFieldByPath(JsonNode currentObject, String currentPath, JsonNode pathObject) {
-    if (pathObject != null && !pathObject.isEmpty()) {
-      if (pathObject.isArray()) {
-        ArrayNode arrayNode = (ArrayNode) pathObject;
-        for (int i = 0; i < arrayNode.size(); i++) {
-          if (arrayNode.get(i).equals(currentObject) || ifDeepEquals(currentObject, arrayNode.get(i))) {
-            arrayNode.remove(i);
-          }
-        }
-      } else if (pathObject.equals(currentObject) && !pathObject.isMissingNode()) {
-        ((ObjectNode) entityNode).remove(currentPath);
-      }
+    if (pathObject == null || pathObject.isEmpty()) {
+      return;
+    }
+    if (pathObject.isArray()) {
+      removeIncomingArrayValues(currentObject, currentPath, (ArrayNode) pathObject);
+    } else if (pathObject.equals(currentObject) && !pathObject.isMissingNode()) {
+      ((ObjectNode) entityNode).remove(currentPath);
     }
   }
 
@@ -393,6 +390,45 @@ public class JsonBasedWriter extends AbstractWriter {
           arrayNode.remove(i - indexForDelete);
           indexForDelete++;
         }
+      }
+    }
+  }
+
+  private void removeIncomingArrayValues(JsonNode currentObject, String currentPath, ArrayNode arrayNode) {
+    if (!arrayNode.isEmpty() && !arrayNode.get(0).isObject()) {
+      removeScalarIncomingValues(currentObject, currentPath, arrayNode);
+    } else {
+      removeMatchingObjectValues(currentObject, arrayNode);
+    }
+  }
+
+  private void removeMatchingObjectValues(JsonNode currentObject, ArrayNode arrayNode) {
+    for (int i = 0; i < arrayNode.size(); i++) {
+      if (arrayNode.get(i).equals(currentObject) || ifDeepEquals(currentObject, arrayNode.get(i))) {
+        arrayNode.remove(i);
+      }
+    }
+  }
+
+  /**
+   * Removes incoming scalar values (e.g. plain strings) from an existing array of scalars,
+   * removing every occurrence of each incoming value rather than a single match.
+   */
+  private void removeScalarIncomingValues(JsonNode currentObject, String currentPath, ArrayNode arrayNode) {
+    String fieldName = currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1);
+    JsonNode incomingArray = currentObject.get(fieldName);
+    if (incomingArray == null || !incomingArray.isArray()) {
+      return;
+    }
+    List<String> incomingValues = new ArrayList<>();
+    incomingArray.forEach(node -> incomingValues.add(node.textValue()));
+
+    int indexForDelete = 0;
+    for (int i = 0; i < arrayNode.size() + 1; i++) {
+      JsonNode node = arrayNode.get(i - indexForDelete);
+      if (node != null && incomingValues.contains(node.textValue())) {
+        arrayNode.remove(i - indexForDelete);
+        indexForDelete++;
       }
     }
   }
