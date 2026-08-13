@@ -2855,6 +2855,233 @@ class MarcRecordModifierTest {
     testUpdateRecord(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters);
   }
 
+  // DELETE action during UPDATE mapping option tests
+
+  @Test
+  void shouldDeleteAllFieldOccurrencesWhenSubfieldIsWildcardDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"650\":{\"subfields\":"
+        + "[{\"a\":\"Biology\"},{\"x\":\"Study and teaching\"}],\"ind1\":\" \",\"ind2\":\"0\"}},{\"650\":"
+        + "{\"subfields\":[{\"a\":\"Zoology\"},{\"2\":\"fast\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField()
+        .withField("650")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(List.of(new MarcSubfield().withSubfield("*"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldDeleteOnlySubfieldFromFieldIfSameSubfieldSpecifiedInMappingDetailDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":["
+        + "{\"001\":\"ybp7406411\"},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Biology\"},{\"x\":\"Study\"}],\"ind1\":\" \",\"ind2\":\"0\"}},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Zoology\"},{\"2\":\"fast\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField()
+        .withField("650")
+        .withIndicator1(" ")
+        .withIndicator2("7")
+        .withSubfields(List.of(new MarcSubfield().withSubfield("2"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    String expectedParsedContent =
+      "{\"leader\":\"00104nam  22000611a 4500\",\"fields\":["
+        + "{\"001\":\"ybp7406411\"},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Biology\"},{\"x\":\"Study\"}],\"ind1\":\" \",\"ind2\":\"0\"}},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Zoology\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldDeleteSpecifiedSubfieldFromAllFieldsIfSpecifiedTagIsWildcardDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":["
+        + "{\"001\":\"ybp7406411\"},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Zoology\"},{\"2\":\"fast\"}],\"ind1\":\" \",\"ind2\":\"7\"}},"
+        + "{\"651\":{\"subfields\":[{\"a\":\"Marine biology\"},{\"2\":\"fast\"}],\"ind1\":\" \",\"ind2\":\"0\"}}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField()
+        .withField("*")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(List.of(new MarcSubfield().withSubfield("2"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    String expectedParsedContent =
+      "{\"leader\":\"00104nam  22000611a 4500\",\"fields\":["
+        + "{\"001\":\"ybp7406411\"},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Zoology\"}],\"ind1\":\" \",\"ind2\":\"7\"}},"
+        + "{\"651\":{\"subfields\":[{\"a\":\"Marine biology\"}],\"ind1\":\" \",\"ind2\":\"0\"}}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldNotDeleteProtectedFieldsIfSpecifiedSubfieldIsWildcardDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00110nam  22000611a 4500\",\"fields\":["
+        + "{\"001\":\"ybp7406411\"},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Biology\"},{\"x\":\"Study\"}],\"ind1\":\" \",\"ind2\":\"0\"}},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Zoology\"},{\"2\":\"fast\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField()
+        .withField("650")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(List.of(new MarcSubfield().withSubfield("*"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("650")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfield("a")
+        .withData("*"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters,
+      mappingProfile);
+  }
+
+  @Test
+  @SuppressWarnings("checkstyle:LineLength")
+  void shouldNotDeleteSubfieldFromProtectedFieldIfSameSubfieldSpecifiedInMappingDetailDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00110nam  22000611a 4500\",\"fields\":["
+        + "{\"001\":\"ybp7406411\"},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Biology\"},{\"x\":\"Study\"}],\"ind1\":\" \",\"ind2\":\"0\"}},"
+        + "{\"650\":{\"subfields\":[{\"a\":\"Zoology\"},{\"2\":\"fast\"}],\"ind1\":\" \",\"ind2\":\"7\"}}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField()
+        .withField("650")
+        .withIndicator1(" ")
+        .withIndicator2("7")
+        .withSubfields(List.of(new MarcSubfield().withSubfield("2"))));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("650")
+        .withIndicator1("*")
+        .withIndicator2("7")
+        .withSubfield("*")
+        .withData("*"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters,
+      mappingProfile);
+  }
+
+  @Test
+  void shouldDeleteSpecifiedControlFieldDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00068nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"vz|cza\"}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField().withField("007"));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    testMarcUpdating(incomingParsedContent, existingParsedContent, expectedParsedContent, mappingProfile);
+  }
+
+  @Test
+  void shouldNotDeleteProtectedControlFieldDuringUpdate() throws IOException {
+    String incomingParsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    String existingParsedContent =
+      "{\"leader\":\"00068nam  22000491a 4500\",\"fields\":[{\"001\":\"ybp7406411\"},{\"007\":\"vz|cza\"}]}";
+
+    MarcMappingDetail deleteRule = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField().withField("007"));
+
+    MappingProfile mappingProfile = new MappingProfile()
+      .withMappingDetails(new MappingDetail()
+        .withMarcMappingOption(UPDATE)
+        .withMarcMappingDetails(List.of(deleteRule)));
+
+    List<MarcFieldProtectionSetting> protectionSettings = List.of(
+      new MarcFieldProtectionSetting()
+        .withField("007")
+        .withIndicator1("")
+        .withIndicator2("")
+        .withSubfield("")
+        .withData("*"));
+
+    MappingParameters mappingParameters = new MappingParameters()
+      .withMarcFieldProtectionSettings(protectionSettings);
+
+    testMarcUpdating(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters,
+      mappingProfile);
+  }
+
   @Test
   void shouldReturnTrueWhenFieldTagAnyOf1xxFields() {
     for (int i = 100; i < 200; i++) {

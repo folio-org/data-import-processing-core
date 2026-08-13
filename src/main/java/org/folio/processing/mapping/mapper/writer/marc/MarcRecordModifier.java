@@ -11,6 +11,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.folio.processing.mapping.defaultmapper.processor.Processor.LDR_TAG;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
+import static org.folio.rest.jaxrs.model.MarcMappingDetail.Action.DELETE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.Json;
@@ -131,7 +132,7 @@ public class MarcRecordModifier {
 
     var notUpdatedDataFields = newLinkedList(incomingMarcRecord.getDataFields());
     for (MarcMappingDetail detail : marcMappingRules) {
-      if (detail.getAction() == MarcMappingDetail.Action.DELETE) {
+      if (detail.getAction() == DELETE) {
         processDeleteAction(detail, true);
         continue;
       }
