@@ -131,6 +131,10 @@ public class MarcRecordModifier {
 
     var notUpdatedDataFields = newLinkedList(incomingMarcRecord.getDataFields());
     for (MarcMappingDetail detail : marcMappingRules) {
+      if (detail.getAction() == MarcMappingDetail.Action.DELETE) {
+        processDeleteAction(detail, true);
+        continue;
+      }
       String fieldTag = detail.getField().getField();
       if (Verifier.isControlField(fieldTag)) {
         incomingMarcRecord.getControlFields().stream()
@@ -451,6 +455,10 @@ public class MarcRecordModifier {
   }
 
   private void processDeleteAction(MarcMappingDetail detail) {
+    processDeleteAction(detail, false);
+  }
+
+  private void processDeleteAction(MarcMappingDetail detail, boolean applyProtection) {
     String fieldTag = detail.getField().getField();
     char ind1 =
       isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
@@ -458,18 +466,21 @@ public class MarcRecordModifier {
       isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
 
     if (Verifier.isControlField(fieldTag)) {
-      for (VariableField field : marcRecordToChange.getVariableFields(fieldTag)) {
-        marcRecordToChange.removeVariableField(field);
-      }
+      marcRecordToChange.getVariableFields(fieldTag).stream()
+        .filter(field -> !applyProtection || isNotProtected((ControlField) field))
+        .toList()
+        .forEach(marcRecordToChange::removeVariableField);
     } else if (detail.getField().getSubfields().getFirst().getSubfield().charAt(0) == ANY_CHAR) {
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+        .filter(field -> !applyProtection || isNotProtected(field))
         .toList()
         .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
       char subfieldCode = detail.getField().getSubfields().getFirst().getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+        .filter(field -> !applyProtection || isNotProtected(field))
         .map(targetField -> {
           targetField.removeSubfield(targetField.getSubfield(subfieldCode));
           return targetField;
