@@ -170,6 +170,82 @@ class JsonBasedWriterUnitTest {
   }
 
   @Test
+  void shouldDeleteAllMatchingEntries_whenDeleteIncomingWithInterspersedDuplicates() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(),
+      """
+        {
+          "instance": {
+            "administrativeNotes": ["Keep1", "Delete", "Keep2", "Delete", "Delete", "Keep3", "Delete"]
+          }
+        }
+      """);
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    WRITER.write("instance.administrativeNotes[]", ListValue.of(List.of("Delete"), DELETE_INCOMING));
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"administrativeNotes\":[\"Keep1\",\"Keep2\",\"Keep3\"]}}", resultInstance);
+  }
+
+  @Test
+  void shouldDeleteAllConsecutiveDuplicates_whenDeleteIncomingObjectsAreConsecutive() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(),
+      """
+        {
+          "instance": {
+            "contributor": [{"id":"1"},{"id":"2"},{"id":"2"},{"id":"3"}]
+          }
+        }
+      """);
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> objects = List.of(Map.of("instance.contributor[].id", StringValue.of("2")));
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(objects, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "contributor");
+    WRITER.write("instance.contributor[]", field);
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"contributor\":[{\"id\":\"1\"},{\"id\":\"3\"}]}}", resultInstance);
+  }
+
+  @Test
+  void shouldDeleteAllMatchingScalars_whenDeleteIncomingViaRepeatableFieldWithInterspersed() throws IOException {
+    // given
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.INSTANCE.value(),
+      """
+        {
+          "instance": {
+            "administrativeNotes": ["Delete","Keep","Delete","Delete","Keep","Delete"]
+          }
+        }
+      """);
+    eventContext.setContext(context);
+    // when
+    WRITER.initialize(eventContext);
+    List<Map<String, Value>> values =
+      List.of(Map.of("instance.administrativeNotes[]", ListValue.of(List.of("Delete"))));
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(values, MappingRule.RepeatableFieldAction.DELETE_INCOMING, "administrativeNotes");
+    WRITER.write("instance.administrativeNotes[]", field);
+    WRITER.getResult(eventContext);
+    // then
+    String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
+    assertEquals("{\"instance\":{\"administrativeNotes\":[\"Keep\",\"Keep\"]}}", resultInstance);
+  }
+
+  @Test
   void shouldWrite_RepeatableDeleteIncomingValuesIfThereAreSomeAdditionalFieldsExistsInEntity() throws IOException {
     // given
     DataImportEventPayload eventContext = new DataImportEventPayload();

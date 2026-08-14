@@ -384,7 +384,8 @@ public class JsonBasedWriter extends AbstractWriter {
     if (foundNode != null && !foundNode.isEmpty()) {
       ArrayNode arrayNode = (ArrayNode) foundNode;
       int indexForDelete = 0;
-      for (int i = 0; i < arrayNode.size() + 1; i++) {
+      int initialSize = arrayNode.size();
+      for (int i = 0; i < initialSize + 1; i++) {
         if (arrayNode.get(i - indexForDelete) != null && listValue.getValue()
           .contains(arrayNode.get(i - indexForDelete).textValue())) {
           arrayNode.remove(i - indexForDelete);
@@ -403,11 +404,7 @@ public class JsonBasedWriter extends AbstractWriter {
   }
 
   private void removeMatchingObjectValues(JsonNode currentObject, ArrayNode arrayNode) {
-    for (int i = 0; i < arrayNode.size(); i++) {
-      if (arrayNode.get(i).equals(currentObject) || ifDeepEquals(currentObject, arrayNode.get(i))) {
-        arrayNode.remove(i);
-      }
-    }
+    arrayNode.removeIf(node -> ifDeepEquals(currentObject, node));
   }
 
   /**
@@ -424,7 +421,8 @@ public class JsonBasedWriter extends AbstractWriter {
     incomingArray.forEach(node -> incomingValues.add(node.textValue()));
 
     int indexForDelete = 0;
-    for (int i = 0; i < arrayNode.size() + 1; i++) {
+    int initialSize = arrayNode.size();
+    for (int i = 0; i < initialSize + 1; i++) {
       JsonNode node = arrayNode.get(i - indexForDelete);
       if (node != null && incomingValues.contains(node.textValue())) {
         arrayNode.remove(i - indexForDelete);
