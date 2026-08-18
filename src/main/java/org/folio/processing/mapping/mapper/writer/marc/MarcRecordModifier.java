@@ -11,6 +11,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.folio.processing.mapping.defaultmapper.processor.Processor.LDR_TAG;
 import static org.folio.rest.jaxrs.model.MappingDetail.MarcMappingOption.MODIFY;
+import static org.folio.rest.jaxrs.model.MarcMappingDetail.Action.DELETE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.json.Json;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
@@ -131,6 +131,10 @@ public class MarcRecordModifier {
 
     var notUpdatedDataFields = newLinkedList(incomingMarcRecord.getDataFields());
     for (MarcMappingDetail detail : marcMappingRules) {
+      if (detail.getAction() == DELETE) {
+        processDeleteAction(detail, true);
+        continue;
+      }
       String fieldTag = detail.getField().getField();
       if (Verifier.isControlField(fieldTag)) {
         incomingMarcRecord.getControlFields().stream()
@@ -212,7 +216,7 @@ public class MarcRecordModifier {
         .noneMatch(overriddenSetting -> overriddenSetting.getId().equals(originalSetting.getId())
                                         && overriddenSetting.getSource().equals(MarcFieldProtectionSetting.Source.USER)
                                         && overriddenSetting.getOverride()))
-      .collect(Collectors.toList());
+      .toList();
   }
 
   protected boolean fieldsDeepMatch(List<DataField> fieldReplacements, List<DataField> fieldsToUpdate,
@@ -451,6 +455,10 @@ public class MarcRecordModifier {
   }
 
   private void processDeleteAction(MarcMappingDetail detail) {
+    processDeleteAction(detail, false);
+  }
+
+  private void processDeleteAction(MarcMappingDetail detail, boolean applyProtection) {
     String fieldTag = detail.getField().getField();
     char ind1 =
       isNotEmpty(detail.getField().getIndicator1()) ? detail.getField().getIndicator1().charAt(0) : BLANK_SUBFIELD_CODE;
@@ -458,18 +466,21 @@ public class MarcRecordModifier {
       isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0) : BLANK_SUBFIELD_CODE;
 
     if (Verifier.isControlField(fieldTag)) {
-      for (VariableField field : marcRecordToChange.getVariableFields(fieldTag)) {
-        marcRecordToChange.removeVariableField(field);
-      }
+      marcRecordToChange.getVariableFields(fieldTag).stream()
+        .filter(field -> !applyProtection || isNotProtected((ControlField) field))
+        .toList()
+        .forEach(marcRecordToChange::removeVariableField);
     } else if (detail.getField().getSubfields().getFirst().getSubfield().charAt(0) == ANY_CHAR) {
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+        .filter(field -> !applyProtection || isNotProtected(field))
         .toList()
         .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
       char subfieldCode = detail.getField().getSubfields().getFirst().getSubfield().charAt(0);
       marcRecordToChange.getDataFields().stream()
         .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+        .filter(field -> !applyProtection || isNotProtected(field))
         .map(targetField -> {
           targetField.removeSubfield(targetField.getSubfield(subfieldCode));
           return targetField;
@@ -671,7 +682,7 @@ public class MarcRecordModifier {
       subfieldCode == ANY_CHAR ? field.getSubfields() : field.getSubfields(subfieldCode);
     return subfieldsForSearch.stream()
       .filter(sf -> subfieldDataFragment.charAt(0) == ANY_CHAR || sf.getData().contains(subfieldDataFragment))
-      .collect(Collectors.toList());
+      .toList();
   }
 
   private void processMoveAction(MarcMappingDetail detail) {
@@ -682,7 +693,7 @@ public class MarcRecordModifier {
 
     List<DataField> sourceFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2))
-      .collect(Collectors.toList());
+      .toList();
 
     for (MarcSubfield subfieldRule : detail.getField().getSubfields()) {
       switch (subfieldRule.getSubaction()) {
