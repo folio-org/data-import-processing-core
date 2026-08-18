@@ -6,6 +6,7 @@
 * MARC Bib Updates mapping - 'Delete' action functionality ([MODDICORE-508](https://folio-org.atlassian.net/browse/MODDICORE-508))
 ### Bug fixes
 * DELETE_INCOMING repeatable field action not removing duplicate scalar values from string arrays ([MODDICORE-507](https://folio-org.atlassian.net/browse/MODDICORE-507))
+* Fix 035 being split on update when same $a in incoming and existing ([MODSOURCE-1014](https://folio-org.atlassian.net/browse/MODSOURCE-1014))
 
 ### Tech Dept
 * Migrate tests from JUnit 4 to JUnit 6
