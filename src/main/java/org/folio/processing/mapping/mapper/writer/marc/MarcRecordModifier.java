@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Range;
@@ -217,7 +216,7 @@ public class MarcRecordModifier {
         .noneMatch(overriddenSetting -> overriddenSetting.getId().equals(originalSetting.getId())
                                         && overriddenSetting.getSource().equals(MarcFieldProtectionSetting.Source.USER)
                                         && overriddenSetting.getOverride()))
-      .collect(Collectors.toList());
+      .toList();
   }
 
   protected boolean fieldsDeepMatch(List<DataField> fieldReplacements, List<DataField> fieldsToUpdate,
@@ -683,7 +682,7 @@ public class MarcRecordModifier {
       subfieldCode == ANY_CHAR ? field.getSubfields() : field.getSubfields(subfieldCode);
     return subfieldsForSearch.stream()
       .filter(sf -> subfieldDataFragment.charAt(0) == ANY_CHAR || sf.getData().contains(subfieldDataFragment))
-      .collect(Collectors.toList());
+      .toList();
   }
 
   private void processMoveAction(MarcMappingDetail detail) {
@@ -694,7 +693,7 @@ public class MarcRecordModifier {
 
     List<DataField> sourceFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, detail.getField().getField(), ind1, ind2))
-      .collect(Collectors.toList());
+      .toList();
 
     for (MarcSubfield subfieldRule : detail.getField().getSubfields()) {
       switch (subfieldRule.getSubaction()) {

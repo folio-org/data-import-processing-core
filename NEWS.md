@@ -3,7 +3,7 @@
 * Remove REST-based event publishing support (`RestEventPublisher`, `OkapiConnectionParams`, `RestUtil`); events are now published to Kafka only
 
 ### Features
-* Description ([ISSUE](https://folio-org.atlassian.net/browse/ISSUE))
+* MARC Bib Updates mapping - 'Delete' action functionality ([MODDICORE-508](https://folio-org.atlassian.net/browse/MODDICORE-508))
 ### Bug fixes
 * DELETE_INCOMING repeatable field action not removing duplicate scalar values from string arrays ([MODDICORE-507](https://folio-org.atlassian.net/browse/MODDICORE-507))
 

@@ -2855,8 +2855,6 @@ class MarcRecordModifierTest {
     testUpdateRecord(incomingParsedContent, existingParsedContent, existingParsedContent, mappingParameters);
   }
 
-  // DELETE action during UPDATE mapping option tests
-
   @Test
   void shouldDeleteAllFieldOccurrencesWhenSubfieldIsWildcardDuringUpdate() throws IOException {
     String incomingParsedContent =
