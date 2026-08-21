@@ -356,7 +356,7 @@ public class JsonBasedWriter extends AbstractWriter {
         if (currentPath.indexOf('.', startPosition) != -1) {
           result = result.get(currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)));
           startPosition +=
-            (currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition))).length() + 1;
+            currentPath.substring(startPosition, currentPath.indexOf(DOT_SYMBOL, startPosition)).length() + 1;
         } else {
           if (remove) {
             ((ObjectNode) result).remove(currentPath.substring(currentPath.lastIndexOf(DOT_SYMBOL) + 1));

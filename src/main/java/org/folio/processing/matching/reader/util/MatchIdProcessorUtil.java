@@ -49,8 +49,8 @@ public final class MatchIdProcessorUtil {
             .equals(text)
           || jsonArray.getJsonObject(i).getString(CODE_PROPERTY)
             .equals(text)
-          || (String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY),
-        jsonArray.getJsonObject(i).getString(CODE_PROPERTY)))
+          || String.format("%s (%s)", jsonArray.getJsonObject(i).getString(NAME_PROPERTY),
+        jsonArray.getJsonObject(i).getString(CODE_PROPERTY))
             .equals(text)) {
         JsonObject result = jsonArray.getJsonObject(i);
         return StringValue.of(result.getString(ID_PROPERTY));
