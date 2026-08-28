@@ -11,8 +11,10 @@ import org.folio.rest.jaxrs.model.Qualifier;
  */
 public final class MatchExpressionUtil {
 
-  private static final String NON_DIGIT = "[^\\p{N}]";
-  private static final String NON_DIGIT_AND_NON_ALPHA = "[^\\p{L}\\p{N}]";
+  // Both patterns mirror the Postgres classes the storage side normalizes with: digit is ASCII-only,
+  // and alnum on a UTF-8 ctype covers Nd and Nl but not No (fractions, superscripts, circled numerals).
+  private static final String NON_DIGIT = "[^0-9]";
+  private static final String NON_DIGIT_AND_NON_ALPHA = "[^\\p{L}\\p{Nd}\\p{Nl}]";
 
   private MatchExpressionUtil() {
   }
@@ -38,13 +40,17 @@ public final class MatchExpressionUtil {
   /**
    * Checks whether value is qualified to be compared in matching process.
    *
+   * <p>A qualifier that has no qualifier value applies no filtering, since there is nothing to compare the value
+   * against
+   *
    * @param value     original value
    * @param qualifier qualifier specifying conditions that value should satisfy to be used for matching purposes
    * @return true if value is qualified for matching
    */
   public static boolean isQualified(String value, Qualifier qualifier) {
     boolean isQualified = true;
-    if (value != null && qualifier != null && qualifier.getQualifierType() != null) {
+    if (value != null && qualifier != null && qualifier.getQualifierType() != null
+        && StringUtils.isNotEmpty(qualifier.getQualifierValue())) {
       isQualified = switch (qualifier.getQualifierType()) {
         case BEGINS_WITH -> value.startsWith(qualifier.getQualifierValue());
         case ENDS_WITH -> value.endsWith(qualifier.getQualifierValue());

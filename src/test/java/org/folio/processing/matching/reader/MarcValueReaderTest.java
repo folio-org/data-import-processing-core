@@ -787,4 +787,66 @@ class MarcValueReaderTest {
     assertEquals(STRING, result.getType());
     assertEquals("781234", result.getValue());
   }
+
+  @Test
+  void shouldReturn_ListValue_WithComparisonPart_WhenQualifierValueIsNotSpecified() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("020"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("a")
+        ))
+        .withQualifier(new Qualifier()
+          .withQualifierType(CONTAINS)
+          .withComparisonPart(NUMERICS_ONLY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(LIST, result.getType());
+    ListValue listValue = (ListValue) result;
+    assertEquals(2, listValue.getValue().size());
+    assertTrue(listValue.getValue().contains("2940447241"));
+    assertTrue(listValue.getValue().contains("9782940447244"));
+  }
+
+  @Test
+  void shouldReturn_ListValue_WhenQualifierValueIsEmpty() {
+    // given
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encode(marcRecord));
+    eventPayload.setContext(context);
+    MatchDetail matchDetail = new MatchDetail()
+      .withIncomingMatchExpression(new MatchExpression()
+        .withDataValueType(VALUE_FROM_RECORD)
+        .withFields(Arrays.asList(
+          new Field().withLabel("field").withValue("020"),
+          new Field().withLabel("indicator1").withValue(" "),
+          new Field().withLabel("indicator2").withValue(" "),
+          new Field().withLabel("recordSubfield").withValue("a")
+        ))
+        .withQualifier(new Qualifier()
+          .withQualifierType(BEGINS_WITH)
+          .withQualifierValue(StringUtils.EMPTY)));
+    MatchValueReader reader = new MarcValueReaderImpl();
+    //when
+    Value result = reader.read(eventPayload, matchDetail);
+    //then
+    assertNotNull(result);
+    assertEquals(LIST, result.getType());
+    ListValue listValue = (ListValue) result;
+    assertEquals(2, listValue.getValue().size());
+    assertTrue(listValue.getValue().contains("2940447241 (electronic bk.)"));
+    assertTrue(listValue.getValue().contains("9782940447244 (electronic bk.)"));
+  }
 }
