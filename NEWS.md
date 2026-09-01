@@ -1,3 +1,6 @@
+## 2026-09-02 v5.0.1
+* Fix 035 being split on update when same $a in incoming and existing ([MODSOURCE-1014](https://folio-org.atlassian.net/browse/MODSOURCE-1014))
+
 ## 2026-04-14 v5.0.0
 * [MODSOURCE-919](https://folio-org.atlassian.net/browse/MODSOURCE-919) Fill in permissions header during event sending to Kafka
 * [MODDICORE-464](https://folio-org.atlassian.net/browse/MODDICORE-464) Add links, linking rules setter to MarcBibRecordModifier
