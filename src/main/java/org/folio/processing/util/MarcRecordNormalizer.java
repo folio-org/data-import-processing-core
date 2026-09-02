@@ -1,7 +1,9 @@
 package org.folio.processing.util;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -49,11 +51,11 @@ public final class MarcRecordNormalizer {
 
   private static void formatOclc(List<Subfield> subfields) {
     for (Subfield subfield : subfields) {
-      subfield.setData(formatOclcValue(subfield.getData()));
+      subfield.setData(normalizeOclcValue(subfield.getData()));
     }
   }
 
-  private static String formatOclcValue(String data) {
+  public static String normalizeOclcValue(String data) {
     data = DOT_OR_WHITESPACE_PATTERN.matcher(data).replaceAll("");
     var matcher = OCLC_COMPILED.matcher(data);
     if (!matcher.find()) {
@@ -77,11 +79,22 @@ public final class MarcRecordNormalizer {
   }
 
   private static void deduplicateOclc(Record marcRecord, List<Subfield> subfields) {
-    List<Subfield> subfieldsToDelete = new ArrayList<>();
+    var parentMap = new IdentityHashMap<Subfield, DataField>();
+    marcRecord.getVariableFields(TAG_035).forEach(vf -> {
+      if (vf instanceof DataField df) {
+        df.getSubfields().forEach(sf -> parentMap.put(sf, df));
+      }
+    });
 
-    for (Subfield subfield : new ArrayList<>(subfields)) {
-      if (subfields.stream().anyMatch(s -> isDuplicate(subfield, s))) {
-        subfieldsToDelete.add(subfield);
+    var subfieldsToDelete = new ArrayList<Subfield>();
+    for (var subfield : new ArrayList<>(subfields)) {
+      var duplicate = subfields.stream().filter(s -> isDuplicate(subfield, s)).findFirst();
+      if (duplicate.isPresent()) {
+        // Prefer to keep the subfield in the field that would be orphaned without it
+        // (sole subfield of its code in a multi-subfield field), e.g. $a in a 035 that also has $z.
+        boolean preferKeepCurrent = isSoleOfCodeInMultiSubfieldField(subfield, parentMap)
+          && !isSoleOfCodeInMultiSubfieldField(duplicate.get(), parentMap);
+        subfieldsToDelete.add(preferKeepCurrent ? duplicate.get() : subfield);
         subfields.remove(subfield);
       }
     }
@@ -91,9 +104,23 @@ public final class MarcRecordNormalizer {
   }
 
   private static boolean isDuplicate(Subfield s1, Subfield s2) {
-    return !s1.equals(s2)
+    return s1 != s2
       && s1.getData().equals(s2.getData())
       && s1.getCode() == s2.getCode();
+  }
+
+  /**
+   * Returns true when {@code subfield} is the only subfield of its code in its parent DataField
+   * and the parent has other subfields of different codes. Removing such a subfield would leave
+   * the parent without its primary marker (e.g. $a) while other subfields ($z, $b, …) remain,
+   * which creates an incomplete 035 field.
+   */
+  private static boolean isSoleOfCodeInMultiSubfieldField(Subfield subfield,
+                                                           Map<Subfield, DataField> parentMap) {
+    var parent = parentMap.get(subfield);
+    return parent != null
+      && parent.getSubfields(subfield.getCode()).size() == 1
+      && parent.getSubfields().size() > 1;
   }
 
   private static void removeSubfieldIfExist(Record marcRecord, VariableField field,
