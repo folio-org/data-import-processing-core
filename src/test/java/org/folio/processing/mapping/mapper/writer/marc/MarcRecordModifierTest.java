@@ -624,6 +624,95 @@ class MarcRecordModifierTest {
   }
 
   @Test
+  void shouldSkipMoveRuleAndLeaveSourceFieldIntactWhenSubfieldCodeIsNull() throws IOException {
+    // given — subfieldRule has no subfield code (null): rule must be skipped, source field must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"082\":{\"subfields\":[{\"a\":\"value1\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcField newFieldRule = new MarcField()
+      .withField("982")
+      .withSubfields(Collections.singletonList(new MarcSubfield())); // no subfield code — null
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.MOVE)
+      .withField(new MarcField()
+        .withField("082")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubaction(CREATE_NEW_FIELD) // no subfield code on the rule itself
+          .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — source field 082 must remain intact, no 982 created
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"082\":{\"subfields\":[{\"a\":\"value1\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipMoveRuleAndLeaveSourceFieldIntactWhenSubfieldCodeIsEmpty() throws IOException {
+    // given — subfieldRule has empty subfield code: rule must be skipped, source field must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"050\":{\"subfields\":[{\"a\":\"value2\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcField newFieldRule = new MarcField()
+      .withField("950")
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield(""))); // empty subfield code
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.MOVE)
+      .withField(new MarcField()
+        .withField("050")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("") // empty subfield code on the rule itself
+          .withSubaction(CREATE_NEW_FIELD)
+          .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — source field 050 must remain intact, no 950 created
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"050\":{\"subfields\":[{\"a\":\"value2\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
   void shouldMoveDataToExistingFieldsAndDeleteSourceField() throws IOException {
     // given
     String parsedContent =

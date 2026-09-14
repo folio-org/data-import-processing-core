@@ -712,10 +712,15 @@ public class MarcRecordModifier {
   private void moveDataToNewField(List<DataField> sourceFields, MarcSubfield subfieldRule) {
     MarcField newFieldRule = subfieldRule.getData().getMarcField();
     String newFieldTag = newFieldRule.getField();
+    if (isEmpty(subfieldRule.getSubfield())) {
+      LOGGER.warn("moveDataToNewField:: skipping MOVE rule for field '{}': subfield code is not specified",
+        newFieldRule.getField());
+      return;
+    }
     char srcSubfieldCode = subfieldRule.getSubfield().charAt(0);
-    char newSubfieldCode =
-      newFieldRule.getSubfields().isEmpty() ? srcSubfieldCode
-                                            : newFieldRule.getSubfields().getFirst().getSubfield().charAt(0);
+    String firstNewSubfieldCode = newFieldRule.getSubfields().isEmpty()
+      ? null : newFieldRule.getSubfields().getFirst().getSubfield();
+    char newSubfieldCode = isNotEmpty(firstNewSubfieldCode) ? firstNewSubfieldCode.charAt(0) : srcSubfieldCode;
 
     for (DataField sourceField : sourceFields) {
       char newFieldInd1 =
