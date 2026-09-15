@@ -149,6 +149,11 @@ public class MarcRecordModifier {
           isNotEmpty(detail.getField().getIndicator2()) ? detail.getField().getIndicator2().charAt(0)
                                                         : BLANK_SUBFIELD_CODE;
         String subfieldCode = detail.getField().getSubfields().getFirst().getSubfield();
+        if (isEmpty(subfieldCode)) {
+          LOGGER.warn("processUpdateOption:: skipping UPDATE rule for field '{}': subfield code is not specified",
+            fieldTag);
+          continue;
+        }
 
         Stream<DataField> incomingDataFields = incomingMarcRecord.getDataFields().stream()
           .filter(field -> fieldMatches(field, fieldTag, ind1, ind2, subfieldCode.charAt(0)));
@@ -363,6 +368,12 @@ public class MarcRecordModifier {
 
   private void processModifyMappingOption(List<MarcMappingDetail> mappingDetails) {
     for (MarcMappingDetail mappingDetail : mappingDetails) {
+      if (mappingDetail.getField().getSubfields().isEmpty()
+          && !Verifier.isControlField(mappingDetail.getField().getField())) {
+        LOGGER.warn("processModifyMappingOption:: skipping '{}' rule for field '{}': subfields list is empty",
+          mappingDetail.getAction(), mappingDetail.getField().getField());
+        continue;
+      }
       switch (mappingDetail.getAction()) {
         case ADD:
           processAddAction(mappingDetail);
@@ -398,6 +409,10 @@ public class MarcRecordModifier {
       DataField dataField = marcFactory.newDataField(fieldTag, ind1, ind2);
 
       for (MarcSubfield subfield : detail.getField().getSubfields()) {
+        if (isEmpty(subfield.getSubfield())) {
+          LOGGER.warn("processAddAction:: skipping subfield for field '{}': subfield code is not specified", fieldTag);
+          continue;
+        }
         dataField.addSubfield(
           marcFactory.newSubfield(subfield.getSubfield().charAt(0), subfield.getData().getText()));
       }
@@ -470,24 +485,32 @@ public class MarcRecordModifier {
         .filter(field -> !applyProtection || isNotProtected((ControlField) field))
         .toList()
         .forEach(marcRecordToChange::removeVariableField);
-    } else if (detail.getField().getSubfields().getFirst().getSubfield().charAt(0) == ANY_CHAR) {
-      marcRecordToChange.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
-        .filter(field -> !applyProtection || isNotProtected(field))
-        .toList()
-        .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
     } else {
-      char subfieldCode = detail.getField().getSubfields().getFirst().getSubfield().charAt(0);
-      marcRecordToChange.getDataFields().stream()
-        .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
-        .filter(field -> !applyProtection || isNotProtected(field))
-        .map(targetField -> {
-          targetField.removeSubfield(targetField.getSubfield(subfieldCode));
-          return targetField;
-        })
-        .filter(field -> field.getSubfields().isEmpty())
-        .toList()
-        .forEach(targetField -> marcRecordToChange.removeVariableField(targetField));
+      String subfieldCodeStr = detail.getField().getSubfields().getFirst().getSubfield();
+      if (isEmpty(subfieldCodeStr)) {
+        LOGGER.warn("processDeleteAction:: skipping DELETE rule for field '{}': subfield code is not specified",
+          fieldTag);
+        return;
+      }
+      char subfieldCode = subfieldCodeStr.charAt(0);
+      if (subfieldCode == ANY_CHAR) {
+        marcRecordToChange.getDataFields().stream()
+          .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+          .filter(field -> !applyProtection || isNotProtected(field))
+          .toList()
+          .forEach(fieldToDelete -> marcRecordToChange.removeVariableField(fieldToDelete));
+      } else {
+        marcRecordToChange.getDataFields().stream()
+          .filter(field -> fieldMatches(field, fieldTag, ind1, ind2))
+          .filter(field -> !applyProtection || isNotProtected(field))
+          .map(targetField -> {
+            targetField.removeSubfield(targetField.getSubfield(subfieldCode));
+            return targetField;
+          })
+          .filter(field -> field.getSubfields().isEmpty())
+          .toList()
+          .forEach(targetField -> marcRecordToChange.removeVariableField(targetField));
+      }
     }
   }
 
@@ -523,6 +546,10 @@ public class MarcRecordModifier {
       .filter(field -> fieldMatches(field, tag, ind1, ind2))
       .toList();
 
+    if (isEmpty(ruleSubfield.getSubfield())) {
+      LOGGER.warn("processInsert:: skipping INSERT rule for field '{}': subfield code is not specified", tag);
+      return;
+    }
     char subfieldCode = ruleSubfield.getSubfield().charAt(0);
     for (DataField field : fieldsToEdit) {
       List<Subfield> subfieldsToEdit =
@@ -638,7 +665,13 @@ public class MarcRecordModifier {
     char ind2 = isNotEmpty(mappingRule.getField().getIndicator2())
                 ? mappingRule.getField().getIndicator2().charAt(0)
                 : BLANK_SUBFIELD_CODE;
-    char subfieldCode = mappingRule.getField().getSubfields().getFirst().getSubfield().charAt(0);
+    String subfieldCodeStr = mappingRule.getField().getSubfields().getFirst().getSubfield();
+    if (isEmpty(subfieldCodeStr)) {
+      LOGGER.warn("replaceDataInDataFields:: skipping REPLACE rule for field '{}': subfield code is not specified",
+        tag);
+      return;
+    }
+    char subfieldCode = subfieldCodeStr.charAt(0);
 
     marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, tag, ind1, ind2, subfieldCode))
@@ -712,16 +745,21 @@ public class MarcRecordModifier {
   private void moveDataToNewField(List<DataField> sourceFields, MarcSubfield subfieldRule) {
     MarcField newFieldRule = subfieldRule.getData().getMarcField();
     String newFieldTag = newFieldRule.getField();
+    if (isEmpty(subfieldRule.getSubfield())) {
+      LOGGER.warn("moveDataToNewField:: skipping MOVE rule for field '{}': subfield code is not specified",
+        newFieldRule.getField());
+      return;
+    }
     char srcSubfieldCode = subfieldRule.getSubfield().charAt(0);
-    char newSubfieldCode =
-      newFieldRule.getSubfields().isEmpty() ? srcSubfieldCode
-                                            : newFieldRule.getSubfields().getFirst().getSubfield().charAt(0);
+    String firstNewSubfieldCode = newFieldRule.getSubfields().isEmpty()
+      ? null : newFieldRule.getSubfields().getFirst().getSubfield();
+    char newSubfieldCode = isNotEmpty(firstNewSubfieldCode) ? firstNewSubfieldCode.charAt(0) : srcSubfieldCode;
 
     for (DataField sourceField : sourceFields) {
       char newFieldInd1 =
         isNotEmpty(newFieldRule.getIndicator1()) ? newFieldRule.getIndicator1().charAt(0) : sourceField.getIndicator1();
       char newFieldInd2 =
-        isNotEmpty(newFieldRule.getIndicator2()) ? newFieldRule.getIndicator1().charAt(0) : sourceField.getIndicator2();
+        isNotEmpty(newFieldRule.getIndicator2()) ? newFieldRule.getIndicator2().charAt(0) : sourceField.getIndicator2();
       DataField newField = marcFactory.newDataField(newFieldTag, newFieldInd1, newFieldInd2);
       List<Subfield> srcSubfields =
         srcSubfieldCode == ANY_CHAR ? sourceField.getSubfields() : sourceField.getSubfields(srcSubfieldCode);
@@ -746,8 +784,15 @@ public class MarcRecordModifier {
     char existingFieldInd2 = isEmpty(subfieldRule.getData().getMarcField().getIndicator2()) ? BLANK_SUBFIELD_CODE
                                                                                             : subfieldRule.getData()
                                .getMarcField().getIndicator2().charAt(0);
+    if (isEmpty(subfieldRule.getSubfield())) {
+      LOGGER.warn("moveDataToExistingField:: skipping MOVE rule for field '{}': subfield code is not specified",
+        existingFieldTag);
+      return;
+    }
     char srcSubfieldCode = subfieldRule.getSubfield().charAt(0);
-    char existingFieldSfCode = subfieldRule.getData().getMarcField().getSubfields().getFirst().getSubfield().charAt(0);
+    List<MarcSubfield> targetSubfields = subfieldRule.getData().getMarcField().getSubfields();
+    String existingFieldSfCodeStr = targetSubfields.isEmpty() ? null : targetSubfields.getFirst().getSubfield();
+    char existingFieldSfCode = isNotEmpty(existingFieldSfCodeStr) ? existingFieldSfCodeStr.charAt(0) : srcSubfieldCode;
 
     List<DataField> existingFields = marcRecordToChange.getDataFields().stream()
       .filter(field -> fieldMatches(field, existingFieldTag, existingFieldInd1, existingFieldInd2))

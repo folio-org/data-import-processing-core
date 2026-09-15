@@ -96,6 +96,44 @@ class MarcRecordModifierTest {
   }
 
   @Test
+  void shouldSkipAddRuleAndLeaveRecordIntactWhenSubfieldsListIsEmpty() throws IOException {
+    // given — ADD rule with no subfields at all: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"value\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.ADD)
+      .withField(new MarcField()
+        .withField("021")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.emptyList())); // no subfields
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — no 021 added, 020 untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00048nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"value\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
   void shouldAddNotSortableDataFieldAfterFieldsWithSameFirstDigit() throws IOException {
     // given
     String parsedContent =
@@ -212,6 +250,44 @@ class MarcRecordModifierTest {
     Record actualRecord = mapper().readValue(recordJson, Record.class);
     String expectedParsedContent =
       "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"001\":\"ybp7406411\"}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipDeleteRuleAndLeaveRecordIntactWhenSubfieldsListIsEmpty() throws IOException {
+    // given — DELETE rule for a data field with no subfields: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"value\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.DELETE)
+      .withField(new MarcField()
+        .withField("020")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.emptyList())); // no subfields
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — 020 must remain untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00048nam  22000371a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"value\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
     Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
@@ -624,6 +700,142 @@ class MarcRecordModifierTest {
   }
 
   @Test
+  void shouldSkipMoveRuleAndLeaveSourceFieldIntactWhenSubfieldCodeIsNull() throws IOException {
+    // given — subfieldRule has no subfield code (null): rule must be skipped, source field must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"082\":{\"subfields\":[{\"a\":\"value1\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcField newFieldRule = new MarcField()
+      .withField("982")
+      .withSubfields(Collections.singletonList(new MarcSubfield())); // no subfield code — null
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.MOVE)
+      .withField(new MarcField()
+        .withField("082")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubaction(CREATE_NEW_FIELD) // no subfield code on the rule itself
+          .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — source field 082 must remain intact, no 982 created
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"082\":{\"subfields\":[{\"a\":\"value1\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipMoveRuleAndLeaveSourceFieldIntactWhenSubfieldCodeIsEmpty() throws IOException {
+    // given — subfieldRule has empty subfield code: rule must be skipped, source field must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"050\":{\"subfields\":[{\"a\":\"value2\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcField newFieldRule = new MarcField()
+      .withField("950")
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield(""))); // empty subfield code
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.MOVE)
+      .withField(new MarcField()
+        .withField("050")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("") // empty subfield code on the rule itself
+          .withSubaction(CREATE_NEW_FIELD)
+          .withData(new Data().withMarcField(newFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — source field 050 must remain intact, no 950 created
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00049nam  22000371a 4500\",\"fields\":[{\"050\":{\"subfields\":[{\"a\":\"value2\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipMoveToExistingFieldRuleAndLeaveRecordIntactWhenSubfieldCodeIsEmpty() throws IOException {
+    // given — MOVE/ADD_TO_EXISTING_FIELD rule with empty subfield code: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"value\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"991\":{\"subfields\":[{\"c\":\"existing\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcField existingFieldRule = new MarcField()
+      .withField("991")
+      .withSubfields(Collections.singletonList(new MarcSubfield().withSubfield("c")));
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.MOVE)
+      .withField(new MarcField()
+        .withField("020")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("") // empty subfield code
+          .withSubaction(ADD_TO_EXISTING_FIELD)
+          .withData(new Data().withMarcField(existingFieldRule)))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — 020 and 991 must remain untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00073nam  22000491a 4500\",\"fields\":[{\"020\":{\"subfields\":[{\"a\":\"value\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}},{\"991\":{\"subfields\":[{\"c\":\"existing\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
   void shouldMoveDataToExistingFieldsAndDeleteSourceField() throws IOException {
     // given
     String parsedContent =
@@ -877,6 +1089,86 @@ class MarcRecordModifierTest {
   }
 
   @Test
+  void shouldSkipInsertRuleAndLeaveRecordIntactWhenSubfieldsListIsEmpty() throws IOException {
+    // given — EDIT/INSERT rule with no subfields: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.EDIT)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.emptyList())); // no subfields
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — 856 must remain untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00054nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipInsertRuleAndLeaveRecordIntactWhenSubfieldCodeIsEmpty() throws IOException {
+    // given — EDIT/INSERT rule with empty subfield code: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"01314nam  22003851a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.EDIT)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("") // empty subfield code
+          .withSubaction(INSERT)
+          .withPosition(BEFORE_STRING)
+          .withData(new Data().withText("http://")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — 856 must remain untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00054nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{\"u\":\"example.com\"}],"
+      + "\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
   void shouldInsertDataBeforeExistingToFieldWithSpecifiedIndicatorsAndSubfield() throws IOException {
     // given
     String parsedContent =
@@ -1051,6 +1343,85 @@ class MarcRecordModifierTest {
     String expectedParsedContent =
       "{\"leader\":\"00084nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
       + "\"u\":\"http://libproxy.smith.edu?url=example.com\"}],\"ind1\":\" \",\"ind2\":\" \"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipReplaceRuleAndLeaveRecordIntactWhenSubfieldsListIsEmpty() throws IOException {
+    // given — EDIT/REPLACE rule with no subfields: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"a\":\"http://example.com\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.EDIT)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.emptyList())); // no subfields
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — 856 must remain untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00061nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"a\":\"http://example.com\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+    Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
+  }
+
+  @Test
+  void shouldSkipReplaceRuleAndLeaveRecordIntactWhenSubfieldCodeIsEmpty() throws IOException {
+    // given — EDIT/REPLACE rule with empty subfield code: must be skipped, record must remain untouched
+    String parsedContent =
+      "{\"leader\":\"00068nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"a\":\"http://example.com\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
+
+    var marcRecord = new Record().withParsedRecord(new ParsedRecord().withContent(parsedContent));
+    DataImportEventPayload eventPayload = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(MARC_BIBLIOGRAPHIC.value(), Json.encodePrettily(marcRecord));
+    eventPayload.setContext(context);
+
+    MarcMappingDetail mappingDetail = new MarcMappingDetail()
+      .withOrder(0)
+      .withAction(MarcMappingDetail.Action.EDIT)
+      .withField(new MarcField()
+        .withField("856")
+        .withIndicator1("*")
+        .withIndicator2("*")
+        .withSubfields(Collections.singletonList(new MarcSubfield()
+          .withSubfield("") // empty subfield code
+          .withSubaction(REPLACE)
+          .withData(new Data().withFind("http://").withReplaceWith("https://")))));
+
+    MappingProfile mappingProfile = new MappingProfile().withMappingDetails(new MappingDetail()
+      .withMarcMappingOption(MODIFY)
+      .withMarcMappingDetails(Collections.singletonList(mappingDetail)));
+    //when
+    marcRecordModifier.initialize(eventPayload, new MappingParameters(), mappingProfile, MARC_BIBLIOGRAPHIC);
+    marcRecordModifier.modifyRecord(Collections.singletonList(mappingDetail));
+    marcRecordModifier.getResult(eventPayload);
+    //then — 856 must remain untouched
+    String recordJson = eventPayload.getContext().get(MARC_BIBLIOGRAPHIC.value());
+    Record actualRecord = mapper().readValue(recordJson, Record.class);
+    String expectedParsedContent =
+      "{\"leader\":\"00061nam  22000371a 4500\",\"fields\":[{\"856\":{\"subfields\":[{"
+      + "\"a\":\"http://example.com\"}],\"ind1\":\"4\",\"ind2\":\"1\"}}]}";
     Assertions.assertEquals(expectedParsedContent, actualRecord.getParsedRecord().getContent().toString());
   }
 
