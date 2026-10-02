@@ -8,6 +8,7 @@
 * DELETE_INCOMING repeatable field action not removing duplicate scalar values from string arrays ([MODDICORE-507](https://folio-org.atlassian.net/browse/MODDICORE-507))
 * Fix 035 being split on update when same $a in incoming and existing ([MODSOURCE-1014](https://folio-org.atlassian.net/browse/MODSOURCE-1014))
 * Fix StringIndexOutOfBoundsException and NPE when the target subfield is empty in a field mapping profile
+* Fix only the last incoming value being kept when "Delete all existing and add these" is applied to an initially empty repeatable field ([MODDICORE-516](https://folio-org.atlassian.net/browse/MODDICORE-516))
 
 ### Tech Dept
 * Migrate tests from JUnit 4 to JUnit 6
