@@ -198,8 +198,10 @@ public class JsonBasedWriter extends AbstractWriter {
         setValueByFieldPath(repeatableFieldPath, currentObject);
         break;
       case EXCHANGE_EXISTING:
-        if (!value.isAlreadyRemovedForExchange() && pathObject != null && !pathObject.isEmpty()) {
-          findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
+        if (!value.isAlreadyRemovedForExchange()) {
+          if (pathObject != null && !pathObject.isEmpty()) {
+            findAndRemoveTheMostNestedFieldIfNeeded(currentPath, true);
+          }
           value.setAlreadyRemovedForExchange(true);
         }
         setValueByFieldPath(repeatableFieldPath, currentObject);

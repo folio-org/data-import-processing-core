@@ -29,10 +29,12 @@ import org.folio.processing.value.StringValue;
 import org.folio.processing.value.Value;
 import org.folio.rest.jaxrs.model.EntityType;
 import org.folio.rest.jaxrs.model.MappingRule;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class JsonBasedWriterUnitTest {
   private static final JsonBasedWriter WRITER = new JsonBasedWriter(EntityType.INSTANCE);
@@ -328,6 +330,38 @@ class JsonBasedWriterUnitTest {
     assertEquals(expectedInstance, resultInstance);
   }
 
+  @DisplayName("should write all incoming values when exchanging existing, whatever the existing content")
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"item\":{\"electronicAccess\":[]}}",
+    "{\"item\":{\"electronicAccess\":[{\"uri\":\"http://old\"}]}}"
+  })
+  void shouldWriteAllIncomingValues_whenExchangeExisting(String existingItem) throws IOException {
+    // arrange
+    DataImportEventPayload eventContext = new DataImportEventPayload();
+    HashMap<String, String> context = new HashMap<>();
+    context.put(EntityType.ITEM.value(), existingItem);
+    eventContext.setContext(context);
+    JsonBasedWriter writer = new JsonBasedWriter(EntityType.ITEM);
+
+    Map<String, Value> link1 = new HashMap<>();
+    link1.put("item.electronicAccess[].uri", StringValue.of("http://url1"));
+    Map<String, Value> link2 = new HashMap<>();
+    link2.put("item.electronicAccess[].uri", StringValue.of("http://url2"));
+    RepeatableFieldValue field =
+      RepeatableFieldValue.of(List.of(link1, link2), EXCHANGE_EXISTING, "electronicAccess");
+
+    // act
+    writer.initialize(eventContext);
+    writer.write("item.electronicAccess[]", field);
+    writer.getResult(eventContext);
+
+    // assert
+    String expectedItem =
+      "{\"item\":{\"electronicAccess\":[{\"uri\":\"http://url1\"},{\"uri\":\"http://url2\"}]}}";
+    assertEquals(expectedItem, eventContext.getContext().get(EntityType.ITEM.value()));
+  }
+
   @Test
   void shouldWrite_RepeatableExtendValues() throws IOException {
     // given
@@ -493,7 +527,8 @@ class JsonBasedWriterUnitTest {
     // then
     String expectedInstance =
       """
-      {"instance":{"contributor":[{"active":true,"names":["1","2","3"],"id":"UUID2"}]}}\
+      {"instance":{"contributor":[{"active":false,"names":["Heins","Rattu","Tabrani"],"id":"UUID"},\
+      {"active":true,"names":["1","2","3"],"id":"UUID2"}]}}\
       """;
     String resultInstance = eventContext.getContext().get(EntityType.INSTANCE.value());
     assertEquals(expectedInstance, resultInstance);
