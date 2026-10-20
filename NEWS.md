@@ -1,3 +1,6 @@
+## 2026-10-20 v4.4.10
+* [MODDICORE-519](https://folio-org.atlassian.net/browse/MODDICORE-519) Fix NPE when a match profile qualifier has no value
+
 ## 2026-01-02 v4.4.9
 * [MODDICORE-482](https://folio-org.atlassian.net/browse/MODDICORE-482) Upgrade RMB v35.4.2 (verbose logging suppression), Vert.x v4.5.23 (CVE-2025-67735 Netty CRLF injection fix)
 
