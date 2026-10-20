@@ -1,3 +1,6 @@
+## 2026-10-20 v5.0.2
+* Fix NPE when a match profile qualifier has no value ([MODDICORE-517](https://folio-org.atlassian.net/browse/MODDICORE-517))
+
 ## 2026-09-02 v5.0.1
 * Fix 035 being split on update when same $a in incoming and existing ([MODSOURCE-1014](https://folio-org.atlassian.net/browse/MODSOURCE-1014))
 
